@@ -15,7 +15,7 @@ Praca Pana Rafała Sikory (https://cds.cern.ch/record/2747846/files/CERN-THESIS-
 
 Praca Pana Łukasza Fulka (https://cds.cern.ch/record/2724061/files/CERN-THESIS-2020-066.pdf)
 
-Praca Pana Adama Wątroby
+Praca Pana Adama Wątroby (https://apd.usos.agh.edu.pl/diplomas/attachments/file/download/15182/)
 
 Praca Pani xxxxxx
 
