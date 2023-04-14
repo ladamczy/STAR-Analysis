@@ -18,3 +18,5 @@ Praca Pana Łukasza Fulka (https://cds.cern.ch/record/2724061/files/CERN-THESIS-
 Praca Pana Adama Wątroby
 
 Praca Pani xxxxxx
+
+Strona z poczatkiem i końcem napełnień RHIC w 2017 (https://wiki.bnl.gov/rhicspin/Run_17_polarization)
