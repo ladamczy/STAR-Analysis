@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
   }
 
   // pythia.readString("SoftQCD:nonDiffractive = on");
-  pythia.readString("SoftQCD:SigmaTotal:zeroAXB = off");
+  pythia.readString("SigmaTotal:zeroAXB = off");
   pythia.readString("SoftQCD:centralDiffractive = on");
 
                         
@@ -101,8 +101,8 @@ int main(int argc, char *argv[])
   const int piminusPDGid = -211;
 
   //Histograms
-  TH1D* K0S_Decay_R = new TH1D("K0S_Decay_R", "K^{0}_{S} decay radius;R [mm];N", 100, 0, 100);
-  TH1D* K0S_Decay_R_Filtered = new TH1D("K0S_Decay_R_Filtered", "K^{0}_{S} decay radius, pins are filtered with min p_{T} and #eta;R [mm];N", 100, 0, 100);
+  TH1D* K0S_Decay_R = new TH1D("K0S_Decay_R", "K^{0}_{S} decay distance;R [mm];N", 100, 0, 100);
+  TH1D* K0S_Decay_R_Filtered = new TH1D("K0S_Decay_R_Filtered", "K^{0}_{S} decay distance, pins are filtered with min p_{T} and #eta;R [mm];N", 100, 0, 100);
   
   //Variables used in loop
   TVector3 K0S_Decay_Vertex;
