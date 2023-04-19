@@ -3,11 +3,11 @@ Repository for AGH-STAR analysis code
 
 Repozytorium początkowo zawiera trzy projekty
 
-Exclusive analysis, 
+Exclusive analysis (Patrycje)
 
-Inclusive analysis 
+Inclusive analysis (Adam)
 
-Data preparation
+Data preparation (Przemysław)
 
 # Użyteczne linki:
 
