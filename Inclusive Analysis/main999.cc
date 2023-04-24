@@ -34,11 +34,11 @@
 //#include "TFile.h"
 
 using namespace Pythia8;
-
 using namespace std;
 
-int main(int argc, char *argv[])
-{
+bool can_be_detected(TLorentzVector);
+
+int main(int argc, char *argv[]){
 
   istringstream nEventsStream(argv[1]);
   int nEvents;
@@ -73,7 +73,6 @@ int main(int argc, char *argv[])
     pythia.readString("Beams:eCM = " + to_string(mEnergy));
   }
 
-  // pythia.readString("SoftQCD:nonDiffractive = on");
   pythia.readString("SigmaTotal:zeroAXB = off");
   pythia.readString("SoftQCD:centralDiffractive = on");
 
@@ -102,18 +101,23 @@ int main(int argc, char *argv[])
   const int piplusPDGid = 211;
   const int piminusPDGid = -211;
   const int pplusPDGid = 2212;
-  const int pminusPDGid = 2212;
+  const int pminusPDGid = -2212;
 
   //Histograms
-  TH1D* K0S_Decay_R = new TH1D("K0S_Decay_R", "K^{0}_{S} decay distance;R [mm];N", 100, 0, 100);
-  TH1D* K0S_Decay_R_filtered = new TH1D("K0S_Decay_R_filtered", "K^{0}_{S} decay distance, pis are filtered with min p_{T} and #eta;R [mm];N", 100, 0, 100);
+  //K0
+  TH1D* K0S_Decay_D = new TH1D("K0S_Decay_D", "K^{0}_{S} decay distance;R [mm];N", 100, 0, 100);
+  TH1D* K0S_Decay_D_filtered = new TH1D("K0S_Decay_D_filtered", "K^{0}_{S} decay distance (3D), pis are filtered with min p_{T} and #eta;D [mm];N", 100, 0, 100);
   TH2D* K0S_pt_eta = new TH2D("K0S_pt_eta", "K^{0}_{S} #eta-p_{T} histogram;#eta;p_{T} [GeV]", 100, -3, 3, 100, 0, 2);
   TH2D* K0S_pt_eta_filtered = new TH2D("K0S_pt_eta_filtered", "K^{0}_{S} #eta-p_{T} histogram, pis are filtered with min p_{T} and #eta;#eta;p_{T} [GeV]", 100, -3, 3, 100, 0, 2);
-  TH1D* Lambda_Decay_R = new TH1D("Lambda_Decay_R", "#Lambda decay distance;R [mm];N", 100, 0, 100);
-  TH1D* Lambda_Decay_R_filtered = new TH1D("Lambda_Decay_R_filtered", "#Lambda decay distance, decay results are filtered with min p_{T} and #eta;R [mm];N", 100, 0, 100);
+  TH2D* K0S_detection = new TH2D();
+  //Lambda
+  TH1D* Lambda_Decay_D = new TH1D("Lambda_Decay_D", "#Lambda decay distance;R [mm];N", 100, 0, 100);
+  TH1D* Lambda_Decay_D_filtered = new TH1D("Lambda_Decay_D_filtered", "#Lambda decay distance (3D), decay results are filtered with min p_{T} and #eta;D [mm];N", 100, 0, 100);
   TH2D* Lambda_pt_eta = new TH2D("Lambda_pt_eta", "#Lambda #eta-p_{T} histogram;#eta;p_{T} [GeV]", 100, -3, 3, 100, 0, 2);
   TH2D* Lambda_pt_eta_filtered = new TH2D("Lambda_pt_eta_filtered", "#Lambda #eta-p_{T} histogram, decay results are filtered with min p_{T} and #eta;#eta;p_{T} [GeV]", 100, -3, 3, 100, 0, 2);
-  
+  TH2D* Lambda_detection = new TH2D();
+  //other
+
   //Variables used in loops
   TVector3 K0S_Decay_Vertex;
   TVector3 Lambda_Decay_Vertex;
@@ -135,7 +139,7 @@ int main(int argc, char *argv[])
       if(fabs(pythia.event[i].id()) == K0sPDGid){
         K0S_counter++;
         K0S_Decay_Vertex.SetXYZ(pythia.event[i].xDec(), pythia.event[i].yDec(), pythia.event[i].zDec());
-        K0S_Decay_R->Fill(K0S_Decay_Vertex.Mag());
+        K0S_Decay_D->Fill(K0S_Decay_Vertex.Mag());
         fourvector_1.SetPxPyPzE(pythia.event[i].px(), pythia.event[i].py(), pythia.event[i].pz(), pythia.event[i].e());
         K0S_pt_eta->Fill(fourvector_1.Eta(), fourvector_1.Pt());
         //filtering
@@ -143,8 +147,8 @@ int main(int argc, char *argv[])
         daughter_ID_2 = pythia.event[i].daughter2();
         fourvector_1.SetPxPyPzE(pythia.event[daughter_ID_1].px(), pythia.event[daughter_ID_1].py(), pythia.event[daughter_ID_1].pz(), pythia.event[daughter_ID_1].e());
         fourvector_2.SetPxPyPzE(pythia.event[daughter_ID_2].px(), pythia.event[daughter_ID_2].py(), pythia.event[daughter_ID_2].pz(), pythia.event[daughter_ID_2].e());
-        if(fourvector_1.Pt()>0.2 && fabs(fourvector_1.Eta())<0.7 && fourvector_2.Pt()>0.2 && fabs(fourvector_2.Eta())<0.7){
-          K0S_Decay_R_filtered->Fill(K0S_Decay_Vertex.Mag());
+        if(can_be_detected(fourvector_1) && can_be_detected(fourvector_2)){
+          K0S_Decay_D_filtered->Fill(K0S_Decay_Vertex.Mag());
           K0S_pt_eta_filtered->Fill((fourvector_1+fourvector_2).Eta(), (fourvector_1+fourvector_2).Pt());
           K0S_filtered_counter++;
         }
@@ -152,7 +156,7 @@ int main(int argc, char *argv[])
       if(fabs(pythia.event[i].id()) == LambdaPDGid){
         Lambda_counter++;
         Lambda_Decay_Vertex.SetXYZ(pythia.event[i].xDec(), pythia.event[i].yDec(), pythia.event[i].zDec());
-        Lambda_Decay_R->Fill(K0S_Decay_Vertex.Mag());
+        Lambda_Decay_D->Fill(Lambda_Decay_Vertex.Mag());
         fourvector_1.SetPxPyPzE(pythia.event[i].px(), pythia.event[i].py(), pythia.event[i].pz(), pythia.event[i].e());
         Lambda_pt_eta->Fill(fourvector_1.Eta(), fourvector_1.Pt());
         //filtering
@@ -160,15 +164,28 @@ int main(int argc, char *argv[])
         daughter_ID_2 = pythia.event[i].daughter2();
         fourvector_1.SetPxPyPzE(pythia.event[daughter_ID_1].px(), pythia.event[daughter_ID_1].py(), pythia.event[daughter_ID_1].pz(), pythia.event[daughter_ID_1].e());
         fourvector_2.SetPxPyPzE(pythia.event[daughter_ID_2].px(), pythia.event[daughter_ID_2].py(), pythia.event[daughter_ID_2].pz(), pythia.event[daughter_ID_2].e());
-        if(fourvector_1.Pt()>0.2 && fabs(fourvector_1.Eta())<0.7 && fourvector_2.Pt()>0.2 && fabs(fourvector_2.Eta())<0.7){
-          Lambda_Decay_R_filtered->Fill(K0S_Decay_Vertex.Mag());
+        if(can_be_detected(fourvector_1) && can_be_detected(fourvector_2)){
+          Lambda_Decay_D_filtered->Fill(Lambda_Decay_Vertex.Mag());
           Lambda_pt_eta_filtered->Fill((fourvector_1+fourvector_2).Eta(), (fourvector_1+fourvector_2).Pt());
           Lambda_filtered_counter++;
         }
       }//end if Lambda
-
     }//end particle loop
   }//end event loop
+
+  //Fixing last histograms
+  K0S_detection = (TH2D*)K0S_pt_eta_filtered->Clone();
+  K0S_detection->SetTitle("Probability of detecting K^{0}_{S} with given #eta and p_{T}");
+  K0S_detection->SetName("K0S_detection");
+  K0S_detection->GetXaxis()->SetTitle("#eta");
+  K0S_detection->GetYaxis()->SetTitle("p_{T} [GeV]");
+  K0S_detection->Divide(K0S_pt_eta);
+  Lambda_detection = (TH2D*)Lambda_pt_eta_filtered->Clone();
+  Lambda_detection->SetTitle("Probability of detecting #Lambda with given #eta and p_{T}");
+  Lambda_detection->SetName("Lambda_detection");
+  Lambda_detection->GetXaxis()->SetTitle("#eta");
+  Lambda_detection->GetYaxis()->SetTitle("p_{T} [GeV]");
+  Lambda_detection->Divide(Lambda_pt_eta);
   
   outFile->cd();
   outFile->Write();
@@ -183,4 +200,11 @@ int main(int argc, char *argv[])
 
   // Done.
   return 0;
+}
+
+bool can_be_detected(TLorentzVector tested_particle){
+  if(fabs(tested_particle.Eta())<0.7 && tested_particle.Pt()>0.2){
+    return true;
+  }
+  return false;
 }
