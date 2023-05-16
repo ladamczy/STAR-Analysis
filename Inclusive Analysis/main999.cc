@@ -117,6 +117,7 @@ int main(int argc, char *argv[]){
   TH2D* Lambda_pt_eta_filtered = new TH2D("Lambda_pt_eta_filtered", "#Lambda #eta-p_{T} histogram, decay results are filtered with min p_{T} and #eta;#eta;p_{T} [GeV]", 100, -3, 3, 100, 0, 2);
   TH2D* Lambda_detection = new TH2D();
   //other
+  TH1D* M_inv_pion_pairs = new TH1D("M_inv_pion_pairs", "Pion pairs;m_{inv} [GeV];Number of pairs", 100, 0.42, 0.56);
 
   //Variables used in loops
   TVector3 K0S_Decay_Vertex;
@@ -129,6 +130,8 @@ int main(int argc, char *argv[]){
   int daughter_ID_2;
   TLorentzVector fourvector_1;
   TLorentzVector fourvector_2;
+  vector<TLorentzVector> piplus_tab;
+  vector<TLorentzVector> piminus_tab;
 
   // Begin event loop. Generate event; skip if generation aborted.
   for(int iEvent = 0; iEvent < nEvents; ++iEvent){
@@ -170,7 +173,28 @@ int main(int argc, char *argv[]){
           Lambda_filtered_counter++;
         }
       }//end if Lambda
+      if(fabs(pythia.event[i].id()) == piplusPDGid){
+        fourvector_1.SetPxPyPzE(pythia.event[i].px(), pythia.event[i].py(), pythia.event[i].pz(), pythia.event[i].e());
+        if(can_be_detected(fourvector_1)){
+          if(pythia.event[i].id()>0){
+            piplus_tab.push_back(fourvector_1);
+          }else if(pythia.event[i].id()<0){
+            piminus_tab.push_back(fourvector_1);
+          } 
+        }
+      }//end if pi+-
     }//end particle loop
+
+    //pion mixing
+    for (size_t i = 0; i < piplus_tab.size(); i++){
+      for (size_t j = 0; j < piminus_tab.size(); j++){
+        M_inv_pion_pairs->Fill((piplus_tab[i]+piminus_tab[j]).M());
+      }
+    }
+    
+    //cleanup
+    piplus_tab.clear();
+    piminus_tab.clear();
   }//end event loop
 
   //Fixing last histograms
