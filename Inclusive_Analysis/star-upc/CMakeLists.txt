@@ -19,10 +19,16 @@ set (SRCS
 set (LIB star-upc)
 
 #binary executables
-file(GLOB BIN "${CMAKE_CURRENT_SOURCE_DIR}/src/mains/*.cxx")
-string(REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/src/mains/" "" BIN "${BIN}")
-string(REPLACE ".cxx" "" BIN "${BIN}")
+#GLOB is not the suggested way, but an alternative would be adding them by hand
+
+#v1
 # set(BIN Ana)
+#v2
+# file(GLOB BIN "${CMAKE_CURRENT_SOURCE_DIR}/src/mains/*.cxx")
+# string(REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/src/mains/" "" BIN "${BIN}")
+# string(REPLACE ".cxx" "" BIN "${BIN}")
+#v3
+file(GLOB_RECURSE BIN "${CMAKE_CURRENT_SOURCE_DIR}/src/mains/*.cxx")
 
 #sources for ROOT dictionary
 set (SRCS_DICT
@@ -97,6 +103,8 @@ target_link_libraries(${LIB} ${ROOT_DEPS} )
 
 #create executables in BIN
 foreach(IBIN ${BIN})
-  add_executable(${IBIN} src/mains/${IBIN}.cxx)
-  target_link_libraries(${IBIN} ${LIB} ${ROOT_DEPS} )
+  #IBIN is full path, TEMP_BIN only the filename
+  get_filename_component(TEMP_BIN ${IBIN} NAME_WLE)
+  add_executable(${TEMP_BIN} ${IBIN})
+  target_link_libraries(${TEMP_BIN} ${LIB} ${ROOT_DEPS})
 endforeach(IBIN ${BIN})
