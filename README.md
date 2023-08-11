@@ -5,7 +5,7 @@ Repozytorium początkowo zawiera trzy projekty
 
 Exclusive analysis (Patrycje)
 
-Inclusive analysis (Adam)
+Inclusive_analysis (Adam)
 
 Data preparation (Przemysław)
 

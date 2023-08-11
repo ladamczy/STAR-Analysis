@@ -88,6 +88,9 @@ add_custom_command (
 
 #end of ROOT section
 
+# Additional header(s) for useful, not-ROOT classes and functions
+set(HDRS_INC "${HDRS_INC}" "UsefulThings.h")
+
 #create library LIB
 add_library (${LIB} SHARED ${SRCS} ${DICT})
 target_link_libraries(${LIB} ${ROOT_DEPS} )
