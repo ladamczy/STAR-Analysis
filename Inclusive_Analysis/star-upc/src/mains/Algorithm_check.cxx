@@ -68,6 +68,9 @@
 #include "StUPCVertex.h"
 #include "StUPCTofHit.h"
 
+//repeating things
+#include "UsefulThings.h"
+
 using namespace std;
 
 // enums are very usefull 
@@ -79,15 +82,6 @@ enum BRANCH_ID { EU, ED, WU, WD, nBranches };
 enum RP_ID {E1U, E1D, E2U, E2D, W1U, W1D, W2U, W2D, nRomanPots};
 
 const double particleMass[nParticles] = { 0.13957, 0.497611, 0.93827}; // pion, kaon, proton in GeV /c^2 
-const int nTriggers = 17;
-const int triggerID[] = { 570209, 570219, 570229, 570701, 570702, 570703, 570704, 570705, 
-                  570709, 570711, 570712, 570719, 590701, 590703, 590705, 590708, 590709};
-// 570702 RP_UPC // 570712 RP_UPC // 570703 RP_SDT // 570709 RP_ET // 570719 RP_ET // 570701 RP_CPT2 // 570711 RP_CPT2 // 570705 RP_CPT2noBBCL // 570704 RP_Zerobias // 590703 RP_SDT // 590709 RP_ET // 590701 RP_CPT2 // 590705 RP_CPT2noBBCL // 590708 RP_CPTnoBBCL // 570209 JPsi*HTTP // 570219 JPsi*HTTP // 570229 JPsi*HTTP
-const int CEPtriggers[] = { 570701, 570705, 570711, 590701, 590705, 590708};
-
-bool ConnectInput(int argc, char** argv, TChain* fileChain);
-bool CheckTriggers(StUPCEvent* localupcEvt);
-long long GetFileSize(string filename);
 
 //_____________________________________________________________________________
 int main(int argc, char** argv) 
@@ -103,8 +97,7 @@ int main(int argc, char** argv)
     
     TChain* upcChain = new TChain("mUPCTree");    //chain with files to iterate through
 
-    if(!ConnectInput(argc, argv, upcChain))
-    {
+    if(!ConnectInput(argc, argv, upcChain)){
         cout << "Wrong input parameters..." << endl; 
         return 1;
     }
@@ -120,6 +113,16 @@ int main(int argc, char** argv)
 
     ROOT::TThreadedObject<TH1D> pipairanglehist = ROOT::TThreadedObject<TH1D>("pipairanglehist", "Angle between pions in detector FoR;#phi angle [rad];events", 30, 0, 3.1416);
 
+    int nEvents = 7;
+    ROOT::TThreadedObject<TH1D> cutflow("cutflow", "Cutflow;;Tracks", nEvents, 0, nEvents);
+    cutflow->GetXaxis()->SetBinLabel(1, "Before tests");
+    cutflow->GetXaxis()->SetBinLabel(2, "Good PV position");
+    cutflow->GetXaxis()->SetBinLabel(3, "N hits");
+    cutflow->GetXaxis()->SetBinLabel(4, "p_{T} & #eta");
+    cutflow->GetXaxis()->SetBinLabel(5, "Not p & not K");
+    cutflow->GetXaxis()->SetBinLabel(6, "Probably #pi");
+    cutflow->GetXaxis()->SetBinLabel(7, "Check DCA");
+    
     // Define the function that will process a subrange of the tree.
     // The function must receive only one parameter, a TTreeReader,
     // and it must be thread safe. To enforce the latter requirement,
@@ -146,12 +149,14 @@ int main(int argc, char** argv)
         std::shared_ptr<TH1D> phianglehistbeforeLocal;
         std::shared_ptr<TH1D> phianglehistafterLocal;
         std::shared_ptr<TH1D> pipairanglehistLocal;
+        std::shared_ptr<TH1D> cutflowLocal;
 
         invmasshistbeforeLocal = invmasshistbefore.Get();
         invmasshistafterLocal = invmasshistafter.Get();
         phianglehistbeforeLocal = phianglehistbefore.Get();
         phianglehistafterLocal = phianglehistafter.Get();
         pipairanglehistLocal = pipairanglehist.Get();
+        cutflowLocal = cutflow.Get();
 
         int filtered_entries = 0;
         //for changing branch address
@@ -232,6 +237,8 @@ int main(int argc, char** argv)
             //replacement
             vector<Int_t> primaryVertices;
             Int_t VertexId;
+            //cutflow
+            cutflowLocal->Fill(0.0, tempUPCpointer->getNumberOfTracks());
             for (Int_t i = 0; i < tempUPCpointer->getNumberOfTracks(); i++){
                 VertexId = tempUPCpointer->getTrack(i)->getVertexId();
                 if(tempUPCpointer->getTrack(i)->getFlag(StUPCTrack::kPrimary) && !(find(primaryVertices.begin(), primaryVertices.end(), VertexId)!=primaryVertices.end())){
@@ -338,17 +345,23 @@ int main(int argc, char** argv)
             //2. DCA in R and z (the second one also doubles as spread limiter)
             //3. kinematic range for optimal measurement
             for (Int_t i = 0; i < tempUPCpointer->getNumberOfTracks(); i++){
+                cutflowLocal->Fill(1);
                 //quality
                 if(tempUPCpointer->getTrack(i)->getNhitsDEdx()<15 || tempUPCpointer->getTrack(i)->getNhitsFit()<25){
                     continue;
                 }
+                cutflowLocal->Fill(2);
                 if(tempUPCpointer->getTrack(i)->getPt()<=0.2 || abs(tempUPCpointer->getTrack(i)->getEta())>=0.7){
                     continue;
                 }
+                cutflowLocal->Fill(3);
                 if(abs(tempUPCpointer->getTrack(i)->getNSigmasTPCProton())<3 || abs(tempUPCpointer->getTrack(i)->getNSigmasTPCKaon())<3){
                     continue;
-                }else if (abs(tempUPCpointer->getTrack(i)->getNSigmasTPCPion())<3){
+                }
+                cutflowLocal->Fill(4);
+                if (abs(tempUPCpointer->getTrack(i)->getNSigmasTPCPion())<3){
                     tempUPCpointer->getTrack(i)->getLorentzVector(trackVector, particleMass[Pion]);
+                    cutflowLocal->Fill(5);
                 }else{
                     continue;
                 }
@@ -356,6 +369,7 @@ int main(int argc, char** argv)
                 if((pow(tempUPCpointer->getTrack(i)->getDcaXY(), 2) + pow(tempUPCpointer->getTrack(i)->getDcaZ(), 2))<1 && tempUPCpointer->getTrack(i)->getFlag(StUPCTrack::kPrimary)){
                     continue;
                 }
+                cutflowLocal->Fill(6);
                 //basic test of ToF
                 //unavailable
                 // if(!tempUPCpointer->getTrack(i)->getFlag(StUPCTrack::kTof) || tempUPCpointer->getTrack(i)->getTofPathLength()<=0 || tempUPCpointer->getTrack(i)->getTofTime()<=0){
@@ -441,12 +455,14 @@ int main(int argc, char** argv)
     std::shared_ptr<TH1D> phianglehistbeforeFinal;
     std::shared_ptr<TH1D> phianglehistafterFinal;
     std::shared_ptr<TH1D> pipairanglehistFinal;
+    std::shared_ptr<TH1D> cutflowFinal;
 
     invmasshistbeforeFinal = invmasshistbefore.Merge();
     invmasshistafterFinal = invmasshistafter.Merge();
     phianglehistbeforeFinal = phianglehistbefore.Merge();
     phianglehistafterFinal = phianglehistafter.Merge();
     pipairanglehistFinal = pipairanglehist.Merge();
+    cutflowFinal = cutflow.Merge();
 
     invmasshistbeforeFinal->SetMinimum(0);
     invmasshistafterFinal->SetMinimum(0);
@@ -466,6 +482,7 @@ int main(int argc, char** argv)
     phianglehistbeforeFinal->Write();
     phianglehistafterFinal->Write();
     pipairanglehistFinal->Write();
+    cutflowFinal->Write();
     outputFileHist->Close();
 
     cout<<"Finished processing "<<endl;
@@ -474,68 +491,3 @@ int main(int argc, char** argv)
     cout<<"Ending Analysis... GOOD BYE!"<<endl;
     return 0;
 }//main
-
-bool ConnectInput(int argc, char** argv, TChain* fileChain) 
-{
-    int fileId = -1;
-    string line;
-    int lineId=0;
-
-    const string& input = argv[1];
-    cout<<"Using list "<<input<<endl;
-    if(input.find(".list") != string::npos )
-    {
-        cout << "Input from chain" << endl;
-        ifstream instr(input.c_str());
-        if (!instr.is_open())
-        {
-            cout<< "Couldn't open: "<<input.c_str()<<endl;
-            return false;
-        }
-        //for testing if file exists
-        TFile* infile;
-
-        while(getline(instr, line)) 
-        {
-            if(fileId==lineId || fileId== -1)
-            {
-                fileChain->AddFile(line.c_str());
-                infile = TFile::Open(line.c_str(), "read");
-                if(!infile)
-                {
-                    cout<< "Couldn't open: "<<line.c_str()<<endl;
-                    return false;
-                }
-                infile->Close();
-            }
-            lineId++;
-        }
-        instr.close();
-    }
-
-    return true;
-}//ConnectInput
-
-bool CheckTriggers(StUPCEvent* localupcEvt)
-{
-
-    bool CPTtrigger = false;
-    for(int var = 0; var < nTriggers; ++var)
-    {
-        if(localupcEvt->isTrigger(triggerID[var]))
-        {
-            //Checked if it is CPT trigger
-            for (int i = 0; i < *(&CEPtriggers + 1) - CEPtriggers; ++i)
-                if(triggerID[var] == CEPtriggers[i])
-                    CPTtrigger=true;
-        }
-    }
-
-    return CPTtrigger;
-}
-
-long long GetFileSize(string filename){
-    struct stat64 stat_buf;
-    int rc = stat64(filename.c_str(), &stat_buf);
-    return rc==0 ? stat_buf.st_size : -1;
-}
