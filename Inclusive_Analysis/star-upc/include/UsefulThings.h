@@ -88,7 +88,7 @@ bool ConnectInput(int argc, char** argv, TChain* fileChain)
 
 
 double AngleCheck(TParticle* MCParticle, StUPCTrack* DETParticle){
-    if(int(round(MCParticle->GetPDG()->Charge()*3)) != DETParticle->getCharge()){
+    if(int(round(MCParticle->GetPDG()->Charge())) != DETParticle->getCharge()*3){
         return -1;
     }
     TLorentzVector tempMCvec;

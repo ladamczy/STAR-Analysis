@@ -138,6 +138,7 @@ int main(int argc, char** argv)
         //unavailable
         // StRPEvent* tempRPpointer = StRPEventInstance.Get();
 
+        int total_charged_MC_particles = 0;
         do{
             tempUPCpointer = StUPCEventInstance.Get();
             vector<TParticle*> true_particles;
@@ -147,11 +148,16 @@ int main(int argc, char** argv)
 
             //assigning and identifying
             for (int i = 0; i < tempUPCpointer->getNumberOfMCParticles(); i++){
+                //counting particles present
+                if (int(round(tempUPCpointer->getMCParticle(i)->GetPDG()->Charge()))!=0){
+                    total_charged_MC_particles++;
+                }
+                //processing
                 int best_choice = -1;
-                int best_angle = 4;
+                double best_angle = 4.5; //absurdly high, over pi
                 for (int j = 0; j < tempUPCpointer->getNumberOfTracks(); j++){
                     //check angle and match
-                    int temp_angle = AngleCheck(tempUPCpointer->getMCParticle(i), tempUPCpointer->getTrack(j));
+                    double temp_angle = AngleCheck(tempUPCpointer->getMCParticle(i), tempUPCpointer->getTrack(j));
                     if(temp_angle<0 || was_used[j]){
                         continue;
                     }else if(temp_angle<best_angle){
@@ -191,7 +197,7 @@ int main(int argc, char** argv)
 
         cout<<"Finished operation on file "<<myFile->GetTitle()<<endl;
         cout<<"Analyzed "<<tempTree->GetEntries()<<" entries"<<endl;
-        cout<<"Filtered "<<filtered_entries<<" entries"<<endl;
+        cout<<"Matched "<<filtered_entries<<" out of "<<total_charged_MC_particles<<endl;
 
         delete tempFile;
 
