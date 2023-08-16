@@ -6,10 +6,13 @@
 #include <string>
 #include <fstream>
 
-//ROOT
+//ROOT & picoDST
 #include "StUPCEvent.h"
+#include "StUPCTrack.h"
 #include "TChain.h"
 #include "TFile.h"
+#include "TParticle.h"
+#include "TParticlePDG.h"
 
 using namespace std;
 
@@ -81,6 +84,18 @@ bool ConnectInput(int argc, char** argv, TChain* fileChain)
     
 
     return true;
+}
+
+
+double AngleCheck(TParticle* MCParticle, StUPCTrack* DETParticle){
+    if(int(round(MCParticle->GetPDG()->Charge()*3)) != DETParticle->getCharge()){
+        return -1;
+    }
+    TLorentzVector tempMCvec;
+    TVector3 tempDETvec;
+    MCParticle->Momentum(tempMCvec);
+    DETParticle->getMomentum(tempDETvec);
+    return tempMCvec.Angle(tempDETvec);
 }
 
 #endif
