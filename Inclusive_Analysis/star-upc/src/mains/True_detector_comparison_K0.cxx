@@ -144,7 +144,7 @@ int main(int argc, char** argv)
             vector<TParticle*> true_particles;
             vector<StUPCTrack*> detected_particles;
             vector<double> metric_difference;
-            vector<bool> was_used(tempUPCpointer->getNumberOfTracks(), false);
+            vector<bool> was_used(tempUPCpointer->getNumberOfMCParticles(), false);
 
             //assigning and identifying
             for (int i = 0; i < tempUPCpointer->getNumberOfTracks(); i++){
