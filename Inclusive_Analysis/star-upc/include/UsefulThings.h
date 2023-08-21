@@ -86,16 +86,17 @@ bool ConnectInput(int argc, char** argv, TChain* fileChain)
     return true;
 }
 
-
-double AngleCheck(TParticle* MCParticle, StUPCTrack* DETParticle){
+double MetricCheck(TParticle* MCParticle, StUPCTrack* DETParticle){
     if(int(round(MCParticle->GetPDG()->Charge())) != DETParticle->getCharge()*3){
         return -1;
     }
     TLorentzVector tempMCvec;
-    TVector3 tempDETvec;
+    TVector3 tempDETvec;  
     MCParticle->Momentum(tempMCvec);
     DETParticle->getMomentum(tempDETvec);
-    return tempMCvec.Angle(tempDETvec);
+    double phi_weight = 1.0;
+    double eta_weight = 1.0;
+    return sqrt(pow(phi_weight*(tempMCvec.Phi()-tempDETvec.Phi()),2)+pow(eta_weight*(tempMCvec.Eta()-tempDETvec.Eta()),2));
 }
 
 #endif

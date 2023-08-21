@@ -105,7 +105,7 @@ int main(int argc, char** argv)
     const string& outputFolder = argv[2];
 
     //HISTOGRAMS
-    ROOT::TThreadedObject<TH1D> anglebetween = ROOT::TThreadedObject<TH1D>("anglebetween", "Angle between simulated and detected particles;#Delta#Phi [rad];events", 18, 0, TMath::Pi());
+    ROOT::TThreadedObject<TH1D> metricbetween = ROOT::TThreadedObject<TH1D>("metricbetween", "Distance between simulation and event in #phi-#eta space;;events", 18, 0, TMath::Pi());
     
     // Define the function that will process a subrange of the tree.
     // The function must receive only one parameter, a TTreeReader,
@@ -128,9 +128,9 @@ int main(int argc, char** argv)
         //variable initialization
         myReader.Next();
         //histograms
-        std::shared_ptr<TH1D> anglebetweenLocal;
+        std::shared_ptr<TH1D> metricbetweenLocal;
 
-        anglebetweenLocal = anglebetween.Get();
+        metricbetweenLocal = metricbetween.Get();
 
         int filtered_entries = 0;
         //for changing branch address
@@ -143,46 +143,48 @@ int main(int argc, char** argv)
             tempUPCpointer = StUPCEventInstance.Get();
             vector<TParticle*> true_particles;
             vector<StUPCTrack*> detected_particles;
-            vector<double> angle_difference;
+            vector<double> metric_difference;
             vector<bool> was_used(tempUPCpointer->getNumberOfTracks(), false);
 
             //assigning and identifying
-            for (int i = 0; i < tempUPCpointer->getNumberOfMCParticles(); i++){
-                //counting particles present
-                if (int(round(tempUPCpointer->getMCParticle(i)->GetPDG()->Charge()))!=0){
-                    total_charged_MC_particles++;
-                }
+            for (int i = 0; i < tempUPCpointer->getNumberOfTracks(); i++){
                 //processing
                 int best_choice = -1;
-                double best_angle = 4.5; //absurdly high, over pi
-                for (int j = 0; j < tempUPCpointer->getNumberOfTracks(); j++){
-                    //check angle and match
-                    double temp_angle = AngleCheck(tempUPCpointer->getMCParticle(i), tempUPCpointer->getTrack(j));
-                    if(temp_angle<0 || was_used[j]){
+                double best_metric = 100.0; //absurdly high
+                for (int j = 0; j < tempUPCpointer->getNumberOfMCParticles(); j++){
+                    //counting particles present and eliminating neutral ones
+                    if (int(round(tempUPCpointer->getMCParticle(j)->GetPDG()->Charge()))!=0){
+                        total_charged_MC_particles++;
+                    }else{
                         continue;
-                    }else if(temp_angle<best_angle){
+                    }
+                    //check metric and match
+                    double temp_metric = MetricCheck(tempUPCpointer->getMCParticle(j), tempUPCpointer->getTrack(i));
+                    if(temp_metric<0 || was_used[j]){
+                        continue;
+                    }else if(temp_metric<best_metric){
                         best_choice = j;
-                        best_angle = temp_angle;
+                        best_metric = temp_metric;
                         was_used[j] = true;
                     }
                 }
-                if(best_angle<3.5 && best_choice>=0){
-                    true_particles.push_back(tempUPCpointer->getMCParticle(i));
-                    detected_particles.push_back(tempUPCpointer->getTrack(best_choice));
-                    angle_difference.push_back(best_angle);
+                if(best_metric<100.0 && best_choice>=0){
+                    true_particles.push_back(tempUPCpointer->getMCParticle(best_choice));
+                    detected_particles.push_back(tempUPCpointer->getTrack(i));
+                    metric_difference.push_back(best_metric);
                 }
             }
 
             //things to do with identified particles
-            for (int i = 0; i < angle_difference.size(); i++){
-                anglebetweenLocal->Fill(angle_difference[i]);
+            for (int i = 0; i < metric_difference.size(); i++){
+                metricbetweenLocal->Fill(metric_difference[i]);
                 filtered_entries++;
             }
             
             
             true_particles.clear();
             detected_particles.clear();
-            angle_difference.clear();
+            metric_difference.clear();
         }while (myReader.Next());
 
         //waiting for file opening to check if there were any filtered entries
@@ -224,11 +226,11 @@ int main(int argc, char** argv)
     filtered_entries = TreeProcessor.MapReduce(myFunction, listOfFiles, redFunction);
     // Use the TThreadedObject::Merge method to merge the thread private tree
     // into the final result
-    std::shared_ptr<TH1D> anglebetweenFinal;
+    std::shared_ptr<TH1D> metricbetweenFinal;
 
-    anglebetweenFinal = anglebetween.Merge();
+    metricbetweenFinal = metricbetween.Merge();
 
-    anglebetweenFinal->SetMinimum(0);
+    metricbetweenFinal->SetMinimum(0);
 
     //setting up a tree & output file
     string path = string(argv[0]);
@@ -237,7 +239,7 @@ int main(int argc, char** argv)
     TFile* outputFileHist = TFile::Open(outfileName.c_str(), "recreate");
 
     outputFileHist->cd();
-    anglebetweenFinal->Write();
+    metricbetweenFinal->Write();
     outputFileHist->Close();
 
     cout<<"Finished processing "<<endl;
