@@ -156,11 +156,17 @@ int main(int argc, char** argv)
                     if (int(round(tempUPCpointer->getMCParticle(j)->GetPDG()->Charge()))!=0){
                         total_charged_MC_particles++;
                     }else{
+                        was_used[j] = true;
+                        continue;
+                    }
+                    //eliminating protons diffractively scattered
+                    if(tempUPCpointer->getMCParticle(j)->GetPdgCode()==2212 && abs(tempUPCpointer->getMCParticle(j)->Eta())>5){
+                        was_used[j] = true;
                         continue;
                     }
                     //check metric and match
                     double temp_metric = MetricCheck(tempUPCpointer->getMCParticle(j), tempUPCpointer->getTrack(i));
-                    if(temp_metric<0 || was_used[j]){
+                    if(was_used[j] || temp_metric<0){
                         continue;
                     }else if(temp_metric<best_metric){
                         best_choice = j;
