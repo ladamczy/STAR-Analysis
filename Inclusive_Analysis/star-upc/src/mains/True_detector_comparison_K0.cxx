@@ -106,7 +106,12 @@ int main(int argc, char** argv)
 
     //HISTOGRAMS
     ROOT::TThreadedObject<TH1D> metricbetween = ROOT::TThreadedObject<TH1D>("metricbetween", "Distance between simulation and event in #phi-#eta space;;events", 18, 0, TMath::Pi());
-    
+    ROOT::TThreadedObject<TH1D> metricbetweenprecise = ROOT::TThreadedObject<TH1D>("metricbetweenprecise", "Distance between simulation and event in #phi-#eta space;;events", 20, 0, 0.1);
+    ROOT::TThreadedObject<TH1D> nongeneratorparticles = ROOT::TThreadedObject<TH1D>("nongeneratorparticles", "Particles not created by generator;;particles", 3, 0, 3);
+    ROOT::TThreadedObject<TH1D> zvertexdifference = ROOT::TThreadedObject<TH1D>("zvertexdifference", "Difference in Z position between vertex and its reconstruction;#Delta z [cm];particles", 40, -20, 20);
+    ROOT::TThreadedObject<TH2D> massvszvertexdifference = ROOT::TThreadedObject<TH2D>("massvszvertexdifference", "Reconstructed kaon mass vs difference in Z position between vertex and its reconstruction;K^{0}_{S} mass [GeV];#Delta z [cm]", 100, 0.42, 0.56, 40, -20, 20);
+    ROOT::TThreadedObject<TH1D> invmass = ROOT::TThreadedObject<TH1D>("invmass", "K^{0}_{S} invariant mass;m [GeV];entries", 100, 0.42, 0.56);
+
     // Define the function that will process a subrange of the tree.
     // The function must receive only one parameter, a TTreeReader,
     // and it must be thread safe. To enforce the latter requirement,
@@ -129,8 +134,18 @@ int main(int argc, char** argv)
         myReader.Next();
         //histograms
         std::shared_ptr<TH1D> metricbetweenLocal;
+        std::shared_ptr<TH1D> metricbetweenpreciseLocal;
+        std::shared_ptr<TH1D> nongeneratorparticlesLocal;
+        std::shared_ptr<TH1D> zvertexdifferenceLocal;
+        std::shared_ptr<TH2D> massvszvertexdifferenceLocal;
+        std::shared_ptr<TH1D> invmassLocal;
 
         metricbetweenLocal = metricbetween.Get();
+        metricbetweenpreciseLocal = metricbetweenprecise.Get();
+        nongeneratorparticlesLocal = nongeneratorparticles.Get();
+        zvertexdifferenceLocal = zvertexdifference.Get();
+        massvszvertexdifferenceLocal = massvszvertexdifference.Get();
+        invmassLocal = invmass.Get();
 
         int filtered_entries = 0;
         //for changing branch address
@@ -181,17 +196,81 @@ int main(int argc, char** argv)
                 }
             }
 
+            //things with MC particles
+            //test of non-generator particles
+            int piplusomitted = 0;
+            int piminusomitted = 0;
+            TLorentzVector vertexposition;
+            bool hasvertexposition = false;
+            for (int j = 0; j < tempUPCpointer->getNumberOfMCParticles(); j++){
+                //omitting generator particles
+
+                //eliminating protons diffractively scattered
+                if(tempUPCpointer->getMCParticle(j)->GetPdgCode()==2212 && abs(tempUPCpointer->getMCParticle(j)->Eta())>5){
+                    if(!hasvertexposition){
+                        tempUPCpointer->getMCParticle(j)->ProductionVertex(vertexposition);
+                    }
+                    continue;
+                }
+                //K0S
+                if(tempUPCpointer->getMCParticle(j)->GetPdgCode()==310){
+                    continue;
+                }
+                //pi+- from K0S
+                //because i cant identify mothers, there will be workaround
+                //cause in 5th there is a particle created between pions and kaons
+                if(tempUPCpointer->getMCParticle(j)->GetPdgCode()==211 && piplusomitted<2){
+                    piplusomitted++;
+                    continue;
+                }
+                if(tempUPCpointer->getMCParticle(j)->GetPdgCode()==-211 && piminusomitted<2){
+                    piminusomitted++;
+                    continue;
+                }
+                nongeneratorparticlesLocal->Fill(tempUPCpointer->getMCParticle(j)->GetName(), 1.);
+            }
+
             //things to do with identified particles
+            bool hasdetectedvertexposition = false;
+            TVector3 detectedvertexposition;
+            //test of pairing
             for (int i = 0; i < metric_difference.size(); i++){
+                if(!hasdetectedvertexposition && detected_particles[i]->getFlag(StUPCTrack::kPrimary)){
+                    hasdetectedvertexposition = true;
+                    detectedvertexposition = {detected_particles[i]->getVertex()->getPosX(), detected_particles[i]->getVertex()->getPosY(), detected_particles[i]->getVertex()->getPosZ()};
+                }
                 metricbetweenLocal->Fill(metric_difference[i]);
+                metricbetweenpreciseLocal->Fill(metric_difference[i]);
                 filtered_entries++;
             }
+
+            zvertexdifferenceLocal->Fill(vertexposition.Z() - detectedvertexposition.Z());
+            //loop to get pions from K0Ss
+            TLorentzVector pion1;
+            TLorentzVector pion2;
+            for (int i = 0; i < metric_difference.size(); i++){
+                if(true_particles[i]->GetPdgCode()==211){
+                    for (int j = 0; j < metric_difference.size(); j++){
+                        if(true_particles[j]->GetPdgCode()==-211 && true_particles[i]->GetMother(0) == true_particles[j]->GetMother(0)){
+                            detected_particles[i]->getLorentzVector(pion1, particleMass[Pion]);
+                            detected_particles[j]->getLorentzVector(pion2, particleMass[Pion]);
+                            massvszvertexdifferenceLocal->Fill((pion1+pion2).M(), vertexposition.Z() - detectedvertexposition.Z());;
+                            invmassLocal->Fill((pion1+pion2).M());
+                            continue;
+                        }
+                    }
+                }
+            }
+            
             
             
             true_particles.clear();
             detected_particles.clear();
             metric_difference.clear();
         }while (myReader.Next());
+
+        //deleting some no-name entries
+        nongeneratorparticlesLocal->LabelsDeflate();
 
         //waiting for file opening to check if there were any filtered entries
         if(filtered_entries==0){
@@ -233,10 +312,25 @@ int main(int argc, char** argv)
     // Use the TThreadedObject::Merge method to merge the thread private tree
     // into the final result
     std::shared_ptr<TH1D> metricbetweenFinal;
+    std::shared_ptr<TH1D> metricbetweenpreciseFinal;
+    std::shared_ptr<TH1D> nongeneratorparticlesFinal;
+    std::shared_ptr<TH1D> zvertexdifferenceFinal;
+    std::shared_ptr<TH2D> massvszvertexdifferenceFinal;
+    std::shared_ptr<TH1D> invmassFinal;
 
     metricbetweenFinal = metricbetween.Merge();
+    metricbetweenpreciseFinal = metricbetweenprecise.Merge();
+    nongeneratorparticlesFinal = nongeneratorparticles.Merge();
+    zvertexdifferenceFinal = zvertexdifference.Merge();
+    massvszvertexdifferenceFinal = massvszvertexdifference.Merge();
+    invmassFinal = invmass.Merge();
 
     metricbetweenFinal->SetMinimum(0);
+    metricbetweenpreciseFinal->SetMinimum(0);
+    nongeneratorparticlesFinal->SetMinimum(0);
+    zvertexdifferenceFinal->SetMinimum(0);
+    massvszvertexdifferenceFinal->SetMinimum(0);
+    invmassFinal->SetMinimum(0);
 
     //setting up a tree & output file
     string path = string(argv[0]);
@@ -246,6 +340,11 @@ int main(int argc, char** argv)
 
     outputFileHist->cd();
     metricbetweenFinal->Write();
+    metricbetweenpreciseFinal->Write();
+    nongeneratorparticlesFinal->Write();
+    zvertexdifferenceFinal->Write();
+    massvszvertexdifferenceFinal->Write();
+    invmassFinal->Write();
     outputFileHist->Close();
 
     cout<<"Finished processing "<<endl;
