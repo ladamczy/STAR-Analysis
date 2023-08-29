@@ -34,6 +34,7 @@
 #include "TTree.h"
 #include "TChain.h"
 #include "TH1D.h"
+#include "TH3D.h"
 #include <TH2.h> 
 #include <TF1.h> 
 #include <TF2.h> 
@@ -108,9 +109,18 @@ int main(int argc, char** argv)
     ROOT::TThreadedObject<TH1D> metricbetween = ROOT::TThreadedObject<TH1D>("metricbetween", "Distance between simulation and event in #phi-#eta space;;events", 18, 0, TMath::Pi());
     ROOT::TThreadedObject<TH1D> metricbetweenprecise = ROOT::TThreadedObject<TH1D>("metricbetweenprecise", "Distance between simulation and event in #phi-#eta space;;events", 20, 0, 0.1);
     ROOT::TThreadedObject<TH1D> nongeneratorparticles = ROOT::TThreadedObject<TH1D>("nongeneratorparticles", "Particles not created by generator;;particles", 3, 0, 3);
-    ROOT::TThreadedObject<TH1D> zvertexdifference = ROOT::TThreadedObject<TH1D>("zvertexdifference", "Difference in Z position between vertex and its reconstruction;#Delta z [cm];particles", 40, -20, 20);
+    ROOT::TThreadedObject<TH1D> xvertexdifference = ROOT::TThreadedObject<TH1D>("xvertexdifference", "Difference in X position between vertex and its reconstruction;#Delta x [cm];events", 40, -20, 20);
+    ROOT::TThreadedObject<TH1D> yvertexdifference = ROOT::TThreadedObject<TH1D>("yvertexdifference", "Difference in Y position between vertex and its reconstruction;#Delta y [cm];events", 40, -20, 20);
+    ROOT::TThreadedObject<TH1D> zvertexdifference = ROOT::TThreadedObject<TH1D>("zvertexdifference", "Difference in Z position between vertex and its reconstruction;#Delta z [cm];events", 40, -20, 20);
+    ROOT::TThreadedObject<TH1D> vertexdifference = ROOT::TThreadedObject<TH1D>("vertexdifference", "Difference in position between vertex and its reconstruction;#Delta d [cm];events", 20, 0, 20);
+    ROOT::TThreadedObject<TH2D> massvsxvertexdifference = ROOT::TThreadedObject<TH2D>("massvsxvertexdifference", "Reconstructed kaon mass vs difference in X position between vertex and its reconstruction;K^{0}_{S} mass [GeV];#Delta x [cm]", 100, 0.42, 0.56, 40, -20, 20);
+    ROOT::TThreadedObject<TH2D> massvsyvertexdifference = ROOT::TThreadedObject<TH2D>("massvsyvertexdifference", "Reconstructed kaon mass vs difference in Y position between vertex and its reconstruction;K^{0}_{S} mass [GeV];#Delta y [cm]", 100, 0.42, 0.56, 40, -20, 20);
     ROOT::TThreadedObject<TH2D> massvszvertexdifference = ROOT::TThreadedObject<TH2D>("massvszvertexdifference", "Reconstructed kaon mass vs difference in Z position between vertex and its reconstruction;K^{0}_{S} mass [GeV];#Delta z [cm]", 100, 0.42, 0.56, 40, -20, 20);
+    ROOT::TThreadedObject<TH2D> massvsvertexdifference = ROOT::TThreadedObject<TH2D>("massvsvertexdifference", "Reconstructed kaon mass vs difference in position between vertex and its reconstruction;K^{0}_{S} mass [GeV];#Delta d [cm]", 100, 0.42, 0.56, 20, 0, 20);
     ROOT::TThreadedObject<TH1D> invmass = ROOT::TThreadedObject<TH1D>("invmass", "K^{0}_{S} invariant mass;m [GeV];entries", 100, 0.42, 0.56);
+    //dE/dx type, particle  name, value
+    ROOT::TThreadedObject<TH3D> dEdxsigma = ROOT::TThreadedObject<TH3D>("dEdxsigma", "dE/dx for different particles", 4, 0, 4, 4, 0, 4, 40, -5, 5);
+    ROOT::TThreadedObject<TH2D> massvsadditionalparticles = ROOT::TThreadedObject<TH2D>("massvsadditionalparticles", "Reconstructed kaon mass vs number of additional particles beside 4 pions;K^{0}_{S} mass [GeV];tracks", 100, 0.42, 0.56, 30, 0, 30);    
 
     // Define the function that will process a subrange of the tree.
     // The function must receive only one parameter, a TTreeReader,
@@ -136,16 +146,32 @@ int main(int argc, char** argv)
         std::shared_ptr<TH1D> metricbetweenLocal;
         std::shared_ptr<TH1D> metricbetweenpreciseLocal;
         std::shared_ptr<TH1D> nongeneratorparticlesLocal;
+        std::shared_ptr<TH1D> xvertexdifferenceLocal;
+        std::shared_ptr<TH1D> yvertexdifferenceLocal;
         std::shared_ptr<TH1D> zvertexdifferenceLocal;
+        std::shared_ptr<TH1D> vertexdifferenceLocal;
+        std::shared_ptr<TH2D> massvsxvertexdifferenceLocal;
+        std::shared_ptr<TH2D> massvsyvertexdifferenceLocal;
         std::shared_ptr<TH2D> massvszvertexdifferenceLocal;
+        std::shared_ptr<TH2D> massvsvertexdifferenceLocal;
         std::shared_ptr<TH1D> invmassLocal;
+        std::shared_ptr<TH3D> dEdxsigmaLocal;
+        std::shared_ptr<TH2D> massvsadditionalparticlesLocal;
 
         metricbetweenLocal = metricbetween.Get();
         metricbetweenpreciseLocal = metricbetweenprecise.Get();
         nongeneratorparticlesLocal = nongeneratorparticles.Get();
+        xvertexdifferenceLocal = xvertexdifference.Get();
+        yvertexdifferenceLocal = yvertexdifference.Get();
         zvertexdifferenceLocal = zvertexdifference.Get();
+        vertexdifferenceLocal = vertexdifference.Get();
+        massvsxvertexdifferenceLocal = massvsxvertexdifference.Get();
+        massvsyvertexdifferenceLocal = massvsyvertexdifference.Get();
         massvszvertexdifferenceLocal = massvszvertexdifference.Get();
+        massvsvertexdifferenceLocal = massvsvertexdifference.Get();
         invmassLocal = invmass.Get();
+        dEdxsigmaLocal = dEdxsigma.Get();
+        massvsadditionalparticlesLocal = massvsadditionalparticles.Get();
 
         int filtered_entries = 0;
         //for changing branch address
@@ -241,10 +267,24 @@ int main(int argc, char** argv)
                 }
                 metricbetweenLocal->Fill(metric_difference[i]);
                 metricbetweenpreciseLocal->Fill(metric_difference[i]);
+                for (int j = 0; j < 4; j++){
+                    //enum Part{kElectron=0, kPion, kKaon, kProton};
+                    //dE/dx type, particle  name, value
+                    dEdxsigmaLocal->Fill(j, true_particles[i]->GetName(), detected_particles[i]->getNSigmasTPC(static_cast<StUPCTrack::Part>(j)), 1);
+                }
+
                 filtered_entries++;
             }
 
-            zvertexdifferenceLocal->Fill(vertexposition.Z() - detectedvertexposition.Z());
+            double deltaX = vertexposition.X() - detectedvertexposition.X();
+            double deltaY = vertexposition.Y() - detectedvertexposition.Y();
+            double deltaZ = vertexposition.Z() - detectedvertexposition.Z();
+            double delta = sqrt(deltaX*deltaX+deltaY*deltaY+deltaZ*deltaZ);
+            xvertexdifferenceLocal->Fill(deltaX);
+            yvertexdifferenceLocal->Fill(deltaY);
+            zvertexdifferenceLocal->Fill(deltaZ);
+            vertexdifferenceLocal->Fill(delta);
+
             //loop to get pions from K0Ss
             TLorentzVector pion1;
             TLorentzVector pion2;
@@ -254,8 +294,14 @@ int main(int argc, char** argv)
                         if(true_particles[j]->GetPdgCode()==-211 && true_particles[i]->GetMother(0) == true_particles[j]->GetMother(0)){
                             detected_particles[i]->getLorentzVector(pion1, particleMass[Pion]);
                             detected_particles[j]->getLorentzVector(pion2, particleMass[Pion]);
-                            massvszvertexdifferenceLocal->Fill((pion1+pion2).M(), vertexposition.Z() - detectedvertexposition.Z());;
-                            invmassLocal->Fill((pion1+pion2).M());
+                            double pionmass = (pion1+pion2).M();
+                            massvsxvertexdifferenceLocal->Fill(pionmass, deltaX);
+                            massvsyvertexdifferenceLocal->Fill(pionmass, deltaY);
+                            massvszvertexdifferenceLocal->Fill(pionmass, deltaZ);
+                            massvsvertexdifferenceLocal->Fill(pionmass, delta);
+                            invmassLocal->Fill(pionmass);
+                            // 2p, 2K0, 4pi means 8 there will always be >=8 particles
+                            massvsadditionalparticlesLocal->Fill(pionmass, tempUPCpointer->getNumberOfMCParticles()-8);
                             continue;
                         }
                     }
@@ -271,6 +317,7 @@ int main(int argc, char** argv)
 
         //deleting some no-name entries
         nongeneratorparticlesLocal->LabelsDeflate();
+        dEdxsigmaLocal->LabelsDeflate("Y");
 
         //waiting for file opening to check if there were any filtered entries
         if(filtered_entries==0){
@@ -314,23 +361,47 @@ int main(int argc, char** argv)
     std::shared_ptr<TH1D> metricbetweenFinal;
     std::shared_ptr<TH1D> metricbetweenpreciseFinal;
     std::shared_ptr<TH1D> nongeneratorparticlesFinal;
+    std::shared_ptr<TH1D> xvertexdifferenceFinal;
+    std::shared_ptr<TH1D> yvertexdifferenceFinal;
     std::shared_ptr<TH1D> zvertexdifferenceFinal;
+    std::shared_ptr<TH1D> vertexdifferenceFinal;
+    std::shared_ptr<TH2D> massvsxvertexdifferenceFinal;
+    std::shared_ptr<TH2D> massvsyvertexdifferenceFinal;
     std::shared_ptr<TH2D> massvszvertexdifferenceFinal;
+    std::shared_ptr<TH2D> massvsvertexdifferenceFinal;
     std::shared_ptr<TH1D> invmassFinal;
+    std::shared_ptr<TH3D> dEdxsigmaFinal;
+    std::shared_ptr<TH2D> massvsadditionalparticlesFinal;
 
     metricbetweenFinal = metricbetween.Merge();
     metricbetweenpreciseFinal = metricbetweenprecise.Merge();
     nongeneratorparticlesFinal = nongeneratorparticles.Merge();
+    xvertexdifferenceFinal = xvertexdifference.Merge();
+    yvertexdifferenceFinal = yvertexdifference.Merge();
     zvertexdifferenceFinal = zvertexdifference.Merge();
+    vertexdifferenceFinal = vertexdifference.Merge();
+    massvsxvertexdifferenceFinal = massvsxvertexdifference.Merge();
+    massvsyvertexdifferenceFinal = massvsyvertexdifference.Merge();
     massvszvertexdifferenceFinal = massvszvertexdifference.Merge();
+    massvsvertexdifferenceFinal = massvsvertexdifference.Merge();
     invmassFinal = invmass.Merge();
+    dEdxsigmaFinal = dEdxsigma.Merge();
+    massvsadditionalparticlesFinal = massvsadditionalparticles.Merge();
 
     metricbetweenFinal->SetMinimum(0);
     metricbetweenpreciseFinal->SetMinimum(0);
     nongeneratorparticlesFinal->SetMinimum(0);
+    xvertexdifferenceFinal->SetMinimum(0);
+    yvertexdifferenceFinal->SetMinimum(0);
     zvertexdifferenceFinal->SetMinimum(0);
+    vertexdifferenceFinal->SetMinimum(0);
+    massvsxvertexdifferenceFinal->SetMinimum(0);
+    massvsyvertexdifferenceFinal->SetMinimum(0);
     massvszvertexdifferenceFinal->SetMinimum(0);
+    massvsvertexdifferenceFinal->SetMinimum(0);
     invmassFinal->SetMinimum(0);
+    // dEdxsigmaFinal->SetMinimum(0);
+    massvsadditionalparticlesFinal->SetMinimum(0);
 
     //setting up a tree & output file
     string path = string(argv[0]);
@@ -342,9 +413,26 @@ int main(int argc, char** argv)
     metricbetweenFinal->Write();
     metricbetweenpreciseFinal->Write();
     nongeneratorparticlesFinal->Write();
+    xvertexdifferenceFinal->Write();
+    yvertexdifferenceFinal->Write();
     zvertexdifferenceFinal->Write();
+    vertexdifferenceFinal->Write();
+    massvsxvertexdifferenceFinal->Write();
+    massvsyvertexdifferenceFinal->Write();
     massvszvertexdifferenceFinal->Write();
+    massvsvertexdifferenceFinal->Write();
     invmassFinal->Write();
+    // dEdxsigmaFinal->Write();
+    //dE/dx type, particle  name, value
+    auto h1 = dEdxsigmaFinal->Project3D("xy");
+    h1->GetXaxis()->SetTitle("Particle type");
+    h1->GetYaxis()->SetTitle("#frac{dE}{dx} #sigma type");
+    h1->Write();
+    auto h3 = dEdxsigmaFinal->Project3D("zx");
+    h3->GetXaxis()->SetTitle("#frac{dE}{dx} #sigma type");
+    h3->GetYaxis()->SetTitle("#sigma value");
+    h3->Write();
+    massvsadditionalparticlesFinal->Write();
     outputFileHist->Close();
 
     cout<<"Finished processing "<<endl;
