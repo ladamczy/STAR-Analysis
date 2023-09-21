@@ -29,4 +29,5 @@ Potrzebne klasy z tego kodu są również w kartotekach src i include naszego ko
 
 Praca Pana Truhlara (https://drupal.star.bnl.gov/STAR/system/files/dp_ejcf_20_truhlar.pdf)
 
+Nota techniczna na temat analizy starych danych STAR (https://drupal.star.bnl.gov/STAR/system/files/DiffractiveAnalyses_AnalysisNote_ver2p0.pdf)
 
