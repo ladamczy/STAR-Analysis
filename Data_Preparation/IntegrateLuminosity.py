@@ -18,19 +18,15 @@ columnNames = ["run", "start time", "end time", "fill", "lum", "prescale", "trig
 data = pd.read_csv(lumFilePath, delimiter = " ", header = None)
 data.dropna(axis = 1, how = "all", inplace = True)
 data.columns = columnNames
-
-integratedLuminosity = data["lum"].sum()
 runsFromFile = data["run"]
-
-print("intergrated luminosity: ", integratedLuminosity)
-
 
 inputFiles =  pd.read_csv(inputFilesListPath, delimiter = " ", header = None)
 inputFiles[0] = inputFiles[0].str.replace(r'\.root$', '', regex=True)
 
 inputFiles[0] = inputFiles[0].astype(int)
-elementsNotInInputFiles =  data["run"][~data["run"].isin( inputFiles[0])]
-elementsNotInLumiFile =  inputFiles[0][~inputFiles[0].isin( data["run"])]
 
-print(elementsNotInInputFiles)
-print(elementsNotInLumiFile)
+dataWithUsedRuns =  data[data["run"].isin(inputFiles[0])]
+integratedLuminosity = dataWithUsedRuns["lum"].sum()
+print("intergrated luminosity: ", integratedLuminosity)
+
+
