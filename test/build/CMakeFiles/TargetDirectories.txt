@@ -1,4 +1,0 @@
-/Users/leszekad/STAR-Analysis/test/build/CMakeFiles/rebuild_cache.dir
-/Users/leszekad/STAR-Analysis/test/build/CMakeFiles/edit_cache.dir
-/Users/leszekad/STAR-Analysis/test/build/CMakeFiles/MonteCarloEfficiency.dir
-/Users/leszekad/STAR-Analysis/test/build/CMakeFiles/star-upc.dir
