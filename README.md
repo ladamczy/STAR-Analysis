@@ -25,3 +25,8 @@ Kod do produkcji UPCDst z definicjami wszystkich klas w analizowanych danych.
 
 https://github.com/adamjaro/star-upcDst
 
+Potrzebne klasy z tego kodu są również w kartotekach src i include naszego kodu
+
+Praca Pana Truhlara (https://drupal.star.bnl.gov/STAR/system/files/dp_ejcf_20_truhlar.pdf)
+
+
