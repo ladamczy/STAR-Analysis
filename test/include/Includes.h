@@ -20,6 +20,8 @@
 #include <limits>
 #include "TROOT.h"
 #include "TSystem.h"
+#include "TParticle.h"
+#include "TParticlePDG.h"
 #include "TThread.h"
 #include "TFile.h"
 #include "TTree.h"
@@ -49,14 +51,14 @@
 #include <ROOT/TThreadedObject.hxx>
 #include <TTreeReader.h>
 #include <ROOT/TTreeProcessorMT.hxx>
-#include "../../include/StRPEvent.h"
-#include "StUPCRpsTrack.h"
-#include "StUPCRpsTrackPoint.h"
-#include "StUPCEvent.h"
-#include "StUPCTrack.h"
-#include "StUPCBemcCluster.h"
-#include "StUPCVertex.h"
-#include "StUPCTofHit.h"
+#include <StRPEvent.h>
+#include <StUPCRpsTrack.h>
+#include <StUPCRpsTrackPoint.h>
+#include <StUPCEvent.h>
+#include <StUPCTrack.h>
+#include <StUPCBemcCluster.h>
+#include <StUPCVertex.h>
+#include <StUPCTofHit.h>
 #include "MatchFillPosition.h"
 #include "ReadFillPositionFile.h"
 # endif // INCLUDES_H

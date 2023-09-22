@@ -1,56 +1,28 @@
+project (ExclusiveAnalysis)
+cmake_minimum_required (VERSION 2.8.12)
 
-project (star-upc-new-analysis)
-cmake_minimum_required (VERSION 2.6)
-
-#sources for shared library LIB
+#sources for LIB_ExclusiveAnalysis
 set (SRCS
-  src/StUPCEvent.cxx
-  src/StUPCTrack.cxx
-  src/StUPCBemcCluster.cxx
-  src/StUPCVertex.cxx
-  src/StUPCTofHit.cxx
-  src/StRPEvent.cxx
-  src/StUPCRpsTrack.cxx
-  src/StUPCRpsTrackPoint.cxx
-  src/StUPCRpsCluster.cxx
-  src/MatchFillPosition.cxx
+  src/MatchFillPosition.cxx		
   src/ReadFillPositionFile.cxx
-
   )
 
-#name of shared libarary LIB
-set (LIB star-upc)
+#name of LIB_ExclusiveAnalysis
+set (LIB_ExclusiveAnalysis ExclusiveAnalysis)
 
 #binary executables
 set (BIN MonteCarloEfficiency)
 
-#sources for ROOT dictionary
-set (SRCS_DICT
-  src/StUPCEvent.cxx
-  src/StUPCTrack.cxx
-  src/StUPCBemcCluster.cxx
-  src/StUPCVertex.cxx
-  src/StUPCTofHit.cxx
-  src/StRPEvent.cxx
-  src/StUPCRpsTrack.cxx
-  src/StUPCRpsTrackPoint.cxx
-  src/StUPCRpsCluster.cxx
-  src/ReadFillPositionFile.cxx
-  src/MatchFillPosition.cxx
-
-  
-  )
-
-#LinkDef file for ROOT dictionary
-set (LINKDEF "${LIB}LinkDef.h")
-
+#UPC picoDsts library
+set (UPC_LIB ../star-upc/build/libstar-upc.dylib)
+set (UPC_INC ../star-upc/include)
 
 #general compiler options
 set (CMAKE_CXX_COMPILER /usr/bin/g++)
 #option -Wl,--no-as-needed is necessary only with root5
 #set (CMAKE_CXX_FLAGS "-Wall -g -Wl,--no-as-needed")
-set (CMAKE_CXX_FLAGS "-Wall -g -Wl")
-include_directories (include)
+set (CMAKE_CXX_FLAGS "-Wall -g")
+include_directories (include ${UPC_INC})
 
 #ROOT section
 
@@ -60,45 +32,22 @@ string(REPLACE "\n" "" ROOT_FLAGS "${ROOT_FLAGS_CMD}")
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ROOT_FLAGS}")
 
 #libraries
-#dodane Gpad i Thread
-set(ROOT_DEPS Core EG Hist Physics RIO Tree MathCore Gpad Thread Imt MultiProc Graf3d Graf Net Matrix TreePlayer)
+set(ROOT_DEPS Core EG Hist Physics RIO Tree MathCore)
 
 #include dir
 execute_process(COMMAND root-config --libdir OUTPUT_VARIABLE ROOT_LIBDIR_CMD)
 string(REPLACE "\n" "" ROOT_LIBDIR "${ROOT_LIBDIR_CMD}")
 link_directories (${ROOT_LIBDIR})
 
-#generate ROOT dictionary by CINT/CLING
-set (CLING rootcint)
-set (DICT G__${LIB}.cxx)
-
-# Headers from sources
-string(REPLACE ".cxx" ".h" HDRS "${SRCS_DICT}")
-string(REPLACE "src/" "" HDRS_PLAIN "${HDRS}")
-string(REPLACE "src/" "include/" HDRS_INC "${HDRS}")
-
-# directory with headers for CLING
-get_directory_property(incdirs INCLUDE_DIRECTORIES)
-
-# command to invoke CLING, options -c -p are used by root5
-# and deprecated in root6
-add_custom_command (
-  OUTPUT ${DICT}
-  COMMAND ${CLING}
-  ARGS -f ${DICT} -c -p -I${incdirs}
-  ${HDRS_PLAIN} ${LINKDEF}
-  DEPENDS ${HDRS_INC} include/${LINKDEF}
-  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-  )
-
 #end of ROOT section
 
-#create library LIB
-add_library (${LIB} SHARED ${SRCS} ${DICT})
-target_link_libraries(${LIB} ${ROOT_DEPS} )
-
+#create library LIC_ExclusiveAnalysis
+add_library (${LIB_ExclusiveAnalysis} SHARED ${SRCS})
+target_link_libraries(${LIB_ExclusiveAnalysis} ${ROOT_DEPS} )
 #create executables in BIN
 foreach(IBIN ${BIN})
   add_executable(${IBIN} src/${IBIN}.cxx)
-  target_link_libraries(${IBIN} ${LIB} ${ROOT_DEPS} )
+  target_link_libraries(${IBIN} ${LIB_ExclusiveAnalysis} ${UPC_LIB} ${ROOT_DEPS} )
 endforeach(IBIN ${BIN})
+
+
