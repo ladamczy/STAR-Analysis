@@ -76,7 +76,7 @@ add_custom_command (
   COMMAND ${CLING}
   ARGS -f ${DICT} -c -p -I${incdirs}
   ${HDRS_PLAIN} ${LINKDEF}
-  DEPENDS ${HDRS_INC} ../include/${LINKDEF}
+  DEPENDS ${HDRS_INC} include/${LINKDEF}
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
   )
 

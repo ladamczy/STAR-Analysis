@@ -3,8 +3,9 @@ cmake_minimum_required (VERSION 2.8.12)
 
 #sources for LIB_ExclusiveAnalysis
 set (SRCS
-  src/MatchFillPosition.cxx		
-  src/ReadFillPositionFile.cxx
+   src/MonteCarloEfficiency.cxx
+#  src/MatchFillPosition.cxx		
+#  src/ReadFillPositionFile.cxx
   )
 
 #name of LIB_ExclusiveAnalysis
@@ -14,7 +15,7 @@ set (LIB_ExclusiveAnalysis ExclusiveAnalysis)
 set (BIN MonteCarloEfficiency)
 
 #UPC picoDsts library
-set (UPC_LIB ../star-upc/build/libstar-upc.dylib)
+set (UPC_LIB ../../star-upc/build/libstar-upc.so)
 set (UPC_INC ../star-upc/include)
 
 #general compiler options

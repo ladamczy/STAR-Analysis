@@ -48,9 +48,7 @@
 #include <TLatex.h> 
 #include <TMath.h>
 #include <TLorentzVector.h>
-#include <ROOT/TThreadedObject.hxx>
 #include <TTreeReader.h>
-#include <ROOT/TTreeProcessorMT.hxx>
 #include <StRPEvent.h>
 #include <StUPCRpsTrack.h>
 #include <StUPCRpsTrackPoint.h>
