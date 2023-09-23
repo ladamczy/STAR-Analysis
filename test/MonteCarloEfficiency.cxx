@@ -18,11 +18,13 @@ int main(int argc, char** argv)
 
     string inputFileName;
     vector <string> rootFiles;
-    while (std::getline(inputFilePathList, inputFileName))
-    {
-        chain->Add(inputFileName.c_str());
-    }
-    inputFilePathList.close();
+
+//    while (std::getline(inputFilePathList, inputFileName))
+//    {
+//        std::cout << inputFileName.c_str() << std::endl; 
+        chain->AddFile(argv[1]);
+//    }
+//    inputFilePathList.close();
 
     static StUPCEvent *upcEvt = 0x0;
     chain->SetBranchAddress("mUPCEvent", &upcEvt);
@@ -49,6 +51,8 @@ int main(int argc, char** argv)
 
     double truthVertexR, truthVertexZ, truthEta, truthPt;
     double detVertexR, detVertexZ, detEta, detPt;
+
+    std::cout << "entries " << chain->GetEntries() << std::endl;
 
     for (Long64_t i = 0; i < chain->GetEntries(); ++i) 
     {
