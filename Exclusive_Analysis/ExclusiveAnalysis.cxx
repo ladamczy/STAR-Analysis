@@ -1,5 +1,63 @@
-#include "Includes.h"
-
+#include <iostream>
+#include <string>    
+#include <utility>
+#include <sstream> 
+#include <algorithm> 
+#include <stdio.h> 
+#include <stdlib.h> 
+#include <vector> 
+#include <fstream> 
+#include <cmath> 
+#include <cstdlib>
+#include <sys/stat.h>
+#include <iterator>
+#include <ostream>
+#include <iomanip>                      
+#include <stdexcept>
+#include <limits>
+#include "TROOT.h"
+#include "TSystem.h"
+#include "TThread.h"
+#include "TFile.h"
+#include "TTree.h"
+#include "TChain.h"
+#include "TH1D.h"
+#include "TProfile.h"
+#include <TH2.h> 
+#include <TF1.h> 
+#include <TF2.h> 
+#include <THStack.h> 
+#include <TStyle.h> 
+#include <TGraph.h> 
+#include <TGraph2D.h> 
+#include <TGraphErrors.h> 
+#include <TCanvas.h> 
+#include <TLegend.h> 
+#include <TGaxis.h> 
+#include <TString.h> 
+#include <TColor.h> 
+#include <TLine.h> 
+#include <TExec.h> 
+#include <TParticle.h>
+#include <TParticlePDG.h>
+#include <TFitResultPtr.h> 
+#include <TFitResult.h> 
+#include <TLatex.h> 
+#include <TMath.h>
+#include <TLorentzVector.h>
+#include <ROOT/TThreadedObject.hxx>
+#include <TTreeReader.h>
+#include <ROOT/TTreeProcessorMT.hxx>
+#include "StRPEvent.h"
+#include "StUPCRpsTrack.h"
+#include "StUPCRpsTrackPoint.h"
+#include "StUPCEvent.h"
+#include "StUPCTrack.h"
+#include "StUPCBemcCluster.h"
+#include "StUPCVertex.h"
+#include "StUPCTofHit.h"
+#include "MatchFillPosition.h"
+#include "ReadFillPositionFile.h"
 using namespace std;
 
 int main(int argc, char** argv)  
@@ -8,6 +66,10 @@ int main(int argc, char** argv)
     TH1D* HistCutFlow = new TH1D("HistCutFlow", ";;count", 16, -0.5, 15.5);
     TProfile* ProfileDistVertexBeamX = new TProfile("ProfileDistVertexBeamX","",639, 20511.5, 21150.5);
     TProfile* ProfileDistVertexBeamY = new TProfile("ProfileDistVertexBeamY","",639, 20511.5, 21150.5);
+
+    TProfile* ProfileDistVertexBeamXAsAFunctionOfZ = new TProfile("ProfileDistVertexBeamXAsAFunctionOfZ","",100, -200, 200);
+    TProfile* ProfileDistVertexBeamYAsAFunctionOfZ  = new TProfile("ProfileDistVertexBeamYAsAFunctionOfZ","",100, -200, 200);
+
 
     TH1D* HistVtxX = new TH1D("HistVtxX", "; vtx_{x} [cm]; # events", 100, -2, 2);
     TH1D* HistVtxY = new TH1D("HistVtxY"," ; vtx_{y} [cm]; # events", 100, -2, 2);
@@ -192,48 +254,6 @@ int main(int argc, char** argv)
         iCutFlow+=1;
 		HistCutFlow->Fill(iCutFlow); // cutflow: one vertex
         HistNumPrimaryVerticesPostSelection->Fill(numberOfPrimaryVertices);	
-
-        int nFillNumber = upcEvt->getFillNumber();
-        if (isMC == 0)
-        {
-		    beamPositionX = FindPosition(nFillNumber, fillNumberWithPosition[0], fillNumberWithPosition[1], fillNumberWithPosition[2], fillNumberWithPosition[3], fillNumberWithPosition[4])[0];
-		    beamPositionY = FindPosition(nFillNumber, fillNumberWithPosition[0], fillNumberWithPosition[1], fillNumberWithPosition[2], fillNumberWithPosition[3], fillNumberWithPosition[4])[1];			  
-        }
-
-        else if (isMC == 1)
-        {
-            beamPositionX = 0.0;
-            beamPositionY = 0.0;
-        }
-
-        // profile - distance between vertex and beam in x-y plane, parameter R and significance
-        primVertexPosX = upcEvt->getVertex(0)->getPosX();
-        primVertexPosY = upcEvt->getVertex(0)->getPosY();
-        primVertexPosZ = upcEvt->getVertex(0)->getPosZ();
-
-        primVertexPosErrX = upcEvt->getVertex(0)->getErrX();
-        primVertexPosErrY = upcEvt->getVertex(0)->getErrY();
-        primVertexPosErrZ = upcEvt->getVertex(0)->getErrZ();
-
-        distVertexBeamX = primVertexPosX - beamPositionX;
-        distVertexBeamY = primVertexPosY - beamPositionY;
-        
-        distR = sqrt(pow(distVertexBeamX,2) + pow(distVertexBeamY,2));
-   		significance = sqrt(pow((distVertexBeamX/primVertexPosErrX),2) + pow((distVertexBeamY/primVertexPosErrY),2));       
-
-        // fill number and beam position
-        ProfileDistVertexBeamX->Fill(nFillNumber, distVertexBeamX); 
-        ProfileDistVertexBeamY->Fill(nFillNumber, distVertexBeamY); 
-        HistR->Fill(distR);
-   		HistSig->Fill(significance);    
-
-        HistVtxX->Fill(distVertexBeamX);
-        HistVtxY->Fill(distVertexBeamY);
-        HistVtxZ->Fill(primVertexPosZ);
-        
-        HistVtxErrX->Fill(primVertexPosErrX);
-        HistVtxErrY->Fill(primVertexPosErrY);
-        HistVtxErrZ->Fill(primVertexPosErrZ);
 
 
 		//primary vertex is placed within |zvtx| < 80 cm
@@ -599,233 +619,57 @@ int main(int argc, char** argv)
             HistPtProtonPtKaonsY1dSameY->Fill(conditioningKaon.Py()+complementaryKaon.Py() +proton1.Y() +  proton2.Y());
         }
 
+        int nFillNumber = upcEvt->getFillNumber();
+        if (isMC == 0)
+        {
+		    beamPositionX = FindPosition(nFillNumber, fillNumberWithPosition[0], fillNumberWithPosition[1], fillNumberWithPosition[2], fillNumberWithPosition[3], fillNumberWithPosition[4])[0];
+		    beamPositionY = FindPosition(nFillNumber, fillNumberWithPosition[0], fillNumberWithPosition[1], fillNumberWithPosition[2], fillNumberWithPosition[3], fillNumberWithPosition[4])[1];			  
+        }
+
+        else if (isMC == 1)
+        {
+            beamPositionX = 0.0;
+            beamPositionY = 0.0;
+        }
+
+        // profile - distance between vertex and beam in x-y plane, parameter R and significance
+        primVertexPosX = upcEvt->getVertex(0)->getPosX();
+        primVertexPosY = upcEvt->getVertex(0)->getPosY();
+        primVertexPosZ = upcEvt->getVertex(0)->getPosZ();
+
+        primVertexPosErrX = upcEvt->getVertex(0)->getErrX();
+        primVertexPosErrY = upcEvt->getVertex(0)->getErrY();
+        primVertexPosErrZ = upcEvt->getVertex(0)->getErrZ();
+
+        distVertexBeamX = primVertexPosX - beamPositionX;
+        distVertexBeamY = primVertexPosY - beamPositionY;
+        
+        distR = sqrt(pow(distVertexBeamX,2) + pow(distVertexBeamY,2));
+   		significance = sqrt(pow((distVertexBeamX/primVertexPosErrX),2) + pow((distVertexBeamY/primVertexPosErrY),2));       
+
+        // fill number and beam position
+        ProfileDistVertexBeamX->Fill(nFillNumber, distVertexBeamX); 
+        ProfileDistVertexBeamY->Fill(nFillNumber, distVertexBeamY); 
+        ProfileDistVertexBeamXAsAFunctionOfZ->Fill(primVertexPosZ, distVertexBeamX);
+        ProfileDistVertexBeamYAsAFunctionOfZ->Fill(primVertexPosZ, distVertexBeamY);
+        HistR->Fill(distR);
+   		HistSig->Fill(significance);    
+
+        HistVtxX->Fill(distVertexBeamX);
+        HistVtxY->Fill(distVertexBeamY);
+        HistVtxZ->Fill(primVertexPosZ);
+        
+        HistVtxErrX->Fill(primVertexPosErrX);
+        HistVtxErrY->Fill(primVertexPosErrY);
+        HistVtxErrZ->Fill(primVertexPosErrZ);
+
+
 
         posPion.clear();
         negPion.clear();  
         pTCombinations.clear();
         lVecCombinations.clear();
 
-
-
-        if (isMC == 1) // begin Monte Carlo efficiency
-        {
-            TLorentzVector lorentzVectorPosPion, lorentzVectorNegPion;
-            TLorentzVector lorentzVectorNeutKaon;
-            TLorentzVector trackVector;
-            double truthVertexR, truthVertexZ, truthEta, truthPt;
-            double detVertexR, detVertexZ, detEta, detPt;
-
-            
-            // extract all Pi+, Pi- and diffractive protons
-            for (int i = 0; i < upcEvt->getNumberOfMCParticles(); i++)
-            {
-                particle = upcEvt->getMCParticle(i);
-            
-                if (particle->GetPDG()->PdgCode() == 211)
-                {
-                    vPosPionsMC.push_back(particle);
-                }
-
-                else if (particle->GetPDG()->PdgCode() == -211)
-                {
-                    vNegPionsMC.push_back(particle);
-                }
-            }
-
-            //only paired pions - based on the GetFirstMother() method
-            for (int i = 0; i < vPosPionsMC.size(); i++)
-            {
-                for (int j = 0; j < vNegPionsMC.size(); j++)
-                {
-                    if (vPosPionsMC[i]->GetFirstMother() == vNegPionsMC[j]->GetFirstMother())
-                    {
-                        vPosPionsMCPaired.push_back(vPosPionsMC[i]);
-                        vNegPionsMCPaired.push_back(vNegPionsMC[j]);
-                    }
-                }
-            }
-
-            if (vPosPionsMCPaired.size() == 0 or vNegPionsMCPaired.size() == 0 ) 
-            {
-                vPosPionsMC.clear();
-                vNegPionsMC.clear();
-                vPosPionsMCPaired.clear();
-                vNegPionsMCPaired.clear();
-                vProtons.clear();
-                continue;
-            }
-            
-            for (int i = 0; i < vPosPionsMCPaired.size(); i++)
-            {   
-                vector <StUPCTrack*> vTpcTracks;
-                int num = 0;
-
-                lorentzVectorPosPion.SetPxPyPzE(vPosPionsMCPaired[i]->Px(), vPosPionsMCPaired[i]->Py(), vPosPionsMCPaired[i]->Pz(), vPosPionsMCPaired[i]->Energy());
-                lorentzVectorNegPion.SetPxPyPzE(vNegPionsMCPaired[i]->Px(), vNegPionsMCPaired[i]->Py(), vNegPionsMCPaired[i]->Pz(), vNegPionsMCPaired[i]->Energy());
-
-                // if at least one pion is outside of the acceptance then proceed to the next pair...
-                if ( lorentzVectorPosPion.Pt() <= 0.1 or abs(lorentzVectorPosPion.Eta()) >= 1 )
-                {
-                    vPosPionsMC.clear();
-                    vNegPionsMC.clear();
-                    vPosPionsMCPaired.clear();
-                    vNegPionsMCPaired.clear();
-                    vProtons.clear();
-                    continue;
-                }
-                
-                if ( lorentzVectorNegPion.Pt() <= 0.1 or abs(lorentzVectorNegPion.Eta()) >= 1 )
-                {
-                    vPosPionsMC.clear();
-                    vNegPionsMC.clear();
-                    vPosPionsMCPaired.clear();
-                    vNegPionsMCPaired.clear();
-                    vProtons.clear();
-                    continue;
-                }
-
-                lorentzVectorNeutKaon = lorentzVectorPosPion + lorentzVectorNegPion;
-
-                TLorentzVector productionVertex;
-                vPosPionsMCPaired[i]->ProductionVertex(productionVertex);
-
-                truthVertexR = sqrt(pow(productionVertex.X(),2) + pow(productionVertex.Y(),2));
-                truthVertexZ = productionVertex.Z();
-                truthPt = lorentzVectorNeutKaon.Pt();
-                truthEta = lorentzVectorNeutKaon.Eta();
-
-                if ( abs(truthEta) < 1.2 and truthVertexR < 3.0 and abs(truthVertexZ) < 200)
-                {
-                    HistKaonPtTruth->Fill(truthPt);
-                }
-
-                if ( truthVertexR < 3.0 and abs(truthVertexZ) < 200)
-                {
-                    HistKaonEtaTruth->Fill(truthEta);
-                }
-
-                if ( abs(truthEta) < 1.2 and truthVertexR < 3.0 )
-                {
-                    HistKaonVtxZTruth->Fill(truthVertexZ);
-                }
-
-                if (( abs(truthEta) < 1.2 and abs(truthVertexZ) < 200) )
-                {
-                    HistKaonVtxRTruth->Fill(truthVertexR);
-                }
-
-                // detector level - at least two tracks 
-                if ( upcEvt->getNumberOfTracks() >= 2)
-                {               
-                    
-                    for (int j = 0; j < upcEvt->getNumberOfTracks(); j++)
-                    {
-                        if ( abs(lorentzVectorPosPion.Eta() - upcEvt->getTrack(j)->getEta()) < 0.1  and  abs(lorentzVectorPosPion.Phi() - upcEvt->getTrack(j)->getPhi()) < 0.1  and upcEvt->getTrack(i)->getFlag(StUPCTrack::kTof)) 
-                        {
-                            vTpcTracks.push_back(upcEvt->getTrack(j));
-                            num+=1;
-                        }
-
-                        if ( abs(lorentzVectorNegPion.Eta() - upcEvt->getTrack(j)->getEta()) < 0.1  and  abs(lorentzVectorNegPion.Phi() - upcEvt->getTrack(j)->getPhi()) < 0.1  and upcEvt->getTrack(i)->getFlag(StUPCTrack::kTof)) 
-                        {
-                            vTpcTracks.push_back(upcEvt->getTrack(j));
-                            num+=1;
-                        }
-                    }         
-
-                    // phi - eta consistency with truth level for exacly two tracks                               
-                    if (num != 2) 
-                    {       
-                        vPosPionsMC.clear();
-                        vNegPionsMC.clear();
-                        vPosPionsMCPaired.clear();
-                        vNegPionsMCPaired.clear();
-                        vProtons.clear();
-                        vTpcTracks.clear();
-                        continue;
-                    }
-                }
-
-                else 
-                {       
-                    vPosPionsMC.clear();
-                    vNegPionsMC.clear();
-                    vPosPionsMCPaired.clear();
-                    vNegPionsMCPaired.clear();
-                    vProtons.clear();
-                    vTpcTracks.clear();
-                    continue;
-                }
-                
-                TLorentzVector tpcKaon = {0,0,0,0};
-
-                int c = 0;
-                double vertexTpcR = 0;
-                double vertexTpcZ = 0;
-
-                for (int i = 0; i < vTpcTracks.size(); i++)
-                {
-                    vTpcTracks[i]->getLorentzVector(trackVector, massPion);
-                    if ( vTpcTracks[i]->getCharge() < 0.0)
-                    {
-                        tpcKaon+=trackVector;
-                        c+=1;
-                    }
-
-                    else
-                    {
-                        tpcKaon+=trackVector;
-                        c+=1;
-                    }
-                    vertexTpcR+=sqrt( pow(vTpcTracks[i]->getVertex()->getPosX() ,2)+ pow(vTpcTracks[i]->getVertex()->getPosY() ,2) )/2.0;
-                    vertexTpcZ+=vTpcTracks[i]->getVertex()->getPosZ()/2.0;
-                }    
-    
-                if (c!=2) 
-                {
-                    vPosPionsMC.clear();
-                    vNegPionsMC.clear();
-                    vPosPionsMCPaired.clear();
-                    vNegPionsMCPaired.clear();
-                    vTpcTracks.clear();
-                    vProtons.clear();
-                    continue;
-                }
-
-                detVertexR = vertexTpcR;
-                detVertexZ = vertexTpcZ;
-                detPt = tpcKaon.Pt();
-                detEta = tpcKaon.Eta();
-
-                if ( abs(detEta) < 1.2 and detVertexR < 3.0 and abs(detVertexZ) < 200)
-                {
-                    HistKaonPtDet->Fill(detPt);
-                }
-
-                if ( detVertexR < 3.0 and abs(detVertexZ) < 200)
-                {
-                    HistKaonEtaDet->Fill(detEta);
-                }
-
-                if ( abs(detEta) < 1.2 and detVertexR < 3.0 )
-                {
-                    HistKaonVtxZDet->Fill(detVertexZ);
-                }
-
-                if (( abs(detEta) < 1.2 and abs(detVertexZ) < 200) )
-                {
-                    HistKaonVtxRDet->Fill(detVertexR);
-                }
-                
-            }    
-
-            vPosPionsMC.clear();
-            vNegPionsMC.clear();
-            vPosPionsMCPaired.clear();
-            vNegPionsMCPaired.clear();
-            vProtons.clear();   
-
-        }   // End Monte Carlo Efficiency
     }
 
     TFile *outfile = TFile::Open(argv[2], "recreate"); 
