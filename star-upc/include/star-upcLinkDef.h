@@ -14,6 +14,8 @@
 #pragma link C++ class StUPCRpsTrackPoint+;
 #pragma link C++ class StUPCRpsCluster+;
 #pragma link C++ class StUPCTofHit+;
-
+#pragma link C++ class StUPCV0+;
+#pragma link C++ class StPicoPhysicalHelix+;
+#pragma link C++ class StPicoHelix+;
 #endif
 
