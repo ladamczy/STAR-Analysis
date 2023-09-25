@@ -70,13 +70,14 @@ StUPCV0::StUPCV0(StUPCTrack const * const particle1, StUPCTrack const * const pa
                                                      particle2->getPhase(), 
                                                      particle2->getOrigin(),
                                                      particle2->getCharge());
+
   cout << "1 origin before " << p1Helix.origin().X() << " " << p1Helix.origin().Y() << endl;
   cout << "2 origin before " << p2Helix.origin().X() << " " << p2Helix.origin().Y() << endl;
   cout << "1 Length and charge " << p1Helix.pathLength(vtx) << " " << p1Helix.charge(1) << endl;
   cout << "2 Length and charge " << p2Helix.pathLength(vtx) << " " << p2Helix.charge(1) << endl;
   // -- move origins of helices to the primary vertex origin
-  p1Helix.moveOrigin(1.1*p1Helix.pathLength(vtx));
-  p2Helix.moveOrigin(1.1*p2Helix.pathLength(vtx));
+  p1Helix.moveOrigin(p1Helix.pathLength(vtx));
+  p2Helix.moveOrigin(p2Helix.pathLength(vtx));
   cout << "1 origin after " << p1Helix.origin().X()	<< " " << p1Helix.origin().Y() << endl;
   cout << "2 origin after " << p2Helix.origin().X()     << " " << p2Helix.origin().Y() << endl;
 
