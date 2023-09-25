@@ -62,25 +62,34 @@ StUPCV0::StUPCV0(StUPCTrack const * const particle1, StUPCTrack const * const pa
   StPicoPhysicalHelix p1Helix = StPicoPhysicalHelix (particle1->getCurvature(), 
                                                      particle1->getDipAngle(), 
                                                      particle1->getPhase(), 
-                                                     particle1->getOrigin());
+                                                     particle1->getOrigin(),
+                                                     particle1->getCharge());
+
   StPicoPhysicalHelix p2Helix =	StPicoPhysicalHelix (particle2->getCurvature(), 
                                                      particle2->getDipAngle(), 
                                                      particle2->getPhase(), 
-                                                     particle2->getOrigin());
-
+                                                     particle2->getOrigin(),
+                                                     particle2->getCharge());
+  cout << "1 origin before " << p1Helix.origin().X() << " " << p1Helix.origin().Y() << endl;
+  cout << "2 origin before " << p2Helix.origin().X() << " " << p2Helix.origin().Y() << endl;
+  cout << "1 Length and charge " << p1Helix.pathLength(vtx) << " " << p1Helix.charge(1) << endl;
+  cout << "2 Length and charge " << p2Helix.pathLength(vtx) << " " << p2Helix.charge(1) << endl;
   // -- move origins of helices to the primary vertex origin
-  p1Helix.moveOrigin(p1Helix.pathLength(vtx));
-  p2Helix.moveOrigin(p2Helix.pathLength(vtx));
+  p1Helix.moveOrigin(1.1*p1Helix.pathLength(vtx));
+  p2Helix.moveOrigin(1.1*p2Helix.pathLength(vtx));
+  cout << "1 origin after " << p1Helix.origin().X()	<< " " << p1Helix.origin().Y() << endl;
+  cout << "2 origin after " << p2Helix.origin().X()     << " " << p2Helix.origin().Y() << endl;
 
   // -- use straight lines approximation to get point of DCA of particle1-particle2 pair
   TVector3 const p1Mom = p1Helix.momentum(bField * kilogauss);
   TVector3 const p2Mom = p2Helix.momentum(bField * kilogauss);
+
   StPicoPhysicalHelix const p1StraightLine(p1Mom, p1Helix.origin(), 0, particle1->getCharge());
   StPicoPhysicalHelix const p2StraightLine(p2Mom, p2Helix.origin(), 0, particle2->getCharge());
 
   pair<double, double> const ss = (useStraightLine) ? p1StraightLine.pathLengths(p2StraightLine) : p1Helix.pathLengths(p2Helix);
-  TVector3 const p1AtDcaToP2 = p1StraightLine.at(ss.first);
-  TVector3 const p2AtDcaToP1 = p2StraightLine.at(ss.second);
+  TVector3 const p1AtDcaToP2 = (useStraightLine) ? p1StraightLine.at(ss.first) : p1Helix.at(ss.first);
+  TVector3 const p2AtDcaToP1 = (useStraightLine) ? p2StraightLine.at(ss.second) : p2Helix.at(ss.second);
 
   // -- calculate DCA of particle1 to particle2 at their DCA
   mDcaDaughters = (p1AtDcaToP2 - p2AtDcaToP1).Mag();
