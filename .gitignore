@@ -2,5 +2,6 @@ Inclusive_Analysis/star-upc/build/
 Inclusive_Analysis/star-upc/*.root
 test/build
 star-upc/build
+Exclusive_Analysis/build
 .vscode
 

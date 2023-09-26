@@ -63,14 +63,16 @@ StUPCV0::StUPCV0(StUPCTrack const * const particle1, StUPCTrack const * const pa
                                                      particle1->getDipAngle(), 
                                                      particle1->getPhase(), 
                                                      particle1->getOrigin(),
+//                                                     vtx,
                                                      particle1->getCharge());
 
   StPicoPhysicalHelix p2Helix =	StPicoPhysicalHelix (particle2->getCurvature(), 
                                                      particle2->getDipAngle(), 
                                                      particle2->getPhase(), 
                                                      particle2->getOrigin(),
+//                                                     vtx,
                                                      particle2->getCharge());
-
+  cout << "magnetic field, tesla, kilogauss " << bField << " " << tesla << " " << kilogauss << endl;
   cout << "1 origin before " << p1Helix.origin().X() << " " << p1Helix.origin().Y() << endl;
   cout << "2 origin before " << p2Helix.origin().X() << " " << p2Helix.origin().Y() << endl;
   cout << "1 Length and charge " << p1Helix.pathLength(vtx) << " " << p1Helix.charge(1) << endl;
@@ -82,6 +84,11 @@ StUPCV0::StUPCV0(StUPCTrack const * const particle1, StUPCTrack const * const pa
   cout << "2 origin after " << p2Helix.origin().X()     << " " << p2Helix.origin().Y() << endl;
 
   // -- use straight lines approximation to get point of DCA of particle1-particle2 pair
+// bField is in kilogauss
+/*
+  TVector3 const p1Mom = p1Helix.momentum(bField * kilogauss);
+  TVector3 const p2Mom = p2Helix.momentum(bField * kilogauss);
+*/
   TVector3 const p1Mom = p1Helix.momentum(bField * kilogauss);
   TVector3 const p2Mom = p2Helix.momentum(bField * kilogauss);
 
@@ -96,8 +103,12 @@ StUPCV0::StUPCV0(StUPCTrack const * const particle1, StUPCTrack const * const pa
   mDcaDaughters = (p1AtDcaToP2 - p2AtDcaToP1).Mag();
 
   // -- calculate Lorentz vector of particle1-particle2 pair
+/*
   TVector3 const p1MomAtDca = p1Helix.momentumAt(ss.first,  bField * kilogauss);
   TVector3 const p2MomAtDca = p2Helix.momentumAt(ss.second, bField * kilogauss);
+*/
+  TVector3 const p1MomAtDca = p1Helix.momentumAt(ss.first,  bField *kilogauss);
+  TVector3 const p2MomAtDca = p2Helix.momentumAt(ss.second, bField *kilogauss );
 
   TLorentzVector const p1FourMom(p1MomAtDca, sqrt(p1MomAtDca.Mag2() + p1MassHypo*p1MassHypo));
   TLorentzVector const p2FourMom(p2MomAtDca, sqrt(p2MomAtDca.Mag2() + p2MassHypo*p2MassHypo));
