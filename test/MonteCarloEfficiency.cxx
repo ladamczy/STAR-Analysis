@@ -1,64 +1,5 @@
+#include "Includes.h"
 
-#include <iostream>
-#include <string>    
-#include <utility>
-#include <sstream> 
-#include <algorithm> 
-#include <stdio.h> 
-#include <stdlib.h> 
-#include <vector> 
-#include <fstream> 
-#include <cmath> 
-#include <cstdlib>
-#include <sys/stat.h>
-#include <iterator>
-#include <ostream>
-#include <iomanip>
-#include <stdexcept>
-#include <limits>
-#include "TROOT.h"
-#include "TSystem.h"
-#include "TThread.h"
-#include "TFile.h"
-#include "TTree.h"
-#include "TChain.h"
-#include "TH1D.h"
-#include "TProfile.h"
-#include <TH2.h> 
-#include <TF1.h> 
-#include <TF2.h> 
-#include <THStack.h> 
-#include <TStyle.h> 
-#include <TGraph.h> 
-#include <TGraph2D.h> 
-#include <TGraphErrors.h> 
-#include <TCanvas.h> 
-#include <TLegend.h> 
-#include <TGaxis.h> 
-#include <TParticle.h> 
-#include <TString.h> 
-#include <TColor.h> 
-#include <TLine.h> 
-#include <TExec.h> 
-#include <TFitResultPtr.h> 
-#include <TFitResult.h> 
-#include <TLatex.h> 
-#include <TMath.h>
-#include <TLorentzVector.h>
-#include <ROOT/TThreadedObject.hxx>
-#include <TTreeReader.h>
-#include <TParticlePDG.h>
-#include <ROOT/TTreeProcessorMT.hxx>
-#include "StRPEvent.h"
-#include "StUPCRpsTrack.h"
-#include "StUPCRpsTrackPoint.h"
-#include "StUPCEvent.h"
-#include "StUPCTrack.h"
-#include "StUPCBemcCluster.h"
-#include "StUPCVertex.h"
-#include "StUPCTofHit.h"
-#include "MatchFillPosition.h"
-#include "ReadFillPositionFile.h"
 using namespace std;
 
 int main(int argc, char** argv)  
@@ -97,10 +38,11 @@ int main(int argc, char** argv)
     TH1D* HistKaonEtaDet = new TH1D("HistKaonEtaDet", "; #eta_{K^{0}}; # events", 25 ,-4.5, 4.5);
     TH1D* HistKaonVtxZDet = new TH1D("HistKaonVtxZDet", "; z_{vtx}^{#pi^{+}#pi^{-}} [cm]; # events", 10, -150, 150);
     TH1D* HistKaonVtxRDet = new TH1D("HistKaonVtxRDet", "; R_{vtx}^{#pi^{+}#pi^{-}} [cm]; # events", 10, 0, 20);
-
+    TH1D* HistKaonMDet = new TH1D("HistKaonMDet", "; M^{#pi^{+}#pi^{-}} [GeV]; # events", 100, 0.4, 0.6);
+    TH1D* HistV0MDet = new TH1D("HistV0MDet", "; M^{V0} [GeV]; # events", 100, 0.4, 0.6);
 
     TParticle* particle;
-    TParticle* PosPion1; TParticle* NegPion1; TParticle*  PosPion2; TParticle*  NegPion2;
+    TParticle* PosPion1; TParticle* NegPion1; TParticle*  PosPion2; TParticle*  NegPion2;    
     vector <TParticle*> PosPions, NegPions, Protons, PosPionsPaired, NegPionsPaired;
     vector <StUPCTrack*> tpcTrack;
 
@@ -109,7 +51,7 @@ int main(int argc, char** argv)
     TLorentzVector trackVector;
 
     double truthVertexR, truthVertexZ, truthEta, truthPt;
-    double detVertexR, detVertexZ, detEta, detPt;
+    double detVertexR, detVertexZ, detEta, detPt, detM, V0M;
 
     std::cout << "entries " << chain->GetEntries() << std::endl;
 
@@ -265,13 +207,13 @@ int main(int argc, char** argv)
                 tpcTrack.clear();
                 continue;
             }
-            
             TLorentzVector tpcKaon = {0,0,0,0};
-
             int c = 0;
             double vertexTpcR = 0;
             double vertexTpcZ = 0;
 
+
+            cout << "number of tracks " << tpcTrack.size() << endl;
             for (int i = 0; i < tpcTrack.size(); i++)
             {
                 tpcTrack[i]->getLorentzVector(trackVector, massPion);
@@ -301,14 +243,27 @@ int main(int argc, char** argv)
                 continue;
             }
 
+
+            TVector3 vertex(tpcTrack[0]->getVertex()->getPosX(),tpcTrack[0]->getVertex()->getPosY(),tpcTrack[0]->getVertex()->getPosZ());
+            TVector3 vertex2(tpcTrack[1]->getVertex()->getPosX(),tpcTrack[1]->getVertex()->getPosY(),tpcTrack[1]->getVertex()->getPosZ());
+            cout << "paricle1 vertex " << vertex.X() << " " << vertex2.X() << endl;
+            Int_t id1, id2;
+            StUPCV0 V0(tpcTrack[0],tpcTrack[1], massPion, massPion,id1,id2, vertex, upcEvt->getMagneticField(), true);
+            cout << "dca in the pair " << V0.dcaDaughters() << "len " << V0.decayLength() << "dcs to PV " 
+                 << V0.DcaToPrimaryVertex() << "mass " << V0.m() << endl;
+ 
+
             detVertexR = vertexTpcR;
             detVertexZ = vertexTpcZ;
             detPt = tpcKaon.Pt();
             detEta = tpcKaon.Eta();
+            detM = tpcKaon.M();
 
             if ( abs(detEta) < 1.2 and detVertexR < 3.0 and abs(detVertexZ) < 200)
             {
                 HistKaonPtDet->Fill(detPt);
+                HistKaonMDet->Fill(detM);
+                HistV0MDet->Fill(V0.m());
             }
 
             if ( detVertexR < 3.0 and abs(detVertexZ) < 200)
@@ -348,6 +303,8 @@ int main(int argc, char** argv)
     HistKaonEtaDet->Write();
     HistKaonVtxRDet->Write();
     HistKaonVtxZDet->Write();
+    HistKaonMDet->Write();
+    HistV0MDet->Write();
     outfile->Close();
 
     return 0;
