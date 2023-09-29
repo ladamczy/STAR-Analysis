@@ -33,7 +33,7 @@ StUPCV0::StUPCV0(StUPCV0 const * t) : mLorentzVector(t->mLorentzVector), mDecayV
 // _________________________________________________________
 StUPCV0::StUPCV0(StUPCTrack const * const particle1, StUPCTrack const * const particle2,
 		   float p1MassHypo, float p2MassHypo, unsigned short const p1Idx, unsigned short const p2Idx,
-		   TVector3 const & vtx, float const bField, bool const useStraightLine) : 
+		   TVector3 const & vtx, float const bField, bool const isMC, bool const useStraightLine) : 
   mLorentzVector(TLorentzVector()), mDecayVertex(TVector3()),
   mPointingAngle(std::numeric_limits<float>::quiet_NaN()), mDecayLength(std::numeric_limits<float>::quiet_NaN()),
   mParticle1Dca(std::numeric_limits<float>::quiet_NaN()), mParticle2Dca(std::numeric_limits<float>::quiet_NaN()),
@@ -59,29 +59,38 @@ StUPCV0::StUPCV0(StUPCTrack const * const particle1, StUPCTrack const * const pa
   StPicoPhysicalHelix p1Helix = particle1->helix(bField); 
   StPicoPhysicalHelix p2Helix = particle2->helix(bField); //bFiled not in kilogauss - is properly computed inside helix(double B) function in StUPCTrack.h
 */
+  Int_t reverse_sign = 1;
+  if (isMC) reverse_sign = -1;
+
   StPicoPhysicalHelix p1Helix = StPicoPhysicalHelix (particle1->getCurvature(), 
                                                      particle1->getDipAngle(), 
                                                      particle1->getPhase(), 
                                                      particle1->getOrigin(),
-//                                                     vtx,
-                                                     particle1->getCharge());
+                                                     reverse_sign*particle1->getCharge());
 
   StPicoPhysicalHelix p2Helix =	StPicoPhysicalHelix (particle2->getCurvature(), 
                                                      particle2->getDipAngle(), 
                                                      particle2->getPhase(), 
                                                      particle2->getOrigin(),
-//                                                     vtx,
-                                                     particle2->getCharge());
+                                                     reverse_sign*particle2->getCharge());
+/*
+  cout << "DCAXY,Z 1 " << particle1->getDcaXY() << " " << particle1->getDcaZ() << endl;
+  cout << "DCAXY,Z 2 " << particle2->getDcaXY() << " " << particle2->getDcaZ() << endl;
+  cout << "Vertex " << vtx.X() << " " << vtx.Y() << " " << vtx.Z() << endl;
   cout << "magnetic field, tesla, kilogauss " << bField << " " << tesla << " " << kilogauss << endl;
-  cout << "1 origin before " << p1Helix.origin().X() << " " << p1Helix.origin().Y() << endl;
-  cout << "2 origin before " << p2Helix.origin().X() << " " << p2Helix.origin().Y() << endl;
-  cout << "1 Length and charge " << p1Helix.pathLength(vtx) << " " << p1Helix.charge(1) << endl;
-  cout << "2 Length and charge " << p2Helix.pathLength(vtx) << " " << p2Helix.charge(1) << endl;
+  cout << "1 origin before " << p1Helix.origin().X() << " " << p1Helix.origin().Y() << " " << p1Helix.origin().Z() << endl;
+  cout << "2 origin before " << p2Helix.origin().X() << " " << p2Helix.origin().Y() << " " << p2Helix.origin().Z() << endl;
+  cout << "1 Length and charge " << p1Helix.pathLength(vtx,false) << " " << p1Helix.charge(1) << endl;
+  cout << "2 Length and charge " << p2Helix.pathLength(vtx,false) << " " << p2Helix.charge(1) << endl;
   // -- move origins of helices to the primary vertex origin
-  p1Helix.moveOrigin(p1Helix.pathLength(vtx));
-  p2Helix.moveOrigin(p2Helix.pathLength(vtx));
-  cout << "1 origin after " << p1Helix.origin().X()	<< " " << p1Helix.origin().Y() << endl;
-  cout << "2 origin after " << p2Helix.origin().X()     << " " << p2Helix.origin().Y() << endl;
+  cout << "1 helix at " << p1Helix.at(p1Helix.pathLength(vtx)).X() << " " << p1Helix.at(p1Helix.pathLength(vtx)).Y() 
+                        << " " << p1Helix.at(p1Helix.pathLength(vtx)).Z() << endl;
+*/
+  p1Helix.moveOrigin(p1Helix.pathLength(vtx,false));
+  p2Helix.moveOrigin(p2Helix.pathLength(vtx,false));
+//  cout << "1 origin after " << p1Helix.origin().X()	<< " " << p1Helix.origin().Y() << " " << p1Helix.origin().Z() << endl;
+//  cout << "2 origin after " << p2Helix.origin().X()     << " " << p2Helix.origin().Y() << " " << p2Helix.origin().Z() << endl;
+
 
   // -- use straight lines approximation to get point of DCA of particle1-particle2 pair
 // bField is in kilogauss
@@ -92,8 +101,8 @@ StUPCV0::StUPCV0(StUPCTrack const * const particle1, StUPCTrack const * const pa
   TVector3 const p1Mom = p1Helix.momentum(bField * kilogauss);
   TVector3 const p2Mom = p2Helix.momentum(bField * kilogauss);
 
-  StPicoPhysicalHelix const p1StraightLine(p1Mom, p1Helix.origin(), 0, particle1->getCharge());
-  StPicoPhysicalHelix const p2StraightLine(p2Mom, p2Helix.origin(), 0, particle2->getCharge());
+  StPicoPhysicalHelix const p1StraightLine(p1Mom, p1Helix.origin(), 0, reverse_sign*particle1->getCharge());
+  StPicoPhysicalHelix const p2StraightLine(p2Mom, p2Helix.origin(), 0, reverse_sign*particle2->getCharge());
 
   pair<double, double> const ss = (useStraightLine) ? p1StraightLine.pathLengths(p2StraightLine) : p1Helix.pathLengths(p2Helix);
   TVector3 const p1AtDcaToP2 = (useStraightLine) ? p1StraightLine.at(ss.first) : p1Helix.at(ss.first);

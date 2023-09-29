@@ -11,7 +11,6 @@
  ***************************************************
  *  Initial Authors: 
  *            Leszek Adamczyk (leszek.adamczyk@agh.edu.pl)
- *          **Przemysław Ryś (.......)
  *
  *  ** Code Maintainer 
  *
@@ -36,7 +35,7 @@ class StUPCV0 : public TObject
   StUPCV0(StUPCTrack const * particle1, StUPCTrack const * particle2, 
 	   float p1MassHypo, float p2MassHypo,
 	   unsigned short p1Idx, unsigned short p2Idx,
-	   TVector3 const & vtx, float bField, bool useStraightLine = true);
+	   TVector3 const & vtx, float bField, bool isMC, bool useStraightLine = true);
 
   ~StUPCV0() {;}
   

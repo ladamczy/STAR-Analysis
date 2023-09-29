@@ -40,11 +40,14 @@ int main(int argc, char** argv)
     TH1D* HistKaonVtxRDet = new TH1D("HistKaonVtxRDet", "; R_{vtx}^{#pi^{+}#pi^{-}} [cm]; # events", 10, 0, 20);
     TH1D* HistKaonMDet = new TH1D("HistKaonMDet", "; M^{#pi^{+}#pi^{-}} [GeV]; # events", 100, 0.4, 0.6);
     TH1D* HistV0MDet = new TH1D("HistV0MDet", "; M^{V0} [GeV]; # events", 100, 0.4, 0.6);
+    TH1D* HistV0DCAD = new TH1D("HistV0DCAD", "; DCAD [cm]; # events", 100, 0.0, 5.0);
+    TH1D* HistV0R = new TH1D("HistV0R", "; R [cm]; # events", 100, 0.0, 5.0);
 
     TParticle* particle;
     TParticle* PosPion1; TParticle* NegPion1; TParticle*  PosPion2; TParticle*  NegPion2;    
     vector <TParticle*> PosPions, NegPions, Protons, PosPionsPaired, NegPionsPaired;
     vector <StUPCTrack*> tpcTrack;
+    vector <StUPCTrack*> tpcTrackUM;
 
     TLorentzVector lorentzVectorPosPion, lorentzVectorNegPion;
     TLorentzVector lorentzVectorNeutKaon;
@@ -57,7 +60,22 @@ int main(int argc, char** argv)
 
     for (Long64_t i = 0; i < chain->GetEntries(); ++i) 
     {
-        chain->GetEntry(i);
+       chain->GetEntry(i);
+
+     cout << "ntracks total  " << upcEvt->getNumberOfTracks() << endl;
+
+     for (int j = 0; j < upcEvt->getNumberOfTracks(); j++) {
+             for (int jj = j; jj < upcEvt->getNumberOfTracks(); jj++) {       
+               if( upcEvt->getTrack(j)->getCharge() != upcEvt->getTrack(jj)->getCharge()) {
+        TVector3 vertex(0,0,0);
+        int id1,id2;
+        StUPCV0 V0(upcEvt->getTrack(j),upcEvt->getTrack(jj), massPion, massPion,id1,id2, vertex, upcEvt->getMagneticField(), true, false);
+        HistV0DCAD->Fill(V0.dcaDaughters());
+        HistV0R->Fill(sqrt(V0.v0x()*V0.v0x()+V0.v0y()*V0.v0y()));
+        HistV0MDet->Fill(V0.m()); 
+               }
+          }
+     }
 
         // extract all Pi+, Pi- and diffractive protons
         for (int i = 0; i < upcEvt->getNumberOfMCParticles(); i++)
@@ -141,6 +159,7 @@ int main(int argc, char** argv)
             PosPionsPaired[i]->ProductionVertex(productionVertex);
 
             truthVertexR = sqrt(pow(productionVertex.X(),2) + pow(productionVertex.Y(),2));
+//            cout << "vertex  " << productionVertex.X() << " " << productionwVertex.Y() << " " << productionVertex.Z() << endl; 
             truthVertexZ = productionVertex.Z();
             truthPt = lorentzVectorNeutKaon.Pt();
             truthEta = lorentzVectorNeutKaon.Eta();
@@ -228,9 +247,17 @@ int main(int argc, char** argv)
                     tpcKaon+=trackVector;
                     c+=1;
                 }
+                cout << "tpc vert " << tpcTrack[i]->getVertex()->getPosX() << " " 
+                                    << tpcTrack[i]->getVertex()->getPosY() << "	"
+                                    << tpcTrack[i]->getVertex()->getPosZ() << endl;
+
                 vertexTpcR+=sqrt( pow(tpcTrack[i]->getVertex()->getPosX() ,2)+ pow(tpcTrack[i]->getVertex()->getPosY() ,2) )/2.0;
                 vertexTpcZ+=tpcTrack[i]->getVertex()->getPosZ()/2.0;
             }    
+
+
+	cout << "number of tracks " << tpcTrackUM.size();
+
    
             if (c!=2) 
             {
@@ -248,7 +275,8 @@ int main(int argc, char** argv)
             TVector3 vertex2(tpcTrack[1]->getVertex()->getPosX(),tpcTrack[1]->getVertex()->getPosY(),tpcTrack[1]->getVertex()->getPosZ());
             cout << "paricle1 vertex " << vertex.X() << " " << vertex2.X() << endl;
             Int_t id1, id2;
-            StUPCV0 V0(tpcTrack[0],tpcTrack[1], massPion, massPion,id1,id2, vertex, upcEvt->getMagneticField(), false);
+//upcEvt->getMagneticField()
+            StUPCV0 V0(tpcTrack[0],tpcTrack[1], massPion, massPion,id1,id2, vertex, upcEvt->getMagneticField(), true, false);
             cout << "dca in the pair " << V0.dcaDaughters() << "len " << V0.decayLength() << "dcs to PV " 
                  << V0.DcaToPrimaryVertex() << "mass " << V0.m() << "dca1 2 " << V0.particle1Dca() << " " << 
                  V0.particle2Dca() << endl;
@@ -265,6 +293,8 @@ int main(int argc, char** argv)
                 HistKaonPtDet->Fill(detPt);
                 HistKaonMDet->Fill(detM);
                 HistV0MDet->Fill(V0.m());
+                HistV0DCAD->Fill(V0.dcaDaughters());
+                HistV0R->Fill(sqrt(V0.v0x()*V0.v0x()+V0.v0y()*V0.v0y()));
             }
 
             if ( detVertexR < 3.0 and abs(detVertexZ) < 200)
@@ -282,13 +312,16 @@ int main(int argc, char** argv)
                 HistKaonVtxRDet->Fill(detVertexR);
             }
             
+
         }    
+
 
         PosPions.clear();
         NegPions.clear();
         PosPionsPaired.clear();
         NegPionsPaired.clear();
         tpcTrack.clear();
+        tpcTrackUM.clear();
         Protons.clear();   
     
     }
@@ -306,6 +339,8 @@ int main(int argc, char** argv)
     HistKaonVtxZDet->Write();
     HistKaonMDet->Write();
     HistV0MDet->Write();
+    HistV0DCAD->Write();
+    HistV0R->Write();
     outfile->Close();
 
     return 0;
