@@ -424,14 +424,18 @@ int main(int argc, char** argv)
     invmassFinal->Write();
     // dEdxsigmaFinal->Write();
     //dE/dx type, particle  name, value
-    auto h1 = dEdxsigmaFinal->Project3D("xy");
-    h1->GetXaxis()->SetTitle("Particle type");
-    h1->GetYaxis()->SetTitle("#frac{dE}{dx} #sigma type");
-    h1->Write();
-    auto h3 = dEdxsigmaFinal->Project3D("zx");
-    h3->GetXaxis()->SetTitle("#frac{dE}{dx} #sigma type");
-    h3->GetYaxis()->SetTitle("#sigma value");
-    h3->Write();
+    TH3D* tempcopy;
+    TH2D* tempproj;
+    string dEdxtypes[] = {"Electron", "Pion", "Kaon", "Proton"};
+    for (int i = 1; i <= 4; i++){
+        tempcopy = (TH3D*)dEdxsigmaFinal->Clone();
+        tempcopy->GetXaxis()->SetRange(i, i);
+        tempproj = (TH2D*)tempcopy->Project3D("zy");
+        tempproj->SetTitle(string("dE/dx for different particles, type " + dEdxtypes[i-1]).c_str());
+        tempproj->GetXaxis()->SetTitle("Particle type");
+        tempproj->GetYaxis()->SetTitle("#frac{dE}{dx} #sigma value");
+        tempproj->Write();
+    }
     massvsadditionalparticlesFinal->Write();
     outputFileHist->Close();
 
