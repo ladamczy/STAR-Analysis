@@ -6,58 +6,22 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 #folder with shared code
-set(SHARED_FOLDER ../../star-upc/)
+set(SHARED_FOLDER ../../star-upc)
 
 #sources for shared library LIB
-set (SRCS
-  src/StUPCEvent.cxx
-  src/StUPCTrack.cxx
-  src/StUPCBemcCluster.cxx
-  src/StUPCVertex.cxx
-  src/StUPCTofHit.cxx
-  src/StRPEvent.cxx
-  src/StUPCRpsTrack.cxx
-  src/StUPCRpsTrackPoint.cxx
-  src/StUPCRpsCluster.cxx
-  src/StPicoHelix.cxx
-  src/StPicoPhysicalHelix.cxx
-  src/StUPCV0.cxx
-  )
-list(TRANSFORM SRCS PREPEND ${SHARED_FOLDER})
+file(GLOB_RECURSE SRCS "${SHARED_FOLDER}/src/*.cxx")
+list(TRANSFORM SRCS REPLACE ${CMAKE_CURRENT_SOURCE_DIR}/ "")
+
+message(${SRCS})
 
 #name of shared library LIB
 set (LIB star-upc)
-set (LIB_PATH "${SHARED_FOLDER}${LIB}")
+set (LIB_PATH "${SHARED_FOLDER}/${LIB}")
 
 #binary executables
-#GLOB is not the suggested way, but an alternative would be adding them by hand
-
-#v1
-# set(BIN Ana)
-#v2
-# file(GLOB BIN "${CMAKE_CURRENT_SOURCE_DIR}/src/mains/*.cxx")
-# string(REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/src/mains/" "" BIN "${BIN}")
-# string(REPLACE ".cxx" "" BIN "${BIN}")
-#v3
 file(GLOB_RECURSE BIN "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cxx")
 
 #sources for ROOT dictionary
-#v1
-# set (SRCS
-#   src/StUPCEvent.cxx
-#   src/StUPCTrack.cxx
-#   src/StUPCBemcCluster.cxx
-#   src/StUPCVertex.cxx
-#   src/StUPCTofHit.cxx
-#   src/StRPEvent.cxx
-#   src/StUPCRpsTrack.cxx
-#   src/StUPCRpsTrackPoint.cxx
-#   src/StUPCRpsCluster.cxx
-#   src/StPicoHelix.cxx
-#   src/StPicoPhysicalHelix.cxx
-#   src/StUPCV0.cxx
-#   )
-#v2
 set(SRCS_DICT ${SRCS})
 
 #LinkDef file for ROOT dictionary
@@ -67,7 +31,7 @@ set (LINKDEF "${LIB}LinkDef.h")
 set (CMAKE_CXX_COMPILER /usr/bin/g++)
 #option -Wl,--no-as-needed is necessary only with root5
 set (CMAKE_CXX_FLAGS "-Wall -g -Wl,--no-as-needed")
-include_directories ("${SHARED_FOLDER}include")
+include_directories ("${SHARED_FOLDER}/include")
 
 #ROOT section
 
@@ -90,7 +54,7 @@ set (DICT G__${LIB}.cxx)
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS_DICT}")
-string(REPLACE "${SHARED_FOLDER}src/" "" HDRS_PLAIN "${HDRS}")
+string(REPLACE "${SHARED_FOLDER}/src/" "" HDRS_PLAIN "${HDRS}")
 string(REPLACE "src/" "include/" HDRS_INC "${HDRS}")
 
 # directory with headers for CLING
@@ -103,7 +67,7 @@ add_custom_command (
   COMMAND ${CLING}
   ARGS -f ${DICT} -c -p -I${incdirs}
   ${HDRS_PLAIN} ${LINKDEF}
-  DEPENDS ${HDRS_INC} ${SHARED_FOLDER}include/${LINKDEF}
+  DEPENDS ${HDRS_INC} ${SHARED_FOLDER}/include/${LINKDEF}
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
   )
 
@@ -113,7 +77,7 @@ add_custom_command (
 add_library (${LIB} SHARED ${SRCS} ${DICT})
 target_link_libraries(${LIB} ${ROOT_DEPS} )
 
-#add custom headers
+#add custom (mine) headers
 include_directories(include)
 
 #create executables in BIN
