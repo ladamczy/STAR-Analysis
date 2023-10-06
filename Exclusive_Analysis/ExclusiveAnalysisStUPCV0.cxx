@@ -514,33 +514,16 @@ int main(int argc, char** argv)
                 continue;
         }
 
-                 /*
-
+               
         // verify possible combinations of Kaons based on pT
         bool isMassInWindow = 1;
-        TLorentzVector lVecKaonComb1a = {0, 0, 0, 0};
-        TLorentzVector lVecKaonComb1b = {0, 0, 0, 0};
 
-        TLorentzVector lVecKaonComb2a = {0, 0, 0, 0};
-        TLorentzVector lVecKaonComb2b = {0, 0, 0, 0};
-
-        // two combinations are possible
-        lVecKaonComb1a = posPion[0] + negPion[0];
-        lVecKaonComb1b = posPion[1] + negPion[1];
-
-        lVecKaonComb2a = posPion[0] + negPion[1];
-        lVecKaonComb2b = posPion[1] + negPion[0];*/
-         
-        cout << posPion[0]->getCharge() << endl;
         TVector3 const tryVec(0,0,0);
-        StUPCV0 lVecKaonComb1a(posPion[0], negPion[0], massPion, massPion, 0, 0, tryVec, 0, false, true);
-        StUPCV0 lVecKaonComb1b(posPion[1], negPion[1], massPion, massPion, 0, 0, tryVec, 0, false, true);
-        StUPCV0 lVecKaonComb2a(posPion[0], negPion[1], massPion, massPion, 0, 0, tryVec, 0, false, true);
-        StUPCV0 lVecKaonComb2b(posPion[1], negPion[0], massPion, massPion, 0, 0, tryVec, 0, false, true);
+        StUPCV0 lVecKaonComb1a(posPion[0], negPion[0], massPion, massPion, 1, 1, tryVec, upcEvt->getMagneticField(), false, true);
+        StUPCV0 lVecKaonComb1b(posPion[1], negPion[1], massPion, massPion, 1, 1, tryVec, upcEvt->getMagneticField(), false, true);
+        StUPCV0 lVecKaonComb2a(posPion[0], negPion[1], massPion, massPion, 1, 1, tryVec, upcEvt->getMagneticField(), false, true);
+        StUPCV0 lVecKaonComb2b(posPion[1], negPion[0], massPion, massPion, 1, 1, tryVec, upcEvt->getMagneticField(), false, true);
        
-       cout << lVecKaonComb1a.pt() << ", " << lVecKaonComb1b.pt() << endl;
-       
-
         // SELECTION: both kaons in mass rangeisMC
         double kaonMassWindowLow = 0.46;
         double kaonMassWindowHigh = 0.52;
@@ -553,56 +536,48 @@ int main(int argc, char** argv)
         bool isPionPairInMassWindowSecondCombinationA = 0;
         bool isPionPairInMassWindowSecondCombinationB = 0;
 
-    /*
         //check which paris are within mass window for the first combination
-        if ((lVecKaonComb1a.M() > kaonMassWindowLow and lVecKaonComb1a.M() < kaonMassWindowHigh) and  (lVecKaonComb1b.M() > kaonMassWindowLow and lVecKaonComb1b.M() < kaonMassWindowHigh))
+        if ((lVecKaonComb1a.m() > kaonMassWindowLow and lVecKaonComb1a.m() < kaonMassWindowHigh) and  (lVecKaonComb1b.m() > kaonMassWindowLow and lVecKaonComb1b.m() < kaonMassWindowHigh))
         {
             arePionPairsInMassWindowFirstCombination = 1;
         }
 
-        else if (lVecKaonComb1a.M() > kaonMassWindowLow and lVecKaonComb1a.M() < kaonMassWindowHigh)
+        else if (lVecKaonComb1a.m() > kaonMassWindowLow and lVecKaonComb1a.m() < kaonMassWindowHigh)
         {
             isPionPairInMassWindowFirstCombinationA = 1;
         }
 
-        else if (lVecKaonComb1b.M() > kaonMassWindowLow and lVecKaonComb1b.M() < kaonMassWindowHigh)
+        else if (lVecKaonComb1b.m() > kaonMassWindowLow and lVecKaonComb1b.m() < kaonMassWindowHigh)
         {
             isPionPairInMassWindowFirstCombinationB = 1;
         }
 
         //check which paris are within mass window for the second combination  
-        if ((lVecKaonComb2a.M() > kaonMassWindowLow and lVecKaonComb2a.M() < kaonMassWindowHigh) and  (lVecKaonComb2b.M() > kaonMassWindowLow and lVecKaonComb2b.M() < kaonMassWindowHigh))
+        if ((lVecKaonComb2a.m() > kaonMassWindowLow and lVecKaonComb2a.m() < kaonMassWindowHigh) and  (lVecKaonComb2b.m() > kaonMassWindowLow and lVecKaonComb2b.m() < kaonMassWindowHigh))
         {
             arePionPairsInMassWindowSecondCombination = 1;
         }
 
-        else if (lVecKaonComb2a.M() > kaonMassWindowLow and lVecKaonComb2a.M() < kaonMassWindowHigh)
+        else if (lVecKaonComb2a.m() > kaonMassWindowLow and lVecKaonComb2a.m() < kaonMassWindowHigh)
         {
             isPionPairInMassWindowSecondCombinationA = 1;
         }
 
-        else if (lVecKaonComb2b.M() > kaonMassWindowLow and lVecKaonComb2b.M() < kaonMassWindowHigh)
+        else if (lVecKaonComb2b.m() > kaonMassWindowLow and lVecKaonComb2b.m() < kaonMassWindowHigh)
         {
             isPionPairInMassWindowSecondCombinationB = 1;
         }
-*/
-
-
-
-
-/*
-        vector <TLorentzVector> lVecCombinations;
+    
         vector <double> pTCombinations;
       
         int maxPtIndex;
-        TLorentzVector conditioningKaon;
-        TLorentzVector complementaryKaon;
+        StUPCV0 *conditioningKaon = &lVecKaonComb1a;
+        StUPCV0 *complementaryKaon = &lVecKaonComb1b;
 
         if (arePionPairsInMassWindowFirstCombination and arePionPairsInMassWindowSecondCombination)
         {
-  
-            lVecCombinations =  {lVecKaonComb1a, lVecKaonComb1b, lVecKaonComb2a, lVecKaonComb2b}; 
-            pTCombinations = {lVecKaonComb1a.Pt(), lVecKaonComb1b.Pt(), lVecKaonComb2a.Pt(), lVecKaonComb2b.Pt()}; 
+            vector <StUPCV0 *> lVecCombinations  = {&lVecKaonComb1a, &lVecKaonComb1b, &lVecKaonComb2a, &lVecKaonComb2b}; 
+            pTCombinations = {lVecKaonComb1a.pt(), lVecKaonComb1b.pt(), lVecKaonComb2a.pt(), lVecKaonComb2b.pt()}; 
             maxPtIndex = distance(pTCombinations.begin(), max_element(pTCombinations.begin(), pTCombinations.end()));
 
             if (maxPtIndex <= 1)
@@ -616,225 +591,116 @@ int main(int argc, char** argv)
                 conditioningKaon = lVecCombinations[maxPtIndex]; 
                 complementaryKaon = lVecCombinations[2 + abs(3-maxPtIndex)]; 
             }
-            HistInvMassPiPi->Fill(conditioningKaon.M());
-            HistInvMassPiPiPeak->Fill(conditioningKaon.M());
-            HistInvMassPiPi2->Fill(complementaryKaon.M());
-            HistInvMassPiPiPeak2->Fill(complementaryKaon.M());
-            HistInvMassPiPi2D->Fill(conditioningKaon.M(),complementaryKaon.M());
-            HistInvMassPiPiOneKaonInMassWindow->Fill(complementaryKaon.M());
+
+            HistInvMassPiPi->Fill(conditioningKaon->m());
+            HistInvMassPiPiPeak->Fill(conditioningKaon->m());
+            HistInvMassPiPi2->Fill(complementaryKaon->m());
+            HistInvMassPiPiPeak2->Fill(complementaryKaon->m());
+            HistInvMassPiPi2D->Fill(conditioningKaon->m(),complementaryKaon->m());
+            HistInvMassPiPiOneKaonInMassWindow->Fill(complementaryKaon->m());
         }
+
+
+
 
         else if (arePionPairsInMassWindowFirstCombination)
         {
-
-            if (lVecKaonComb1a.Pt() > lVecKaonComb1b.Pt())
+            if (lVecKaonComb1a.pt() > lVecKaonComb1b.pt())
             {
-                conditioningKaon = lVecKaonComb1a;
-                complementaryKaon = lVecKaonComb1b;
+                conditioningKaon = &lVecKaonComb1a;
+                complementaryKaon = &lVecKaonComb1b;
             }
 
             else
             {
-                conditioningKaon = lVecKaonComb1b;
-                complementaryKaon = lVecKaonComb1a;
+                conditioningKaon = &lVecKaonComb1b;
+                complementaryKaon = &lVecKaonComb1a;
             }
-            HistInvMassPiPi->Fill(conditioningKaon.M());
-            HistInvMassPiPiPeak->Fill(conditioningKaon.M());
-            HistInvMassPiPi2->Fill(complementaryKaon.M());
-            HistInvMassPiPiPeak2->Fill(complementaryKaon.M());
-            HistInvMassPiPi2D->Fill(conditioningKaon.M(),complementaryKaon.M());
-            HistInvMassPiPiOneKaonInMassWindow->Fill(complementaryKaon.M());
+            HistInvMassPiPi->Fill(conditioningKaon->m());
+            HistInvMassPiPiPeak->Fill(conditioningKaon->m());
+            HistInvMassPiPi2->Fill(complementaryKaon->m());
+            HistInvMassPiPiPeak2->Fill(complementaryKaon->m());
+            HistInvMassPiPi2D->Fill(conditioningKaon->m(),complementaryKaon->m());
+            HistInvMassPiPiOneKaonInMassWindow->Fill(complementaryKaon->m());
         }
 
 
         else if (arePionPairsInMassWindowSecondCombination)
         {
-
-            if (lVecKaonComb2a.Pt() > lVecKaonComb2b.Pt())
+            if (lVecKaonComb2a.pt() > lVecKaonComb2b.pt())
             {
-                conditioningKaon = lVecKaonComb2a;
-                complementaryKaon = lVecKaonComb2b;
+                conditioningKaon = &lVecKaonComb2a;
+                complementaryKaon = &lVecKaonComb2b;
             }
 
             else
             {
-                conditioningKaon = lVecKaonComb2b;
-                complementaryKaon = lVecKaonComb2a;
+                conditioningKaon = &lVecKaonComb2b;
+                complementaryKaon = &lVecKaonComb2a;
             }
-            HistInvMassPiPi->Fill(conditioningKaon.M());
-            HistInvMassPiPiPeak->Fill(conditioningKaon.M());
-            HistInvMassPiPi2->Fill(complementaryKaon.M());
-            HistInvMassPiPiPeak2->Fill(complementaryKaon.M());
-            HistInvMassPiPi2D->Fill(conditioningKaon.M(),complementaryKaon.M());
-            HistInvMassPiPiOneKaonInMassWindow->Fill(complementaryKaon.M());
+            HistInvMassPiPi->Fill(conditioningKaon->m());
+            HistInvMassPiPiPeak->Fill(conditioningKaon->m());
+            HistInvMassPiPi2->Fill(complementaryKaon->m());
+            HistInvMassPiPiPeak2->Fill(complementaryKaon->m());
+            HistInvMassPiPi2D->Fill(conditioningKaon->m(),complementaryKaon->m());
+            HistInvMassPiPiOneKaonInMassWindow->Fill(complementaryKaon->m());
         }       
-
-
-
-        else if (arePionPairsInMassWindowFirstCombination and isPionPairInMassWindowSecondCombinationA)
-        {
-            // HistPionSelection->Fill(1); // 2+1
-            lVecCombinations = {lVecKaonComb1a, lVecKaonComb1b, lVecKaonComb2a}; 
-            pTCombinations = {lVecKaonComb1a.Pt(), lVecKaonComb1b.Pt(), lVecKaonComb2a.Pt()}; 
-            maxPtIndex = distance(pTCombinations.begin(),  max_element(pTCombinations.begin(), pTCombinations.end()));
-
-            if (maxPtIndex <= 1)
-            {
-                conditioningKaon = lVecCombinations[maxPtIndex]; 
-                complementaryKaon = lVecCombinations[abs(maxPtIndex-1)];
-            }
-
-            else
-            {
-                conditioningKaon = lVecKaonComb2a;
-                complementaryKaon = lVecKaonComb2b;
-            }
-            HistInvMassPiPi->Fill(conditioningKaon.M());
-            HistInvMassPiPiPeak->Fill(conditioningKaon.M());
-            HistInvMassPiPi2->Fill(complementaryKaon.M());
-            HistInvMassPiPiPeak2->Fill(complementaryKaon.M());
-            HistInvMassPiPi2D->Fill(conditioningKaon.M(),complementaryKaon.M());
-            HistInvMassPiPiOneKaonInMassWindow->Fill(complementaryKaon.M());
-        }
-
-
-        else if (arePionPairsInMassWindowFirstCombination and isPionPairInMassWindowSecondCombinationB)
-        {
-            // HistPionSelection->Fill(1); // 2+1
-            lVecCombinations = {lVecKaonComb1a, lVecKaonComb1b, lVecKaonComb2b}; 
-            pTCombinations = {lVecKaonComb1a.Pt(), lVecKaonComb1b.Pt(), lVecKaonComb2b.Pt()}; 
-            maxPtIndex = distance(pTCombinations.begin(), max_element(pTCombinations.begin(), pTCombinations.end()));
-
-            if (maxPtIndex <= 1)
-            {
-                conditioningKaon = lVecCombinations[maxPtIndex]; 
-                complementaryKaon = lVecCombinations[abs(maxPtIndex-1)];
-            }
-
-            else
-            {
-                conditioningKaon = lVecKaonComb2b;
-                complementaryKaon = lVecKaonComb2a;
-            }
-            HistInvMassPiPi->Fill(conditioningKaon.M());
-            HistInvMassPiPiPeak->Fill(conditioningKaon.M());
-            HistInvMassPiPi2->Fill(complementaryKaon.M());
-            HistInvMassPiPiPeak2->Fill(complementaryKaon.M());
-            HistInvMassPiPi2D->Fill(conditioningKaon.M(),complementaryKaon.M());
-            HistInvMassPiPiOneKaonInMassWindow->Fill(complementaryKaon.M());
-        }
-
-
-        else if (arePionPairsInMassWindowSecondCombination and isPionPairInMassWindowFirstCombinationA)
-        {
-            // HistPionSelection->Fill(1); // 2+1
-            lVecCombinations = {lVecKaonComb2a, lVecKaonComb2b, lVecKaonComb1a}; 
-            pTCombinations = {lVecKaonComb2a.Pt(), lVecKaonComb2b.Pt(), lVecKaonComb1a.Pt()}; 
-            maxPtIndex = distance(pTCombinations.begin(), max_element(pTCombinations.begin(), pTCombinations.end()));
-
-            if (maxPtIndex <= 1)
-            {
-                conditioningKaon = lVecCombinations[maxPtIndex]; 
-                complementaryKaon = lVecCombinations[abs(maxPtIndex-1)];
-            }
-
-            else
-            {
-                conditioningKaon = lVecKaonComb1a;
-                complementaryKaon = lVecKaonComb1b;
-            }
-            HistInvMassPiPi->Fill(conditioningKaon.M());
-            HistInvMassPiPiPeak->Fill(conditioningKaon.M());
-            HistInvMassPiPi2->Fill(complementaryKaon.M());
-            HistInvMassPiPiPeak2->Fill(complementaryKaon.M());
-            HistInvMassPiPi2D->Fill(conditioningKaon.M(),complementaryKaon.M());
-            HistInvMassPiPiOneKaonInMassWindow->Fill(complementaryKaon.M());
-        }
-
-        else if (arePionPairsInMassWindowSecondCombination and isPionPairInMassWindowFirstCombinationB)
-        {
-            // HistPionSelection->Fill(1); // 2+1
-            lVecCombinations = {lVecKaonComb2a, lVecKaonComb2b, lVecKaonComb1b}; 
-            pTCombinations = {lVecKaonComb2a.Pt(), lVecKaonComb2b.Pt(), lVecKaonComb1b.Pt()}; 
-            maxPtIndex = distance(pTCombinations.begin(), max_element(pTCombinations.begin(), pTCombinations.end()));
-
-            if (maxPtIndex <= 1)
-            {
-                conditioningKaon = lVecCombinations[maxPtIndex]; 
-                complementaryKaon = lVecCombinations[abs(maxPtIndex-1)];
-            }
-
-            else
-            {
-                conditioningKaon = lVecKaonComb1b;
-                complementaryKaon = lVecKaonComb1a;
-            }
-            HistInvMassPiPi->Fill(conditioningKaon.M());
-            HistInvMassPiPiPeak->Fill(conditioningKaon.M());
-            HistInvMassPiPi2->Fill(complementaryKaon.M());
-            HistInvMassPiPiPeak2->Fill(complementaryKaon.M());
-            HistInvMassPiPi2D->Fill(conditioningKaon.M(),complementaryKaon.M());
-            HistInvMassPiPiOneKaonInMassWindow->Fill(complementaryKaon.M());
-        }
-
-
 
         else if (isPionPairInMassWindowFirstCombinationA)
         {
-            // HistPionSelection->Fill(4); // 1
-            conditioningKaon = lVecKaonComb1a;
-            complementaryKaon = lVecKaonComb1b;
-            HistInvMassPiPi->Fill(conditioningKaon.M());
-            HistInvMassPiPiPeak->Fill(conditioningKaon.M());
-            HistInvMassPiPi2->Fill(complementaryKaon.M());
-            HistInvMassPiPiPeak2->Fill(complementaryKaon.M());
-            HistInvMassPiPi2D->Fill(conditioningKaon.M(),complementaryKaon.M());
-            HistInvMassPiPiOneKaonInMassWindow->Fill(complementaryKaon.M());
+            conditioningKaon = &lVecKaonComb1a;
+            complementaryKaon = &lVecKaonComb1b;
+            HistInvMassPiPi->Fill(conditioningKaon->m());
+            HistInvMassPiPiPeak->Fill(conditioningKaon->m());
+            HistInvMassPiPi2->Fill(complementaryKaon->m());
+            HistInvMassPiPiPeak2->Fill(complementaryKaon->m());
+            HistInvMassPiPi2D->Fill(conditioningKaon->m(),complementaryKaon->m());
+            HistInvMassPiPiOneKaonInMassWindow->Fill(complementaryKaon->m());
         }
 
         else if (isPionPairInMassWindowFirstCombinationB)
         {
-            // HistPionSelection->Fill(4); // 1
-            conditioningKaon = lVecKaonComb1b;
-            complementaryKaon = lVecKaonComb1a;
-            HistInvMassPiPi->Fill(conditioningKaon.M());
-            HistInvMassPiPiPeak->Fill(conditioningKaon.M());
-            HistInvMassPiPi2->Fill(complementaryKaon.M());
-            HistInvMassPiPiPeak2->Fill(complementaryKaon.M());
-            HistInvMassPiPi2D->Fill(conditioningKaon.M(),complementaryKaon.M());
-            HistInvMassPiPiOneKaonInMassWindow->Fill(complementaryKaon.M());
+            conditioningKaon = &lVecKaonComb1b;
+            complementaryKaon = &lVecKaonComb1a;
+            HistInvMassPiPi->Fill(conditioningKaon->m());
+            HistInvMassPiPiPeak->Fill(conditioningKaon->m());
+            HistInvMassPiPi2->Fill(complementaryKaon->m());
+            HistInvMassPiPiPeak2->Fill(complementaryKaon->m());
+            HistInvMassPiPi2D->Fill(conditioningKaon->m(),complementaryKaon->m());
+            HistInvMassPiPiOneKaonInMassWindow->Fill(complementaryKaon->m());
         }
 
         else if (isPionPairInMassWindowSecondCombinationA)
         {
-            // HistPionSelection->Fill(4); // 1
-            conditioningKaon = lVecKaonComb2a;
-            complementaryKaon = lVecKaonComb2b;
-            HistInvMassPiPi->Fill(conditioningKaon.M());
-            HistInvMassPiPiPeak->Fill(conditioningKaon.M());
-            HistInvMassPiPi2->Fill(complementaryKaon.M());
-            HistInvMassPiPiPeak2->Fill(complementaryKaon.M());
-            HistInvMassPiPi2D->Fill(conditioningKaon.M(),complementaryKaon.M());
-            HistInvMassPiPiOneKaonInMassWindow->Fill(complementaryKaon.M());
+            conditioningKaon = &lVecKaonComb2a;
+            complementaryKaon = &lVecKaonComb2b;
+            HistInvMassPiPi->Fill(conditioningKaon->m());
+            HistInvMassPiPiPeak->Fill(conditioningKaon->m());
+            HistInvMassPiPi2->Fill(complementaryKaon->m());
+            HistInvMassPiPiPeak2->Fill(complementaryKaon->m());
+            HistInvMassPiPi2D->Fill(conditioningKaon->m(),complementaryKaon->m());
+            HistInvMassPiPiOneKaonInMassWindow->Fill(complementaryKaon->m());
         }
 
         else if (isPionPairInMassWindowSecondCombinationB)
         {
-            // HistPionSelection->Fill(4); // 1
-            conditioningKaon = lVecKaonComb2b;
-            complementaryKaon = lVecKaonComb2a;
-            HistInvMassPiPi->Fill(conditioningKaon.M());
-            HistInvMassPiPiPeak->Fill(conditioningKaon.M());
-            HistInvMassPiPi2->Fill(complementaryKaon.M());
-            HistInvMassPiPiPeak2->Fill(complementaryKaon.M());
-            HistInvMassPiPi2D->Fill(conditioningKaon.M(),complementaryKaon.M());
-            HistInvMassPiPiOneKaonInMassWindow->Fill(complementaryKaon.M());
+            conditioningKaon = &lVecKaonComb2b;
+            complementaryKaon = &lVecKaonComb2a;
+            HistInvMassPiPi->Fill(conditioningKaon->m());
+            HistInvMassPiPiPeak->Fill(conditioningKaon->m());
+            HistInvMassPiPi2->Fill(complementaryKaon->m());
+            HistInvMassPiPiPeak2->Fill(complementaryKaon->m());
+            HistInvMassPiPi2D->Fill(conditioningKaon->m(),complementaryKaon->m());
+            HistInvMassPiPiOneKaonInMassWindow->Fill(complementaryKaon->m());
         }
+    
+
     
         else 
         {
-            lVecCombinations =  {lVecKaonComb1a, lVecKaonComb1b, lVecKaonComb2a, lVecKaonComb2b}; 
-            pTCombinations = {lVecKaonComb1a.Pt(), lVecKaonComb1b.Pt(), lVecKaonComb2a.Pt(), lVecKaonComb2b.Pt()}; 
+
+            vector <StUPCV0 *> lVecCombinations  = {&lVecKaonComb1a, &lVecKaonComb1b, &lVecKaonComb2a, &lVecKaonComb2b}; 
+            pTCombinations = {lVecKaonComb1a.pt(), lVecKaonComb1b.pt(), lVecKaonComb2a.pt(), lVecKaonComb2b.pt()}; 
             maxPtIndex = distance(pTCombinations.begin(), max_element(pTCombinations.begin(), pTCombinations.end()));
 
             if (maxPtIndex <= 1)
@@ -848,11 +714,13 @@ int main(int argc, char** argv)
                 conditioningKaon = lVecCombinations[maxPtIndex]; 
                 complementaryKaon = lVecCombinations[2 + abs(3-maxPtIndex)]; 
             }
-            HistInvMassPiPi->Fill(conditioningKaon.M());
-            HistInvMassPiPiPeak->Fill(conditioningKaon.M());
-            HistInvMassPiPi2->Fill(complementaryKaon.M());
-            HistInvMassPiPiPeak2->Fill(complementaryKaon.M());
-            HistInvMassPiPi2D->Fill(conditioningKaon.M(),complementaryKaon.M());
+
+            HistInvMassPiPi->Fill(conditioningKaon->m());
+            HistInvMassPiPiPeak->Fill(conditioningKaon->m());
+            HistInvMassPiPi2->Fill(complementaryKaon->m());
+            HistInvMassPiPiPeak2->Fill(complementaryKaon->m());
+            HistInvMassPiPi2D->Fill(conditioningKaon->m(),complementaryKaon->m());
+            HistInvMassPiPiOneKaonInMassWindow->Fill(complementaryKaon->m());
 
             vProtons.clear();
             tracksWithTofHit.clear();
@@ -876,11 +744,11 @@ int main(int argc, char** argv)
         FillProtons(protonSignsY, HistProtonsSameSide, HistProtonsOppositeSide,  iCutFlow); // protons: both kaons in mass window
 
 
-        HistInvMassPiPiPostSelection->Fill(conditioningKaon.M());
-        HistInvMassPiPiPeakPostSelection->Fill(conditioningKaon.M());
-        HistInvMassPiPi2PostSelection->Fill(complementaryKaon.M());
-        HistInvMassPiPiPeak2PostSelection->Fill(complementaryKaon.M());
-        HistInvMassPiPi2DPostSelection->Fill(conditioningKaon.M(),complementaryKaon.M());
+        HistInvMassPiPiPostSelection->Fill(conditioningKaon->m());
+        HistInvMassPiPiPeakPostSelection->Fill(conditioningKaon->m());
+        HistInvMassPiPi2PostSelection->Fill(complementaryKaon->m());
+        HistInvMassPiPiPeak2PostSelection->Fill(complementaryKaon->m());
+        HistInvMassPiPi2DPostSelection->Fill(conditioningKaon->m(),complementaryKaon->m());
 
 
         // SELECTION: number of cluster 
@@ -977,51 +845,51 @@ int main(int argc, char** argv)
         iCutFlow+=1;
 		HistCutFlow->Fill(iCutFlow);  // cutfflow: cluster
         FillProtons(protonSignsY, HistProtonsSameSide, HistProtonsOppositeSide,  iCutFlow); // cutflow: cluster
-
+  
         // px, py plots for 4 pions + 2 protons
-        HistPtProtonPtKaonsX->Fill(conditioningKaon.Px()+complementaryKaon.Px(), proton1.X() +  proton2.X());
-        HistPtProtonPtKaonsY->Fill(conditioningKaon.Py()+complementaryKaon.Py(), proton1.Y() +  proton2.Y());
-        HistPtProtonPtKaonsX1d->Fill(conditioningKaon.Px()+complementaryKaon.Px() + proton1.X() +  proton2.X());
-        HistPtProtonPtKaonsY1d->Fill(conditioningKaon.Py()+complementaryKaon.Py() +proton1.Y() +  proton2.Y());
+        HistPtProtonPtKaonsX->Fill(conditioningKaon->px()+complementaryKaon->px(), proton1.X() +  proton2.X());
+        HistPtProtonPtKaonsY->Fill(conditioningKaon->py()+complementaryKaon->py(), proton1.Y() +  proton2.Y());
+        HistPtProtonPtKaonsX1d->Fill(conditioningKaon->px()+complementaryKaon->px() + proton1.X() +  proton2.X());
+        HistPtProtonPtKaonsY1d->Fill(conditioningKaon->py()+complementaryKaon->py() +proton1.Y() +  proton2.Y());
 
         if (protonSignsY < 0.0)
         {
-            HistPtProtonPtKaonsXOppY->Fill(conditioningKaon.Px()+complementaryKaon.Px(), proton1.X() +  proton2.X());
-            HistPtProtonPtKaonsYOppY->Fill(conditioningKaon.Py()+complementaryKaon.Py(), proton1.Y() +  proton2.Y());
-            HistPtProtonPtKaonsX1dOppY->Fill(conditioningKaon.Px()+complementaryKaon.Px() + proton1.X() +  proton2.X());
-            HistPtProtonPtKaonsY1dOppY->Fill(conditioningKaon.Py()+complementaryKaon.Py() +proton1.Y() +  proton2.Y());
+            HistPtProtonPtKaonsXOppY->Fill(conditioningKaon->px()+complementaryKaon->px(), proton1.X() +  proton2.X());
+            HistPtProtonPtKaonsYOppY->Fill(conditioningKaon->py()+complementaryKaon->py(), proton1.Y() +  proton2.Y());
+            HistPtProtonPtKaonsX1dOppY->Fill(conditioningKaon->px()+complementaryKaon->px() + proton1.X() +  proton2.X());
+            HistPtProtonPtKaonsY1dOppY->Fill(conditioningKaon->py()+complementaryKaon->py() +proton1.Y() +  proton2.Y());
         }
 
         else
         {
 
-            HistPtProtonPtKaonsXSameY->Fill(conditioningKaon.Px()+complementaryKaon.Px(), proton1.X() +  proton2.X());
-            HistPtProtonPtKaonsYSameY->Fill(conditioningKaon.Py()+complementaryKaon.Py(), proton1.Y() +  proton2.Y());
-            HistPtProtonPtKaonsX1dSameY->Fill(conditioningKaon.Px()+complementaryKaon.Px() + proton1.X() +  proton2.X());
-            HistPtProtonPtKaonsY1dSameY->Fill(conditioningKaon.Py()+complementaryKaon.Py() +proton1.Y() +  proton2.Y());
+            HistPtProtonPtKaonsXSameY->Fill(conditioningKaon->px()+complementaryKaon->px(), proton1.X() +  proton2.X());
+            HistPtProtonPtKaonsYSameY->Fill(conditioningKaon->py()+complementaryKaon->py(), proton1.Y() +  proton2.Y());
+            HistPtProtonPtKaonsX1dSameY->Fill(conditioningKaon->px()+complementaryKaon->px() + proton1.X() +  proton2.X());
+            HistPtProtonPtKaonsY1dSameY->Fill(conditioningKaon->py()+complementaryKaon->py() +proton1.Y() +  proton2.Y());
 
             if (proton1.Y() >= 0.0 and proton2.Y() >= 0.0)
             {
-                HistPtProtonPtKaonsXSameYMomentaGreaterThan0->Fill(conditioningKaon.Px()+complementaryKaon.Px(), proton1.X() +  proton2.X());
-                HistPtProtonPtKaonsYSameYMomentaGreaterThan0->Fill(conditioningKaon.Py()+complementaryKaon.Py(), proton1.Y() +  proton2.Y());
-                HistPtProtonPtKaonsX1dSameYMomentaGreaterThan0->Fill(conditioningKaon.Px()+complementaryKaon.Px() + proton1.X() +  proton2.X());
-                HistPtProtonPtKaonsY1dSameYMomentaGreaterThan0->Fill(conditioningKaon.Py()+complementaryKaon.Py() +proton1.Y() +  proton2.Y());
+                HistPtProtonPtKaonsXSameYMomentaGreaterThan0->Fill(conditioningKaon->px()+complementaryKaon->px(), proton1.X() +  proton2.X());
+                HistPtProtonPtKaonsYSameYMomentaGreaterThan0->Fill(conditioningKaon->py()+complementaryKaon->py(), proton1.Y() +  proton2.Y());
+                HistPtProtonPtKaonsX1dSameYMomentaGreaterThan0->Fill(conditioningKaon->px()+complementaryKaon->px() + proton1.X() +  proton2.X());
+                HistPtProtonPtKaonsY1dSameYMomentaGreaterThan0->Fill(conditioningKaon->py()+complementaryKaon->py() +proton1.Y() +  proton2.Y());
             }
 
             else if (proton1.Y() < 0.0 and proton2.Y() < 0.0)
             {
-                HistPtProtonPtKaonsXSameYMomentaLowerThan0->Fill(conditioningKaon.Px()+complementaryKaon.Px(), proton1.X() +  proton2.X());
-                HistPtProtonPtKaonsYSameYMomentaLowerThan0->Fill(conditioningKaon.Py()+complementaryKaon.Py(), proton1.Y() +  proton2.Y());
-                HistPtProtonPtKaonsX1dSameYMomentaLowerThan0->Fill(conditioningKaon.Px()+complementaryKaon.Px() + proton1.X() +  proton2.X());
-                HistPtProtonPtKaonsY1dSameYMomentaLowerThan0->Fill(conditioningKaon.Py()+complementaryKaon.Py() +proton1.Y() +  proton2.Y());
+                HistPtProtonPtKaonsXSameYMomentaLowerThan0->Fill(conditioningKaon->px()+complementaryKaon->px(), proton1.X() +  proton2.X());
+                HistPtProtonPtKaonsYSameYMomentaLowerThan0->Fill(conditioningKaon->py()+complementaryKaon->py(), proton1.Y() +  proton2.Y());
+                HistPtProtonPtKaonsX1dSameYMomentaLowerThan0->Fill(conditioningKaon->px()+complementaryKaon->px() + proton1.X() +  proton2.X());
+                HistPtProtonPtKaonsY1dSameYMomentaLowerThan0->Fill(conditioningKaon->py()+complementaryKaon->py() +proton1.Y() +  proton2.Y());
 
             }
         }
 
 
         // SELECTION: pT miss
-        double pXmiss = posPion[0].Px() + posPion[1].Px() + negPion[0].Px() + negPion[1].Px() + proton1.X() + proton2.X();
-        double pYmiss = posPion[0].Py() + posPion[1].Py() + negPion[0].Py() + negPion[1].Py() + proton1.Y() + proton2.Y();
+        double pXmiss = conditioningKaon->px() + complementaryKaon->px() + proton1.X() + proton2.X();
+        double pYmiss = conditioningKaon->py() + complementaryKaon->py()  + proton1.Y() + proton2.Y();
          
         double pTmiss = sqrt(pow(pXmiss,2) + pow(pYmiss,2));
         HistPtMiss->Fill(pTmiss);
@@ -1051,6 +919,7 @@ int main(int argc, char** argv)
         FillProtons(protonSignsY, HistProtonsSameSide, HistProtonsOppositeSide,  iCutFlow); // cutflow: pTmiss
 
 
+          /*
         // VERTEX
 
         // vertex
@@ -1102,13 +971,13 @@ int main(int argc, char** argv)
         HistVtxErrX->Fill(primVertexPosErrX);
         HistVtxErrY->Fill(primVertexPosErrY);
         HistVtxErrZ->Fill(primVertexPosErrZ);
-        pTCombinations.clear();
-        lVecCombinations.clear();
+
 */
         posPion.clear();
         negPion.clear();  
 
-        
+        pTCombinations.clear();
+
     }
 
     TFile *outfile = TFile::Open(argv[2], "recreate"); 
