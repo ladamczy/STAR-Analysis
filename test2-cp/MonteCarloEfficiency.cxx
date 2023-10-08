@@ -35,7 +35,7 @@ int main(int argc, char** argv)
 
     static StUPCEvent *upcEvt = 0x0;
     chain->SetBranchAddress("mUPCEvent", &upcEvt);
-
+	
     TH1D* HistKaonPtTruth = new TH1D("HistKaonPtTruth", "; pT_{K^{0}} [GeV]; # events", 25 ,0, 2.5);
     TH1D* HistKaonEtaTruth = new TH1D("HistKaonEtaTruth", "; #eta_{K^{0}}; # events", 25 ,-4.5, 4.5);
     TH1D* HistKaonVtxZTruth = new TH1D("HistKaonVtxZTruth", ";z_{vtx}^{#pi^{+}#pi^{-}} [cm]; # events", 10, -150, 150);
@@ -143,7 +143,7 @@ int main(int argc, char** argv)
         for(int jj = j ; jj < chain2->GetEntries(); ++jj)
         {
             chain2->GetEntry(jj);
-            Long64_t Event2 = chain2->eventId();
+            Long64_t Event2 = eventId;
             //cout << Event2 << endl;              debug 2
             if (Event1 == Event2)
             {
