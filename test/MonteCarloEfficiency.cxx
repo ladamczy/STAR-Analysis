@@ -43,6 +43,8 @@ int main(int argc, char** argv)
     TH1D* HistV0DCAD = new TH1D("HistV0DCAD", "; DCAD [cm]; # events", 100, 0.0, 5.0);
     TH1D* HistV0R = new TH1D("HistV0R", "; R [cm]; # events", 100, 0.0, 5.0);
 
+    TH1D* HistPYPY = new TH1D("HistPYPY", "; Py*Py [GeV^2]; # events", 10, -5.0, 5.0);
+
     TParticle* particle;
     TParticle* PosPion1; TParticle* NegPion1; TParticle*  PosPion2; TParticle*  NegPion2;    
     vector <TParticle*> PosPions, NegPions, Protons, PosPionsPaired, NegPionsPaired;
@@ -77,6 +79,8 @@ int main(int argc, char** argv)
           }
      }
 
+      Double_t PYPY=1;
+
         // extract all Pi+, Pi- and diffractive protons
         for (int i = 0; i < upcEvt->getNumberOfMCParticles(); i++)
         {
@@ -95,9 +99,13 @@ int main(int argc, char** argv)
             if (particle->GetPDG()->PdgCode() == 2212 and particle->GetFirstMother() == 1)
             {
                 Protons.push_back(particle);
+                PYPY = PYPY*particle->Py();
             }
         }
 
+
+        HistPYPY->Fill(PYPY);
+        
         //only paired pions - based on the GetFirstMother() method
         for (int i = 0; i < PosPions.size(); i++)
         {
@@ -313,6 +321,7 @@ int main(int argc, char** argv)
             }
             
 
+
         }    
 
 
@@ -341,6 +350,7 @@ int main(int argc, char** argv)
     HistV0MDet->Write();
     HistV0DCAD->Write();
     HistV0R->Write();
+    HistPYPY->Write();
     outfile->Close();
 
     return 0;
