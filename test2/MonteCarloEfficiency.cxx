@@ -64,7 +64,7 @@ int main(int argc, char** argv)
     for (Long64_t i = 0; i < chain->GetEntries(); ++i) 
     {
         //process data from the ntp_K0s
-        Read_K0.ProcessData(i);
+        Read_K0.ProcessData(i, upcEvt, chain, chain2);
 
         // extract all Pi+, Pi- and diffractive protons
         for (int i = 0; i < upcEvt->getNumberOfMCParticles(); i++)
