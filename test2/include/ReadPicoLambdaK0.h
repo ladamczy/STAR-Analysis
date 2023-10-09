@@ -6,7 +6,7 @@
 class ReadPicoLambdaK0 {
 public:
     ReadPicoLambdaK0(TTree* chain2);
-    void ProcessData(Long64_t i, StUPCEvent* upcEvt, Tchain *chain, TTree* chain2);
+    void ProcessData(Long64_t i, StUPCEvent* upcEvt, TChain *chain, TTree* chain2);
 
     std::vector<double> eventIdVectors;
     std::vector<double> leadPtVectors;
