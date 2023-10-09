@@ -87,22 +87,22 @@ int main(int argc, char** argv)
     TProfile* ProfileDistVertexBeamXAsAFunctionOfZ = new TProfile("ProfileDistVertexBeamXAsAFunctionOfZ","",100, -200, 200);
     TProfile* ProfileDistVertexBeamYAsAFunctionOfZ  = new TProfile("ProfileDistVertexBeamYAsAFunctionOfZ","",100, -200, 200);
 
-    TH1D* HistVtxX = new TH1D("HistVtxX", "; vtx_{x} [cm]; # events", 100, -2, 2);
-    TH1D* HistVtxY = new TH1D("HistVtxY"," ; vtx_{y} [cm]; # events", 100, -2, 2);
-    TH1D* HistVtxZ = new TH1D("HistVtxZ", "; vtx_{z} [cm]; # events", 100, -200, 200);
-    TH1D* HistVtxErrX = new TH1D("HistVtxErrX", ";err vtx_{x} [cm]; # events", 100, 0.0, 1);
-    TH1D* HistVtxErrY = new TH1D("HistVtxErrY"," ;err vtx_{y} [cm]; # events", 100, 0.0, 1);
-    TH1D* HistVtxErrZ = new TH1D("HistVtxErrZ", ";err vtx_{z} [cm]; # events", 100, 0.0, 0.5);
-    TH1D* HistR = new TH1D("HistR", ";R [cm]; # events", 30, 0, 3.0);
-    TH1D* HistSig = new TH1D("HistSig"," ; significance; # events", 250, 0.0, 10);
+    TH1D* HistDistVtxXLeadingKaon = new TH1D("HistDistVtxXLeadingKaon", "; x_{vtx}^{leading} - x_{beam} [cm]; # events", 100, -2, 2);
+    TH1D* HistDistVtxYLeadingKaon = new TH1D("HistDistVtxYLeadingKaon"," ; y_{vtx}^{leading} - y_{beam} [cm]; # events", 100, -2, 2);
+    TH1D* HistDistVtxZLeadingKaon = new TH1D("HistDistVtxZLeadingKaon", "; z_{vtx}^{leading} - z_{beam} [xm]; # events", 100, -200, 200);
+    TH1D* HistRLeadingKaon = new TH1D("HistRLeadingKaon", ";R_{K0^{leading}} [cm]; # events", 30, 0, 6.0);
+
+    TH1D* HistDistVtxXSubLeadingKaon = new TH1D("HistDistVtxXSubLeadingKaon", "; x_{vtx}^{SubLeading} - x_{beam} [cm]; # events", 100, -2, 2);
+    TH1D* HistDistVtxYSubLeadingKaon = new TH1D("HistDistVtxYSubLeadingKaon"," ; y_{vtx}^{SubLeading} - y_{beam} [cm]; # events", 100, -2, 2);
+    TH1D* HistDistVtxZSubLeadingKaon = new TH1D("HistDistVtxZSubLeadingKaon", "; z_{vtx}^{SubLeading} - z_{beam} [xm]; # events", 100, -200, 200);
+    TH1D* HistRSubLeadingKaon = new TH1D("HistRSubLeadingKaon", ";R_{K0^{SubLeading}} [cm]; # events", 30, 0, 6.0);
 
     TH1D* HistNumPrimaryVertices = new TH1D("5_HistNumPrimaryVertices", " ;Number of primary vertices; count", 11, -0.5, 10.5); 
     TH1D* HistPrimaryVertexAbsPosZ = new TH1D("6_HistPrimaryVertexAbsPosZ", ";primary vertex z [cm]; count", 100, 0, 200);
     TH1D* HistNumTofMatchedTracks = new TH1D("7_HistNumTofMatchedTracks", ";number of TOF matched tracks; count", 16, -0.5, 15.5);    
     TH1D* HistTofMatchedTracksCharge = new TH1D("8_HistTofMatchedTracksCharge", ";charge [e]; count", 3, -1.5, 1.5);
     TH1D* HistTofMatchedTracksAbsEta = new TH1D("9_HistTofMatchedTracksAbsEta", ";#eta; count", 50, 0, 2);
-    TH1D* HistTofMatchedTracksAbsDcaZ = new TH1D("10_HistTofMatchedTracksAbsDcaZ", ";DCA_{Z} [cm]; count ", 60, 0, 4);
-    TH1D* HistTofMatchedTracksDcaXY = new TH1D("11_HistTofMatchedTracksDcaXY", ";DCA_{XY} [cm]; count", 60, 0, 4);
+    TH1D* HistTofMatchedTracksPt = new TH1D("9b_HistTofMatchedTracksPt", ";#eta; count", 50, 0, 2);
     TH1D* HistTofMatchedTracksNfit = new TH1D("12_HistTofMatchedTracksNfit", ";N_{fit}; count", 61, -0.5, 60.5);
     TH1D* HistTofMatchedTracksNdEdx = new TH1D("13_HistTofMatchedTracksNdEdx", ";N_{dE/dx}; count", 61, -0.5, 60.5);
 
@@ -111,8 +111,7 @@ int main(int argc, char** argv)
     TH1D* HistNumTofMatchedTracksPostSelection = new TH1D("7_HistNumTofMatchedTracksPs", ";number of TOF matched tracks; count", 16, -0.5, 15.5);    
     TH1D* HistTofMatchedTracksChargePostSelection = new TH1D("8_HistTofMatchedTracksChargePs", ";charge [e]; count", 3, -1.5, 1.5);
     TH1D* HistTofMatchedTracksAbsEtaPostSelection = new TH1D("9_HistTofMatchedTracksAbsEtaPs", ";#eta; count", 50, 0, 2);
-    TH1D* HistTofMatchedTracksAbsDcaZPostSelection = new TH1D("10_HistTofMatchedTracksAbsDcaZPs", ";DCA_{Z} [cm]; count ", 60, 0, 4);
-    TH1D* HistTofMatchedTracksDcaXYPostSelection = new TH1D("11_HistTofMatchedTracksDcaXYPs", ";DCA_{XY} [cm]; count", 60, 0, 4);
+    TH1D* HistTofMatchedTracksPtPostSelection = new TH1D("9b_HistTofMatchedTracksPtPostSelection", ";#eta; count", 50, 0, 2);
     TH1D* HistTofMatchedTracksNfitPostSelection = new TH1D("12_HistTofMatchedTracksNfitPs", ";N_{fit}; count", 61, -0.5, 60.5);
     TH1D* HistTofMatchedTracksNdEdxPostSelection = new TH1D("13_HistTofMatchedTracksNdEdxPs", ";N_{dE/dx}; count", 61, -0.5, 60.5);
 
@@ -139,26 +138,19 @@ int main(int argc, char** argv)
     TH1D* HistPtProtonPtKaonsX1dSameYMomentaLowerThan0 = new TH1D("HistPtProtonPtKaonsX1dSameYMomentaLowerThan0", ";[p_{K^{0}}p_{K^{0}} + p_{p'}^{W}p_{p'}^{E}]_{x}; events ",  200, -5.0, 5.0);
     TH1D* HistPtProtonPtKaonsY1dSameYMomentaLowerThan0 = new TH1D("HistPtProtonPtKaonsY1dSameYMomentaLowerThan0", ";[p_{K^{0}}p_{K^{0}} + p_{p'}^{W}p_{p'}^{E}]_{y}; events ",  200, -5.0, 5.0);
 
-    TH1D* HistInvMassPiPi = new TH1D("HistInvMassPiPi", "; m_{#pi^{+}#pi^{-}} [GeV]; # events", 250 ,0, 3);
-    TH1D* HistInvMassPiPiPeak = new TH1D("HistInvMassPiPiPeak", "; m_{#pi^{+}#pi^{-}} [GeV]; # events", 100 ,0.4, 0.6);
-    TH1D* HistInvMassPiPi2 = new TH1D("HistInvMassPiPi2", "; m_{#pi^{+}#pi^{-}} [GeV]; # events", 250 ,0, 3);
-    TH1D* HistInvMassPiPiPeak2 = new TH1D("HistInvMassPiPiPeak2", "; m_{#pi^{+}#pi^{-}} [GeV]; # events", 100 ,0.4, 0.6);
+    TH1D* HistInvMassPiPiPeak = new TH1D("HistInvMassPiPiPeak", "; m_{#pi^{+}#pi^{-}} [GeV]; # events", 25 ,0.44, 0.54);
+    TH1D* HistInvMassPiPiPeak2 = new TH1D("HistInvMassPiPiPeak2", "; m_{#pi^{+}#pi^{-}} [GeV]; # events", 25 ,0.44, 0.54);
 
-    TH1D* HistInvMassPiPiOneKaonInMassWindow = new TH1D("HistInvMassPiPiOneKaonInMassWindow", "; m_{#pi^{+}#pi^{-}} [GeV]; # events", 100 ,0.4, 0.6);
-    TH2D* HistInvMassPiPi2D =  new TH2D("HistInvMassPiPi2D", "; m_{#pi^{+}#pi^{-}} [GeV]; # events", 100 ,0.4, 0.6,  100 ,0.4, 0.6);
 
-    TH1D* HistInvMassPiPiPostSelection = new TH1D("HistInvMassPiPiPs", "; m_{#pi^{+}#pi^{-}} [GeV]; # events", 250 ,0, 3);
-    TH1D* HistInvMassPiPiPeakPostSelection = new TH1D("HistInvMassPiPiPeakPs", "; m_{#pi^{+}#pi^{-}} [GeV]; # events", 100 ,0.4, 0.6);
-    TH1D* HistInvMassPiPi2PostSelection = new TH1D("HistInvMassPiPi2Ps", "; m_{#pi^{+}#pi^{-}} [GeV]; # events", 250 ,0, 3);
-    TH1D* HistInvMassPiPiPeak2PostSelection = new TH1D("HistInvMassPiPiPeak2Ps", "; m_{#pi^{+}#pi^{-}} [GeV]; # events", 100 ,0.4, 0.6);
-
-    TH2D* HistInvMassPiPi2DPostSelection =  new TH2D("HistInvMassPiPi2DPs", "; m_{#pi^{+}#pi^{-}} [GeV]; # events", 100 ,0.4, 0.6,  100 ,0.4, 0.6);
-    TH1D* HistInvMassPiPiOneKaonInMassWindowPostSelection = new TH1D("HistInvMassPiPiOneKaonInMassWindowPs", "; m_{#pi^{+}#pi^{-}} [GeV]; # events", 100 ,0.4, 0.6);
+    TH1D* HistInvMassPiPiPeakPostSelection = new TH1D("HistInvMassPiPiPeakPs", "; m_{#pi^{+}#pi^{-}} [GeV]; # events",  25 ,0.44, 0.54);
+    TH1D* HistInvMassPiPiPeak2PostSelection = new TH1D("HistInvMassPiPiPeak2Ps", "; m_{#pi^{+}#pi^{-}} [GeV]; # events", 25 ,0.44, 0.54);
+    TH2D* HistInvMassPiPi2D =  new TH2D("HistInvMassPiPi2D", "; m_{#pi^{+}#pi^{-}} [GeV]; # events", 25 ,0.44, 0.54,  25 ,0.44, 0.54);
+    TH2D* HistInvMassPiPi2DPostSelection =  new TH2D("HistInvMassPiPi2DPs", "; m_{#pi^{+}#pi^{-}} [GeV]; # events",  25 ,0.44, 0.54,  25 ,0.44, 0.54);
 
     TH1D* HistNumOfClusters = new TH1D("HistNumOfClusters", "; # TOF clusters; # events", 40, -0.5, 40.5);
     TH1D* HistNumOfClustersPostSelection = new TH1D("HistNumOfClustersPs", "; # TOF clusters; # events", 40, -0.5, 40.5);
 
-    TH1D* HistPtMiss = new TH1D("HistPtMiss", ";pT^{miss} [GeV]; # events", 100, 0.0, 3.0);
+    TH1D* HistPtMiss = new TH1D("HistPtMiss", ";pT^{miss} [GeV]; # events", 60, 0.0, 3.0);
     TH1D* HistPtMissSameY = new TH1D("HistPtMissSameY", ";pT^{miss} [GeV]; # events", 100, 0.0, 3.0);
     TH1D* HistPtMissOppY = new TH1D("HistPtMissOppY", ";pT^{miss} [GeV]; # events", 100, 0.0, 3.0);
     TH1D* HistPtMissPostSelection = new TH1D("HistPtMissPs", ";pT^{miss} [GeV]; # events", 100, 0.0, 3.0);
@@ -175,10 +167,11 @@ int main(int argc, char** argv)
 
     TH1D* HistProtonsSameSide = new TH1D("HistProtonsSameSide", " ; cutflow ;  # events where protons have the same sign of py",  16, -0.5, 15.5);
     TH1D* HistProtonsOppositeSide = new TH1D("HistProtonsOppositeSide", "; ; # events where protons have the opposite sign of py",  16, -0.5, 15.5);
-
+    TH1D* HistDcaDaughtersLeadingKaon = new TH1D("HistDcaDaughtersLeadingKaon", "; DCA_{K0^{leading}} [cm] # events", 50, 0, 6);
+    TH1D* HistDcaDaughtersSubLeadingKaon = new TH1D("HistDcaDaughtersSubLeadingKaon", "; DCA_{K0^subleading}} [cm]; #events", 50, 0, 6);
 
     float massPion = 0.13957061;
-    double massKaon =  497.611;
+    double massKaon =  497.611/1000.0;
 
     ifstream inputFilePathList(argv[1]);
     if (!inputFilePathList) 
@@ -259,8 +252,7 @@ int main(int argc, char** argv)
                 {
                     proton2 = trk->pVec();
                     protonSignsY *= proton2.Y();
-                }
-            
+                }     
             }    
         }
 
@@ -303,7 +295,8 @@ int main(int argc, char** argv)
         FillProtons(protonSignsY, HistProtonsSameSide, HistProtonsOppositeSide,  iCutFlow); // protons - 1 vertex
 
 
-		// SELECTION: primary vertex is placed within |zvtx| < 80 cm
+		// SELECTION: primary vertex is placed within |zvtx| < 80 cm lVecKaonComb2b.pt() << ", " << endl;
+           
         HistPrimaryVertexAbsPosZ->Fill(abs(primVertexPosZ));
 		if(abs(upcEvt->getVertex(0)->getPosZ())>=80)
 		{
@@ -385,62 +378,35 @@ int main(int argc, char** argv)
         iCutFlow+=1;
 		HistCutFlow->Fill(iCutFlow);  // cutflow: TOF-matched tracks within appropraite pseudorapidity range |eta| < 0.9
         FillProtons(protonSignsY, HistProtonsSameSide, HistProtonsOppositeSide,  iCutFlow); // protons:  TOF-matched tracks within appropraite pseudorapidity range |eta| < 0.9
-
         for (unsigned long int i = 0; i < tracksWithTofHit.size(); i++)
         {	
             HistTofMatchedTracksAbsEtaPostSelection->Fill(abs(tracksWithTofHit[i]->getEta()));
         }
-        
-		// SELECTION: associated global tracks match well to the primary vertex |DCA(z)| < 2.0 	
-        bool isDcazSmall = 1;
+
+        // SELECTION pT > 0.2 GeV
+        bool isPtValid = 1;
         for (unsigned long int i = 0; i < tracksWithTofHit.size(); i++)
         {	
-            HistTofMatchedTracksAbsDcaZ->Fill(abs(tracksWithTofHit[i]->getDcaZ()));	
-            if (abs(tracksWithTofHit[i]->getDcaZ())>=2.0)
+            HistTofMatchedTracksPt->Fill((tracksWithTofHit[i]->getPt()));
+            if ((tracksWithTofHit[i]->getPt()) < 0.2)
             {
-                isDcazSmall = 0;
+                isPtValid = 0;
             }
         }
-        if (isDcazSmall == 0)
+        if (isPtValid == 0) 
         {
             vProtons.clear();
             tracksWithTofHit.clear();
             continue;
         }
         iCutFlow+=1;
-		HistCutFlow->Fill(iCutFlow);  // cutflow: TOF-matched tracks match primary vertex: |DCA(z)| < 2.0 	
-        FillProtons(protonSignsY, HistProtonsSameSide, HistProtonsOppositeSide,  iCutFlow); // protons:  TOF-matched tracks match primary vertex: |DCA(z)| < 2.0 	
-   
+		HistCutFlow->Fill(iCutFlow);  // cutflow: TOF-matched tracks within appropraite pseudorapidity range |eta| < 0.9
+        FillProtons(protonSignsY, HistProtonsSameSide, HistProtonsOppositeSide,  iCutFlow); // protons:  TOF-matched tracks within appropraite pseudorapidity range |eta| < 0.9
         for (unsigned long int i = 0; i < tracksWithTofHit.size(); i++)
         {	
-            HistTofMatchedTracksAbsDcaZPostSelection->Fill(abs(tracksWithTofHit[i]->getDcaZ()));	
+            HistTofMatchedTracksPtPostSelection->Fill((tracksWithTofHit[i]->getPt()));
         }
 
-
-		//  SELECTION: associated global tracks match well to the primary vertex DCA(R) < 3.0 
-        bool isDcaxySmall = 1;
-        for (unsigned long int i = 0; i < tracksWithTofHit.size(); i++)
-        {	
-            HistTofMatchedTracksDcaXY->Fill(tracksWithTofHit[i]->getDcaXY());
-            if (tracksWithTofHit[i]->getDcaXY() >= 3.0)
-            {
-                isDcaxySmall = 0;
-            }
-        }
-        if (isDcaxySmall == 0)
-        {
-            vProtons.clear();
-            tracksWithTofHit.clear();
-            continue;
-        }
-        iCutFlow+=1;
-		HistCutFlow->Fill(iCutFlow);   // cutflow: TOF-matched tracks match primary vertex:  DCA(R) < 3.0 
-        FillProtons(protonSignsY, HistProtonsSameSide, HistProtonsOppositeSide,  iCutFlow); // protons:  TOF-matched tracks match primary vertex: DCA(R) < 3.0 
-
-        for (unsigned long int i = 0; i < tracksWithTofHit.size(); i++)
-        {	
-            HistTofMatchedTracksDcaXYPostSelection->Fill(tracksWithTofHit[i]->getDcaXY());
-        }
 
 		// SELECTION: associated global tracks satisfy quality criteria N_{fit} >= 25
         bool isNfitAtLeast25 = 1;
@@ -515,241 +481,100 @@ int main(int argc, char** argv)
         }
 
                
-        // verify possible combinations of Kaons based on pT
+        // verify possible combinations of Kaons 
         bool isMassInWindow = 1;
 
         TVector3 const tryVec(0,0,0);
-        StUPCV0 lVecKaonComb1a(posPion[0], negPion[0], massPion, massPion, 1, 1, tryVec, upcEvt->getMagneticField(), false, true);
-        StUPCV0 lVecKaonComb1b(posPion[1], negPion[1], massPion, massPion, 1, 1, tryVec, upcEvt->getMagneticField(), false, true);
-        StUPCV0 lVecKaonComb2a(posPion[0], negPion[1], massPion, massPion, 1, 1, tryVec, upcEvt->getMagneticField(), false, true);
-        StUPCV0 lVecKaonComb2b(posPion[1], negPion[0], massPion, massPion, 1, 1, tryVec, upcEvt->getMagneticField(), false, true);
+        StUPCV0 lVecKaonComb1a(posPion[0], negPion[0], massPion, massPion, 1, 1, tryVec, upcEvt->getMagneticField(), bool(isMC), true);
+        StUPCV0 lVecKaonComb1b(posPion[1], negPion[1], massPion, massPion, 1, 1, tryVec, upcEvt->getMagneticField(), bool(isMC), true);
+        StUPCV0 lVecKaonComb2a(posPion[0], negPion[1], massPion, massPion, 1, 1, tryVec, upcEvt->getMagneticField(), bool(isMC), true);
+        StUPCV0 lVecKaonComb2b(posPion[1], negPion[0], massPion, massPion, 1, 1, tryVec, upcEvt->getMagneticField(), bool(isMC), true);
        
         // SELECTION: both kaons in mass rangeisMC
-        double kaonMassWindowLow = 0.46;
-        double kaonMassWindowHigh = 0.52;
+        double kaonMassWindowNarrowLow = 0.48;
+        double kaonMassWindowNarrowHigh = 0.51;
 
-        bool arePionPairsInMassWindowFirstCombination = 0;
-        bool isPionPairInMassWindowFirstCombinationA = 0;
-        bool isPionPairInMassWindowFirstCombinationB = 0;
-
-        bool arePionPairsInMassWindowSecondCombination = 0;
-        bool isPionPairInMassWindowSecondCombinationA = 0;
-        bool isPionPairInMassWindowSecondCombinationB = 0;
-
-        //check which paris are within mass window for the first combination
-        if ((lVecKaonComb1a.m() > kaonMassWindowLow and lVecKaonComb1a.m() < kaonMassWindowHigh) and  (lVecKaonComb1b.m() > kaonMassWindowLow and lVecKaonComb1b.m() < kaonMassWindowHigh))
-        {
-            arePionPairsInMassWindowFirstCombination = 1;
-        }
-
-        else if (lVecKaonComb1a.m() > kaonMassWindowLow and lVecKaonComb1a.m() < kaonMassWindowHigh)
-        {
-            isPionPairInMassWindowFirstCombinationA = 1;
-        }
-
-        else if (lVecKaonComb1b.m() > kaonMassWindowLow and lVecKaonComb1b.m() < kaonMassWindowHigh)
-        {
-            isPionPairInMassWindowFirstCombinationB = 1;
-        }
-
-        //check which paris are within mass window for the second combination  
-        if ((lVecKaonComb2a.m() > kaonMassWindowLow and lVecKaonComb2a.m() < kaonMassWindowHigh) and  (lVecKaonComb2b.m() > kaonMassWindowLow and lVecKaonComb2b.m() < kaonMassWindowHigh))
-        {
-            arePionPairsInMassWindowSecondCombination = 1;
-        }
-
-        else if (lVecKaonComb2a.m() > kaonMassWindowLow and lVecKaonComb2a.m() < kaonMassWindowHigh)
-        {
-            isPionPairInMassWindowSecondCombinationA = 1;
-        }
-
-        else if (lVecKaonComb2b.m() > kaonMassWindowLow and lVecKaonComb2b.m() < kaonMassWindowHigh)
-        {
-            isPionPairInMassWindowSecondCombinationB = 1;
-        }
-    
-        vector <double> pTCombinations;
-      
-        int maxPtIndex;
-        StUPCV0 *conditioningKaon = &lVecKaonComb1a;
-        StUPCV0 *complementaryKaon = &lVecKaonComb1b;
-
-        if (arePionPairsInMassWindowFirstCombination and arePionPairsInMassWindowSecondCombination)
-        {
-            vector <StUPCV0 *> lVecCombinations  = {&lVecKaonComb1a, &lVecKaonComb1b, &lVecKaonComb2a, &lVecKaonComb2b}; 
-            pTCombinations = {lVecKaonComb1a.pt(), lVecKaonComb1b.pt(), lVecKaonComb2a.pt(), lVecKaonComb2b.pt()}; 
-            maxPtIndex = distance(pTCombinations.begin(), max_element(pTCombinations.begin(), pTCombinations.end()));
-
-            if (maxPtIndex <= 1)
-            {
-                conditioningKaon = lVecCombinations[maxPtIndex]; 
-                complementaryKaon = lVecCombinations[abs(maxPtIndex-1)];
-            }
-
-            else
-            {  
-                conditioningKaon = lVecCombinations[maxPtIndex]; 
-                complementaryKaon = lVecCombinations[2 + abs(3-maxPtIndex)]; 
-            }
-
-            HistInvMassPiPi->Fill(conditioningKaon->m());
-            HistInvMassPiPiPeak->Fill(conditioningKaon->m());
-            HistInvMassPiPi2->Fill(complementaryKaon->m());
-            HistInvMassPiPiPeak2->Fill(complementaryKaon->m());
-            HistInvMassPiPi2D->Fill(conditioningKaon->m(),complementaryKaon->m());
-            HistInvMassPiPiOneKaonInMassWindow->Fill(complementaryKaon->m());
-        }
+        double kaonMassWindowWideLow = 0.44;
+        double kaonMassWindowWideHigh = 0.54;
 
 
+        double distSumSquaredComb1 = sqrt(pow((lVecKaonComb1a.m()-massKaon), 2) + pow((lVecKaonComb1a.m()-massKaon), 2));
+        double distSumSquaredComb2 = sqrt(pow((lVecKaonComb2a.m()-massKaon), 2) + pow((lVecKaonComb2b.m()-massKaon), 2));
 
+        //cout << "NEEEEEEEEEEEEEEEEEEEEEEEEEW" << endl;
+        //cout << distSumSquaredComb1 << ", " << distSumSquaredComb2 << endl;
+        //cout << "mass: " << lVecKaonComb1a.m() << ", " <<  lVecKaonComb1b.m() << ", " <<  lVecKaonComb2a.m() << ", " <<  lVecKaonComb2b.m() << ", " << endl;
+         //cout << "pT: " <<  lVecKaonComb1a.pt() << ", " <<  lVecKaonComb1b.pt() << ", " <<  lVecKaonComb2a.pt() << ", " <<  lVecKaonComb2b.pt() << ", " << endl;
+           
+        StUPCV0 * leadingKaon = &lVecKaonComb1a;
+        StUPCV0 * subLeadingKaon = &lVecKaonComb1b;
 
-        else if (arePionPairsInMassWindowFirstCombination)
+        if (distSumSquaredComb1 < distSumSquaredComb2)
         {
             if (lVecKaonComb1a.pt() > lVecKaonComb1b.pt())
             {
-                conditioningKaon = &lVecKaonComb1a;
-                complementaryKaon = &lVecKaonComb1b;
+                leadingKaon = &lVecKaonComb1a;
+                subLeadingKaon = &lVecKaonComb1b;
             }
-
             else
             {
-                conditioningKaon = &lVecKaonComb1b;
-                complementaryKaon = &lVecKaonComb1a;
+                leadingKaon = &lVecKaonComb1b;
+                subLeadingKaon = &lVecKaonComb1a;                
             }
-            HistInvMassPiPi->Fill(conditioningKaon->m());
-            HistInvMassPiPiPeak->Fill(conditioningKaon->m());
-            HistInvMassPiPi2->Fill(complementaryKaon->m());
-            HistInvMassPiPiPeak2->Fill(complementaryKaon->m());
-            HistInvMassPiPi2D->Fill(conditioningKaon->m(),complementaryKaon->m());
-            HistInvMassPiPiOneKaonInMassWindow->Fill(complementaryKaon->m());
         }
 
-
-        else if (arePionPairsInMassWindowSecondCombination)
+        else
         {
             if (lVecKaonComb2a.pt() > lVecKaonComb2b.pt())
             {
-                conditioningKaon = &lVecKaonComb2a;
-                complementaryKaon = &lVecKaonComb2b;
+                leadingKaon = &lVecKaonComb2a;
+                subLeadingKaon = &lVecKaonComb2b;
             }
-
             else
             {
-                conditioningKaon = &lVecKaonComb2b;
-                complementaryKaon = &lVecKaonComb2a;
+                leadingKaon = &lVecKaonComb2b;
+                subLeadingKaon = &lVecKaonComb2a;                
             }
-            HistInvMassPiPi->Fill(conditioningKaon->m());
-            HistInvMassPiPiPeak->Fill(conditioningKaon->m());
-            HistInvMassPiPi2->Fill(complementaryKaon->m());
-            HistInvMassPiPiPeak2->Fill(complementaryKaon->m());
-            HistInvMassPiPi2D->Fill(conditioningKaon->m(),complementaryKaon->m());
-            HistInvMassPiPiOneKaonInMassWindow->Fill(complementaryKaon->m());
-        }       
+        }
+       // cout << leadingKaon->m() << ", " << subLeadingKaon->m() << endl;
+       // cout << leadingKaon->pt() << ", " << subLeadingKaon->pt() << endl;
 
-        else if (isPionPairInMassWindowFirstCombinationA)
+        bool areKaonsInNarrowMassWindow = 0;
+        bool areKaonsInWideMassWindow = 0;
+        bool isPtMissingSmall = 0;
+        bool isNumberOfTofClusterSmall = 0;
+
+        if ( (leadingKaon->m() >= kaonMassWindowWideLow and  leadingKaon->m() < kaonMassWindowWideHigh) and (subLeadingKaon->m() >= kaonMassWindowWideLow and  subLeadingKaon->m() < kaonMassWindowWideHigh) )
         {
-            conditioningKaon = &lVecKaonComb1a;
-            complementaryKaon = &lVecKaonComb1b;
-            HistInvMassPiPi->Fill(conditioningKaon->m());
-            HistInvMassPiPiPeak->Fill(conditioningKaon->m());
-            HistInvMassPiPi2->Fill(complementaryKaon->m());
-            HistInvMassPiPiPeak2->Fill(complementaryKaon->m());
-            HistInvMassPiPi2D->Fill(conditioningKaon->m(),complementaryKaon->m());
-            HistInvMassPiPiOneKaonInMassWindow->Fill(complementaryKaon->m());
+              areKaonsInWideMassWindow = 1;      
         }
 
-        else if (isPionPairInMassWindowFirstCombinationB)
+        if ( (leadingKaon->m() >= kaonMassWindowNarrowLow and  leadingKaon->m() < kaonMassWindowNarrowHigh) and (subLeadingKaon->m() >= kaonMassWindowNarrowLow and  subLeadingKaon->m() < kaonMassWindowNarrowHigh) )
         {
-            conditioningKaon = &lVecKaonComb1b;
-            complementaryKaon = &lVecKaonComb1a;
-            HistInvMassPiPi->Fill(conditioningKaon->m());
-            HistInvMassPiPiPeak->Fill(conditioningKaon->m());
-            HistInvMassPiPi2->Fill(complementaryKaon->m());
-            HistInvMassPiPiPeak2->Fill(complementaryKaon->m());
-            HistInvMassPiPi2D->Fill(conditioningKaon->m(),complementaryKaon->m());
-            HistInvMassPiPiOneKaonInMassWindow->Fill(complementaryKaon->m());
+              areKaonsInNarrowMassWindow = 1;      
         }
 
-        else if (isPionPairInMassWindowSecondCombinationA)
+        if (areKaonsInWideMassWindow != 1) // delete event if kaon masses are not in mass window
         {
-            conditioningKaon = &lVecKaonComb2a;
-            complementaryKaon = &lVecKaonComb2b;
-            HistInvMassPiPi->Fill(conditioningKaon->m());
-            HistInvMassPiPiPeak->Fill(conditioningKaon->m());
-            HistInvMassPiPi2->Fill(complementaryKaon->m());
-            HistInvMassPiPiPeak2->Fill(complementaryKaon->m());
-            HistInvMassPiPi2D->Fill(conditioningKaon->m(),complementaryKaon->m());
-            HistInvMassPiPiOneKaonInMassWindow->Fill(complementaryKaon->m());
-        }
-
-        else if (isPionPairInMassWindowSecondCombinationB)
-        {
-            conditioningKaon = &lVecKaonComb2b;
-            complementaryKaon = &lVecKaonComb2a;
-            HistInvMassPiPi->Fill(conditioningKaon->m());
-            HistInvMassPiPiPeak->Fill(conditioningKaon->m());
-            HistInvMassPiPi2->Fill(complementaryKaon->m());
-            HistInvMassPiPiPeak2->Fill(complementaryKaon->m());
-            HistInvMassPiPi2D->Fill(conditioningKaon->m(),complementaryKaon->m());
-            HistInvMassPiPiOneKaonInMassWindow->Fill(complementaryKaon->m());
-        }
-    
-
-    
-        else 
-        {
-
-            vector <StUPCV0 *> lVecCombinations  = {&lVecKaonComb1a, &lVecKaonComb1b, &lVecKaonComb2a, &lVecKaonComb2b}; 
-            pTCombinations = {lVecKaonComb1a.pt(), lVecKaonComb1b.pt(), lVecKaonComb2a.pt(), lVecKaonComb2b.pt()}; 
-            maxPtIndex = distance(pTCombinations.begin(), max_element(pTCombinations.begin(), pTCombinations.end()));
-
-            if (maxPtIndex <= 1)
-            {
-                conditioningKaon = lVecCombinations[maxPtIndex]; 
-                complementaryKaon = lVecCombinations[abs(maxPtIndex-1)];
-            }
-
-            else
-            {  
-                conditioningKaon = lVecCombinations[maxPtIndex]; 
-                complementaryKaon = lVecCombinations[2 + abs(3-maxPtIndex)]; 
-            }
-
-            HistInvMassPiPi->Fill(conditioningKaon->m());
-            HistInvMassPiPiPeak->Fill(conditioningKaon->m());
-            HistInvMassPiPi2->Fill(complementaryKaon->m());
-            HistInvMassPiPiPeak2->Fill(complementaryKaon->m());
-            HistInvMassPiPi2D->Fill(conditioningKaon->m(),complementaryKaon->m());
-            HistInvMassPiPiOneKaonInMassWindow->Fill(complementaryKaon->m());
-
-            vProtons.clear();
-            tracksWithTofHit.clear();
-            posPion.clear();
-            negPion.clear();  
-            pTCombinations.clear();
-            lVecCombinations.clear();
-            isMassInWindow = 0; 
-        }
-
-        if (isMassInWindow == 0)
-        { 
             vProtons.clear();
             tracksWithTofHit.clear();
             posPion.clear();
             negPion.clear();
-            continue;
+            continue; 
         }
-        iCutFlow+=1;
-		HistCutFlow->Fill(iCutFlow);    //cutflow: both kaons in mass window
-        FillProtons(protonSignsY, HistProtonsSameSide, HistProtonsOppositeSide,  iCutFlow); // protons: both kaons in mass window
 
 
-        HistInvMassPiPiPostSelection->Fill(conditioningKaon->m());
-        HistInvMassPiPiPeakPostSelection->Fill(conditioningKaon->m());
-        HistInvMassPiPi2PostSelection->Fill(complementaryKaon->m());
-        HistInvMassPiPiPeak2PostSelection->Fill(complementaryKaon->m());
-        HistInvMassPiPi2DPostSelection->Fill(conditioningKaon->m(),complementaryKaon->m());
+        // SELECTION: pT miss
+        double pXmiss = leadingKaon->px() + subLeadingKaon->px() + proton1.X() + proton2.X();
+        double pYmiss = leadingKaon->py() + subLeadingKaon->py()  + proton1.Y() + proton2.Y();
+         
+        double pTmiss = sqrt(pow(pXmiss,2) + pow(pYmiss,2));
 
+
+        if (pTmiss <= 0.5) 
+        {
+                isPtMissingSmall = 1;
+        }
 
         // SELECTION: number of cluster 
         Int_t nTofHits = upcEvt->getNumberOfHits();           
@@ -832,106 +657,17 @@ int main(int argc, char** argv)
             }
         }
 
-        HistNumOfClusters->Fill(totalCluster);
-        if (totalCluster > 7)
+
+        if (totalCluster <= 9)
         {
-            vTray.clear();
-            vProtons.clear();
-            tracksWithTofHit.clear();
-            continue;
-        }
-        vTray.clear();
-        HistNumOfClustersPostSelection->Fill(totalCluster);
-        iCutFlow+=1;
-		HistCutFlow->Fill(iCutFlow);  // cutfflow: cluster
-        FillProtons(protonSignsY, HistProtonsSameSide, HistProtonsOppositeSide,  iCutFlow); // cutflow: cluster
-  
-        // px, py plots for 4 pions + 2 protons
-        HistPtProtonPtKaonsX->Fill(conditioningKaon->px()+complementaryKaon->px(), proton1.X() +  proton2.X());
-        HistPtProtonPtKaonsY->Fill(conditioningKaon->py()+complementaryKaon->py(), proton1.Y() +  proton2.Y());
-        HistPtProtonPtKaonsX1d->Fill(conditioningKaon->px()+complementaryKaon->px() + proton1.X() +  proton2.X());
-        HistPtProtonPtKaonsY1d->Fill(conditioningKaon->py()+complementaryKaon->py() +proton1.Y() +  proton2.Y());
-
-        if (protonSignsY < 0.0)
-        {
-            HistPtProtonPtKaonsXOppY->Fill(conditioningKaon->px()+complementaryKaon->px(), proton1.X() +  proton2.X());
-            HistPtProtonPtKaonsYOppY->Fill(conditioningKaon->py()+complementaryKaon->py(), proton1.Y() +  proton2.Y());
-            HistPtProtonPtKaonsX1dOppY->Fill(conditioningKaon->px()+complementaryKaon->px() + proton1.X() +  proton2.X());
-            HistPtProtonPtKaonsY1dOppY->Fill(conditioningKaon->py()+complementaryKaon->py() +proton1.Y() +  proton2.Y());
+            isNumberOfTofClusterSmall = 1;
         }
 
-        else
-        {
-
-            HistPtProtonPtKaonsXSameY->Fill(conditioningKaon->px()+complementaryKaon->px(), proton1.X() +  proton2.X());
-            HistPtProtonPtKaonsYSameY->Fill(conditioningKaon->py()+complementaryKaon->py(), proton1.Y() +  proton2.Y());
-            HistPtProtonPtKaonsX1dSameY->Fill(conditioningKaon->px()+complementaryKaon->px() + proton1.X() +  proton2.X());
-            HistPtProtonPtKaonsY1dSameY->Fill(conditioningKaon->py()+complementaryKaon->py() +proton1.Y() +  proton2.Y());
-
-            if (proton1.Y() >= 0.0 and proton2.Y() >= 0.0)
-            {
-                HistPtProtonPtKaonsXSameYMomentaGreaterThan0->Fill(conditioningKaon->px()+complementaryKaon->px(), proton1.X() +  proton2.X());
-                HistPtProtonPtKaonsYSameYMomentaGreaterThan0->Fill(conditioningKaon->py()+complementaryKaon->py(), proton1.Y() +  proton2.Y());
-                HistPtProtonPtKaonsX1dSameYMomentaGreaterThan0->Fill(conditioningKaon->px()+complementaryKaon->px() + proton1.X() +  proton2.X());
-                HistPtProtonPtKaonsY1dSameYMomentaGreaterThan0->Fill(conditioningKaon->py()+complementaryKaon->py() +proton1.Y() +  proton2.Y());
-            }
-
-            else if (proton1.Y() < 0.0 and proton2.Y() < 0.0)
-            {
-                HistPtProtonPtKaonsXSameYMomentaLowerThan0->Fill(conditioningKaon->px()+complementaryKaon->px(), proton1.X() +  proton2.X());
-                HistPtProtonPtKaonsYSameYMomentaLowerThan0->Fill(conditioningKaon->py()+complementaryKaon->py(), proton1.Y() +  proton2.Y());
-                HistPtProtonPtKaonsX1dSameYMomentaLowerThan0->Fill(conditioningKaon->px()+complementaryKaon->px() + proton1.X() +  proton2.X());
-                HistPtProtonPtKaonsY1dSameYMomentaLowerThan0->Fill(conditioningKaon->py()+complementaryKaon->py() +proton1.Y() +  proton2.Y());
-
-            }
-        }
-
-
-        // SELECTION: pT miss
-        double pXmiss = conditioningKaon->px() + complementaryKaon->px() + proton1.X() + proton2.X();
-        double pYmiss = conditioningKaon->py() + complementaryKaon->py()  + proton1.Y() + proton2.Y();
-         
-        double pTmiss = sqrt(pow(pXmiss,2) + pow(pYmiss,2));
-        HistPtMiss->Fill(pTmiss);
-
-        if (protonSignsY < 0.0)
-        {
-            HistPtMissOppY->Fill(pTmiss);
-        }
-
-        else 
-        {   
-            HistPtMissSameY->Fill(pTmiss);
-        }
-
-        if (pTmiss > 0.2)
-        {
-                vProtons.clear();
-                tracksWithTofHit.clear();
-                posPion.clear();
-                negPion.clear();
-                continue;  
-        }
-
-        HistPtMissPostSelection->Fill(pTmiss);
-        iCutFlow+=1;
-		HistCutFlow->Fill(iCutFlow);  // cutflow: pTmiss
-        FillProtons(protonSignsY, HistProtonsSameSide, HistProtonsOppositeSide,  iCutFlow); // cutflow: pTmiss
-
-
-          /*
-        // VERTEX
-
-        // vertex
-        primVertexPosX = upcEvt->getVertex(0)->getPosX();
-        primVertexPosY = upcEvt->getVertex(0)->getPosY();
-        primVertexPosZ = upcEvt->getVertex(0)->getPosZ();
-
-        primVertexPosErrX = upcEvt->getVertex(0)->getErrX();
-        primVertexPosErrY = upcEvt->getVertex(0)->getErrY();
-        primVertexPosErrZ = upcEvt->getVertex(0)->getErrZ();
-
-        // fill number 
+        //DCA Daughters
+        double dcaDaughtersLeadingKaon = leadingKaon->dcaDaughters();
+        double dcaDaughtersSubLeadingKaon = subLeadingKaon->dcaDaughters();
+        
+        // Beam Position based on fill number
         int nFillNumber = upcEvt->getFillNumber();
         if (isMC == 0)
         {
@@ -945,67 +681,106 @@ int main(int argc, char** argv)
             beamPositionY = 0.0;
         }
 
-        //cout << "fill: " <<  nFillNumber << ", z: " <<  primVertexPosZ <<  ", bx: " << beamPositionX << ", by: " << beamPositionY << endl;
+        // vertices
+        TVector3 vertexLeadingKaon = leadingKaon->decayVertex();
+        double primVertexPosxLeadingKaon = vertexLeadingKaon.X();
+        double primVertexPosyLeadingKaon = vertexLeadingKaon.Y();
+        double primVertexPoszLeadingKaon = vertexLeadingKaon.Z();
+        double distVertexBeamxLeadingKaon = primVertexPosxLeadingKaon - beamPositionY;
+        double distVerteyBeamyLeadingKaon = primVertexPosyLeadingKaon - beamPositionX;
+        double distRLeadingKaon = sqrt(pow(distVertexBeamxLeadingKaon,2) + pow(distVerteyBeamyLeadingKaon,2));
 
 
-        // profile - distance between vertex and beam in x-y plane, parameter R and significance
+        TVector3 vertexSubLeadingKaon = subLeadingKaon->decayVertex();
+        double primVertexPosxSubLeadingKaon = vertexSubLeadingKaon.X();
+        double primVertexPosySubLeadingKaon = vertexSubLeadingKaon.Y();
+        double primVertexPoszSubLeadingKaon = vertexSubLeadingKaon.Z();
+        double distVertexBeamxSubLeadingKaon = primVertexPosxSubLeadingKaon - beamPositionY;
+        double distVerteyBeamySubLeadingKaon = primVertexPosySubLeadingKaon - beamPositionX;
+        double distRSubLeadingKaon = sqrt(pow(distVertexBeamxSubLeadingKaon,2) + pow(distVerteyBeamySubLeadingKaon,2));  
 
-        distVertexBeamY = primVertexPosY - beamPositionY;
-        distVertexBeamX = primVertexPosX - beamPositionX;
 
-        distR = sqrt(pow(distVertexBeamX,2) + pow(distVertexBeamY,2));
-   		significance = sqrt(pow((distVertexBeamX/primVertexPosErrX),2) + pow((distVertexBeamY/primVertexPosErrY),2));       
+        HistInvMassPiPi2D->Fill(leadingKaon->m(), subLeadingKaon->m());
 
-        // fill number and beam position
-        ProfileDistVertexBeamX->Fill(nFillNumber, distVertexBeamX); 
-        ProfileDistVertexBeamY->Fill(nFillNumber, distVertexBeamY); 
-        ProfileDistVertexBeamXAsAFunctionOfZ->Fill(primVertexPosZ, distVertexBeamX);
-        ProfileDistVertexBeamYAsAFunctionOfZ->Fill(primVertexPosZ, distVertexBeamY);
-        HistR->Fill(distR);
-   		HistSig->Fill(significance);    
 
-        HistVtxX->Fill(distVertexBeamX);
-        HistVtxY->Fill(distVertexBeamY);
-        HistVtxZ->Fill(primVertexPosZ);
-        
-        HistVtxErrX->Fill(primVertexPosErrX);
-        HistVtxErrY->Fill(primVertexPosErrY);
-        HistVtxErrZ->Fill(primVertexPosErrZ);
+        if (areKaonsInNarrowMassWindow)
+        {
+            HistNumOfClusters->Fill(totalCluster);
+            HistPtMiss->Fill(pTmiss);
+            // px, py plots for 4 pions + 2 protons - MISSING PT
+            HistPtProtonPtKaonsX->Fill(leadingKaon->px()+subLeadingKaon->px(), proton1.X() +  proton2.X());
+            HistPtProtonPtKaonsY->Fill(leadingKaon->py()+subLeadingKaon->py(), proton1.Y() +  proton2.Y());
+            HistPtProtonPtKaonsX1d->Fill(leadingKaon->px()+subLeadingKaon->px() + proton1.X() +  proton2.X());
+            HistPtProtonPtKaonsY1d->Fill(leadingKaon->py()+subLeadingKaon->py() +proton1.Y() +  proton2.Y());
 
-*/
+            if (protonSignsY < 0.0)
+            {
+                HistPtProtonPtKaonsXOppY->Fill(leadingKaon->px()+subLeadingKaon->px(), proton1.X() +  proton2.X());
+                HistPtProtonPtKaonsYOppY->Fill(leadingKaon->py()+subLeadingKaon->py(), proton1.Y() +  proton2.Y());
+                HistPtProtonPtKaonsX1dOppY->Fill(leadingKaon->px()+subLeadingKaon->px() + proton1.X() +  proton2.X());
+                HistPtProtonPtKaonsY1dOppY->Fill(leadingKaon->py()+subLeadingKaon->py() +proton1.Y() +  proton2.Y());
+            }
+
+            else
+            {
+
+                HistPtProtonPtKaonsXSameY->Fill(leadingKaon->px()+subLeadingKaon->px(), proton1.X() +  proton2.X());
+                HistPtProtonPtKaonsYSameY->Fill(leadingKaon->py()+subLeadingKaon->py(), proton1.Y() +  proton2.Y());
+                HistPtProtonPtKaonsX1dSameY->Fill(leadingKaon->px()+subLeadingKaon->px() + proton1.X() +  proton2.X());
+                HistPtProtonPtKaonsY1dSameY->Fill(leadingKaon->py()+subLeadingKaon->py() +proton1.Y() +  proton2.Y());
+
+                if (proton1.Y() >= 0.0 and proton2.Y() >= 0.0)
+                {
+                    HistPtProtonPtKaonsXSameYMomentaGreaterThan0->Fill(leadingKaon->px()+subLeadingKaon->px(), proton1.X() +  proton2.X());
+                    HistPtProtonPtKaonsYSameYMomentaGreaterThan0->Fill(leadingKaon->py()+subLeadingKaon->py(), proton1.Y() +  proton2.Y());
+                    HistPtProtonPtKaonsX1dSameYMomentaGreaterThan0->Fill(leadingKaon->px()+subLeadingKaon->px() + proton1.X() +  proton2.X());
+                    HistPtProtonPtKaonsY1dSameYMomentaGreaterThan0->Fill(leadingKaon->py()+subLeadingKaon->py() +proton1.Y() +  proton2.Y());
+                }
+
+                else if (proton1.Y() < 0.0 and proton2.Y() < 0.0)
+                {
+                    HistPtProtonPtKaonsXSameYMomentaLowerThan0->Fill(leadingKaon->px()+subLeadingKaon->px(), proton1.X() +  proton2.X());
+                    HistPtProtonPtKaonsYSameYMomentaLowerThan0->Fill(leadingKaon->py()+subLeadingKaon->py(), proton1.Y() +  proton2.Y());
+                    HistPtProtonPtKaonsX1dSameYMomentaLowerThan0->Fill(leadingKaon->px()+subLeadingKaon->px() + proton1.X() +  proton2.X());
+                    HistPtProtonPtKaonsY1dSameYMomentaLowerThan0->Fill(leadingKaon->py()+subLeadingKaon->py() +proton1.Y() +  proton2.Y());
+
+                }
+            }
+
+            // DCA  
+            HistDcaDaughtersLeadingKaon->Fill(dcaDaughtersLeadingKaon);
+            HistDcaDaughtersSubLeadingKaon->Fill(dcaDaughtersSubLeadingKaon);
+
+            // VERTEX
+            HistDistVtxXSubLeadingKaon->Fill(distVertexBeamxSubLeadingKaon);
+            HistDistVtxYSubLeadingKaon->Fill(distVerteyBeamySubLeadingKaon);
+            HistDistVtxZSubLeadingKaon->Fill(primVertexPoszSubLeadingKaon);
+            HistRSubLeadingKaon->Fill(distRSubLeadingKaon);
+
+            HistDistVtxXLeadingKaon->Fill(distVertexBeamxLeadingKaon);
+            HistDistVtxYLeadingKaon->Fill(distVerteyBeamyLeadingKaon);
+            HistDistVtxZLeadingKaon->Fill(primVertexPoszLeadingKaon);
+            HistRLeadingKaon->Fill(distRLeadingKaon);
+        }
+
+
+
+
         posPion.clear();
         negPion.clear();  
 
-        pTCombinations.clear();
-
-    }
+     }
 
     TFile *outfile = TFile::Open(argv[2], "recreate"); 
  
     HistCutFlow->Write(); 
-
-    ProfileDistVertexBeamX->Write();
-    ProfileDistVertexBeamY->Write();
-    ProfileDistVertexBeamXAsAFunctionOfZ->Write();
-    ProfileDistVertexBeamYAsAFunctionOfZ->Write();
-    HistR->Write();
-   	HistSig->Write();    
-
-    HistVtxX->Write();
-    HistVtxY->Write();
-    HistVtxZ->Write();
-       
-    HistVtxErrX->Write();
-    HistVtxErrY->Write();
-    HistVtxErrZ->Write();
 
     HistNumPrimaryVertices->Write(); 
     HistPrimaryVertexAbsPosZ->Write();
     HistNumTofMatchedTracks->Write();
     HistTofMatchedTracksCharge->Write();
     HistTofMatchedTracksAbsEta->Write();
-    HistTofMatchedTracksAbsDcaZ->Write();
-    HistTofMatchedTracksDcaXY->Write();
+    HistTofMatchedTracksPt->Write();
     HistTofMatchedTracksNfit->Write();
     HistTofMatchedTracksNdEdx->Write();
 
@@ -1014,8 +789,7 @@ int main(int argc, char** argv)
     HistNumTofMatchedTracksPostSelection->Write();
     HistTofMatchedTracksChargePostSelection->Write();
     HistTofMatchedTracksAbsEtaPostSelection->Write();
-    HistTofMatchedTracksAbsDcaZPostSelection->Write();
-    HistTofMatchedTracksDcaXYPostSelection->Write();
+    HistTofMatchedTracksPtPostSelection->Write();
     HistTofMatchedTracksNfitPostSelection->Write();
     HistTofMatchedTracksNdEdxPostSelection->Write();
 
@@ -1043,27 +817,11 @@ int main(int argc, char** argv)
     HistPtProtonPtKaonsY1dSameYMomentaLowerThan0->Write();
 
 
-    HistInvMassPiPi->Write();
     HistInvMassPiPiPeak->Write();
-    HistInvMassPiPi2->Write();
     HistInvMassPiPiPeak2->Write();
-
     HistInvMassPiPi2D->Write();
-    HistInvMassPiPiOneKaonInMassWindow->Write();
-    HistInvMassPiPiPostSelection->Write();
-    HistInvMassPiPiPeakPostSelection->Write();
-    HistInvMassPiPi2PostSelection->Write();
-    HistInvMassPiPiPeak2PostSelection->Write();   
-
-    HistInvMassPiPi2DPostSelection->Write();
-    
     HistNumOfClusters->Write();
-    HistNumOfClustersPostSelection->Write();
-
     HistPtMiss->Write();
-    HistPtMissOppY->Write();
-    HistPtMissSameY->Write();
-    HistPtMissPostSelection->Write();
 
     if (isMC == 1)
     {
@@ -1080,6 +838,20 @@ int main(int argc, char** argv)
 
     HistProtonsOppositeSide->Write();
     HistProtonsSameSide->Write();
+
+    HistDcaDaughtersLeadingKaon->Write();
+    HistDcaDaughtersSubLeadingKaon->Write();
+
+    HistDistVtxXLeadingKaon->Write();
+    HistDistVtxYLeadingKaon->Write();
+    HistDistVtxZLeadingKaon->Write();
+    HistRLeadingKaon->Write();
+
+    HistDistVtxXSubLeadingKaon->Write();
+    HistDistVtxYSubLeadingKaon->Write();
+    HistDistVtxZSubLeadingKaon->Write();
+    HistRSubLeadingKaon->Write();
+
     outfile->Close();
 
     return 0;
