@@ -25,7 +25,7 @@ ReadPicoLambdaK0::ReadPicoLambdaK0(TTree* chain2) {
     chain2->SetBranchAddress("pair_mass", &pair_mass);
 }
 
-void ReadPicoLambdaK0::ProcessData(Long64_t i, TTree* upcEvt, Tchain *chain, TTree* chain2) {
+void ReadPicoLambdaK0::ProcessData(Long64_t i, StUPCEvent* upcEvt, Tchain *chain, TTree* chain2) {
     eventIdVectors.clear();
     leadPtVectors.clear();
     leadPhiVectors.clear();
