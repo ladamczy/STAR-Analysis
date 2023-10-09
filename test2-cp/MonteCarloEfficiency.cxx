@@ -137,7 +137,7 @@ int main(int argc, char** argv)
         pairMassVectors.clear();
 
         chain->GetEntry(i);
-        Long64_t Event1 = upcEvt->GetEventNumber();
+        Long64_t Event1 = upcEvt->getEventNumber();
 
         //cout << Event1 << endl;                  debug 1
         for(int jj = j ; jj < chain2->GetEntries(); ++jj)
