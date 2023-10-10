@@ -26,16 +26,20 @@ int main(int argc, char const *argv[])
         return 0;
     }
 
-    istringstream mEnergyStream(argv[2]);
-    int mEnergy;
-    if (!(mEnergyStream >> mEnergy)){
-        cout<<"Invalid second argument!"<<endl;
-        return 0;
+    int mEnergy = 510;
+    if(argc>1){
+        istringstream mEnergyStream(argv[2]);
+        
+        if (!(mEnergyStream >> mEnergy)){
+            cout<<"Invalid second argument!"<<endl;
+            return 0;
+        }
     }
+
 
     cout<<"Number of events: "<<nEvents<<endl;
     cout<<"Energy: "<<mEnergy<<endl;
-    string filename = to_string(nEvents) + "_" + to_string(mEnergy) + "GeV_" + string(argv[0]) + ".root";
+    string filename = to_string(nEvents) + "_" + to_string(mEnergy) + "GeV_" + string(argv[0]).substr(string(argv[0]).find_last_of("/\\") + 1) + ".root";
     cout<<"Output file: "<<filename<<endl;
 
     Pythia pythia;
@@ -54,6 +58,11 @@ int main(int argc, char const *argv[])
 
     pythia.readString("SoftQCD:centralDiffractive = on");
     pythia.readString("SigmaTotal:zeroAXB = off");
+    //K0S exclusive
+    pythia.readString("310:onMode=0");
+    pythia.readString("310:OnIfMatch=211 -211");
+    pythia.readString("-310:onMode=0");
+    pythia.readString("-310:OnIfMatch=-211 211");
 
     pythia.init();
 
