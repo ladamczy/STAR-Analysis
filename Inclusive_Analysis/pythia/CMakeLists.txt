@@ -5,6 +5,12 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
+#PYTHIA stuff
+set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR})
+find_package(Pythia8 REQUIRED)
+
+message(${PYTHIA8_INCLUDE_DIR})
+
 #folder with shared code
 set(SHARED_FOLDER ../../star-upc)
 
@@ -78,10 +84,13 @@ target_link_libraries(${LIB} ${ROOT_DEPS} )
 #add custom (mine) headers
 include_directories(include)
 
+#add PYTHIA stuff
+include_directories(${PYTHIA8_INCLUDE_DIR})
+
 #create executables in BIN
 foreach(IBIN ${BIN})
   #IBIN is full path, TEMP_BIN only the filename
   get_filename_component(TEMP_BIN ${IBIN} NAME_WLE)
   add_executable(${TEMP_BIN} ${IBIN})
-  target_link_libraries(${TEMP_BIN} ${LIB} ${ROOT_DEPS})
+  target_link_libraries(${TEMP_BIN} ${LIB} ${ROOT_DEPS} ${PYTHIA8_LIBRARIES})
 endforeach(IBIN ${BIN})
