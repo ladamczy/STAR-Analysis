@@ -23,7 +23,7 @@ set(_pythia8dirs
     /opt/pythia8)
 
 #my modification cause the above didn't work
-set(_pythia8dirs ${_pythia8dirs} $ENV{PYTHIA8DATA}/..)
+set(_pythia8dirs ${_pythia8dirs} $ENV{PYTHIA8DATA}/../../..)
 
 find_path(PYTHIA8_INCLUDE_DIR
           NAMES Pythia8/Pythia.h

@@ -14,7 +14,6 @@ list(TRANSFORM SRCS REPLACE ${CMAKE_CURRENT_SOURCE_DIR}/ "")
 
 #name of shared library LIB
 set (LIB star-upc)
-set (LIB_PATH "${SHARED_FOLDER}/${LIB}")
 
 #binary executables
 file(GLOB_RECURSE BIN "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cxx")
@@ -24,6 +23,7 @@ set(SRCS_DICT ${SRCS})
 
 #LinkDef file for ROOT dictionary
 set (LINKDEF "${LIB}LinkDef.h")
+set (LINKDEF_PATH "${SHARED_FOLDER}/include/${LINKDEF}")
 
 #general compiler options
 set (CMAKE_CXX_COMPILER /usr/bin/g++)
@@ -61,18 +61,18 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 # command to invoke CLING, options -c -p are used by root5
 # and deprecated in root6
 add_custom_command (
-  OUTPUT ${DICT}
+  OUTPUT ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${DICT}
   COMMAND ${CLING}
-  ARGS -f ${DICT} -c -p -I${incdirs}
+  ARGS -f ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${DICT} -c -p -I${incdirs}
   ${HDRS_PLAIN} ${LINKDEF}
-  DEPENDS ${HDRS_INC} ${SHARED_FOLDER}/include/${LINKDEF}
+  DEPENDS ${HDRS_INC} ${LINKDEF_PATH}
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
   )
 
 #end of ROOT section
 
 #create library LIB
-add_library (${LIB} SHARED ${SRCS} ${DICT})
+add_library (${LIB} SHARED ${SRCS} ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${DICT})
 target_link_libraries(${LIB} ${ROOT_DEPS} )
 
 #add custom (mine) headers
