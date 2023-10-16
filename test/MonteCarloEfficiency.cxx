@@ -58,13 +58,13 @@ int main(int argc, char** argv)
     double truthVertexR, truthVertexZ, truthEta, truthPt;
     double detVertexR, detVertexZ, detEta, detPt, detM, V0M;
 
-    std::cout << "entries " << chain->GetEntries() << std::endl;
+//    std::cout << "entries " << chain->GetEntries() << std::endl;
 
     for (Long64_t i = 0; i < chain->GetEntries(); ++i) 
     {
        chain->GetEntry(i);
 
-     cout << "ntracks total  " << upcEvt->getNumberOfTracks() << endl;
+//     cout << "ntracks total  " << upcEvt->getNumberOfTracks() << endl;
 
      for (int j = 0; j < upcEvt->getNumberOfTracks(); j++) {
              for (int jj = j; jj < upcEvt->getNumberOfTracks(); jj++) {       
@@ -240,7 +240,7 @@ int main(int argc, char** argv)
             double vertexTpcZ = 0;
 
 
-            cout << "number of tracks " << tpcTrack.size() << endl;
+//            cout << "number of tracks " << tpcTrack.size() << endl;
             for (int i = 0; i < tpcTrack.size(); i++)
             {
                 tpcTrack[i]->getLorentzVector(trackVector, massPion);
@@ -255,16 +255,16 @@ int main(int argc, char** argv)
                     tpcKaon+=trackVector;
                     c+=1;
                 }
-                cout << "tpc vert " << tpcTrack[i]->getVertex()->getPosX() << " " 
-                                    << tpcTrack[i]->getVertex()->getPosY() << "	"
-                                    << tpcTrack[i]->getVertex()->getPosZ() << endl;
+//                cout << "tpc vert " << tpcTrack[i]->getVertex()->getPosX() << " " 
+//                                    << tpcTrack[i]->getVertex()->getPosY() << "	"
+//                                    << tpcTrack[i]->getVertex()->getPosZ() << endl;
 
                 vertexTpcR+=sqrt( pow(tpcTrack[i]->getVertex()->getPosX() ,2)+ pow(tpcTrack[i]->getVertex()->getPosY() ,2) )/2.0;
                 vertexTpcZ+=tpcTrack[i]->getVertex()->getPosZ()/2.0;
             }    
 
 
-	cout << "number of tracks " << tpcTrackUM.size();
+//	cout << "number of tracks " << tpcTrackUM.size();
 
    
             if (c!=2) 
@@ -281,13 +281,13 @@ int main(int argc, char** argv)
 
             TVector3 vertex(tpcTrack[0]->getVertex()->getPosX(),tpcTrack[0]->getVertex()->getPosY(),tpcTrack[0]->getVertex()->getPosZ());
             TVector3 vertex2(tpcTrack[1]->getVertex()->getPosX(),tpcTrack[1]->getVertex()->getPosY(),tpcTrack[1]->getVertex()->getPosZ());
-            cout << "paricle1 vertex " << vertex.X() << " " << vertex2.X() << endl;
+//            cout << "paricle1 vertex " << vertex.X() << " " << vertex2.X() << endl;
             Int_t id1, id2;
 //upcEvt->getMagneticField()
             StUPCV0 V0(tpcTrack[0],tpcTrack[1], massPion, massPion,id1,id2, vertex, upcEvt->getMagneticField(), true, false);
-            cout << "dca in the pair " << V0.dcaDaughters() << "len " << V0.decayLength() << "dcs to PV " 
-                 << V0.DcaToPrimaryVertex() << "mass " << V0.m() << "dca1 2 " << V0.particle1Dca() << " " << 
-                 V0.particle2Dca() << endl;
+//            cout << "dca in the pair " << V0.dcaDaughters() << "len " << V0.decayLength() << "dcs to PV " 
+//                 << V0.DcaToPrimaryVertex() << "mass " << V0.m() << "dca1 2 " << V0.particle1Dca() << " " << 
+//                 V0.particle2Dca() << endl;
  
 
             detVertexR = vertexTpcR;
