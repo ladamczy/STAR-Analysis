@@ -39,6 +39,10 @@ int main(int argc, char** argv)
     TH1D* HistKaonVtxZDet = new TH1D("HistKaonVtxZDet", "; z_{vtx}^{#pi^{+}#pi^{-}} [cm]; # events", 10, -150, 150);
     TH1D* HistKaonVtxRDet = new TH1D("HistKaonVtxRDet", "; R_{vtx}^{#pi^{+}#pi^{-}} [cm]; # events", 10, 0, 20);
     TH1D* HistKaonMDet = new TH1D("HistKaonMDet", "; M^{#pi^{+}#pi^{-}} [GeV]; # events", 100, 0.4, 0.6);
+
+    TH1D* HistXM4T = new TH1D("HistXM4T", "; M^{#pi^{+}#pi^{-}} [GeV]; # events",21, 0.9, 3.0);
+    TH1D* HistXM2P = new TH1D("HistXM2P", "; M^{#pi^{+}#pi^{-}} [GeV]; # events",21, 0.9, 3.0);
+
     TH1D* HistV0MDet = new TH1D("HistV0MDet", "; M^{V0} [GeV]; # events", 100, 0.4, 0.6);
     TH1D* HistV0DCAD = new TH1D("HistV0DCAD", "; DCAD [cm]; # events", 100, 0.0, 5.0);
     TH1D* HistV0R = new TH1D("HistV0R", "; R [cm]; # events", 100, 0.0, 5.0);
@@ -50,7 +54,8 @@ int main(int argc, char** argv)
     vector <TParticle*> PosPions, NegPions, Protons, PosPionsPaired, NegPionsPaired;
     vector <StUPCTrack*> tpcTrack;
     vector <StUPCTrack*> tpcTrackUM;
-
+    Int_t ToFPair = 0;
+    Int_t ToFTrack= 0;
     TLorentzVector lorentzVectorPosPion, lorentzVectorNegPion;
     TLorentzVector lorentzVectorNeutKaon;
     TLorentzVector trackVector;
@@ -62,6 +67,7 @@ int main(int argc, char** argv)
 
     for (Long64_t i = 0; i < chain->GetEntries(); ++i) 
     {
+       TLorentzVector lorentzVectorX;
        chain->GetEntry(i);
 
      cout << "ntracks total  " << upcEvt->getNumberOfTracks() << endl;
@@ -71,7 +77,7 @@ int main(int argc, char** argv)
                if( upcEvt->getTrack(j)->getCharge() != upcEvt->getTrack(jj)->getCharge()) {
         TVector3 vertex(0,0,0);
         int id1,id2;
-        StUPCV0 V0(upcEvt->getTrack(j),upcEvt->getTrack(jj), massPion, massPion,id1,id2, vertex, upcEvt->getMagneticField(), true, false);
+        StUPCV0 V0(upcEvt->getTrack(j),upcEvt->getTrack(jj), massPion, massPion,id1,id2, vertex, upcEvt->getMagneticField(), false, false);
         HistV0DCAD->Fill(V0.dcaDaughters());
         HistV0R->Fill(sqrt(V0.v0x()*V0.v0x()+V0.v0y()*V0.v0y()));
         HistV0MDet->Fill(V0.m()); 
@@ -118,15 +124,17 @@ int main(int argc, char** argv)
                 }
             }
         }
-
-        if (PosPionsPaired.size() == 0 or NegPionsPaired.size() == 0 ) 
+        cout << " true level " << PosPionsPaired.size() << " " << NegPionsPaired.size()  << endl;
+        if (PosPionsPaired.size()!=2 or NegPionsPaired.size() != 2 ) 
         {
             PosPions.clear();
             NegPions.clear();
             PosPionsPaired.clear();
             NegPionsPaired.clear();
             Protons.clear();
-            tpcTrack.clear();
+            ToFTrack=0;
+            ToFPair=0;
+            tpcTrackUM.clear();
             continue;
         }
         
@@ -134,7 +142,7 @@ int main(int argc, char** argv)
         {   
             vector <StUPCTrack*> tpcTrack;
             int num = 0;
-
+            int numToF=0;
             lorentzVectorPosPion.SetPxPyPzE(PosPionsPaired[i]->Px(), PosPionsPaired[i]->Py(), PosPionsPaired[i]->Pz(), PosPionsPaired[i]->Energy());
             lorentzVectorNegPion.SetPxPyPzE(NegPionsPaired[i]->Px(), NegPionsPaired[i]->Py(), NegPionsPaired[i]->Pz(), NegPionsPaired[i]->Energy());
 
@@ -147,6 +155,9 @@ int main(int argc, char** argv)
                 NegPionsPaired.clear();
                 Protons.clear();
                 tpcTrack.clear();
+       	    ToFTrack=0;
+       	    ToFPair=0;
+                tpcTrackUM.clear();
                 continue;
             }
             
@@ -158,11 +169,14 @@ int main(int argc, char** argv)
                 NegPionsPaired.clear();
                 Protons.clear();
                 tpcTrack.clear();
+       	    ToFTrack=0;
+       	    ToFPair=0;
+                tpcTrackUM.clear();
                 continue;
             }
 
             lorentzVectorNeutKaon = lorentzVectorPosPion + lorentzVectorNegPion;
-
+            lorentzVectorX +=lorentzVectorNeutKaon;
             TLorentzVector productionVertex;
             PosPionsPaired[i]->ProductionVertex(productionVertex);
 
@@ -198,20 +212,26 @@ int main(int argc, char** argv)
                 
                 for (int j = 0; j < upcEvt->getNumberOfTracks(); j++)
                 {
-                    if ( abs(lorentzVectorPosPion.Eta() - upcEvt->getTrack(j)->getEta()) < 0.1  and  abs(lorentzVectorPosPion.Phi() - upcEvt->getTrack(j)->getPhi()) < 0.1  and upcEvt->getTrack(i)->getFlag(StUPCTrack::kTof)) 
+                    if ( abs(lorentzVectorPosPion.Eta() - upcEvt->getTrack(j)->getEta()) < 0.1  and  abs(lorentzVectorPosPion.Phi() - upcEvt->getTrack(j)->getPhi()) < 0.1) 
                     {
                         tpcTrack.push_back(upcEvt->getTrack(j));
+                        tpcTrackUM.push_back(upcEvt->getTrack(j));
                         num+=1;
+                        if(upcEvt->getTrack(j)->getFlag(StUPCTrack::kTof)) numToF+=1;
                     }
 
-                    if ( abs(lorentzVectorNegPion.Eta() - upcEvt->getTrack(j)->getEta()) < 0.1  and  abs(lorentzVectorNegPion.Phi() - upcEvt->getTrack(j)->getPhi()) < 0.1  and upcEvt->getTrack(i)->getFlag(StUPCTrack::kTof)) 
+                    if ( abs(lorentzVectorNegPion.Eta() - upcEvt->getTrack(j)->getEta()) < 0.1  and  abs(lorentzVectorNegPion.Phi() - upcEvt->getTrack(j)->getPhi()) < 0.1) 
                     {
                         tpcTrack.push_back(upcEvt->getTrack(j));
+                        tpcTrackUM.push_back(upcEvt->getTrack(j));
                         num+=1;
+       	       	       	if(upcEvt->getTrack(j)->getFlag(StUPCTrack::kTof)) numToF+=1;
                     }
                 }         
 
-                // phi - eta consistency with truth level for exacly two tracks                               
+                // phi - eta consistency with truth level for exacly two tracks    
+                if(numToF>0) ToFPair+=1;
+                ToFTrack+=numToF;           
                 if (num != 2) 
                 {       
                     PosPions.clear();
@@ -220,6 +240,9 @@ int main(int argc, char** argv)
                     NegPionsPaired.clear();
                     Protons.clear();
                     tpcTrack.clear();
+       	    ToFTrack=0;
+       	    ToFPair=0;
+                    tpcTrackUM.clear();
                     continue;
                 }
             }
@@ -232,8 +255,12 @@ int main(int argc, char** argv)
                 NegPionsPaired.clear();
                 Protons.clear();
                 tpcTrack.clear();
+       	    ToFTrack=0;
+       	    ToFPair=0;
+                tpcTrackUM.clear();
                 continue;
             }
+
             TLorentzVector tpcKaon = {0,0,0,0};
             int c = 0;
             double vertexTpcR = 0;
@@ -264,7 +291,7 @@ int main(int argc, char** argv)
             }    
 
 
-	cout << "number of tracks " << tpcTrackUM.size();
+	cout << "number of tracks, c " << tpcTrack.size() << " " << c << endl;;
 
    
             if (c!=2) 
@@ -274,6 +301,9 @@ int main(int argc, char** argv)
                 PosPionsPaired.clear();
                 NegPionsPaired.clear();
                 tpcTrack.clear();
+       	    ToFTrack=0;
+       	    ToFPair=0;
+                tpcTrackUM.clear();
                 Protons.clear();
                 continue;
             }
@@ -284,7 +314,7 @@ int main(int argc, char** argv)
             cout << "paricle1 vertex " << vertex.X() << " " << vertex2.X() << endl;
             Int_t id1, id2;
 //upcEvt->getMagneticField()
-            StUPCV0 V0(tpcTrack[0],tpcTrack[1], massPion, massPion,id1,id2, vertex, upcEvt->getMagneticField(), true, false);
+            StUPCV0 V0(tpcTrack[0],tpcTrack[1], massPion, massPion,id1,id2, vertex, upcEvt->getMagneticField(), false, false);
             cout << "dca in the pair " << V0.dcaDaughters() << "len " << V0.decayLength() << "dcs to PV " 
                  << V0.DcaToPrimaryVertex() << "mass " << V0.m() << "dca1 2 " << V0.particle1Dca() << " " << 
                  V0.particle2Dca() << endl;
@@ -325,11 +355,21 @@ int main(int argc, char** argv)
         }    
 
 
+        cout << "Event " << PosPions.size() << " " << NegPions.size() << " " << 
+                            PosPionsPaired.size() << " " << NegPionsPaired.size() << " " <<
+                            tpcTrack.size() << " " << tpcTrackUM.size() << "ToF Tracks " << ToFTrack << 
+                            "ToF Pairs " << ToFPair << endl;
+
+        if(ToFTrack==4&&tpcTrackUM.size()==4&&abs(truthVertexZ)<80) HistXM4T->Fill(lorentzVectorX.M());
+        if(ToFPair==2&&tpcTrackUM.size()==4&&abs(truthVertexZ)<80) HistXM2P->Fill(lorentzVectorX.M());
+
         PosPions.clear();
         NegPions.clear();
         PosPionsPaired.clear();
         NegPionsPaired.clear();
         tpcTrack.clear();
+       	    ToFTrack=0;
+       	    ToFPair=0;
         tpcTrackUM.clear();
         Protons.clear();   
     
@@ -337,6 +377,8 @@ int main(int argc, char** argv)
     
     TFile *outfile = TFile::Open(argv[2], "recreate"); 
 
+    HistXM4T->Write();
+    HistXM2P->Write();
     HistKaonPtTruth->Write();
     HistKaonEtaTruth->Write();
     HistKaonVtxRTruth->Write();
