@@ -12,8 +12,6 @@ set(SHARED_FOLDER ../../star-upc)
 file(GLOB_RECURSE SRCS "${SHARED_FOLDER}/src/*.cxx")
 list(TRANSFORM SRCS REPLACE ${CMAKE_CURRENT_SOURCE_DIR}/ "")
 
-message(${SRCS})
-
 #name of shared library LIB
 set (LIB star-upc)
 set (LIB_PATH "${SHARED_FOLDER}/${LIB}")
