@@ -21,13 +21,14 @@ int main(int argc, char** argv)
     }
 
     TChain *chain = new TChain("mUPCTree"); 
-    string inputFileName;
-    vector <string> rootFiles;
-    while (std::getline(inputFilePathList, inputFileName))
-    {
-        chain->Add(inputFileName.c_str());
-    }
-    inputFilePathList.close();
+    // string inputFileName;
+    // vector <string> rootFiles;
+    // while (std::getline(inputFilePathList, inputFileName))
+    // {
+    //    chain->Add(inputFileName.c_str());
+    chain->AddFile(argv[1]);   
+    // }
+    // inputFilePathList.close();
 
     const char* inputFile2 = argv[3];
     TFile* file2 = TFile::Open(inputFile2);
