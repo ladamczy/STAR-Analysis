@@ -12,6 +12,7 @@
 #include <sys/stat.h>
 #include <iterator>
 #include <ostream>
+#include <TRandom.h>
 #include <iomanip>
 #include <stdexcept>
 #include <limits>
@@ -115,37 +116,36 @@ int main(int argc, char** argv)
     TH1D* HistTofMatchedTracksNfitPostSelection = new TH1D("12_HistTofMatchedTracksNfitPs", ";N_{fit}; count", 61, -0.5, 60.5);
     TH1D* HistTofMatchedTracksNdEdxPostSelection = new TH1D("13_HistTofMatchedTracksNdEdxPs", ";N_{dE/dx}; count", 61, -0.5, 60.5);
 
-    TH2D* HistPtProtonPtKaonsX = new TH2D("HistPtProtonPtKaonsX", ";[p_{K^{0}}p_{K^{0}}]_{x}; [p_{p'}^{W}p_{p'}^{E}]_{x} ",  100, -2.0, 2.0, 100, -2.0, 2.0);
+    TH2D* HistPtProtonPtKaonsX = new TH2D("HistPtProtonPtKaonsX", " ;[p_{K^{0}}p_{K^{0}}]_{x}; [p_{p'}^{W}p_{p'}^{E}]_{x} ",  100, -2.0, 2.0, 100, -2.0, 2.0);
     TH2D* HistPtProtonPtKaonsY = new TH2D("HistPtProtonPtKaonsY", ";[p_{K^{0}}p_{K^{0}}]_{y}; [p_{p'}^{W}p_{p'}^{E}]_{y} ",  100, -2.0, 2.0, 100, -2.0, 2.0);
-    TH1D* HistPtProtonPtKaonsX1d = new TH1D("HistPtProtonPtKaonsX1d", ";[p_{K^{0}}p_{K^{0}} + p_{p'}^{W}p_{p'}^{E}]_{x}; events ",  200, -5.0, 5.0);
+    TH1D* HistPtProtonPtKaonsX1d = new TH1D("HistPtProtonPtKaonsX1d", " ;[p_{K^{0}}p_{K^{0}} + p_{p'}^{W}p_{p'}^{E}]_{x}; events ",  200, -5.0, 5.0);
     TH1D* HistPtProtonPtKaonsY1d = new TH1D("HistPtProtonPtKaonsY1d", ";[p_{K^{0}}p_{K^{0}} +  p_{p'}^{W}p_{p'}^{E}]_{y}; events ",  200, -5.0, 5.0);
-    TH2D* HistPtProtonPtKaonsXOppY = new TH2D("HistPtProtonPtKaonsXOppY", ";[p_{K^{0}}p_{K^{0}}]_{x}; [p_{p'}^{W}p_{p'}^{E}]_{x} ",  100, -2.0, 2.0, 100, -2.0, 2.0);
-    TH2D* HistPtProtonPtKaonsYOppY = new TH2D("HistPtProtonPtKaonsYOppY", ";[p_{K^{0}}p_{K^{0}}]_{y}; [p_{p'}^{W}p_{p'}^{E}]_{y} ",  100, -2.0, 2.0, 100, -2.0, 2.0);
-    TH1D* HistPtProtonPtKaonsX1dOppY = new TH1D("HistPtProtonPtKaonsX1dOppY", ";[p_{K^{0}}p_{K^{0}} + p_{p'}^{W}p_{p'}^{E}]_{x}; events ",  200, -5.0, 5.0);
-    TH1D* HistPtProtonPtKaonsY1dOppY = new TH1D("HistPtProtonPtKaonsY1dOppY", ";[p_{K^{0}}p_{K^{0}} +  p_{p'}^{W}p_{p'}^{E}]_{y}; events ",  200, -5.0, 5.0);
-    TH2D* HistPtProtonPtKaonsXSameY = new TH2D("HistPtProtonPtKaonsXSameY", ";[p_{K^{0}}p_{K^{0}}]_{x}; [p_{p'}^{W}p_{p'}^{E}]_{x} ",  100, -2.0, 2.0, 100, -2.0, 2.0);
-    TH2D* HistPtProtonPtKaonsYSameY = new TH2D("HistPtProtonPtKaonsYSameY", ";[p_{K^{0}}p_{K^{0}}]_{y}; [p_{p'}^{W}p_{p'}^{E}]_{y} ",  100, -2.0, 2.0, 100, -2.0, 2.0);
-    TH1D* HistPtProtonPtKaonsX1dSameY = new TH1D("HistPtProtonPtKaonsX1dSameY", ";[p_{K^{0}}p_{K^{0}} + p_{p'}^{W}p_{p'}^{E}]_{x}; events ",  200, -5.0, 5.0);
-    TH1D* HistPtProtonPtKaonsY1dSameY = new TH1D("HistPtProtonPtKaonsY1dSameY", ";[p_{K^{0}}p_{K^{0}} + p_{p'}^{W}p_{p'}^{E}]_{y}; events ",  200, -5.0, 5.0);
+    TH2D* HistPtProtonPtKaonsXOppY = new TH2D("HistPtProtonPtKaonsXOppY", "the opposite py signs;[p_{K^{0}}p_{K^{0}}]_{x}; [p_{p'}^{W}p_{p'}^{E}]_{x} ",  100, -2.0, 2.0, 100, -2.0, 2.0);
+    TH2D* HistPtProtonPtKaonsYOppY = new TH2D("HistPtProtonPtKaonsYOppY", "the opposite py signs;[p_{K^{0}}p_{K^{0}}]_{y}; [p_{p'}^{W}p_{p'}^{E}]_{y} ",  100, -2.0, 2.0, 100, -2.0, 2.0);
+    TH1D* HistPtProtonPtKaonsX1dOppY = new TH1D("HistPtProtonPtKaonsX1dOppY", "the opposite py signs;[p_{K^{0}}p_{K^{0}} + p_{p'}^{W}p_{p'}^{E}]_{x}; events ",  25, -3.0, 3.0);
+    TH1D* HistPtProtonPtKaonsY1dOppY = new TH1D("HistPtProtonPtKaonsY1dOppY", "the opposite py signs;[p_{K^{0}}p_{K^{0}} +  p_{p'}^{W}p_{p'}^{E}]_{y}; events ",  25, -3.0, 3.0);
+    TH2D* HistPtProtonPtKaonsXSameY = new TH2D("HistPtProtonPtKaonsXSameY", "the same py signs;[p_{K^{0}}p_{K^{0}}]_{x}; [p_{p'}^{W}p_{p'}^{E}]_{x} ",  100, -2.0, 2.0, 100, -2.0, 2.0);
+    TH2D* HistPtProtonPtKaonsYSameY = new TH2D("HistPtProtonPtKaonsYSameY", "the same py signs;[p_{K^{0}}p_{K^{0}}]_{y}; [p_{p'}^{W}p_{p'}^{E}]_{y} ",  100, -2.0, 2.0, 100, -2.0, 2.0);
+    TH1D* HistPtProtonPtKaonsX1dSameY = new TH1D("HistPtProtonPtKaonsX1dSameY", "the same py signs;[p_{K^{0}}p_{K^{0}} + p_{p'}^{W}p_{p'}^{E}]_{x}; events ",  25, -3,3);
+    TH1D* HistPtProtonPtKaonsY1dSameY = new TH1D("HistPtProtonPtKaonsY1dSameY", "the same py signs;[p_{K^{0}}p_{K^{0}} + p_{p'}^{W}p_{p'}^{E}]_{y}; events ",  25, -3,3);
 
     TH2D* HistPtProtonPtKaonsXSameYMomentaGreaterThan0 = new TH2D("HistPtProtonPtKaonsXSameYMomentaGreaterThan0", ";[p_{K^{0}}p_{K^{0}}]_{x}; [p_{p'}^{W}p_{p'}^{E}]_{x} ",  100, -2.0, 2.0, 100, -2.0, 2.0);
     TH2D* HistPtProtonPtKaonsYSameYMomentaGreaterThan0 = new TH2D("HistPtProtonPtKaonsYSameYMomentaGreaterThan0", ";[p_{K^{0}}p_{K^{0}}]_{y}; [p_{p'}^{W}p_{p'}^{E}]_{y} ",  100, -2.0, 2.0, 100, -2.0, 2.0);
-    TH1D* HistPtProtonPtKaonsX1dSameYMomentaGreaterThan0 = new TH1D("HistPtProtonPtKaonsX1dSameYMomentaGreaterThan0", ";[p_{K^{0}}p_{K^{0}} + p_{p'}^{W}p_{p'}^{E}]_{x}; events ",  200, -5.0, 5.0);
-    TH1D* HistPtProtonPtKaonsY1dSameYMomentaGreaterThan0 = new TH1D("HistPtProtonPtKaonsY1dSameYMomentaGreaterThan0", ";[p_{K^{0}}p_{K^{0}} + p_{p'}^{W}p_{p'}^{E}]_{y}; events ",  200, -5.0, 5.0);
+    TH1D* HistPtProtonPtKaonsX1dSameYMomentaGreaterThan0 = new TH1D("HistPtProtonPtKaonsX1dSameYMomentaGreaterThan0", "the same py signs, py > 0;[p_{K^{0}}p_{K^{0}} + p_{p'}^{W}p_{p'}^{E}]_{x}; events ",  25, -3.0, 3.0);
+    TH1D* HistPtProtonPtKaonsY1dSameYMomentaGreaterThan0 = new TH1D("HistPtProtonPtKaonsY1dSameYMomentaGreaterThan0", "the same py signs, py > 0;[p_{K^{0}}p_{K^{0}} + p_{p'}^{W}p_{p'}^{E}]_{y}; events ",  25, -3.0, 3.0);
 
     TH2D* HistPtProtonPtKaonsXSameYMomentaLowerThan0 = new TH2D("HistPtProtonPtKaonsXSameYMomentaLowerThan0", ";[p_{K^{0}}p_{K^{0}}]_{x}; [p_{p'}^{W}p_{p'}^{E}]_{x} ",  100, -2.0, 2.0, 100, -2.0, 2.0);
     TH2D* HistPtProtonPtKaonsYSameYMomentaLowerThan0 = new TH2D("HistPtProtonPtKaonsYSameYMomentaLowerThan0", ";[p_{K^{0}}p_{K^{0}}]_{y}; [p_{p'}^{W}p_{p'}^{E}]_{y} ",  100, -2.0, 2.0, 100, -2.0, 2.0);
-    TH1D* HistPtProtonPtKaonsX1dSameYMomentaLowerThan0 = new TH1D("HistPtProtonPtKaonsX1dSameYMomentaLowerThan0", ";[p_{K^{0}}p_{K^{0}} + p_{p'}^{W}p_{p'}^{E}]_{x}; events ",  200, -5.0, 5.0);
-    TH1D* HistPtProtonPtKaonsY1dSameYMomentaLowerThan0 = new TH1D("HistPtProtonPtKaonsY1dSameYMomentaLowerThan0", ";[p_{K^{0}}p_{K^{0}} + p_{p'}^{W}p_{p'}^{E}]_{y}; events ",  200, -5.0, 5.0);
+    TH1D* HistPtProtonPtKaonsX1dSameYMomentaLowerThan0 = new TH1D("HistPtProtonPtKaonsX1dSameYMomentaLowerThan0", "the same py signs, py < 0;[p_{K^{0}}p_{K^{0}} + p_{p'}^{W}p_{p'}^{E}]_{x}; events ",  25, -3.0, 3.0);
+    TH1D* HistPtProtonPtKaonsY1dSameYMomentaLowerThan0 = new TH1D("HistPtProtonPtKaonsY1dSameYMomentaLowerThan0", "the same py signs, py < 0;[p_{K^{0}}p_{K^{0}} + p_{p'}^{W}p_{p'}^{E}]_{y}; events ",  25, -3.0, 3.0);
 
     TH1D* HistInvMassPiPiPeak = new TH1D("HistInvMassPiPiPeak", "; m_{#pi^{+}#pi^{-}} [GeV]; # events", 25 ,0.44, 0.54);
     TH1D* HistInvMassPiPiPeak2 = new TH1D("HistInvMassPiPiPeak2", "; m_{#pi^{+}#pi^{-}} [GeV]; # events", 25 ,0.44, 0.54);
 
 
-    TH1D* HistInvMassPiPiPeakPostSelection = new TH1D("HistInvMassPiPiPeakPs", "; m_{#pi^{+}#pi^{-}} [GeV]; # events",  25 ,0.44, 0.54);
-    TH1D* HistInvMassPiPiPeak2PostSelection = new TH1D("HistInvMassPiPiPeak2Ps", "; m_{#pi^{+}#pi^{-}} [GeV]; # events", 25 ,0.44, 0.54);
-    TH2D* HistInvMassPiPi2D =  new TH2D("HistInvMassPiPi2D", "; m_{#pi^{+}#pi^{-}} [GeV]; # events", 25 ,0.44, 0.54,  25 ,0.44, 0.54);
-    TH2D* HistInvMassPiPi2DPostSelection =  new TH2D("HistInvMassPiPi2DPs", "; m_{#pi^{+}#pi^{-}} [GeV]; # events",  25 ,0.44, 0.54,  25 ,0.44, 0.54);
+    TH2D* HistInvMassPiPi2D =  new TH2D("HistInvMassPiPi2D", "; m_{#pi^{+}#pi^{-}}^{leading} [GeV];  m_{#pi^{+}#pi^{-}}^{sub-leading} [GeV]", 25 ,0.44, 0.54,  25 ,0.44, 0.54);
+    TH2D* HistInvMassPiPi2DTofPtMiss =  new TH2D("HistInvMassPiPi2DTofPtMiss", "; m_{#pi^{+}#pi^{-}}^{leading} [GeV];  m_{#pi^{+}#pi^{-}}^{sub-leading} [GeV]", 25 ,0.44, 0.54,  25 ,0.44, 0.54);
+
 
     TH1D* HistNumOfClusters = new TH1D("HistNumOfClusters", "; # TOF clusters; # events", 40, -0.5, 40.5);
     TH1D* HistNumOfClustersPostSelection = new TH1D("HistNumOfClustersPs", "; # TOF clusters; # events", 40, -0.5, 40.5);
@@ -169,6 +169,21 @@ int main(int argc, char** argv)
     TH1D* HistProtonsOppositeSide = new TH1D("HistProtonsOppositeSide", "; ; # events where protons have the opposite sign of py",  16, -0.5, 15.5);
     TH1D* HistDcaDaughtersLeadingKaon = new TH1D("HistDcaDaughtersLeadingKaon", "; DCA_{K0^{leading}} [cm] # events", 50, 0, 6);
     TH1D* HistDcaDaughtersSubLeadingKaon = new TH1D("HistDcaDaughtersSubLeadingKaon", "; DCA_{K0^subleading}} [cm]; #events", 50, 0, 6);
+
+
+    TH1D* HistMassK0K0 = new TH1D("HistMassK0K0", " ; m_{K^{0}K^{0}} [GeV] ; events", 21, 0.9, 3);
+    TH1D* HistPtK0K0 = new TH1D("HistPtK0K0", " ; p_{T, K^{0}K^{0}} [GeV] ; events", 20, 0.0, 2);
+    TH1D* HistEtaK0K0 = new TH1D("HistEtaK0K0", " ; #eta_{K^{0}K^{0}} [GeV] ; events", 21, -2, 2);
+    
+    TH1D* HistPtLeadingK0 = new TH1D("HistPtLeadingK0", " ; p_{T, K^{0}}^{leading} [GeV] ; events", 20, 0.0, 2);
+    TH1D* HistEtaLeadingK0 = new TH1D("HistEtaLeadingK0", " ; #eta+{K^{0}}^{leading} [GeV] ; events", 50, -3, 3);
+    
+    TH1D* HistPtSubLeadingK0 = new TH1D("HistPtSubLeadingK0", " ; p_{T, K^{0}}^{leading} [GeV] ; events", 20, 0.0, 2);
+    TH1D* HistEtaSubLeadingK0 = new TH1D("HistEtaSubLeadingK0", " ; #eta_{K^{0}}^{leading} [GeV] ; events", 50, -3, 3);
+    
+    TH1D* HistEtaLeadingSubLeadingDiff = new TH1D("HistEtaLeadingSubLeadingDiff", " ; #eta_{K^{0}}^{leading} [GeV] ; events", 50, -3, 3);
+
+
 
     float massPion = 0.13957061;
     double massKaon =  497.611/1000.0;
@@ -205,6 +220,8 @@ int main(int argc, char** argv)
         chain->SetBranchAddress("mRPEvent", &rpEvt);
     }
 
+    cout << isMC << endl;
+
     double beamPositionX, beamPositionY;
     double primVertexPosX, primVertexPosY, primVertexPosZ, primVertexPosErrX, primVertexPosErrY, primVertexPosErrZ;
     double distVertexBeamX, distVertexBeamY, distR, significance;
@@ -235,6 +252,7 @@ int main(int argc, char** argv)
         iCutFlow = 0;
         HistCutFlow->Fill(iCutFlow);  // cutflow: all data
 
+   
         double protonSignsY = 1;
         vector <TParticle*> vProtons;
         if (isMC == 0)
@@ -267,13 +285,19 @@ int main(int argc, char** argv)
                 }
             }
 
-            proton1.SetX(vProtons[0]->Px());
-            proton1.SetY(vProtons[0]->Py());
+            double sigma = 0.033;
+            double px_reco1 = gRandom->Gaus(vProtons[0]->Px(), sigma);
+            double py_reco1 = gRandom->Gaus(vProtons[0]->Py(), sigma);
+            proton1.SetX(px_reco1);
+            proton1.SetY(py_reco1);
             proton1.SetZ(vProtons[0]->Pz());
 
-            proton2.SetX(vProtons[1]->Px());
-            proton2.SetY(vProtons[1]->Py());
+            double px_reco2 = gRandom->Gaus(vProtons[1]->Px(), sigma);
+            double py_reco2 = gRandom->Gaus(vProtons[1]->Py(), sigma);
+            proton2.SetX(px_reco2);
+            proton2.SetY(py_reco2);
             proton2.SetZ(vProtons[1]->Pz());
+
             protonSignsY = protonSignsY*vProtons[0]->Py()*vProtons[1]->Py();
         }
 
@@ -563,7 +587,6 @@ int main(int argc, char** argv)
             continue; 
         }
 
-
         // SELECTION: pT miss
         double pXmiss = leadingKaon->px() + subLeadingKaon->px() + proton1.X() + proton2.X();
         double pYmiss = leadingKaon->py() + subLeadingKaon->py()  + proton1.Y() + proton2.Y();
@@ -571,7 +594,7 @@ int main(int argc, char** argv)
         double pTmiss = sqrt(pow(pXmiss,2) + pow(pYmiss,2));
 
 
-        if (pTmiss <= 0.5) 
+        if (pTmiss <= 0.15) 
         {
                 isPtMissingSmall = 1;
         }
@@ -699,14 +722,37 @@ int main(int argc, char** argv)
         double distVerteyBeamySubLeadingKaon = primVertexPosySubLeadingKaon - beamPositionX;
         double distRSubLeadingKaon = sqrt(pow(distVertexBeamxSubLeadingKaon,2) + pow(distVerteyBeamySubLeadingKaon,2));  
 
-
         HistInvMassPiPi2D->Fill(leadingKaon->m(), subLeadingKaon->m());
+        if  (isNumberOfTofClusterSmall and isPtMissingSmall)
+        {
+            HistInvMassPiPi2DTofPtMiss->Fill(leadingKaon->m(), subLeadingKaon->m());
 
+            if (areKaonsInNarrowMassWindow)
+            {
 
+                TLorentzVector K01 = leadingKaon->lorentzVector();
+                TLorentzVector K02 = subLeadingKaon->lorentzVector();
+                TLorentzVector K0K0 = K01 + K02;
+                HistMassK0K0->Fill(K0K0.M());
+                HistPtK0K0->Fill(K0K0.Pt());
+                HistEtaK0K0->Fill(K0K0.Eta());
+
+                
+                HistPtLeadingK0->Fill(leadingKaon->pt());
+                HistEtaLeadingK0->Fill(leadingKaon->eta());
+
+                HistPtLeadingK0->Fill(subLeadingKaon->pt());
+                HistEtaLeadingK0->Fill(subLeadingKaon->eta());
+                HistEtaLeadingSubLeadingDiff->Fill(leadingKaon->eta()-subLeadingKaon->eta());
+            }
+        }
+
+        // TH1D* HistEtaLeadingSubLeadingDiff = new TH1D("HistEtaLeadingSubLeadingDiff", " ; #eta_{K^{0}}^{leading} [GeV] ; events", 100, -1, 1);
         if (areKaonsInNarrowMassWindow)
         {
-            HistNumOfClusters->Fill(totalCluster);
+
             HistPtMiss->Fill(pTmiss);
+
             // px, py plots for 4 pions + 2 protons - MISSING PT
             HistPtProtonPtKaonsX->Fill(leadingKaon->px()+subLeadingKaon->px(), proton1.X() +  proton2.X());
             HistPtProtonPtKaonsY->Fill(leadingKaon->py()+subLeadingKaon->py(), proton1.Y() +  proton2.Y());
@@ -749,19 +795,24 @@ int main(int argc, char** argv)
 
             // DCA  
             HistDcaDaughtersLeadingKaon->Fill(dcaDaughtersLeadingKaon);
-            HistDcaDaughtersSubLeadingKaon->Fill(dcaDaughtersSubLeadingKaon);
+            HistDcaDaughtersLeadingKaon->Fill(dcaDaughtersSubLeadingKaon);
 
             // VERTEX
             HistDistVtxXSubLeadingKaon->Fill(distVertexBeamxSubLeadingKaon);
             HistDistVtxYSubLeadingKaon->Fill(distVerteyBeamySubLeadingKaon);
             HistDistVtxZSubLeadingKaon->Fill(primVertexPoszSubLeadingKaon);
-            HistRSubLeadingKaon->Fill(distRSubLeadingKaon);
+            HistRLeadingKaon->Fill(distRSubLeadingKaon);
 
             HistDistVtxXLeadingKaon->Fill(distVertexBeamxLeadingKaon);
             HistDistVtxYLeadingKaon->Fill(distVerteyBeamyLeadingKaon);
             HistDistVtxZLeadingKaon->Fill(primVertexPoszLeadingKaon);
             HistRLeadingKaon->Fill(distRLeadingKaon);
+            if (isPtMissingSmall)
+            {
+                HistNumOfClusters->Fill(totalCluster);
+            }
         }
+
 
 
 
@@ -852,6 +903,18 @@ int main(int argc, char** argv)
     HistDistVtxZSubLeadingKaon->Write();
     HistRSubLeadingKaon->Write();
 
+    HistInvMassPiPi2DTofPtMiss->Write();
+    HistPtLeadingK0->Write();
+    HistEtaLeadingK0->Write();
+
+    HistPtSubLeadingK0->Write();
+    HistEtaSubLeadingK0->Write();
+    HistEtaLeadingSubLeadingDiff->Write();
+
+    HistMassK0K0->Write();
+    HistPtK0K0->Write();
+    HistEtaK0K0->Write();
+    
     outfile->Close();
 
     return 0;
