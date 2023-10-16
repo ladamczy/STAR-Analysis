@@ -1,13 +1,12 @@
 #ifndef READ_PICO_LAMBDA_K0_H
 #define READ_PICO_LAMBDA_K0_H
 
-#include <vector>
-#include <TTree.h>
+#include <Includes.h>
 
 class ReadPicoLambdaK0 {
 public:
     ReadPicoLambdaK0(TTree* chain2);
-    void ProcessData(Long64_t i);
+    void ProcessData(Long64_t i, StUPCEvent* upcEvt, TChain *chain, TTree* chain2);
 
     std::vector<double> eventIdVectors;
     std::vector<double> leadPtVectors;

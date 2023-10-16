@@ -4,12 +4,6 @@ using namespace std;
 
 int main(int argc, char** argv)  
 {
-    if (argc != 3 && argc != 4) 
-    {
-        cerr << "two or three input files required ([input] [ouput] [input2]{additional})" << std::endl;
-        return 1;
-    }
-
     double massPion = 0.13957061;
     double massKaon =  497.611;
 
@@ -55,17 +49,8 @@ int main(int argc, char** argv)
     double truthVertexR, truthVertexZ, truthEta, truthPt;
     double detVertexR, detVertexZ, detEta, detPt;
              
-    //const char* inputFile2 = argv[3];
-    //TFile* file2 = TFile::Open(inputFile2);
-    //TTree* chain2 = static_cast<TTree*>(file2->Get("ntp_K0s"));
-
-    //ReadPicoLambdaK0 Read_K0(chain2);
-
     for (Long64_t i = 0; i < chain->GetEntries(); ++i) 
     {
-        //process data from the ntp_K0s
-        //Read_K0.ProcessData(i);
-
         // extract all Pi+, Pi- and diffractive protons
         for (int i = 0; i < upcEvt->getNumberOfMCParticles(); i++)
         {
