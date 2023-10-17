@@ -13,9 +13,11 @@
 #include "TCanvas.h"
 #include "TPaveStats.h"
 
+#include "Styles.h"
+
 void loopdir(TDirectory*, std::vector<TKey*>*);
 
-int ROOTtoPDF(const char* filename, std::string outputfile)
+int ROOTtoPDF(const char* filename, std::string outputfile, std::string config)
 {
     //new file
     TFile* fileToPDF = TFile::Open(filename, "READ");
@@ -28,13 +30,19 @@ int ROOTtoPDF(const char* filename, std::string outputfile)
 
     //drawing them in a PDF file
     //setting style
-    gStyle->SetHistLineWidth(1);
-    gStyle->SetFrameLineWidth(3);
-    gStyle->SetOptStat(111111);
-    gStyle->SetStatY(0.89);
-    gStyle->SetStatX(0.89);
-    gStyle->SetStatW(0.1);
-    gStyle->SetStatH(0.1); 
+    // gStyle->SetHistLineWidth(1);
+    // gStyle->SetFrameLineWidth(3);
+    // gStyle->SetOptStat(111111);
+    // gStyle->SetStatY(0.89);
+    // gStyle->SetStatX(0.89);
+    // gStyle->SetStatW(0.1);
+    // gStyle->SetStatH(0.1); 
+    if(config.length()==0){
+        MainStyle(gStyle);
+    }else{
+        MainStyle(gStyle, atoi(config.c_str()));
+    }
+    
     gROOT->ForceStyle();
     gROOT->SetBatch(kTRUE);
     TCanvas* c1 = new TCanvas("c1","c1",1600,1200);
@@ -54,18 +62,19 @@ int ROOTtoPDF(const char* filename, std::string outputfile)
         //drawing histograms
         if(strstr(Hists[i]->GetClassName(), "TH1")){
             temp1D = (TH1D*)fileToPDF->Get(Hists[i]->GetName());
-            // temp1D->SetMarkerStyle(kFullCircle);
-            // temp1D->Draw("E");
-            c1->SetLogy(1);
-            c1->SetLogz(0);
-            temp1D->Draw("HIST");
-            
+            if(config.length()==0){
+                TH1Style(c1, temp1D);
+            }else{
+                TH1Style(c1, temp1D, atoi(config.c_str()));
+            }
         }
         if(strstr(Hists[i]->GetClassName(), "TH2")){
             temp2D = (TH2D*)fileToPDF->Get(Hists[i]->GetName());
-            c1->SetLogy(0);
-            c1->SetLogz(1);
-            temp2D->Draw("COLZ");
+            if(config.length()==0){
+                TH2Style(c1, temp2D);
+            }else{
+                TH2Style(c1, temp2D, atoi(config.c_str()));
+            }
         }
 
         //actual drawing to file
