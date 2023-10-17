@@ -1,5 +1,6 @@
 //default headers
 #include <vector>
+#include <string>
 
 //ROOT headers
 #include "TDirectory.h"
@@ -14,7 +15,7 @@
 
 void loopdir(TDirectory*, std::vector<TKey*>*, std::vector<TKey*>*);
 
-int ROOTtoPDF(const char* filename)
+int ROOTtoPDF(const char* filename, std::string outputfile)
 {
     //new file
     TFile* fileToPDF = TFile::Open(filename, "READ");
@@ -41,7 +42,13 @@ int ROOTtoPDF(const char* filename)
     TPaveStats *st;
     TH1D* temp1D;
     TH2D* temp2D;
-    c1->Print("result.pdf[");
+    if(outputfile.length()==0){
+        outputfile = std::string(filename).substr(0, std::string(filename).find("."));
+    }
+    if(outputfile.find(".pdf")==std::string::npos){
+        outputfile = outputfile + ".pdf";
+    }
+    c1->Print((outputfile+"[").c_str());
 
     //looping through both vectors
     for (int i = 0; i < OneDimHists.size(); i++){
@@ -52,7 +59,7 @@ int ROOTtoPDF(const char* filename)
         c1->SetLogz(0);
         temp1D->Draw("HIST");
         gPad->RedrawAxis();
-        c1->Print("result.pdf");
+        c1->Print(outputfile.c_str());
     }
     for (int i = 0; i < TwoDimHists.size(); i++){
         temp2D = (TH2D*)fileToPDF->Get(TwoDimHists[i]->GetName());
@@ -60,9 +67,9 @@ int ROOTtoPDF(const char* filename)
         c1->SetLogz(1);
         temp2D->Draw("COLZ");
         gPad->RedrawAxis();
-        c1->Print("result.pdf");
+        c1->Print(outputfile.c_str());
     }
-    c1->Print("result.pdf]");
+    c1->Print((outputfile+"]").c_str());
 
     fileToPDF->Close();
     OneDimHists.clear();

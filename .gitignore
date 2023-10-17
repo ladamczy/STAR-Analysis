@@ -1,8 +1,6 @@
-Inclusive_Analysis/star-upc/build/
-Inclusive_Analysis/star-upc/*.root
-Inclusive_Analysis/pythia/build/
-Inclusive_Analysis/pythia/*.root
-Inclusive_Analysis/*.pdf
+Inclusive_Analysis/**/build/
+Inclusive_Analysis/**/*.pdf
+Inclusive_Analysis/**/*.root
 test/build
 test/run
 star-upc/build
