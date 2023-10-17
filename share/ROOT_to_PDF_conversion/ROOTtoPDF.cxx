@@ -13,19 +13,18 @@
 #include "TCanvas.h"
 #include "TPaveStats.h"
 
-void loopdir(TDirectory*, std::vector<TKey*>*, std::vector<TKey*>*);
+void loopdir(TDirectory*, std::vector<TKey*>*);
 
 int ROOTtoPDF(const char* filename, std::string outputfile)
 {
     //new file
     TFile* fileToPDF = TFile::Open(filename, "READ");
 
-    //vectors for TH1 & TH2 histograms
-    std::vector<TKey*> OneDimHists;
-    std::vector<TKey*> TwoDimHists;
+    //vectors for histograms
+    std::vector<TKey*> Hists;
 
     //filling the vectors
-    loopdir(fileToPDF, &OneDimHists, &TwoDimHists);
+    loopdir(fileToPDF, &Hists);
 
     //drawing them in a PDF file
     //setting style
@@ -51,52 +50,51 @@ int ROOTtoPDF(const char* filename, std::string outputfile)
     c1->Print((outputfile+"[").c_str());
 
     //looping through both vectors
-    for (int i = 0; i < OneDimHists.size(); i++){
-        temp1D = (TH1D*)fileToPDF->Get(OneDimHists[i]->GetName());
-        // temp1D->SetMarkerStyle(kFullCircle);
-        // temp1D->Draw("E");
-        c1->SetLogy(1);
-        c1->SetLogz(0);
-        temp1D->Draw("HIST");
-        gPad->RedrawAxis();
-        c1->Print(outputfile.c_str());
-    }
-    for (int i = 0; i < TwoDimHists.size(); i++){
-        temp2D = (TH2D*)fileToPDF->Get(TwoDimHists[i]->GetName());
-        c1->SetLogy(0);
-        c1->SetLogz(1);
-        temp2D->Draw("COLZ");
+    for (int i = 0; i < Hists.size(); i++){
+        //drawing histograms
+        if(strstr(Hists[i]->GetClassName(), "TH1")){
+            temp1D = (TH1D*)fileToPDF->Get(Hists[i]->GetName());
+            // temp1D->SetMarkerStyle(kFullCircle);
+            // temp1D->Draw("E");
+            c1->SetLogy(1);
+            c1->SetLogz(0);
+            temp1D->Draw("HIST");
+            
+        }
+        if(strstr(Hists[i]->GetClassName(), "TH2")){
+            temp2D = (TH2D*)fileToPDF->Get(Hists[i]->GetName());
+            c1->SetLogy(0);
+            c1->SetLogz(1);
+            temp2D->Draw("COLZ");
+        }
+
+        //actual drawing to file
         gPad->RedrawAxis();
         c1->Print(outputfile.c_str());
     }
     c1->Print((outputfile+"]").c_str());
 
     fileToPDF->Close();
-    OneDimHists.clear();
-    TwoDimHists.clear();
+    Hists.clear();
 
     return 0;
 }
 
-void loopdir(TDirectory *dir, std::vector<TKey*>* onedim, std::vector<TKey*>* twodim){
+void loopdir(TDirectory *dir, std::vector<TKey*>* hists){
 //loop on all keys of dir including possible subdirs
-//print a message for all keys with a class TH1
+//print a message for all keys with a class TH1 or TH2
 //code taken from https://root-forum.cern.ch/t/finding-all-objects-in-a-root-file-regardless-of-directries/2351
 TIter next (dir->GetListOfKeys());
 TKey* key;
     while ((key = (TKey*)next())) {
-        if(strstr(key->GetClassName(), "TH1")){
+        if(strstr(key->GetClassName(), "TH1") || strstr(key->GetClassName(), "TH2")){
             printf(" key : %s is a %s in %s\n", key->GetName(), key->GetClassName(), dir->GetPath());
-            onedim->push_back(key);
-        }
-        if(strstr(key->GetClassName(), "TH2")){
-            printf(" key : %s is a %s in %s\n", key->GetName(), key->GetClassName(), dir->GetPath());
-            twodim->push_back(key);
+            hists->push_back(key);
         }
         if(!strcmp(key->GetClassName(),"TDirectory")){
             dir->cd(key->GetName());
             TDirectory *subdir = gDirectory;
-            loopdir(subdir, onedim, twodim);
+            loopdir(subdir, hists);
             dir->cd();
         }
     }
