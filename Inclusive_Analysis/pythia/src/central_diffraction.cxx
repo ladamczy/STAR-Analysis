@@ -81,14 +81,13 @@ int main(int argc, char const *argv[])
     pythia.init();
 
     //histograms & histogram class initialization
-    TH2D hist1tab[] = {TH2D(), TH2D(), TH2D(), TH2D(), TH2D()};
-    TH1D hist2tab[] = {TH1D(), TH1D(), TH1D(), TH1D(), TH1D()};
-    TH1D hist3tab[] = {TH1D(), TH1D(), TH1D(), TH1D(), TH1D()};
-    XiHistogramsClass histgroup1(" before cuts", "1", &hist1tab[0], &hist2tab[0], &hist3tab[0]);
-    XiHistogramsClass histgroup2(" after TPC cut", "2", &hist1tab[1], &hist2tab[1], &hist3tab[1]);
-    XiHistogramsClass histgroup3(" after TPC & BBCL cuts", "3", &hist1tab[2], &hist2tab[2], &hist3tab[2]);
-    XiHistogramsClass histgroup4(" after TPC, BBCL & K^{0}_{S} cuts", "4", &hist1tab[3], &hist2tab[3], &hist3tab[3]);
-    XiHistogramsClass histgroup5(" after TPC, BBCL, K^{0}_{S} & extra particles cuts", "5", &hist1tab[4], &hist2tab[4], &hist3tab[4]);
+    // vector<XiHistogramsClass> histvector;
+    // histvector.push_back(XiHistogramsClass(" before cuts", "1"));
+    XiHistogramsClass histgroup1(" before cuts", "1");
+    XiHistogramsClass histgroup2(" after TPC cut", "2");
+    XiHistogramsClass histgroup3(" after TPC & BBCL cuts", "3");
+    XiHistogramsClass histgroup4(" after TPC, BBCL & K^{0}_{S} cuts", "4");
+    XiHistogramsClass histgroup5(" after TPC, BBCL, K^{0}_{S} & extra particles cuts", "5");
     TH1D npart("npart", "Number of particles of not-K^{0}_{S} origin;particles;events", 30, 0, 30);
 
     //production loop
@@ -151,16 +150,17 @@ int main(int argc, char const *argv[])
             continue;
         }
 
+        histgroup4.AddProton(&p1, &p2);
+
         //at least 2 non-K0 related particles
         int nonK0relatedParticles = 0;
         for (int part_index = 0; part_index < pythia.event.size(); part_index++){
-            if(pythia.event[part_index].mother1()!=310 && isParticleInTPCAcceptance(pythia.event[part_index])){
+            if(pythia.event[pythia.event[part_index].mother1()].id()!=310 && isParticleInTPCAcceptance(pythia.event[part_index])){
                 nonK0relatedParticles++;
             }
         }
 
         npart.Fill(nonK0relatedParticles);
-        histgroup4.AddProton(&p1, &p2);
 
         if(nonK0relatedParticles<2){
             continue;
@@ -178,30 +178,31 @@ int main(int argc, char const *argv[])
     }
     TFile* output = new TFile(filename.c_str(), "RECREATE");
     output->cd();
-    TH2D* hist1 = nullptr;
-    TH1D* hist2 = nullptr;
-    TH1D* hist3 = nullptr;
+    TH2D hist1;
+    TH1D hist2;
+    TH1D hist3;
 
     histgroup1.RetrieveHistograms(hist1, hist2, hist3);
-    hist1->Write();
-    hist2->Write();
-    hist3->Write();
+    hist1.Write();
+    hist2.Write();
+    hist3.Write();
     histgroup2.RetrieveHistograms(hist1, hist2, hist3);
-    hist1->Write();
-    hist2->Write();
-    hist3->Write();
+    hist1.Write();
+    hist2.Write();
+    hist3.Write();
     histgroup3.RetrieveHistograms(hist1, hist2, hist3);
-    hist1->Write();
-    hist2->Write();
-    hist3->Write();
+    hist1.Write();
+    hist2.Write();
+    hist3.Write();
     histgroup4.RetrieveHistograms(hist1, hist2, hist3);
-    hist1->Write();
-    hist2->Write();
-    hist3->Write();
+    hist1.Write();
+    hist2.Write();
+    hist3.Write();
+    npart.Write();
     histgroup5.RetrieveHistograms(hist1, hist2, hist3);
-    hist1->Write();
-    hist2->Write();
-    hist3->Write();
+    hist1.Write();
+    hist2.Write();
+    hist3.Write();
 
     output->Close();
                         

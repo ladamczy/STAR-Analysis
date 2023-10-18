@@ -6,7 +6,7 @@ bool isParticleInTPCAcceptance(Pythia8::Particle particle){
 
 bool hasAtLeastNParticlesInTPC(Pythia8::Event event, int nParticles){
     int n = 0;
-    for (size_t i = 0; i < event.size(); i++){
+    for (int i = 0; i < event.size(); i++){
         if(isParticleInTPCAcceptance(event[i])){
             n++;
         }
@@ -20,7 +20,7 @@ bool hasAtLeastNParticlesInTPC(Pythia8::Event event, int nParticles){
 
 bool hasAtLeastNParticlesInBBCLarge(Pythia8::Event event, int nParticles){
     int n = 0;
-    for (size_t i = 0; i < event.size(); i++){
+    for (int i = 0; i < event.size(); i++){
         if(abs(event[i].eta())>2.1 && abs(event[i].eta())<3.3 && event[i].pT()>0.5 && event[i].isFinal()){
             n++;
         }
