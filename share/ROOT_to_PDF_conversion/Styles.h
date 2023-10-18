@@ -4,7 +4,6 @@
 #include "TH2.h"
 
 //here you can add your own after corresponding number
-//so far it will be one number, which will turn on all styles
 
 //style applied to gStyle
 void MainStyle(TStyle* style, int styleNumber=0){

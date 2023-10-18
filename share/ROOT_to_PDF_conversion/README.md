@@ -29,10 +29,12 @@ If you want a .pdf file with different name somewhere else, use
 
 .pdf extension at the end is not necessary, but it might still be written
 
-If you want special config, you do it this way:
+If you want special config, you can do it this way:
 
->./ROOTtoPDF.sh -c [config number] [ROOT_file_you_want_to_convert.root]
+>./ROOTtoPDF.sh -m [main config number] -o [1D histogram number] -t [2D histogram number] [ROOT_file_you_want_to_convert.root]
 
 or
 
->./ROOTtoPDF.sh -c [config number] [ROOT_file_you_want_to_convert.root] [path_to_new_pdf_file]
+>./ROOTtoPDF.sh -m [main config number] -o [1D histogram number] -t [2D histogram number] [ROOT_file_you_want_to_convert.root] [path_to_new_pdf_file]
+
+If you do not specify a config number, the default one will be used.

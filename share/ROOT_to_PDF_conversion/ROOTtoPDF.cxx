@@ -17,7 +17,7 @@
 
 void loopdir(TDirectory*, std::vector<TKey*>*);
 
-int ROOTtoPDF(const char* filename, std::string outputfile, std::string config)
+int ROOTtoPDF(const char* filename, std::string outputfile, int mainconfig, int oneconfig, int twoconfig)
 {
     //new file
     TFile* fileToPDF = TFile::Open(filename, "READ");
@@ -30,18 +30,7 @@ int ROOTtoPDF(const char* filename, std::string outputfile, std::string config)
 
     //drawing them in a PDF file
     //setting style
-    // gStyle->SetHistLineWidth(1);
-    // gStyle->SetFrameLineWidth(3);
-    // gStyle->SetOptStat(111111);
-    // gStyle->SetStatY(0.89);
-    // gStyle->SetStatX(0.89);
-    // gStyle->SetStatW(0.1);
-    // gStyle->SetStatH(0.1); 
-    if(config.length()==0){
-        MainStyle(gStyle);
-    }else{
-        MainStyle(gStyle, atoi(config.c_str()));
-    }
+    MainStyle(gStyle, mainconfig);
     
     gROOT->ForceStyle();
     gROOT->SetBatch(kTRUE);
@@ -62,19 +51,12 @@ int ROOTtoPDF(const char* filename, std::string outputfile, std::string config)
         //drawing histograms
         if(strstr(Hists[i]->GetClassName(), "TH1")){
             temp1D = (TH1D*)fileToPDF->Get(Hists[i]->GetName());
-            if(config.length()==0){
-                TH1Style(c1, temp1D);
-            }else{
-                TH1Style(c1, temp1D, atoi(config.c_str()));
-            }
+            TH1Style(c1, temp1D, oneconfig);
+
         }
         if(strstr(Hists[i]->GetClassName(), "TH2")){
             temp2D = (TH2D*)fileToPDF->Get(Hists[i]->GetName());
-            if(config.length()==0){
-                TH2Style(c1, temp2D);
-            }else{
-                TH2Style(c1, temp2D, atoi(config.c_str()));
-            }
+            TH2Style(c1, temp2D, twoconfig);
         }
 
         //actual drawing to file
