@@ -30,6 +30,12 @@ void MainStyle(TStyle* style, int styleNumber=0){
 void TH1Style(TCanvas* c, TH1D* onedimhist, int styleNumber=0){
     switch (styleNumber){
     case 0:
+        c->SetLogx(0);
+        c->SetLogy(0);
+        c->SetLogz(0);
+        onedimhist->Draw("HIST");
+        break;
+    case 1:
         // temp1D->SetMarkerStyle(kFullCircle);
         // temp1D->Draw("E");
         c->SetLogx(0);
@@ -37,7 +43,7 @@ void TH1Style(TCanvas* c, TH1D* onedimhist, int styleNumber=0){
         c->SetLogz(0);
         onedimhist->Draw("HIST");
         break;
-    case 1:
+    case 2:
         //your style here 
         break;
     

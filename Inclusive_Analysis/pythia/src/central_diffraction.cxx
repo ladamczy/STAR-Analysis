@@ -81,13 +81,12 @@ int main(int argc, char const *argv[])
     pythia.init();
 
     //histograms & histogram class initialization
-    // vector<XiHistogramsClass> histvector;
-    // histvector.push_back(XiHistogramsClass(" before cuts", "1"));
-    XiHistogramsClass histgroup1(" before cuts", "1");
-    XiHistogramsClass histgroup2(" after TPC cut", "2");
-    XiHistogramsClass histgroup3(" after TPC & BBCL cuts", "3");
-    XiHistogramsClass histgroup4(" after TPC, BBCL & K^{0}_{S} cuts", "4");
-    XiHistogramsClass histgroup5(" after TPC, BBCL, K^{0}_{S} & extra particles cuts", "5");
+    vector<XiHistogramsClass> histvector;
+    histvector.push_back(XiHistogramsClass(" before cuts"));
+    histvector.push_back(XiHistogramsClass(" after TPC cut"));
+    histvector.push_back(XiHistogramsClass(" after TPC & BBCL cuts"));
+    histvector.push_back(XiHistogramsClass(" after TPC, BBCL & K^{0}_{S} cuts"));
+    histvector.push_back(XiHistogramsClass(" after TPC, BBCL, K^{0}_{S} & extra particles cuts"));
     TH1D npart("npart", "Number of particles of not-K^{0}_{S} origin;particles;events", 30, 0, 30);
 
     //production loop
@@ -122,21 +121,21 @@ int main(int argc, char const *argv[])
         p1.SetPxPyPzE(pythia.event[p1index].px(), pythia.event[p1index].py(), pythia.event[p1index].pz(), pythia.event[p1index].e());
         p2.SetPxPyPzE(pythia.event[p2index].px(), pythia.event[p2index].py(), pythia.event[p2index].pz(), pythia.event[p2index].e());
 
-        histgroup1.AddProton(&p1, &p2);
+        histvector[0].AddProton(&p1, &p2);
         
         //TPC cut
         if(!hasAtLeastNParticlesInTPC(pythia.event, 2)){
             continue;
         }
 
-        histgroup2.AddProton(&p1, &p2);
+        histvector[1].AddProton(&p1, &p2);
 
         //BBCL cut
         if(hasAtLeastNParticlesInBBCLarge(pythia.event, 1)){
             continue;
         }
 
-        histgroup3.AddProton(&p1, &p2);
+        histvector[2].AddProton(&p1, &p2);
 
         //K0 decaying into 2pi0 cut
         bool doWeSeeK0 = false;
@@ -150,7 +149,7 @@ int main(int argc, char const *argv[])
             continue;
         }
 
-        histgroup4.AddProton(&p1, &p2);
+        histvector[3].AddProton(&p1, &p2);
 
         //at least 2 non-K0 related particles
         int nonK0relatedParticles = 0;
@@ -166,7 +165,7 @@ int main(int argc, char const *argv[])
             continue;
         }
 
-        histgroup5.AddProton(&p1, &p2);
+        histvector[4].AddProton(&p1, &p2);
     }
 
     // Statistics on event generation.
@@ -176,35 +175,42 @@ int main(int argc, char const *argv[])
     if(folder.length()!=0){
         filename = folder + "/" + filename;
     }
-    TFile* output = new TFile(filename.c_str(), "RECREATE");
-    output->cd();
+    TFile* output1 = new TFile(filename.c_str(), "RECREATE");
+    TFile* output2 = new TFile((filename.replace(filename.rfind("."), 5, "_ratios.root")).c_str(), "RECREATE");
     TH2D hist1;
     TH1D hist2;
     TH1D hist3;
+    TH1D temphist2;
+    TH1D temphist3;
+    TH1D* temphist2towrite;
+    TH1D* temphist3towrite;
 
-    histgroup1.RetrieveHistograms(hist1, hist2, hist3);
-    hist1.Write();
-    hist2.Write();
-    hist3.Write();
-    histgroup2.RetrieveHistograms(hist1, hist2, hist3);
-    hist1.Write();
-    hist2.Write();
-    hist3.Write();
-    histgroup3.RetrieveHistograms(hist1, hist2, hist3);
-    hist1.Write();
-    hist2.Write();
-    hist3.Write();
-    histgroup4.RetrieveHistograms(hist1, hist2, hist3);
-    hist1.Write();
-    hist2.Write();
-    hist3.Write();
-    npart.Write();
-    histgroup5.RetrieveHistograms(hist1, hist2, hist3);
-    hist1.Write();
-    hist2.Write();
-    hist3.Write();
-
-    output->Close();
+    for (long unsigned int i = 0; i < histvector.size(); i++){
+        histvector[i].RetrieveHistograms(hist1, hist2, hist3);
+        output1->cd();
+        hist1.Write();
+        hist2.Write();
+        hist3.Write();
+        if(i==3){
+            npart.Write();
+        }
+        if(i!=0){
+            output2->cd();
+            temphist2towrite = (TH1D*)hist2.Clone();
+            temphist2towrite->Divide(&temphist2);
+            temphist2towrite->SetTitle((string(temphist2towrite->GetTitle())+" (ratio);"+string(temphist2towrite->GetXaxis()->GetTitle())+";ratio").c_str());
+            temphist2towrite->Write();
+            temphist3towrite = (TH1D*)hist3.Clone();
+            temphist3towrite->Divide(&temphist3);
+            temphist3towrite->SetTitle((string(temphist3towrite->GetTitle())+" (ratio);"+string(temphist3towrite->GetXaxis()->GetTitle())+";ratio").c_str());
+            temphist3towrite->Write();
+        }
+        temphist2 = *((TH1D*)hist2.Clone());
+        temphist3 = *((TH1D*)hist3.Clone());
+    }
+    
+    output1->Close();
+    output2->Close();
                         
     return 0;
 }

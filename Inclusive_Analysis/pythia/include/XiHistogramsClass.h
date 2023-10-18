@@ -12,6 +12,7 @@ private:
     TH2D* xi_e_w;
     TH1D* xi_multiplied;
     TH1D* xi_log;
+    static int objectCount;
 public:
     XiHistogramsClass(string, string);
     ~XiHistogramsClass();
@@ -19,7 +20,13 @@ public:
     void RetrieveHistograms(TH2D&, TH1D&, TH1D&);
 };
 
-XiHistogramsClass::XiHistogramsClass(string namepart, string identifier){
+int XiHistogramsClass::objectCount;
+
+XiHistogramsClass::XiHistogramsClass(string namepart, string identifier=""){
+    if(identifier.length()==0){
+        identifier = to_string(objectCount);
+    }
+    objectCount++;
     xi_e_w = new TH2D(string("xi_e_w_"+identifier).c_str(), string("#Xi_{E} vs #Xi_{W}" + namepart + ";Xi_{E};Xi_{W}").c_str(), 50, 0, 1, 50, 0, 1);
     xi_multiplied = new TH1D(string("xi_multiplied_"+identifier).c_str(), string("#Xi_{E}*#Xi_{W}" + namepart + ";Xi_{E}*Xi_{W};entries").c_str(), 60, 0, 0.3);
     xi_log = new TH1D(string("xi_log_"+identifier).c_str(), string("ln(#frac{#Xi_{E}}{#Xi_{W}})" + namepart + ";ln(#frac{#Xi_{E}}{#Xi_{W}});entries").c_str(), 100, -10, 10);
