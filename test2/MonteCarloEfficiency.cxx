@@ -68,7 +68,7 @@ int main(int argc, char** argv)
     {
         //process data from the ntp_K0s
         Read_K0.ProcessData(i, upcEvt, chain, chain2);
-        if (Read_K0.getUnmatchedEventsTree2() != NULL)
+        if (Read_K0.unmatchedEventsTree2.empty())
             unmatchedEventsTree1.push_back(chain->GetEntry(i));
         
         // extract all Pi+, Pi- and diffractive protons
@@ -291,31 +291,42 @@ int main(int argc, char** argv)
     
     }
     
-    TFile *outfile = TFile::Open(argv[2], "recreate"); 
+    // TFile *outfile = TFile::Open(argv[2], "recreate"); 
 
-    HistKaonPtTruth->Write();
-    HistKaonEtaTruth->Write();
-    HistKaonVtxRTruth->Write();
-    HistKaonVtxZTruth->Write();
+    // HistKaonPtTruth->Write();
+    // HistKaonEtaTruth->Write();
+    // HistKaonVtxRTruth->Write();
+    // HistKaonVtxZTruth->Write();
     
-    HistKaonPtDet->Write();
-    HistKaonEtaDet->Write();
-    HistKaonVtxRDet->Write();
-    HistKaonVtxZDet->Write();
-    outfile->Close();
+    // HistKaonPtDet->Write();
+    // HistKaonEtaDet->Write();
+    // HistKaonVtxRDet->Write();
+    // HistKaonVtxZDet->Write();
+    // outfile->Close();
 
-    const char* lossFile = "loss.txt";
-    std::ofstream loss(lossFile); // Użyj strumienia plikowego do zapisu do pliku.
+    const char* umT1 = "unmatchedEventsTree1.txt";
+    std::ofstream loss1(umT1);
 
-    if (loss.is_open()) {
-        for (Long64_t i = 0; i < unmatchedEventsTree1.size(); i++) {
-            loss << unmatchedEventsTree1[i] << std::endl;
+    if (loss1.is_open()) {
+        for (Long64_t i = 0; i < unmatchedEventsTree1.size(); ++i) {
+            loss1 << unmatchedEventsTree1[i] << std::endl;
         }
-        loss.close(); // Zamknij plik po zapisie.
+        loss1.close();
     } else {
-        std::cerr << "Błąd: Nie udało się otworzyć pliku " << lossFile << std::endl;
+        std::cerr << "Błąd: Nie udało się otworzyć pliku " << umT1 << std::endl;
     }
 
+    const char* umT2 = "unmatchedEventsTree2.txt";
+    std::ofstream loss2(umT2);
+
+    if (loss2.is_open()) {
+        for (Long64_t i = 0; i < Read_K0.unmatchedEventsTree2.size(); ++i) {
+            loss2 << Read_K0.unmatchedEventsTree2[i] << std::endl;
+        }
+        loss2.close();
+    } else {
+        std::cerr << "Błąd: Nie udało się otworzyć pliku " << umT2 << std::endl;
+    }
 
     return 0;
 }
