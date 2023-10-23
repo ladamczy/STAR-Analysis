@@ -61,12 +61,16 @@ int main(int argc, char** argv)
     TTree* chain2 = static_cast<TTree*>(file2->Get("ntp_K0s"));
 
     ReadPicoLambdaK0 Read_K0(chain2);
-
+    std::vector<Long64_t> unmatchedEventsTree1;
+    // unmatchedEventsTree1.resize(chain->GetEntriesFast());
+    
     for (Long64_t i = 0; i < chain->GetEntries(); ++i) 
     {
         //process data from the ntp_K0s
         Read_K0.ProcessData(i, upcEvt, chain, chain2);
-
+        if (Read_K0.getUnmatchedEventsTree2() != NULL)
+            unmatchedEventsTree1.push_back(chain->GetEntry(i));
+        
         // extract all Pi+, Pi- and diffractive protons
         for (int i = 0; i < upcEvt->getNumberOfMCParticles(); i++)
         {
@@ -299,6 +303,19 @@ int main(int argc, char** argv)
     HistKaonVtxRDet->Write();
     HistKaonVtxZDet->Write();
     outfile->Close();
+
+    const char* lossFile = "loss.txt";
+    std::ofstream loss(lossFile); // Użyj strumienia plikowego do zapisu do pliku.
+
+    if (loss.is_open()) {
+        for (Long64_t i = 0; i < unmatchedEventsTree1.size(); i++) {
+            loss << unmatchedEventsTree1[i] << std::endl;
+        }
+        loss.close(); // Zamknij plik po zapisie.
+    } else {
+        std::cerr << "Błąd: Nie udało się otworzyć pliku " << lossFile << std::endl;
+    }
+
 
     return 0;
 }
