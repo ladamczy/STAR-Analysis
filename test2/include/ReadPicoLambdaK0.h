@@ -7,8 +7,8 @@ class ReadPicoLambdaK0 {
 public:
     ReadPicoLambdaK0(TTree* chain2);
     void ProcessData(Long64_t i, StUPCEvent* upcEvt, TChain *chain, TTree* chain2);
-
-    //std::vector<std::vector<double>> dataVectors;
+    // void CheckTOFinfo();
+    // std::vector<std::vector<double>> dataVectors;
 
     std::vector<Int_t> eventIdVectors;
     std::vector<Float_t> leadPtVectors;
@@ -35,10 +35,9 @@ public:
 
     
     std::vector<Long64_t> matchedEvents;
-    // std::vector<Long64_t> unmatchedEventsTree1;
     std::vector<Long64_t> unmatchedEventsTree2;  
 
-        // Metody do dostępu do wektorów
+    // Metody do dostępu do wektorów
     // const std::vector<Long64_t>& getMatchedEvents() const {
     //     return matchedEvents;
     // }
@@ -59,10 +58,6 @@ private:
              p2_pt, p2_phi, p2_eta,
              pair_phi, pair_eta, pair_pt, pair_mass;
     int j=0;
-
-    // std::vector<Long64_t> matchedEvents;
-    // // std::vector<Long64_t> unmatchedEventsTree1;
-    // std::vector<Long64_t> unmatchedEventsTree2;
 };
 
 #endif  // READ_PICO_LAMBDA_K0_H

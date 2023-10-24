@@ -6,7 +6,7 @@ int main(int argc, char** argv)
 {
     if (argc != 3 && argc != 4) 
     {
-        cerr << "two or three input files required ([input] [ouput] [input2]{additional})" << std::endl;
+        cerr << "three input files required ([input] [input2] [ouput])" << std::endl;
         return 1;
     }
 
@@ -56,7 +56,7 @@ int main(int argc, char** argv)
     double truthVertexR, truthVertexZ, truthEta, truthPt;
     double detVertexR, detVertexZ, detEta, detPt;
              
-    const char* inputFile2 = argv[3];
+    const char* inputFile2 = argv[2];
     TFile* file2 = TFile::Open(inputFile2);
     TTree* chain2 = static_cast<TTree*>(file2->Get("ntp_K0s"));
 
@@ -290,8 +290,8 @@ int main(int argc, char** argv)
         Protons.clear();   
     
     }
-    
-    // TFile *outfile = TFile::Open(argv[2], "recreate"); 
+    //********************************************
+    // TFile *outfile = TFile::Open(argv[3], "recreate"); 
 
     // HistKaonPtTruth->Write();
     // HistKaonEtaTruth->Write();
@@ -303,30 +303,28 @@ int main(int argc, char** argv)
     // HistKaonVtxRDet->Write();
     // HistKaonVtxZDet->Write();
     // outfile->Close();
+    //********************************************
 
-    const char* umT1 = "unmatchedEventsTree1.txt";
-    std::ofstream loss1(umT1);
+    // const char* umT1 = "unmatchedEventsTree1.txt";
+    // std::ofstream loss1(umT1);
 
-    if (loss1.is_open()) {
-        for (Long64_t i = 0; i < unmatchedEventsTree1.size(); ++i) {
-            loss1 << unmatchedEventsTree1[i] << std::endl;
-        }
-        loss1.close();
+    // if (loss1.is_open()) {
+    //     for (Long64_t i = 0; i < unmatchedEventsTree1.size(); ++i) {
+    //         loss1 << unmatchedEventsTree1[i] << std::endl;
+    //     }
+    //     loss1.close();
+    // } else {
+    //     std::cerr << "Błąd: Nie udało się otworzyć pliku " << umT1 << std::endl;
+    // }
+
+    // Sprawdzenie, czy wektor unmatchedEventsTree2 jest pusty
+    if (Read_K0.getUnmatchedEventsTree2().empty()) {
+        std::cout << "Wszystkie przypadki z drzewa ntp_K0s zostały przydzielone." << std::endl;
     } else {
-        std::cerr << "Błąd: Nie udało się otworzyć pliku " << umT1 << std::endl;
-    }
-
-    const char* umT2 = "unmatchedEventsTree2.txt";
-    std::ofstream loss2(umT2);
-
-    if (loss2.is_open()) {
-        for (Long64_t i = 0; i < Read_K0.unmatchedEventsTree2.size(); ++i) {
-            loss2 << Read_K0.unmatchedEventsTree2[i] << std::endl;
+        std::cout << "Następujące przypadki z drzewa ntp_K0s nie zostały przydzielone:" << std::endl;
+        for (const auto& eventId : Read_K0.getUnmatchedEventsTree2()) {
+            std::cout << "Event ID: " << eventId << std::endl;
         }
-        loss2.close();
-    } else {
-        std::cerr << "Błąd: Nie udało się otworzyć pliku " << umT2 << std::endl;
     }
-
     return 0;
 }
