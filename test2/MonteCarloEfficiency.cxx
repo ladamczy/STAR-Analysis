@@ -6,7 +6,7 @@ int main(int argc, char** argv)
 {
     if (argc != 3 && argc != 4) 
     {
-        cerr << "two or three input files required ([input] [ouput] [input2]{additional})" << std::endl;
+        cerr << "three input files required ([input] [input2] [ouput])" << std::endl;
         return 1;
     }
 
@@ -56,17 +56,21 @@ int main(int argc, char** argv)
     double truthVertexR, truthVertexZ, truthEta, truthPt;
     double detVertexR, detVertexZ, detEta, detPt;
              
-    const char* inputFile2 = argv[3];
+    const char* inputFile2 = argv[2];
     TFile* file2 = TFile::Open(inputFile2);
     TTree* chain2 = static_cast<TTree*>(file2->Get("ntp_K0s"));
 
     ReadPicoLambdaK0 Read_K0(chain2);
-
+    std::vector<Long64_t> unmatchedEventsTree1;
+    // unmatchedEventsTree1.resize(chain->GetEntriesFast());
+    
     for (Long64_t i = 0; i < chain->GetEntries(); ++i) 
     {
         //process data from the ntp_K0s
         Read_K0.ProcessData(i, upcEvt, chain, chain2);
-
+        if (Read_K0.unmatchedEventsTree2.empty())
+            unmatchedEventsTree1.push_back(chain->GetEntry(i));
+        
         // extract all Pi+, Pi- and diffractive protons
         for (int i = 0; i < upcEvt->getNumberOfMCParticles(); i++)
         {
@@ -286,19 +290,41 @@ int main(int argc, char** argv)
         Protons.clear();   
     
     }
-    
-    TFile *outfile = TFile::Open(argv[2], "recreate"); 
+    //********************************************
+    // TFile *outfile = TFile::Open(argv[3], "recreate"); 
 
-    HistKaonPtTruth->Write();
-    HistKaonEtaTruth->Write();
-    HistKaonVtxRTruth->Write();
-    HistKaonVtxZTruth->Write();
+    // HistKaonPtTruth->Write();
+    // HistKaonEtaTruth->Write();
+    // HistKaonVtxRTruth->Write();
+    // HistKaonVtxZTruth->Write();
     
-    HistKaonPtDet->Write();
-    HistKaonEtaDet->Write();
-    HistKaonVtxRDet->Write();
-    HistKaonVtxZDet->Write();
-    outfile->Close();
+    // HistKaonPtDet->Write();
+    // HistKaonEtaDet->Write();
+    // HistKaonVtxRDet->Write();
+    // HistKaonVtxZDet->Write();
+    // outfile->Close();
+    //********************************************
 
+    // const char* umT1 = "unmatchedEventsTree1.txt";
+    // std::ofstream loss1(umT1);
+
+    // if (loss1.is_open()) {
+    //     for (Long64_t i = 0; i < unmatchedEventsTree1.size(); ++i) {
+    //         loss1 << unmatchedEventsTree1[i] << std::endl;
+    //     }
+    //     loss1.close();
+    // } else {
+    //     std::cerr << "Błąd: Nie udało się otworzyć pliku " << umT1 << std::endl;
+    // }
+
+    // Sprawdzenie, czy wektor unmatchedEventsTree2 jest pusty
+    if (Read_K0.getUnmatchedEventsTree2().empty()) {
+        std::cout << "Wszystkie przypadki z drzewa ntp_K0s zostały przydzielone." << std::endl;
+    } else {
+        std::cout << "Następujące przypadki z drzewa ntp_K0s nie zostały przydzielone:" << std::endl;
+        for (const auto& eventId : Read_K0.getUnmatchedEventsTree2()) {
+            std::cout << "Event ID: " << eventId << std::endl;
+        }
+    }
     return 0;
 }

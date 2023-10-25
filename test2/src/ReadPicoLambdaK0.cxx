@@ -1,5 +1,6 @@
 #include "ReadPicoLambdaK0.h"
 
+
 ReadPicoLambdaK0::ReadPicoLambdaK0(TTree* chain2) {
 
     chain2->SetBranchAddress("eventId", &eventId);
@@ -26,6 +27,7 @@ ReadPicoLambdaK0::ReadPicoLambdaK0(TTree* chain2) {
 }
 
 void ReadPicoLambdaK0::ProcessData(Long64_t i, StUPCEvent* upcEvt, TChain *chain, TTree* chain2) {
+    
     eventIdVectors.clear();
     leadPtVectors.clear();
     leadPhiVectors.clear();
@@ -50,7 +52,7 @@ void ReadPicoLambdaK0::ProcessData(Long64_t i, StUPCEvent* upcEvt, TChain *chain
 
     chain->GetEntry(i);
     Long64_t Event1 = upcEvt->getEventNumber();
-    for(int jj = j ; jj < chain2->GetEntries(); ++jj)
+    for(int jj = j ; jj < chain2->GetEntriesFast(); ++jj)
     {
         chain2->GetEntry(jj);
         Long64_t Event2 = eventId;
@@ -78,12 +80,16 @@ void ReadPicoLambdaK0::ProcessData(Long64_t i, StUPCEvent* upcEvt, TChain *chain
             pairEtaVectors.push_back(pair_eta);
             pairPtVectors.push_back(pair_pt);
             pairMassVectors.push_back(pair_mass);
+            
+            matchedEvents.push_back(eventId);
         }
         else if (Event1 < Event2)
             break;
-        else if (Event1 > Event2)
+        else if (Event1 > Event2){
+            unmatchedEventsTree2.push_back(Event2);
             continue;
-         else 
+        }
+        else 
             break;
     }
 }

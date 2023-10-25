@@ -7,29 +7,49 @@ class ReadPicoLambdaK0 {
 public:
     ReadPicoLambdaK0(TTree* chain2);
     void ProcessData(Long64_t i, StUPCEvent* upcEvt, TChain *chain, TTree* chain2);
+    // void CheckTOFinfo();
+    // std::vector<std::vector<double>> dataVectors;
 
-    std::vector<double> eventIdVectors;
-    std::vector<double> leadPtVectors;
-    std::vector<double> leadPhiVectors;
-    std::vector<double> leadEtaVectors;
-    std::vector<double> subleadPtVectors;
-    std::vector<double> subleadPhiVectors;
-    std::vector<double> subleadEtaVectors;
-    std::vector<double> p1PtVectors;
-    std::vector<double> p1PhiVectors;
-    std::vector<double> p1EtaVectors;
-    std::vector<double> p1ChVectors;
-    std::vector<double> p1HasTOFInfoVectors;
-    std::vector<double> p2PtVectors;
-    std::vector<double> p2PhiVectors;
-    std::vector<double> p2EtaVectors;
-    std::vector<double> p2HasTOFInfoVectors;
-    std::vector<double> pairChargeVectors;
-    std::vector<double> pairPhiVectors;
-    std::vector<double> pairEtaVectors;
-    std::vector<double> pairPtVectors;
-    std::vector<double> pairMassVectors;
+    std::vector<Int_t> eventIdVectors;
+    std::vector<Float_t> leadPtVectors;
+    std::vector<Float_t> leadPhiVectors;
+    std::vector<Float_t> leadEtaVectors;
+    std::vector<Float_t> subleadPtVectors;
+    std::vector<Float_t> subleadPhiVectors;
+    std::vector<Float_t> subleadEtaVectors;
+    std::vector<Float_t> p1PtVectors;
+    std::vector<Float_t> p1PhiVectors;
+    std::vector<Float_t> p1EtaVectors;
+    std::vector<Int_t> p1ChVectors;
+    std::vector<Int_t> p1HasTOFInfoVectors;
+    std::vector<Float_t> p2PtVectors;
+    std::vector<Float_t> p2PhiVectors;
+    std::vector<Float_t> p2EtaVectors;
+    std::vector<Int_t> p2HasTOFInfoVectors;
+    std::vector<Int_t> pairChargeVectors;
+    std::vector<Float_t> pairPhiVectors;
+    std::vector<Float_t> pairEtaVectors;
+    std::vector<Float_t> pairPtVectors;
+    std::vector<Float_t> pairMassVectors;
 
+
+    
+    std::vector<Long64_t> matchedEvents;
+    std::vector<Long64_t> unmatchedEventsTree2;  
+
+    // Metody do dostępu do wektorów
+    // const std::vector<Long64_t>& getMatchedEvents() const {
+    //     return matchedEvents;
+    // }
+
+    // const std::vector<Long64_t>& getUnmatchedEventsTree1() const {
+    //     return unmatchedEventsTree1;
+    // }
+
+    const std::vector<Long64_t>& getUnmatchedEventsTree2() const {
+        return unmatchedEventsTree2;
+    }
+      
 private:
     Int_t eventId, p1_hasTOFinfo, p2_hasTOFinfo, pair_charge, p1_ch;
     Float_t lead_pt, lead_phi, lead_eta,
