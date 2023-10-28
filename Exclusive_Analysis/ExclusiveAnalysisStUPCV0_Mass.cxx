@@ -76,10 +76,18 @@ void FillProtons(double protonSignsY, TH1D*HistProtonsSameSide, TH1D*HistProtons
     }
 }
 
+ofstream fileLeading("leading.txt", ios::app);
+ofstream fileSubLeading("subleading.txt", ios::app);
 
+//fileLeading << "," << endl;
+//ileLeading << "KaonPt,KaonEta,KaonPhi,PosPionPt,PosPionEta,PosPionPhi,NegPionPt,NegPionEta,NegPionPhi\n";
+//fileSubLeading << "KaonPt,KaonEta,KaonPhi,PosPionPt,PosPionEta,PosPionPhi,NegPionPt,NegPionEta,NegPionPhi\n";
 
 int main(int argc, char** argv)  
 {
+
+    fileLeading << "kaonPt,kaonEta,kaonPhi,posPionPt,posPionEta,posPionPhi,negPionPt,negPionEta,negPionPhi\n";
+    fileSubLeading << "kaonPt,kaonEta,kaonPhi,posPionPt,posPionEta,posPionPhi,negPionPt,negPionEta,negPionPhi\n";
 
     TH1D* HistCutFlow = new TH1D("HistCutFlow", ";;count", 16, -0.5, 15.5);
     TProfile* ProfileDistVertexBeamX = new TProfile("ProfileDistVertexBeamX","",639, 20511.5, 21150.5);
@@ -344,10 +352,14 @@ int main(int argc, char** argv)
 		// SELECTION: four TOF-matched primary tracks
         HistNumTofMatchedTracks->Fill(tracksWithTofHit.size());
 		bool isValidNumberOfTofMatchedTracks = 0;
+
+
 		if (tracksWithTofHit.size() == 4)
 		{
 			isValidNumberOfTofMatchedTracks = 1;
 		}
+
+
 		if (isValidNumberOfTofMatchedTracks == 0) 
         {
             vProtons.clear();
@@ -508,6 +520,7 @@ int main(int argc, char** argv)
         // verify possible combinations of Kaons 
         bool isMassInWindow = 1;
 
+
         TVector3 const tryVec(0,0,0);
         StUPCV0 lVecKaonComb1a(posPion[0], negPion[0], massPion, massPion, 1, 1, tryVec, upcEvt->getMagneticField(), bool(isMC), true);
         StUPCV0 lVecKaonComb1b(posPion[1], negPion[1], massPion, massPion, 1, 1, tryVec, upcEvt->getMagneticField(), bool(isMC), true);
@@ -521,17 +534,12 @@ int main(int argc, char** argv)
         double kaonMassWindowWideLow = 0.44;
         double kaonMassWindowWideHigh = 0.54;
 
-
         double distSumSquaredComb1 = sqrt(pow((lVecKaonComb1a.m()-massKaon), 2) + pow((lVecKaonComb1a.m()-massKaon), 2));
         double distSumSquaredComb2 = sqrt(pow((lVecKaonComb2a.m()-massKaon), 2) + pow((lVecKaonComb2b.m()-massKaon), 2));
 
-        //cout << "NEEEEEEEEEEEEEEEEEEEEEEEEEW" << endl;
-        //cout << distSumSquaredComb1 << ", " << distSumSquaredComb2 << endl;
-        //cout << "mass: " << lVecKaonComb1a.m() << ", " <<  lVecKaonComb1b.m() << ", " <<  lVecKaonComb2a.m() << ", " <<  lVecKaonComb2b.m() << ", " << endl;
-         //cout << "pT: " <<  lVecKaonComb1a.pt() << ", " <<  lVecKaonComb1b.pt() << ", " <<  lVecKaonComb2a.pt() << ", " <<  lVecKaonComb2b.pt() << ", " << endl;
-           
-        StUPCV0 * leadingKaon = &lVecKaonComb1a;
-        StUPCV0 * subLeadingKaon = &lVecKaonComb1b;
+        StUPCV0* leadingKaon = &lVecKaonComb1a;
+        StUPCV0* subLeadingKaon = &lVecKaonComb1b;
+        const StUPCTrack* leadingPosPion; const StUPCTrack* subLeadingPosPion; const StUPCTrack* leadingNegPion; const StUPCTrack* subLeadingNegPion;
 
         if (distSumSquaredComb1 < distSumSquaredComb2)
         {
@@ -539,11 +547,19 @@ int main(int argc, char** argv)
             {
                 leadingKaon = &lVecKaonComb1a;
                 subLeadingKaon = &lVecKaonComb1b;
+                leadingPosPion = posPion[0];
+                leadingNegPion = negPion[0];
+                subLeadingPosPion = posPion[1];
+                subLeadingNegPion = negPion[1];
             }
             else
             {
                 leadingKaon = &lVecKaonComb1b;
-                subLeadingKaon = &lVecKaonComb1a;                
+                subLeadingKaon = &lVecKaonComb1a;  
+                leadingPosPion = posPion[1];
+                leadingNegPion = negPion[1];
+                subLeadingPosPion = posPion[0];
+                subLeadingNegPion = negPion[0];              
             }
         }
 
@@ -553,15 +569,23 @@ int main(int argc, char** argv)
             {
                 leadingKaon = &lVecKaonComb2a;
                 subLeadingKaon = &lVecKaonComb2b;
+                leadingPosPion = posPion[0];
+                leadingNegPion = negPion[1];
+                subLeadingPosPion = posPion[1];
+                subLeadingNegPion = negPion[0];
             }
             else
             {
                 leadingKaon = &lVecKaonComb2b;
-                subLeadingKaon = &lVecKaonComb2a;                
+                subLeadingKaon = &lVecKaonComb2a;      
+                leadingPosPion = posPion[1];
+                leadingNegPion = negPion[0];
+                subLeadingPosPion = posPion[0];
+                subLeadingNegPion = negPion[1];          
             }
         }
-       // cout << leadingKaon->m() << ", " << subLeadingKaon->m() << endl;
-       // cout << leadingKaon->pt() << ", " << subLeadingKaon->pt() << endl;
+
+
 
         bool areKaonsInNarrowMassWindow = 0;
         bool areKaonsInWideMassWindow = 0;
@@ -585,6 +609,18 @@ int main(int argc, char** argv)
             posPion.clear();
             negPion.clear();
             continue; 
+        }
+
+        if (areKaonsInNarrowMassWindow)
+        {
+            cout << "here";
+            fileLeading << leadingKaon->pt() << "," << leadingKaon->eta() << "," << leadingKaon->phi() << ",";
+            fileLeading << leadingPosPion->getPt() << "," << leadingPosPion->getEta() << "," << leadingPosPion->getPhi() << ",";
+            fileLeading << leadingNegPion->getPt() << "," << leadingNegPion->getEta() << "," << leadingNegPion->getPhi() << "\n";
+
+            fileSubLeading << subLeadingKaon->pt() << "," << subLeadingKaon->eta() << "," << subLeadingKaon->phi() << ",";
+            fileSubLeading << leadingPosPion->getPt() << "," << leadingPosPion->getEta() << "," << leadingPosPion->getPhi() << ",";
+            fileSubLeading << leadingNegPion->getPt() << "," << leadingNegPion->getEta() << "," << leadingNegPion->getPhi() << "\n";
         }
 
         // SELECTION: pT miss
@@ -819,6 +855,7 @@ int main(int argc, char** argv)
 
         posPion.clear();
         negPion.clear();  
+        
 
      }
 
