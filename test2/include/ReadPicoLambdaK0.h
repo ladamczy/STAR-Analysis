@@ -7,8 +7,6 @@ class ReadPicoLambdaK0 {
 public:
     ReadPicoLambdaK0(TTree* chain2);
     void ProcessData(Long64_t i, StUPCEvent* upcEvt, TChain *chain, TTree* chain2);
-    // void CheckTOFinfo();
-    // std::vector<std::vector<double>> dataVectors;
 
     std::vector<Int_t> eventIdVectors;
     std::vector<Float_t> leadPtVectors;
@@ -35,6 +33,7 @@ public:
 
     
     std::vector<Long64_t> matchedEvents;
+    std::vector<Long64_t> unmatchedEventsTree1s; 
     std::vector<Long64_t> unmatchedEventsTree2;  
 
     // Metody do dostępu do wektorów
@@ -46,17 +45,17 @@ public:
     //     return unmatchedEventsTree1;
     // }
 
-    const std::vector<Long64_t>& getUnmatchedEventsTree2() const {
-        return unmatchedEventsTree2;
-    }
+    // const std::vector<Long64_t>& getUnmatchedEventsTree2() const {
+    //     return unmatchedEventsTree2;
+    // }
       
 private:
     Int_t eventId, p1_hasTOFinfo, p2_hasTOFinfo, pair_charge, p1_ch;
     Float_t lead_pt, lead_phi, lead_eta,
-             sublead_pt, sublead_phi, sublead_eta,
-             p1_pt, p1_phi, p1_eta,
-             p2_pt, p2_phi, p2_eta,
-             pair_phi, pair_eta, pair_pt, pair_mass;
+            sublead_pt, sublead_phi, sublead_eta,
+            p1_pt, p1_phi, p1_eta,
+            p2_pt, p2_phi, p2_eta,
+            pair_phi, pair_eta, pair_pt, pair_mass;
     int j=0;
 };
 
