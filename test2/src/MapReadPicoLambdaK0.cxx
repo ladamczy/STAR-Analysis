@@ -27,56 +27,54 @@ struct MyData {
 ReadPicoLambdaK0::ReadPicoLambdaK0(TTree* chain2) {
     std::vector<MyData> myDataVector;
 
-    chain2->SetBranchAddress("eventId", &eventIdVectors);
-    chain2->SetBranchAddress("lead_pt", &leadPtVectors);
-    chain2->SetBranchAddress("lead_phi", &leadPhiVectors);
-    chain2->SetBranchAddress("lead_eta", &leadEtaVectors);
-    chain2->SetBranchAddress("sublead_pt", &subleadPtVectors);
-    chain2->SetBranchAddress("sublead_phi", &subleadPhiVectors);
-    chain2->SetBranchAddress("sublead_eta", &subleadEtaVectors);
-    chain2->SetBranchAddress("p1_pt", &p1PtVectors);
-    chain2->SetBranchAddress("p1_phi", &p1PhiVectors);
-    chain2->SetBranchAddress("p1_eta", &p1EtaVectors);
-    chain2->SetBranchAddress("p1_ch", &p1ChVectors);
-    chain2->SetBranchAddress("p1_hasTOFinfo", &p1HasTOFInfoVectors);
-    chain2->SetBranchAddress("p2_pt", &p2PtVectors);
-    chain2->SetBranchAddress("p2_phi", &p2PhiVectors);
-    chain2->SetBranchAddress("p2_eta", &p2EtaVectors);
-    chain2->SetBranchAddress("p2_hasTOFinfo", &p2HasTOFInfoVectors);
-    chain2->SetBranchAddress("pair_charge", &pairChargeVectors);
-    chain2->SetBranchAddress("pair_phi", &pairPhiVectors);
-    chain2->SetBranchAddress("pair_eta", &pairEtaVectors);
-    chain2->SetBranchAddress("pair_pt", &pairPtVectors);
-    chain2->SetBranchAddress("pair_mass", &pairMassVectors);
+    chain2->SetBranchAddress("eventId", &eventId);
+    chain2->SetBranchAddress("lead_pt", &lead_pt);
+    chain2->SetBranchAddress("lead_phi", &lead_phi);
+    chain2->SetBranchAddress("lead_eta", &lead_eta);
+    chain2->SetBranchAddress("sublead_pt", &sublead_pt);
+    chain2->SetBranchAddress("sublead_phi", &sublead_phi);
+    chain2->SetBranchAddress("sublead_eta", &sublead_eta);
+    chain2->SetBranchAddress("p1_pt", &p1_pt);
+    chain2->SetBranchAddress("p1_phi", &p1_phi);
+    chain2->SetBranchAddress("p1_eta", &p1_eta);
+    chain2->SetBranchAddress("p1_ch", &p1_ch);
+    chain2->SetBranchAddress("p1_hasTOFinfo", &p1_hasTOFinfo);
+    chain2->SetBranchAddress("p2_pt", &p2_pt);
+    chain2->SetBranchAddress("p2_phi", &p2_phi);
+    chain2->SetBranchAddress("p2_eta", &p2_eta);
+    chain2->SetBranchAddress("p2_hasTOFinfo", &p2_hasTOFinfo);
+    chain2->SetBranchAddress("pair_charge", &pair_charge);
+    chain2->SetBranchAddress("pair_phi", &pair_phi);
+    chain2->SetBranchAddress("pair_eta", &pair_eta);
+    chain2->SetBranchAddress("pair_pt", &pair_pt);
+    chain2->SetBranchAddress("pair_mass", &pair_mass);
 
     for (Long64_t j = 0; j < GetEntriesFast(); ++j) {
         chain2->GetEntry(j);
-        if (j < eventIdVectors.size()) {
-            MyData data;
-            data.eventId = eventIdVectors[j];
-            data.lead_pt = leadPtVectors[j];
-            data.lead_phi = leadPhiVectors[j];
-            data.lead_eta = leadEtaVectors[j];
-            data.sublead_pt = subleadPtVectors[j];
-            data.sublead_phi = subleadPhiVectors[j];
-            data.sublead_eta = subleadEtaVectors[j];
-            data.p1_pt = p1PtVectors[j];
-            data.p1_phi = p1PhiVectors[j];
-            data.p1_eta = p1EtaVectors[j];
-            data.p1_ch = p1ChVectors[j];
-            data.p1_hasTOFinfo = p1HasTOFInfoVectors[j];
-            data.p2_pt = p2PtVectors[j];
-            data.p2_phi = p2PhiVectors[j];
-            data.p2_eta = p2EtaVectors[j];
-            data.p2_hasTOFinfo = p2HasTOFInfoVectors[j];
-            data.pair_charge = pairChargeVectors[j];
-            data.pair_phi = pairPhiVectors[j];
-            data.pair_eta = pairEtaVectors[j];
-            data.pair_pt = pairPtVectors[j];
-            data.pair_mass = pairMassVectors[j];
-            
-            myDataVector.push_back(data);
-        }
+        MyData data;
+        data.eventId = eventId;
+        data.lead_pt = lead_pt;
+        data.lead_phi = lead_phi;
+        data.lead_eta = lead_eta;
+        data.sublead_pt = sublead_pt;
+        data.sublead_phi = sublead_phi;
+        data.sublead_eta = sublead_eta;
+        data.p1_pt = p1_pt;
+        data.p1_phi = p1_phi;
+        data.p1_eta = p1_eta;
+        data.p1_ch = p1_ch;
+        data.p1_hasTOFinfo = p1_hasTOFinfo;
+        data.p2_pt = p2_pt;
+        data.p2_phi = p2_phi;
+        data.p2_eta = p2_eta;
+        data.p2_hasTOFinfo = p2_hasTOFinfo;
+        data.pair_charge = pair_charge;
+        data.pair_phi = pair_phi;
+        data.pair_eta = pair_eta;
+        data.pair_pt = pair_pt;
+        data.pair_mass = pair_mass;
+        
+        myDataVector.push_back(data);
     }
 
     for (const MyData& data : myDataVector) {
