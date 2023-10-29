@@ -33,9 +33,16 @@ public:
     void AddHistogram(TH3D);
     void Merge();
     void SaveToFile(TFile *);
+    // auto &operator [](int);
+    ROOT::TThreadedObject<TH1D> &GetPointer1D(int);
+    ROOT::TThreadedObject<TH2D> &GetPointer2D(int);
+    ROOT::TThreadedObject<TH3D> &GetPointer3D(int);
+    std::shared_ptr<TH1D> GetPointerAfterMerge1D(int);
+    std::shared_ptr<TH2D> GetPointerAfterMerge2D(int);
+    std::shared_ptr<TH3D> GetPointerAfterMerge3D(int);
 };
 
-ProcessingOutsideLoop::ProcessingOutsideLoop(/* args */) {
+ProcessingOutsideLoop::ProcessingOutsideLoop(/* args */){
 }
 
 ProcessingOutsideLoop::~ProcessingOutsideLoop() {
@@ -86,5 +93,12 @@ void ProcessingOutsideLoop::SaveToFile(TFile *file){
         }
     }
 }
+
+ROOT::TThreadedObject<TH1D> &ProcessingOutsideLoop::GetPointer1D(int i){ return *hist1dtab[i]; }
+ROOT::TThreadedObject<TH2D> &ProcessingOutsideLoop::GetPointer2D(int i){ return *hist2dtab[i]; }
+ROOT::TThreadedObject<TH3D> &ProcessingOutsideLoop::GetPointer3D(int i){ return *hist3dtab[i]; }
+std::shared_ptr<TH1D> ProcessingOutsideLoop::GetPointerAfterMerge1D(int i){ return hist1dtabFinal[i]; }
+std::shared_ptr<TH2D> ProcessingOutsideLoop::GetPointerAfterMerge2D(int i){ return hist2dtabFinal[i]; }
+std::shared_ptr<TH3D> ProcessingOutsideLoop::GetPointerAfterMerge3D(int i){ return hist3dtabFinal[i]; }
 
 #endif
