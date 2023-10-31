@@ -137,7 +137,7 @@ int main(int argc, char const *argv[])
 
         histvector[2].AddProton(&p1, &p2);
 
-        //K0 decaying into 2pi0 cut
+        //K0 decaying into 2pi+- cut
         bool doWeSeeK0 = false;
         for (int part_index = 0; part_index < pythia.event.size(); part_index++){
             if(pythia.event[part_index].id()==310 && isParticleInTPCAcceptance(pythia.event[pythia.event[part_index].daughter1()]) && isParticleInTPCAcceptance(pythia.event[pythia.event[part_index].daughter2()])){

@@ -31,3 +31,7 @@ bool hasAtLeastNParticlesInBBCLarge(Pythia8::Event event, int nParticles){
     }
     return true;
 }
+
+double xi(TLorentzVector *fourvec, double s = 510){
+    return (s/2-fourvec->E())/s*2;
+}
