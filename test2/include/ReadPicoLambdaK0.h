@@ -30,25 +30,8 @@ public:
     std::vector<Float_t> pairPtVectors;
     std::vector<Float_t> pairMassVectors;
 
+    //std::vector<Long64_t> matchedEvents;
 
-    
-    std::vector<Long64_t> matchedEvents;
-    std::vector<Long64_t> unmatchedEventsTree1s; 
-    std::vector<Long64_t> unmatchedEventsTree2;  
-
-    // Metody do dostępu do wektorów
-    // const std::vector<Long64_t>& getMatchedEvents() const {
-    //     return matchedEvents;
-    // }
-
-    // const std::vector<Long64_t>& getUnmatchedEventsTree1() const {
-    //     return unmatchedEventsTree1;
-    // }
-
-    // const std::vector<Long64_t>& getUnmatchedEventsTree2() const {
-    //     return unmatchedEventsTree2;
-    // }
-      
 private:
     Int_t eventId, p1_hasTOFinfo, p2_hasTOFinfo, pair_charge, p1_ch;
     Float_t lead_pt, lead_phi, lead_eta,

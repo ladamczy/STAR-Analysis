@@ -80,19 +80,16 @@ void ReadPicoLambdaK0::ProcessData(Long64_t i, StUPCEvent* upcEvt, TChain *chain
             pairEtaVectors.push_back(pair_eta);
             pairPtVectors.push_back(pair_pt);
             pairMassVectors.push_back(pair_mass);
-            //2624 przyporzadkowane
-            matchedEvents.push_back(eventId);
+            
+            //matchedEvents.push_back(eventId);
         }
         else if (Event1 < Event2){
-            //unmatchedEventsTree1s.push_back(Event1);
             break;
         }
         else if (Event1 > Event2){
-            unmatchedEventsTree2.push_back(Event2);
             continue;
         }
         else{
-            //unmatchedEventsTree1s.push_back(Event1);
             break;
         }
 
