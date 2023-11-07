@@ -61,29 +61,67 @@ int main(int argc, char** argv)
     TTree* chain2 = static_cast<TTree*>(file2->Get("ntp_K0s"));
 
     ReadPicoLambdaK0 Read_K0(chain2);
-    std::vector<Long64_t> unmatchedEventsTree11;
-    std::vector<Long64_t> unmatchedEventsTree12;
+    int xx=0;
 
+    std::vector<Int_t> eventIdVectors;
+    std::vector<Float_t> leadPtVectors;
+    std::vector<Float_t> leadPhiVectors;
+    std::vector<Float_t> leadEtaVectors;
+    std::vector<Float_t> subleadPtVectors;
+    std::vector<Float_t> subleadPhiVectors;
+    std::vector<Float_t> subleadEtaVectors;
+    std::vector<Float_t> p1PtVectors;
+    std::vector<Float_t> p1PhiVectors;
+    std::vector<Float_t> p1EtaVectors;
+    std::vector<Int_t> p1ChVectors;
+    std::vector<Int_t> p1HasTOFInfoVectors;
+    std::vector<Float_t> p2PtVectors;
+    std::vector<Float_t> p2PhiVectors;
+    std::vector<Float_t> p2EtaVectors;
+    std::vector<Int_t> p2HasTOFInfoVectors;
+    std::vector<Int_t> pairChargeVectors;
+    std::vector<Float_t> pairPhiVectors;
+    std::vector<Float_t> pairEtaVectors;
+    std::vector<Float_t> pairPtVectors;
+    std::vector<Float_t> pairMassVectors;
 
-    // unmatchedEventsTree1.resize(chain->GetEntriesFast());
-    
     for (Long64_t i = 0; i < chain->GetEntries(); ++i) 
     {
-            // chain->GetEntry(i);
-            // Long64_t Event1 = upcEvt->getEventNumber();
-        
-            
-            // unmatchedEventsTree11.push_back(chain->GetEntry(i));
-            // losowo rozmieszczone
-            // unmatchedEventsTree12.push_back(Event1);
-            // po kolei
-
-
-        //process data from the ntp_K0s
         Read_K0.ProcessData(i, upcEvt, chain, chain2);
-        // if (!Read_K0.unmatchedEventsTree1s.empty())
-        //     unmatchedEventsTree1.push_back(chain->GetEntry(i));
+
+        // if(i <50) {
+        //     xx = 0;
+        //     for (size_t j = 0; j < Read_K0.eventIdVectors.size(); ++j){
+        //         xx++;
+        //         std::cout << Read_K0.eventIdVectors[j] << " ";
+        //     }
+        //     if(xx>0)
+        //         std::cout << std::endl;
+        // }    
+
+        const std::vector<Int_t>& eventIdVectors = Read_K0.eventIdVectors;
+        const std::vector<Float_t>& leadPtVectors = Read_K0.leadPtVectors;
+        const std::vector<Float_t>& leadPhiVectors = Read_K0.leadPhiVectors;
+        const std::vector<Float_t>& leadEtaVectors = Read_K0.leadEtaVectors;
+        const std::vector<Float_t>& subleadPtVectors = Read_K0.subleadPtVectors;
+        const std::vector<Float_t>& subleadPhiVectors = Read_K0.subleadPhiVectors;
+        const std::vector<Float_t>& subleadEtaVectors = Read_K0.subleadEtaVectors;
+        const std::vector<Float_t>& p1PtVectors = Read_K0.p1PtVectors;
+        const std::vector<Float_t>& p1PhiVectors = Read_K0.p1PhiVectors;
+        const std::vector<Float_t>& p1EtaVectors = Read_K0.p1EtaVectors;
+        const std::vector<Int_t>& p1ChVectors = Read_K0.p1ChVectors;
+        const std::vector<Int_t>& p1HasTOFInfoVectors = Read_K0.p1HasTOFInfoVectors;
+        const std::vector<Float_t>& p2PtVectors = Read_K0.p2PtVectors;
+        const std::vector<Float_t>& p2PhiVectors = Read_K0.p2PhiVectors;
+        const std::vector<Float_t>& p2EtaVectors = Read_K0.p2EtaVectors;
+        const std::vector<Int_t>& p2HasTOFInfoVectors = Read_K0.p2HasTOFInfoVectors;
+        const std::vector<Int_t>& pairChargeVectors = Read_K0.pairChargeVectors;
+        const std::vector<Float_t>& pairPhiVectors = Read_K0.pairPhiVectors;
+        const std::vector<Float_t>& pairEtaVectors = Read_K0.pairEtaVectors;
+        const std::vector<Float_t>& pairPtVectors = Read_K0.pairPtVectors;
+        const std::vector<Float_t>& pairMassVectors = Read_K0.pairMassVectors;
     
+
         // extract all Pi+, Pi- and diffractive protons
         for (int i = 0; i < upcEvt->getNumberOfMCParticles(); i++)
         {
@@ -317,59 +355,6 @@ int main(int argc, char** argv)
     // HistKaonVtxZDet->Write();
     // outfile->Close();
     //********************************************
-
-    //******** std::vector<Long64_t> matchedEvents; ********
-
-    // Zapis wektorów do osobnych plików
-    // std::ofstream matchedFile("matched_events.txt");
-    // if (matchedFile.is_open()) {
-    //     for (const Long64_t& value : Read_K0.matchedEvents) {
-    //         matchedFile << value << "\n";
-    //     }
-    //     matchedFile.close();
-    //     std::cout << "Wektor 'matchedEvents' został zapisany do pliku 'matched_events.txt'" << std::endl;
-    // } else {
-    //     std::cerr << "Nie można otworzyć pliku 'matched_events.txt' do zapisu." << std::endl;
-    // }
-
-    // std::ofstream tree1sFile("unmatched_events_tree1s.txt");
-    // if (tree1sFile.is_open()) {
-    //     for (const Long64_t& value : Read_K0.unmatchedEventsTree1s) {
-    //         tree1sFile << value << "\n";
-    //     }
-    //     tree1sFile.close();
-    //     std::cout << "Wektor 'unmatchedEventsTree1s' został zapisany do pliku 'unmatched_events_tree1s.txt'" << std::endl;
-    // } else {
-    //     std::cerr << "Nie można otworzyć pliku 'unmatched_events_tree1s.txt' do zapisu." << std::endl;
-    // }
-
-    // std::ofstream tree2File("unmatched_events_tree2.txt");
-    // if (tree2File.is_open()) {
-    //     for (const Long64_t& value : Read_K0.unmatchedEventsTree2) {
-    //         tree2File << value << "\n";
-    //     }
-    //     tree2File.close();
-    //     std::cout << "Wektor 'unmatchedEventsTree2' został zapisany do pliku 'unmatched_events_tree2.txt'" << std::endl;
-    // } else {
-    //     std::cerr << "Nie można otworzyć pliku 'unmatched_events_tree2.txt' do zapisu." << std::endl;
-    // }
-
-    std::ofstream a11("a11.txt");
-    if (a11.is_open()) {
-        for (const Long64_t& value : unmatchedEventsTree11) {
-            a11 << value << "\n";
-        }
-        a11.close();
-    }//te sa losowo porozrzucane
-
-    std::ofstream a12("a12.txt");
-    if (a12.is_open()) {
-        for (const Long64_t& value : unmatchedEventsTree12) {
-            a12 << value << "\n";
-        }
-        a12.close();
-    }//te sa po kolei
-    
 
 
     return 0;
