@@ -63,41 +63,19 @@ int main(int argc, char** argv)
     ReadPicoLambdaK0 Read_K0(chain2);
     int xx=0;
 
-    std::vector<Int_t> eventIdVectors;
-    std::vector<Float_t> leadPtVectors;
-    std::vector<Float_t> leadPhiVectors;
-    std::vector<Float_t> leadEtaVectors;
-    std::vector<Float_t> subleadPtVectors;
-    std::vector<Float_t> subleadPhiVectors;
-    std::vector<Float_t> subleadEtaVectors;
-    std::vector<Float_t> p1PtVectors;
-    std::vector<Float_t> p1PhiVectors;
-    std::vector<Float_t> p1EtaVectors;
-    std::vector<Int_t> p1ChVectors;
-    std::vector<Int_t> p1HasTOFInfoVectors;
-    std::vector<Float_t> p2PtVectors;
-    std::vector<Float_t> p2PhiVectors;
-    std::vector<Float_t> p2EtaVectors;
-    std::vector<Int_t> p2HasTOFInfoVectors;
-    std::vector<Int_t> pairChargeVectors;
-    std::vector<Float_t> pairPhiVectors;
-    std::vector<Float_t> pairEtaVectors;
-    std::vector<Float_t> pairPtVectors;
-    std::vector<Float_t> pairMassVectors;
-
     for (Long64_t i = 0; i < chain->GetEntries(); ++i) 
     {
         Read_K0.ProcessData(i, upcEvt, chain, chain2);
 
-        // if(i <50) {
-        //     xx = 0;
-        //     for (size_t j = 0; j < Read_K0.eventIdVectors.size(); ++j){
-        //         xx++;
-        //         std::cout << Read_K0.eventIdVectors[j] << " ";
-        //     }
-        //     if(xx>0)
-        //         std::cout << std::endl;
-        // }    
+        if(i <50) {
+            xx = 0;
+            for (size_t j = 0; j < Read_K0.eventIdVectors.size(); ++j){
+                xx++;
+                std::cout << Read_K0.eventIdVectors[j] << " ";
+            }
+            if(xx>0)
+                std::cout << std::endl;
+        }    
 
         const std::vector<Int_t>& eventIdVectors = Read_K0.eventIdVectors;
         const std::vector<Float_t>& leadPtVectors = Read_K0.leadPtVectors;
