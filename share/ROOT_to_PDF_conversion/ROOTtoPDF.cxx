@@ -12,6 +12,7 @@
 #include "TStyle.h"
 #include "TCanvas.h"
 #include "TPaveStats.h"
+#include "TEfficiency.h"
 
 #include "Styles.h"
 
@@ -38,6 +39,7 @@ int ROOTtoPDF(const char* filename, std::string outputfile, int mainconfig, int 
     TPaveStats *st;
     TH1D* temp1D;
     TH2D* temp2D;
+    TEfficiency *tempEff;
     if(outputfile.length()==0){
         outputfile = std::string(filename).substr(0, std::string(filename).find("."));
     }
@@ -58,7 +60,12 @@ int ROOTtoPDF(const char* filename, std::string outputfile, int mainconfig, int 
             temp2D = (TH2D*)fileToPDF->Get(Hists[i]->GetName());
             TH2Style(c1, temp2D, twoconfig);
         }
-
+        //TODO
+        if(strstr(Hists[i]->GetClassName(), "TEfficiency")){
+            tempEff = (TEfficiency *)fileToPDF->Get(Hists[i]->GetName());
+            c1->SetLogz(0);
+            tempEff->Draw();
+        }
         //actual drawing to file
         gPad->RedrawAxis();
         c1->Print(outputfile.c_str());
@@ -78,7 +85,7 @@ void loopdir(TDirectory *dir, std::vector<TKey*>* hists){
 TIter next (dir->GetListOfKeys());
 TKey* key;
     while ((key = (TKey*)next())) {
-        if(strstr(key->GetClassName(), "TH1") || strstr(key->GetClassName(), "TH2")){
+        if(strstr(key->GetClassName(), "TH1")||strstr(key->GetClassName(), "TH2")||strstr(key->GetClassName(), "TEfficiency")){
             printf(" key : %s is a %s in %s\n", key->GetName(), key->GetClassName(), dir->GetPath());
             hists->push_back(key);
         }
