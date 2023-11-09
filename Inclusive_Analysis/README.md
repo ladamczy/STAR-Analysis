@@ -1,7 +1,9 @@
 # Spis
 
-main99.cc - oryginalny plik
-main999.cc - moja kopia, dla K0
+## Legacy
+
+main99.cc - oryginalny plik <br>
+main999.cc - moja kopia, dla K0 <br>
 Makefile - został zmodyfikowany aby main999 też się kompilował
 # Info
 

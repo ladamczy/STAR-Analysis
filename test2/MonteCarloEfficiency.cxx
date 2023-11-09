@@ -6,7 +6,7 @@ int main(int argc, char** argv)
 {
     if (argc != 3 && argc != 4) 
     {
-        cerr << "two or three input files required ([input] [ouput] [input2]{additional})" << std::endl;
+        cerr << "three input files required ([input] [input2] [ouput])" << std::endl;
         return 1;
     }
 
@@ -21,13 +21,14 @@ int main(int argc, char** argv)
     }
 
     TChain *chain = new TChain("mUPCTree"); 
-    string inputFileName;
-    vector <string> rootFiles;
-    while (std::getline(inputFilePathList, inputFileName))
-    {
-        chain->Add(inputFileName.c_str());
-    }
-    inputFilePathList.close();
+    // string inputFileName;
+    // vector <string> rootFiles;
+    // while (std::getline(inputFilePathList, inputFileName))
+    // {
+    //    chain->Add(inputFileName.c_str());
+    chain->AddFile(argv[1]);
+    // }
+    // inputFilePathList.close();
 
     static StUPCEvent *upcEvt = 0x0;
     chain->SetBranchAddress("mUPCEvent", &upcEvt);
@@ -55,16 +56,49 @@ int main(int argc, char** argv)
     double truthVertexR, truthVertexZ, truthEta, truthPt;
     double detVertexR, detVertexZ, detEta, detPt;
              
-    const char* inputFile2 = argv[3];
+    const char* inputFile2 = argv[2];
     TFile* file2 = TFile::Open(inputFile2);
     TTree* chain2 = static_cast<TTree*>(file2->Get("ntp_K0s"));
 
     ReadPicoLambdaK0 Read_K0(chain2);
+    int xx=0;
 
     for (Long64_t i = 0; i < chain->GetEntries(); ++i) 
     {
-        //process data from the ntp_K0s
-        Read_K0.ProcessData(i);
+        Read_K0.ProcessData(i, upcEvt, chain, chain2);
+
+        if(i <50) {
+            xx = 0;
+            for (size_t j = 0; j < Read_K0.eventIdVectors.size(); ++j){
+                xx++;
+                std::cout << Read_K0.eventIdVectors[j] << " ";
+            }
+            if(xx>0)
+                std::cout << std::endl;
+        }    
+
+        const std::vector<Int_t>& eventIdVectors = Read_K0.eventIdVectors;
+        const std::vector<Float_t>& leadPtVectors = Read_K0.leadPtVectors;
+        const std::vector<Float_t>& leadPhiVectors = Read_K0.leadPhiVectors;
+        const std::vector<Float_t>& leadEtaVectors = Read_K0.leadEtaVectors;
+        const std::vector<Float_t>& subleadPtVectors = Read_K0.subleadPtVectors;
+        const std::vector<Float_t>& subleadPhiVectors = Read_K0.subleadPhiVectors;
+        const std::vector<Float_t>& subleadEtaVectors = Read_K0.subleadEtaVectors;
+        const std::vector<Float_t>& p1PtVectors = Read_K0.p1PtVectors;
+        const std::vector<Float_t>& p1PhiVectors = Read_K0.p1PhiVectors;
+        const std::vector<Float_t>& p1EtaVectors = Read_K0.p1EtaVectors;
+        const std::vector<Int_t>& p1ChVectors = Read_K0.p1ChVectors;
+        const std::vector<Int_t>& p1HasTOFInfoVectors = Read_K0.p1HasTOFInfoVectors;
+        const std::vector<Float_t>& p2PtVectors = Read_K0.p2PtVectors;
+        const std::vector<Float_t>& p2PhiVectors = Read_K0.p2PhiVectors;
+        const std::vector<Float_t>& p2EtaVectors = Read_K0.p2EtaVectors;
+        const std::vector<Int_t>& p2HasTOFInfoVectors = Read_K0.p2HasTOFInfoVectors;
+        const std::vector<Int_t>& pairChargeVectors = Read_K0.pairChargeVectors;
+        const std::vector<Float_t>& pairPhiVectors = Read_K0.pairPhiVectors;
+        const std::vector<Float_t>& pairEtaVectors = Read_K0.pairEtaVectors;
+        const std::vector<Float_t>& pairPtVectors = Read_K0.pairPtVectors;
+        const std::vector<Float_t>& pairMassVectors = Read_K0.pairMassVectors;
+    
 
         // extract all Pi+, Pi- and diffractive protons
         for (int i = 0; i < upcEvt->getNumberOfMCParticles(); i++)
@@ -285,19 +319,21 @@ int main(int argc, char** argv)
         Protons.clear();   
     
     }
-    
-    TFile *outfile = TFile::Open(argv[2], "recreate"); 
+    //********************************************
+    // TFile *outfile = TFile::Open(argv[3], "recreate"); 
 
-    HistKaonPtTruth->Write();
-    HistKaonEtaTruth->Write();
-    HistKaonVtxRTruth->Write();
-    HistKaonVtxZTruth->Write();
+    // HistKaonPtTruth->Write();
+    // HistKaonEtaTruth->Write();
+    // HistKaonVtxRTruth->Write();
+    // HistKaonVtxZTruth->Write();
     
-    HistKaonPtDet->Write();
-    HistKaonEtaDet->Write();
-    HistKaonVtxRDet->Write();
-    HistKaonVtxZDet->Write();
-    outfile->Close();
+    // HistKaonPtDet->Write();
+    // HistKaonEtaDet->Write();
+    // HistKaonVtxRDet->Write();
+    // HistKaonVtxZDet->Write();
+    // outfile->Close();
+    //********************************************
+
 
     return 0;
 }

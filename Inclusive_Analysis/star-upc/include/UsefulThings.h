@@ -35,7 +35,7 @@ bool CheckTriggers(StUPCEvent* localupcEvt){
     return CPTtrigger;
 }
 
-bool ConnectInput(int argc, char** argv, TChain* fileChain) 
+bool ConnectInput(int argc, char **argv, TChain *fileChain)
 {
     int fileId = -1;
     string line;
@@ -82,7 +82,7 @@ bool ConnectInput(int argc, char** argv, TChain* fileChain)
         infile->Close();
     }
     
-
+    cout<<"There are "<<fileChain->GetEntries()<<" entries"<<endl;
     return true;
 }
 

@@ -1,6 +1,9 @@
-Inclusive_Analysis/star-upc/build/
-Inclusive_Analysis/star-upc/*.root
+Inclusive_Analysis/**/build/
+Inclusive_Analysis/**/*.pdf
+Inclusive_Analysis/**/*.root
+Inclusive_Analysis/**/*.png
 test/build
+test/run
 star-upc/build
 Exclusive_Analysis/build
 .vscode
