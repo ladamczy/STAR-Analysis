@@ -313,16 +313,16 @@ int main(int argc, char** argv)
 
 
 		// SELECTION: primary vertex is placed within |zvtx| < 80 cm lVecKaonComb2b.pt() << ", " << endl;
-        HistPrimaryVertexAbsPosZ->Fill(abs(primVertexPosZ));
-		if(abs(upcEvt->getVertex(0)->getPosZ())>=80)
-		{
-            vProtons.clear();
-			continue;
-        }   
-        iCutFlow+=1;
-		HistCutFlow->Fill(iCutFlow); // cutflow: primary vertex |zvtx| < 80 cm
-        HistPrimaryVertexAbsPosZPostSelection->Fill(abs(upcEvt->getVertex(0)->getPosZ()));      
-        FillProtons(protonSignsY, HistProtonsSameSide, HistProtonsOppositeSide,  iCutFlow); // protons - |zvtx| < 80 cm
+    //    HistPrimaryVertexAbsPosZ->Fill(abs(primVertexPosZ));
+	//	if(abs(upcEvt->getVertex(0)->getPosZ())>=80)
+//		{
+      //      vProtons.clear();
+//			continue;
+  //      }   
+    //    iCutFlow+=1;
+		//HistCutFlow->Fill(iCutFlow); // cutflow: primary vertex |zvtx| < 80 cm
+       // HistPrimaryVertexAbsPosZPostSelection->Fill(abs(upcEvt->getVertex(0)->getPosZ()));      
+       // FillProtons(protonSignsY, HistProtonsSameSide, HistProtonsOppositeSide,  iCutFlow); // protons - |zvtx| < 80 cm
 
 		vector <StUPCTrack const*> tracksWithTofHit;
 		vector <StUPCTrack const*> tracksWithoutTofHit;
@@ -933,7 +933,7 @@ int main(int argc, char** argv)
         }
 
 
-        if (tracksWithTofHit.size() == 3)// or tracksWithTofHit.size() == 3)
+        if (tracksWithTofHit.size() == 4 or tracksWithTofHit.size() == 3)
         {
             
         bool areKaonsInNarrowMassWindow = 0;
@@ -1112,12 +1112,12 @@ int main(int argc, char** argv)
             
         double distance = (abs(nx*dx+dy*ny+dz*nz))/(ds);
 
-        double distVertexBeamxLeadingKaon = leadingKaonVtxX - beamPositionY;
-        double distVerteyBeamyLeadingKaon = leadingKaonVtxY - beamPositionX;
+        double distVertexBeamxLeadingKaon = leadingKaonVtxX - beamPositionX;
+        double distVerteyBeamyLeadingKaon = leadingKaonVtxY - beamPositionY;
         double distRLeadingKaon = sqrt(pow(distVertexBeamxLeadingKaon,2) + pow(distVerteyBeamyLeadingKaon,2));
 
-        double distVertexBeamxSubLeadingKaon = subLeadingKaonVtxX - beamPositionY;
-        double distVerteyBeamySubLeadingKaon = subLeadingKaonVtxY - beamPositionX;
+        double distVertexBeamxSubLeadingKaon = subLeadingKaonVtxX - beamPositionX;
+        double distVerteyBeamySubLeadingKaon = subLeadingKaonVtxY - beamPositionY;
         double distRSubLeadingKaon = sqrt(pow(distVertexBeamxSubLeadingKaon,2) + pow(distVerteyBeamySubLeadingKaon,2));  
 
 
@@ -1154,7 +1154,7 @@ int main(int argc, char** argv)
 
 
         HistInvMassPiPi2D->Fill(leadingKaon.m(), subLeadingKaon.m());
-        // TH1D* HistEtaLeadingSubLeadingDiff = new TH1D("HistEtaLeadingSubLeadingDiff", " ; #eta_{K^{0}}^{leading} [GeV] ; events", 100, -1, 1);
+        // TH1D* HistEtaLeadingSubLeadingDiff = new TH1D("HistEtaLeadingSubLgiteadingDiff", " ; #eta_{K^{0}}^{leading} [GeV] ; events", 100, -1, 1);
         if (areKaonsInNarrowMassWindow)
         {
 
@@ -1175,6 +1175,7 @@ int main(int argc, char** argv)
             HistDistVtxYLeadingKaon->Fill(distVerteyBeamyLeadingKaon);
             HistDistVtxZLeadingKaon->Fill(leadingKaonVtxZ);
             HistRLeadingKaon->Fill(distRLeadingKaon);
+            
             HistDistVtxXLeadingKaon->Fill(distVertexBeamxSubLeadingKaon);
             HistDistVtxYLeadingKaon->Fill(distVerteyBeamySubLeadingKaon);
             HistDistVtxZLeadingKaon->Fill(subLeadingKaonVtxZ);
