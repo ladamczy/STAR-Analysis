@@ -102,7 +102,9 @@ int main(int argc, char const *argv[]){
     //the rest
     TH2D nParticles("nParticles", "Number of tracks visible in TPC vs number of detected K_{S}^{0}, with both #xi conditions;tracks;# of K_{S}^{0}", 20, 0, 20, 4, 0, 4);
     TH2D nParticlesWithMoreCuts("nParticlesWithMoreCuts", "Number of tracks visible in TPC vs number of detected K_{S}^{0}, with TPC & BBCL cuts, and both #xi conditions;tracks;# of K_{S}^{0}", 20, 0, 20, 4, 0, 4);
-
+    //more 
+    TH2D pTEtaK0("pTEtaK0", "p_{T} vs #eta of K0 prticles, with both #xi conditions;p_{T} [GeV/c];#eta", 50, 0, 5, 20, -5, 5);
+    TEfficiency K0detectionProbability("K0detectionProbability", "Probability of K_{S}^{0} detection vs log(#xi_{E}*#xi_{W});log(#xi_{E}*#xi_{W});probability", 60, -6, 0);
     //production loop
     for(int iEvent = 0; iEvent<nEvents; ++iEvent){
         if(!pythia.next()) continue;
@@ -156,6 +158,9 @@ int main(int argc, char const *argv[]){
             tempDaughter2 = pythia.event[K0indices[K0candidate]].daughter2();
             if(isParticleInTPCAcceptance(pythia.event[tempDaughter1])&&isParticleInTPCAcceptance(pythia.event[tempDaughter2])&&(tempDaughter1+1==tempDaughter2)){
                 nK0++;
+                if(/*possible cuts*/true){
+                    pTEtaK0.Fill(pythia.event[K0indices[K0candidate]].pT(), pythia.event[K0indices[K0candidate]].eta());
+                }
             }
         }
 
@@ -190,6 +195,8 @@ int main(int argc, char const *argv[]){
                 nParticlesWithMoreCuts.Fill(nPart, nK0);
             }
         }
+        //even more
+        K0detectionProbability.Fill(nK0>0&&xi1Andxi2&&LogCut&&TPCCut&&BBCLCut, log10(xi(&p1)*xi(&p2)));
     }
 
     // Statistics on event generation.
@@ -255,6 +262,10 @@ int main(int argc, char const *argv[]){
     //the other things
     nParticles.Write();
     nParticlesWithMoreCuts.Write();
+
+    //the other other things
+    pTEtaK0.Write();
+    K0detectionProbability.Write();
 
     output1->Close();
 
