@@ -3,7 +3,7 @@ Repository for AGH-STAR analysis code
 
 Repozytorium początkowo zawiera trzy projekty
 
-Exclusive analysis (Patrycje)
+Exclusive analysis (Patrycja)
 
 Inclusive_analysis (Adam)
 
