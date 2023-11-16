@@ -206,6 +206,12 @@ int main(int argc, char** argv)
                         continue;
                     }
 
+                    if (track1->getCharge() + track2->getCharge() !=0)
+                    {
+                        continue;
+                    }
+
+
                     StUPCV0 kaon(track1, track2, massPion, massPion, 1, 1, tryVec, upcEvt->getMagneticField(), bool(isMC), true);
 
                     if (kaon.dcaDaughters() < 1)
