@@ -122,10 +122,16 @@ int main(int argc, char** argv)
 
     // to be changed... there is no warning in case of the invalid input file
 	vector <vector<double>> fillNumberWithPosition = ReadFillPositionData("../share/Run7PolarizationWithPosition.csv");
+
     TH1D* HistCutFlow = new TH1D("HistCutFlow", ";;count", 16, -0.5, 15.5);
     TH1D* HistKaonMassProbeWithoutTof = new TH1D("HistKaonMassProbeWithoutTof", "; m_{#pi^{+}#pi^{-}}^{tag} [GeV]; # events", 25 ,0.44, 0.54);  
     TH1D* HistKaonMassProbeWithTof = new TH1D("HistKaonMassProbeWithTof", "; m_{#pi^{+}#pi^{-}}^{probe} [GeV]; # events", 25 ,0.44, 0.54);
 
+    TH1D* HistKaonMassProbeWithoutTofPosProbe = new TH1D("HistKaonMassProbeWithoutTofPosProbe", "; m_{#pi^{+}#pi^{-}}^{tag} [GeV]; # events", 25 ,0.44, 0.54);  
+    TH1D* HistKaonMassProbeWithoutTofNegProbe = new TH1D("HistKaonMassProbeWithoutTofNegProbe", "; m_{#pi^{+}#pi^{-}}^{tag} [GeV]; # events", 25 ,0.44, 0.54);  
+    TH1D* HistKaonMassProbeWithTofPosProbe = new TH1D("HistKaonMassProbeWithTofPosProbe", "; m_{#pi^{+}#pi^{-}}^{probe} [GeV]; # events", 25 ,0.44, 0.54);
+    TH1D* HistKaonMassProbeWithTofNegProbe = new TH1D("HistKaonMassProbeWithTofNegProbe", "; m_{#pi^{+}#pi^{-}}^{probe} [GeV]; # events", 25 ,0.44, 0.54);
+ 
     for (Long64_t i = 0; i < chain->GetEntries(); ++i) 
     {
         chain->GetEntry(i);
@@ -159,7 +165,7 @@ int main(int argc, char** argv)
         vector <StUPCTrack const*> tracksWithSmallDca;
         for (Int_t i = 0; i<upcEvt->getNumberOfTracks(); i++)
 		{
-            if (sqrt( pow(upcEvt->getTrack(i)->getDcaXY(),2) + pow(upcEvt->getTrack(i)->getDcaZ(),2)) < 3.0)
+            if ( (sqrt(pow(upcEvt->getTrack(i)->getDcaXY(),2) + pow(upcEvt->getTrack(i)->getDcaZ(),2)) < 3.0) and (abs(upcEvt->getTrack(i)->getEta()) < 0.9) and (upcEvt->getTrack(i)->getPt() > 0.2)) 
             {
                 tracksWithSmallDca.push_back(upcEvt->getTrack(i));
                 if(upcEvt->getTrack(i)->getFlag(StUPCTrack::kTof));
@@ -219,11 +225,62 @@ int main(int argc, char** argv)
                         if (int(hasTofHitTrack1) + int(hasTofHitTrack2) == 2)
                         {  
                             HistKaonMassProbeWithTof->Fill(kaon.m());
+                            HistKaonMassProbeWithTof->Fill(kaon.m());
+
+                            StUPCTrack const * tagWTof1 = track1;
+                            StUPCTrack const * probeWTof1 = track2;  
+
+                            StUPCTrack const * tagWTof2 = track2;
+                            StUPCTrack const * probeWTof2 = track1;  
+
+                            if (probeWTof1->getCharge() == 1)
+                            {
+                                HistKaonMassProbeWithTofPosProbe->Fill(kaon.m());                      
+                            }
+
+                            else
+                            {
+                                HistKaonMassProbeWithTofNegProbe->Fill(kaon.m());                         
+                            }
+
+                            if (probeWTof2->getCharge() == 1)
+                            {
+                                HistKaonMassProbeWithTofPosProbe->Fill(kaon.m());                           
+                            }
+
+                            else
+                            {
+                                HistKaonMassProbeWithTofNegProbe->Fill(kaon.m());                           
+                            }
+
                         }
                         
                         else
                         {
                             HistKaonMassProbeWithoutTof->Fill(kaon.m());
+                            StUPCTrack const * tagWoTof;
+                            StUPCTrack const * probeWoTof;
+ 
+                            if (hasTofHitTrack1)
+                            {
+                                tagWoTof = track1;
+                                probeWoTof = track2;
+                            }
+                            else
+                            {
+                                tagWoTof = track2;
+                                probeWoTof = track1;
+                            }
+
+                            if (probeWoTof->getCharge() == 1)
+                            {
+                                HistKaonMassProbeWithoutTofPosProbe->Fill(kaon.m());
+                            }
+
+                            else
+                            {
+                                HistKaonMassProbeWithoutTofNegProbe->Fill(kaon.m());
+                            }
                         }
                     }
                 }
@@ -237,7 +294,10 @@ int main(int argc, char** argv)
     HistCutFlow->Write();
     HistKaonMassProbeWithTof->Write();
     HistKaonMassProbeWithoutTof->Write();
-
+    HistKaonMassProbeWithoutTofPosProbe->Write();
+    HistKaonMassProbeWithoutTofNegProbe->Write();
+    HistKaonMassProbeWithTofPosProbe->Write();
+    HistKaonMassProbeWithTofNegProbe->Write();
     outfile->Close();
 
     return 0;
