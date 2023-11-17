@@ -31,3 +31,31 @@ Praca Pana Truhlara (https://drupal.star.bnl.gov/STAR/system/files/dp_ejcf_20_tr
 
 Nota techniczna na temat analizy starych danych STAR (https://drupal.star.bnl.gov/STAR/system/files/DiffractiveAnalyses_AnalysisNote_ver2p0.pdf)
 
+# BeamPosition
+
+Plik BeamPosition.cxx zawiera dwie funkcje ReadFillPositionData i FindPosition.
+
+Funkcja vector <vector <double>> ReadFillPositionData(string file) służy do wczytywania danych z pliku csv https://github.com/ladamczy/STAR-Analysis/blob/main/share/Run7PolarizationWithPosition.csv w którym znajduje się informacja o numerze fillu, pozycji wiązki oraz nachyleniu w kierunku x i y. Istnieją przypadki gdzie do jednego numeru fillu przyporządkowano dwie pozycje wiązki.
+Funkcja zwraca dwuwymiarow wektor vector <vector <double>> Data z powyższymi informacjiami. W przypadku gdy na jeden numer fillu przypada jedna pozycja wiązki, wartościom drugiej pozycji i nachyenia przypisano nan.
+
+Data[0] - fill number
+Data[1] - beam position x 
+Data[2] - beam position y
+Data[3] - beam position x2
+Data[4] - beam position y2
+
+Data[5] - beam slope x 
+Data[6] - beam slope y
+Data[7] - beam slope x2
+Data[8] - beam slope y2
+
+Funckja vector <double> FindPosition(int nFillNumber, double zPos, vector <double> &vFillNumber,  vector <double> &vXPosition, vector <double> &vYPosition,   vector <double> &vX2Position, vector <double> &vY2Position, vector <double> &vXSlope, vector <double> &vYSlope, vector <double> &vX2Slope, vector <double> &vY2Slope)
+
+Funkcja FindPosition korzysta z danych wczytaych z wykorzystaniem ReadFillPositionData.
+Do funkcji jest przekazywany numer fillu oraz na współrzędna z położenia werteksu zPos. W przypadku gdy na jeden numer fillu przypadają dwie pozycje wiązki obliczono ich średnią arytmetyczną. Funckja zwraca wektor położenia wiązki: vector <double> beam.  beam[0] = x, beam[1] = y
+
+
+
+
+
+
