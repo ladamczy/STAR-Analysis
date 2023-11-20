@@ -127,11 +127,27 @@ int main(int argc, char** argv)
     TH1D* HistKaonMassProbeWithoutTof = new TH1D("HistKaonMassProbeWithoutTof", "; m_{#pi^{+}#pi^{-}}^{tag} [GeV]; # events", 25 ,0.44, 0.54);  
     TH1D* HistKaonMassProbeWithTof = new TH1D("HistKaonMassProbeWithTof", "; m_{#pi^{+}#pi^{-}}^{probe} [GeV]; # events", 25 ,0.44, 0.54);
 
-    TH1D* HistKaonMassProbeWithoutTofPosProbe = new TH1D("HistKaonMassProbeWithoutTofPosProbe", "; m_{#pi^{+}#pi^{-}}^{tag} [GeV]; # events", 25 ,0.44, 0.54);  
-    TH1D* HistKaonMassProbeWithoutTofNegProbe = new TH1D("HistKaonMassProbeWithoutTofNegProbe", "; m_{#pi^{+}#pi^{-}}^{tag} [GeV]; # events", 25 ,0.44, 0.54);  
-    TH1D* HistKaonMassProbeWithTofPosProbe = new TH1D("HistKaonMassProbeWithTofPosProbe", "; m_{#pi^{+}#pi^{-}}^{probe} [GeV]; # events", 25 ,0.44, 0.54);
-    TH1D* HistKaonMassProbeWithTofNegProbe = new TH1D("HistKaonMassProbeWithTofNegProbe", "; m_{#pi^{+}#pi^{-}}^{probe} [GeV]; # events", 25 ,0.44, 0.54);
+    TH1D* HistKaonMassProbeWithoutTofPosProbe = new TH1D("HistKaonMassProbeWithoutTofPosProbe", "; m_{#pi^{+}#pi^{-}} [GeV]; events", 25, 0.44, 0.54);  
+    TH1D* HistKaonMassProbeWithoutTofNegProbe = new TH1D("HistKaonMassProbeWithoutTofNegProbe", "; m_{#pi^{+}#pi^{-}} [GeV]; events", 25 ,0.44, 0.54);  
+    TH1D* HistKaonMassProbeWithTofPosProbe = new TH1D("HistKaonMassProbeWithTofPosProbe", "; m_{#pi^{+}#pi^{-}} [GeV]; events", 25 ,0.44, 0.54);
+    TH1D* HistKaonMassProbeWithTofNegProbe = new TH1D("HistKaonMassProbeWithTofNegProbe", "; m_{#pi^{+}#pi^{-}} [GeV]; events", 25 ,0.44, 0.54);
  
+    TH1D* HistKaonPtProbeWithoutTofPosProbe = new TH1D("HistKaonPtProbeWithoutTofPosProbe", "; p_{T} [GeV]; events",10, 0, 4);
+    TH1D* HistKaonPtProbeWithoutTofNegProbe = new TH1D("HistKaonPtProbeWithoutTofNegProbe", "; P_{T} [GeV]; events", 10, 0, 4);
+    TH1D* HistKaonPtProbeWithTofPosProbe = new TH1D("HistKaonPtProbeWithTofPosProbe", "; p_{T} [GeV]; events", 10, 0, 4);
+    TH1D* HistKaonPtProbeWithTofNegProbe = new TH1D("HistKaonPtProbeWithTofNegProbe", "; p_{T} [GeV]; events", 10, 0, 4);
+ 
+    TH1D* HistKaonEtaProbeWithoutTofPosProbe = new TH1D("HistKaonEtaProbeWithoutTofPosProbe", "positive probe w/o TOF; #eta ; events", 11, -3,3);
+    TH1D* HistKaonEtaProbeWithoutTofNegProbe = new TH1D("HistKaonEtaProbeWithoutTofNegProbe", "negative probe w/o TOF; #eta ; events", 11, -3,3);
+    TH1D* HistKaonEtaProbeWithTofPosProbe = new TH1D("HistKaonEtaProbeWithTofPosProbe", "positive probe w/ TOF; #eta ; events", 11, -3,3);
+    TH1D* HistKaonEtaProbeWithTofNegProbe = new TH1D("HistKaonEtaProbeWithTofNegProbe", "negative probe w/ TOF; #eta ; events", 11, -3,3);
+
+    TH1D* HistKaonZVtxProbeWithoutTofPosProbe = new TH1D("HistKaonZVtxProbeWithoutTofPosProbe", "positive probe w/o TOF; vtx_{z} [cm] ; events", 11, -80,80);
+    TH1D* HistKaonZVtxProbeWithoutTofNegProbe = new TH1D("HistKaonZVtxProbeWithoutTofNegProbe", "negative probe w/o TOF; vtx_{z} [cm] ; events", 11,  -80,80);
+    TH1D* HistKaonZVtxProbeWithTofPosProbe = new TH1D("HistKaonZVtxProbeWithTofPosProbe", "positive probe w/ TOF; vtx_{z} [cm] ; events", 11,  -80,80);
+    TH1D* HistKaonZVtxProbeWithTofNegProbe = new TH1D("HistKaonZVtxProbeWithTofNegProbe", "negative probe w/ TOF; vtx_{z} [cm]; events", 11,  -80,80);
+ 
+
     for (Long64_t i = 0; i < chain->GetEntries(); ++i) 
     {
         chain->GetEntry(i);
@@ -160,6 +176,13 @@ int main(int argc, char** argv)
         }		
         FillCutflow(&iCutFlow, HistCutFlow); // cutflow: 1
 
+        if(abs(upcEvt->getVertex(0)->getPosZ()) >= 80)
+        {
+    		continue;
+        }   	
+        FillCutflow(&iCutFlow, HistCutFlow); // cutflow: 2
+
+
         // extract T0F-matched tracks with DCA < 3.0 cm
 		vector <StUPCTrack const*> tracksWithTofHit;
         vector <StUPCTrack const*> tracksWithSmallDca;
@@ -180,7 +203,7 @@ int main(int argc, char** argv)
 		{
 			continue;
 		}
-        FillCutflow(&iCutFlow, HistCutFlow); // cutflow: 2
+        FillCutflow(&iCutFlow, HistCutFlow); // cutflow: 3
 
 
         // loop over possible pairs
@@ -235,22 +258,34 @@ int main(int argc, char** argv)
 
                             if (probeWTof1->getCharge() == 1)
                             {
-                                HistKaonMassProbeWithTofPosProbe->Fill(kaon.m());                      
+                                HistKaonMassProbeWithTofPosProbe->Fill(kaon.m());
+                                HistKaonPtProbeWithTofPosProbe->Fill(kaon.pt());
+                                HistKaonEtaProbeWithTofPosProbe->Fill(kaon.eta());
+                                HistKaonZVtxProbeWithTofPosProbe->Fill(upcEvt->getVertex(0)->getPosZ());                   
                             }
 
                             else
                             {
-                                HistKaonMassProbeWithTofNegProbe->Fill(kaon.m());                         
+                                HistKaonMassProbeWithTofNegProbe->Fill(kaon.m());
+                                HistKaonPtProbeWithTofNegProbe->Fill(kaon.pt());
+                                HistKaonEtaProbeWithTofNegProbe->Fill(kaon.eta());
+                                HistKaonZVtxProbeWithTofNegProbe->Fill(upcEvt->getVertex(0)->getPosZ());                      
                             }
 
                             if (probeWTof2->getCharge() == 1)
                             {
-                                HistKaonMassProbeWithTofPosProbe->Fill(kaon.m());                           
+                                HistKaonMassProbeWithTofPosProbe->Fill(kaon.m());
+                                HistKaonPtProbeWithTofPosProbe->Fill(kaon.pt());
+                                HistKaonEtaProbeWithTofPosProbe->Fill(kaon.eta());
+                                HistKaonZVtxProbeWithTofPosProbe->Fill(upcEvt->getVertex(0)->getPosZ());                               
                             }
 
                             else
                             {
-                                HistKaonMassProbeWithTofNegProbe->Fill(kaon.m());                           
+                                HistKaonMassProbeWithTofNegProbe->Fill(kaon.m());
+                                HistKaonPtProbeWithTofNegProbe->Fill(kaon.pt());
+                                HistKaonEtaProbeWithTofNegProbe->Fill(kaon.eta());
+                                HistKaonZVtxProbeWithTofNegProbe->Fill(upcEvt->getVertex(0)->getPosZ());                      
                             }
 
                         }
@@ -275,11 +310,17 @@ int main(int argc, char** argv)
                             if (probeWoTof->getCharge() == 1)
                             {
                                 HistKaonMassProbeWithoutTofPosProbe->Fill(kaon.m());
+                                HistKaonPtProbeWithoutTofPosProbe->Fill(kaon.pt());
+                                HistKaonEtaProbeWithoutTofPosProbe->Fill(kaon.eta());
+                                HistKaonZVtxProbeWithoutTofPosProbe->Fill(upcEvt->getVertex(0)->getPosZ());
                             }
 
                             else
                             {
                                 HistKaonMassProbeWithoutTofNegProbe->Fill(kaon.m());
+                                HistKaonPtProbeWithoutTofNegProbe->Fill(kaon.pt());
+                                HistKaonEtaProbeWithoutTofNegProbe->Fill(kaon.eta());
+                                HistKaonZVtxProbeWithoutTofNegProbe->Fill(upcEvt->getVertex(0)->getPosZ());
                             }
                         }
                     }
@@ -294,10 +335,25 @@ int main(int argc, char** argv)
     HistCutFlow->Write();
     HistKaonMassProbeWithTof->Write();
     HistKaonMassProbeWithoutTof->Write();
+
     HistKaonMassProbeWithoutTofPosProbe->Write();
     HistKaonMassProbeWithoutTofNegProbe->Write();
     HistKaonMassProbeWithTofPosProbe->Write();
     HistKaonMassProbeWithTofNegProbe->Write();
+
+    HistKaonPtProbeWithoutTofPosProbe->Write();
+    HistKaonPtProbeWithoutTofNegProbe->Write();
+    HistKaonPtProbeWithTofPosProbe->Write();
+    HistKaonPtProbeWithTofNegProbe->Write();
+    HistKaonEtaProbeWithoutTofPosProbe->Write();
+    HistKaonEtaProbeWithoutTofNegProbe->Write();
+    HistKaonEtaProbeWithTofPosProbe->Write();
+    HistKaonEtaProbeWithTofNegProbe->Write();
+
+    HistKaonZVtxProbeWithoutTofPosProbe->Write();
+    HistKaonZVtxProbeWithoutTofNegProbe->Write();
+    HistKaonZVtxProbeWithTofPosProbe->Write();
+    HistKaonZVtxProbeWithTofNegProbe->Write();    
     outfile->Close();
 
     return 0;
