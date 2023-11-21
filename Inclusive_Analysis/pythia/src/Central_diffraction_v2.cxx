@@ -84,26 +84,27 @@ int main(int argc, char const *argv[]){
     // xi_multiplied = new TH1D(string("xi_multiplied_"+identifier).c_str(), string("#xi_{E}*#xi_{W}"+namepart+";#xi_{E}*#xi_{W};entries").c_str(), 60, 0, 0.3);
     // xi_log = new TH1D(string("xi_log_"+identifier).c_str(), string("ln(#xi_{E}/#xi_{W})"+namepart+";ln(#xi_{E}/#xi_{W});entries").c_str(), 100, -10, 10);
     // before
-    TH1D LogCutEventsBefore("LogCutEventsBefore", "log(#xi_{E}*#xi_{W}) with |ln(#xi_{E}/#xi_{W})|<4 condition;log(#xi_{E}*#xi_{W});events", 60, -6, 0);
-    TH1D MultiCutEventsBefore("MultiCutEventsBefore", "ln(#xi_{E}/#xi_{W}) with 0.007<#xi_{E,W}<0.08 conditions;ln(#xi_{E}/#xi_{W});events", 100, -10, 10);
-    TH2D Log2DCutEventsBefore("Log2DCutEventsBefore", "log#xi_{E} vs log#xi_{W} with |ln(#xi_{E}/#xi_{W})|<4 condition;log#xi_{E};log#xi_{W}", 50, -4, 1, 50, -4, 1);
+    TH1D LogCutEventsBefore("LogCutEventsBefore", "log(#xi_{E}*#xi_{W});log(#xi_{E}*#xi_{W});events", 60, -6, 0);
+    TH1D MultiCutEventsBefore("MultiCutEventsBefore", "ln(#xi_{E}/#xi_{W}) with 0.007<#xi_{E,W}<0.08;ln(#xi_{E}/#xi_{W});events", 100, -10, 10);
+    TH2D Log2DCutEventsBefore("Log2DCutEventsBefore", "log#xi_{W} vs log#xi_{E};log#xi_{E};log#xi_{W}", 50, -4, 1, 50, -4, 1);
     //TPC
-    TH1D LogTPCCutEventsAfter("LogTPCCutEventsAfter", "Effect of TPC cut on log(#xi_{E}*#xi_{W}) with |ln(#xi_{E}/#xi_{W})|<4 condition;log(#xi_{E}*#xi_{W});events", 60, -6, 0);
-    TH1D MultiTPCCutEventsAfter("MultiTPCCutEventsAfter", "Effect of TPC cut on ln(#xi_{E}/#xi_{W}) with 0.007<#xi_{E,W}<0.08 conditions;ln(#xi_{E}/#xi_{W});events", 100, -10, 10);
-    TH2D Log2DTPCCutEventsAfter("Log2DTPCCutEventsAfter", "Effect of TPC cut on log#xi_{E} vs log#xi_{W} with |ln(#xi_{E}/#xi_{W})|<4 condition;log#xi_{E};log#xi_{W}", 50, -4, 1, 50, -4, 1);
+    TH1D LogTPCCutEventsAfter("LogTPCCutEventsAfter", "Effect of TPC cut on log(#xi_{E}*#xi_{W});log(#xi_{E}*#xi_{W});events", 60, -6, 0);
+    TH1D MultiTPCCutEventsAfter("MultiTPCCutEventsAfter", "Effect of TPC cut on ln(#xi_{E}/#xi_{W}) with 0.007<#xi_{E,W}<0.08;ln(#xi_{E}/#xi_{W});events", 100, -10, 10);
+    TH2D Log2DTPCCutEventsAfter("Log2DTPCCutEventsAfter", "Effect of TPC cut on log#xi_{W} vs log#xi_{E};log#xi_{E};log#xi_{W}", 50, -4, 1, 50, -4, 1);
     //BBCL
-    TH1D LogBBCLCutEventsAfter("LogBBCLCutEventsAfter", "Effect of BBCL cut on log(#xi_{E}*#xi_{W}) with |ln(#xi_{E}/#xi_{W})|<4 condition;log(#xi_{E}*#xi_{W});events", 60, -6, 0);
-    TH1D MultiBBCLCutEventsAfter("MultiBBCLCutEventsAfter", "Effect of BBCL cut on ln(#xi_{E}/#xi_{W}) with 0.007<#xi_{E,W}<0.08 conditions;ln(#xi_{E}/#xi_{W});events", 100, -10, 10);
-    TH2D Log2DBBCLCutEventsAfter("Log2DBBCLCutEventsAfter", "Effect of BBCL cut on log#xi_{E} vs log#xi_{W} with |ln(#xi_{E}/#xi_{W})|<4 condition;log#xi_{E};log#xi_{W}", 50, -4, 1, 50, -4, 1);
+    TH1D LogBBCLCutEventsAfter("LogBBCLCutEventsAfter", "Effect of BBCL cut on log(#xi_{E}*#xi_{W});log(#xi_{E}*#xi_{W});events", 60, -6, 0);
+    TH1D MultiBBCLCutEventsAfter("MultiBBCLCutEventsAfter", "Effect of BBCL cut on ln(#xi_{E}/#xi_{W}) with 0.007<#xi_{E,W}<0.08;ln(#xi_{E}/#xi_{W});events", 100, -10, 10);
+    TH2D Log2DBBCLCutEventsAfter("Log2DBBCLCutEventsAfter", "Effect of BBCL cut on log#xi_{W} vs log#xi_{E};log#xi_{E};log#xi_{W}", 50, -4, 1, 50, -4, 1);
     //TPC+BBCL
-    TH1D LogTPCBBCLCutEventsAfter("LogTPCBBCLCutEventsAfter", "Effect of TPC and BBCL cuts on log(#xi_{E}*#xi_{W}) with |ln(#xi_{E}/#xi_{W})|<4 condition;log(#xi_{E}*#xi_{W});events", 60, -6, 0);
-    TH1D MultiTPCBBCLCutEventsAfter("MultiTPCBBCLCutEventsAfter", "Effect of TPC and BBCL cuts on ln(#xi_{E}/#xi_{W}) with 0.007<#xi_{E,W}<0.08 conditions;ln(#xi_{E}/#xi_{W});events", 100, -10, 10);
-    TH2D Log2DTPCBBCLCutEventsAfter("Log2DTPCBBCLCutEventsAfter", "Effect of TPC and BBCL cut on log#xi_{E} vs log#xi_{W} with |ln(#xi_{E}/#xi_{W})|<4 condition;log#xi_{E};log#xi_{W}", 50, -4, 1, 50, -4, 1);
+    TH1D LogTPCBBCLCutEventsAfter("LogTPCBBCLCutEventsAfter", "Effect of TPC and BBCL cuts on log(#xi_{E}*#xi_{W});log(#xi_{E}*#xi_{W});events", 60, -6, 0);
+    TH1D MultiTPCBBCLCutEventsAfter("MultiTPCBBCLCutEventsAfter", "Effect of TPC and BBCL cuts on ln(#xi_{E}/#xi_{W}) with 0.007<#xi_{E,W}<0.08;ln(#xi_{E}/#xi_{W});events", 100, -10, 10);
+    TH2D Log2DTPCBBCLCutEventsAfter("Log2DTPCBBCLCutEventsAfter", "Effect of TPC and BBCL cut on log#xi_{W} vs log#xi_{E};log#xi_{E};log#xi_{W}", 50, -4, 1, 50, -4, 1);
     //the rest
-    TH2D nParticles("nParticles", "Number of tracks visible in TPC vs number of detected K_{S}^{0}, with both #xi conditions;tracks;# of K_{S}^{0}", 20, 0, 20, 4, 0, 4);
-    TH2D nParticlesWithMoreCuts("nParticlesWithMoreCuts", "Number of tracks visible in TPC vs number of detected K_{S}^{0}, with TPC & BBCL cuts, and both #xi conditions;tracks;# of K_{S}^{0}", 20, 0, 20, 4, 0, 4);
+    TH2D nParticles("nParticles", "Number of tracks visible in TPC vs number of detected K_{S}^{0}, with both #xi;tracks;# of K_{S}^{0}", 20, 0, 20, 4, 0, 4);
+    TH2D nParticlesWithMoreCuts("nParticlesWithMoreCuts", "Number of tracks visible in TPC vs number of detected K_{S}^{0}, with TPC & BBCL cuts, and both #xi;tracks;# of K_{S}^{0}", 20, 0, 20, 4, 0, 4);
     //more 
-    TH2D pTEtaK0("pTEtaK0", "p_{T} vs #eta of K0 prticles, with both #xi conditions;p_{T} [GeV/c];#eta", 50, 0, 5, 20, -5, 5);
+    TH2D pTEtaK0TPC("pTEtaK0TPC", "#eta vs p_{T} of K^{0}_{S} particles;p_{T} [GeV/c];#eta", 40, 0, 2, 50, -5, 5);
+    TH2D pTEtaK0TPCBBCL("pTEtaK0TPCBBCL", "#eta vs p_{T} of K^{0}_{S} particles;p_{T} [GeV/c];#eta", 40, 0, 2, 50, -5, 5);
     TEfficiency K0detectionProbability("K0detectionProbability", "Probability of K_{S}^{0} detection vs log(#xi_{E}*#xi_{W});log(#xi_{E}*#xi_{W});probability", 60, -6, 0);
     //production loop
     for(int iEvent = 0; iEvent<nEvents; ++iEvent){
@@ -143,7 +144,7 @@ int main(int argc, char const *argv[]){
         //BBCL cut
         bool BBCLCut = !hasAtLeastNParticlesInBBCLarge(pythia.event, 1);
         //xi1>0.007 && xi2>0.007
-        bool xi1Andxi2 = xi(&p1)>0.007&&xi(&p2)>0.007&&xi(&p1)<0.08&&xi(&p2)<0.08;
+        bool xi1Andxi2 = xi(&p1)>0.005&&xi(&p2)>0.005&&xi(&p1)<0.08&&xi(&p2)<0.08;
         //log cut
         bool LogCut = abs(log(xi(&p1)/xi(&p2)))<4;
         //2xK0 decaying into pi+- cut
@@ -158,8 +159,11 @@ int main(int argc, char const *argv[]){
             tempDaughter2 = pythia.event[K0indices[K0candidate]].daughter2();
             if(isParticleInTPCAcceptance(pythia.event[tempDaughter1])&&isParticleInTPCAcceptance(pythia.event[tempDaughter2])&&(tempDaughter1+1==tempDaughter2)){
                 nK0++;
-                if(/*possible cuts*/true){
-                    pTEtaK0.Fill(pythia.event[K0indices[K0candidate]].pT(), pythia.event[K0indices[K0candidate]].eta());
+                if(TPCCut&&xi1Andxi2&&LogCut){
+                    pTEtaK0TPC.Fill(pythia.event[K0indices[K0candidate]].pT(), pythia.event[K0indices[K0candidate]].eta());
+                    if(BBCLCut){
+                        pTEtaK0TPCBBCL.Fill(pythia.event[K0indices[K0candidate]].pT(), pythia.event[K0indices[K0candidate]].eta());
+                    }
                 }
             }
         }
@@ -206,27 +210,30 @@ int main(int argc, char const *argv[]){
     //using TEfficiency objects
     //point 3
     TEfficiency LogTPCCut = TEfficiency(LogTPCCutEventsAfter, LogCutEventsBefore);
-    LogTPCCut.SetNameTitle("LogTPCCutEfficiency", "Effect of TPC cut on log(#xi_{E}*#xi_{W}) with |ln(#xi_{E}/#xi_{W})|<4 condition;log(#xi_{E}*#xi_{W});efficiency");
+    LogTPCCut.SetNameTitle("LogTPCCutEfficiency", "Effect of TPC cut on log(#xi_{E}*#xi_{W});log(#xi_{E}*#xi_{W});efficiency");
     TEfficiency MultiTPCCut = TEfficiency(MultiTPCCutEventsAfter, MultiCutEventsBefore);
-    MultiTPCCut.SetNameTitle("MultiTPCCutEfficiency", "Effect of TPC cut on ln(#xi_{E}/#xi_{W}) with 0.007<#xi_{E,W}<0.08 conditions;ln(#xi_{E}/#xi_{W});efficiency");
+    MultiTPCCut.SetNameTitle("MultiTPCCutEfficiency", "Effect of TPC cut on ln(#xi_{E}/#xi_{W}) with 0.007<#xi_{E,W}<0.08;ln(#xi_{E}/#xi_{W});efficiency");
     TEfficiency Log2DTPCCut = TEfficiency(Log2DTPCCutEventsAfter, Log2DCutEventsBefore);
-    Log2DTPCCut.SetNameTitle("Log2DTPCCutEfficiency", "Effect of TPC cut on log#xi_{E} vs log#xi_{W} with |ln(#xi_{E}/#xi_{W})|<4 condition;log#xi_{E};log#xi_{W}");
+    Log2DTPCCut.SetNameTitle("Log2DTPCCutEfficiency", "Effect of TPC cut on log#xi_{W} vs log#xi_{E}");
     //point 4
     //division
     TEfficiency LogBBCLCut = TEfficiency(LogBBCLCutEventsAfter, LogCutEventsBefore);
-    LogBBCLCut.SetNameTitle("LogBBCLCutEfficiency", "Effect of BBCL cut on log(#xi_{E}*#xi_{W}) with |ln(#xi_{E}/#xi_{W})|<4 condition;log(#xi_{E}*#xi_{W});efficiency");
+    LogBBCLCut.SetNameTitle("LogBBCLCutEfficiency", "Effect of BBCL cut on log(#xi_{E}*#xi_{W});log(#xi_{E}*#xi_{W});efficiency");
     TEfficiency MultiBBCLCut = TEfficiency(MultiBBCLCutEventsAfter, MultiCutEventsBefore);
-    MultiBBCLCut.SetNameTitle("MultiBBCLCutEfficiency", "Effect of BBCL cut on ln(#xi_{E}/#xi_{W}) with 0.007<#xi_{E,W}<0.08 conditions;ln(#xi_{E}/#xi_{W});efficiency");
+    MultiBBCLCut.SetNameTitle("MultiBBCLCutEfficiency", "Effect of BBCL cut on ln(#xi_{E}/#xi_{W}) with 0.007<#xi_{E,W}<0.08;ln(#xi_{E}/#xi_{W});efficiency");
     TEfficiency Log2DBBCLCut = TEfficiency(Log2DBBCLCutEventsAfter, Log2DCutEventsBefore);
-    Log2DBBCLCut.SetNameTitle("Log2DBBCLCutEfficiency", "Effect of BBCL cut on log#xi_{E} vs log#xi_{W} with |ln(#xi_{E}/#xi_{W})|<4 condition;log#xi_{E};log#xi_{W}");
+    Log2DBBCLCut.SetNameTitle("Log2DBBCLCutEfficiency", "Effect of BBCL cut on log#xi_{W} vs log#xi_{E}");
     //point 5
     //division
     TEfficiency LogTPCBBCLCut = TEfficiency(LogTPCBBCLCutEventsAfter, LogCutEventsBefore);
-    LogTPCBBCLCut.SetNameTitle("LogTPCBBCLCutEfficiency", "Effect of TPC and BBCL cuts on log(#xi_{E}*#xi_{W}) with |ln(#xi_{E}/#xi_{W})|<4 condition;log(#xi_{E}*#xi_{W});efficiency");
+    LogTPCBBCLCut.SetNameTitle("LogTPCBBCLCutEfficiency", "Effect of TPC and BBCL cuts on log(#xi_{E}*#xi_{W});log(#xi_{E}*#xi_{W});efficiency");
     TEfficiency MultiTPCBBCLCut = TEfficiency(MultiTPCBBCLCutEventsAfter, MultiCutEventsBefore);
-    MultiTPCBBCLCut.SetNameTitle("MultiTPCBBCLCutEfficiency", "Effect of TPC and BBCL cuts on ln(#xi_{E}/#xi_{W}) with 0.007<#xi_{E,W}<0.08 conditions;ln(#xi_{E}/#xi_{W});efficiency");
+    MultiTPCBBCLCut.SetNameTitle("MultiTPCBBCLCutEfficiency", "Effect of TPC and BBCL cuts on ln(#xi_{E}/#xi_{W}) with 0.007<#xi_{E,W}<0.08;ln(#xi_{E}/#xi_{W});efficiency");
     TEfficiency Log2DTPCBBCLCut = TEfficiency(Log2DTPCBBCLCutEventsAfter, Log2DCutEventsBefore);
-    Log2DTPCBBCLCut.SetNameTitle("Log2DTPCBBCLCutEfficiency", "Effect of TPC and BBCL cuts on log#xi_{E} vs log#xi_{W} with |ln(#xi_{E}/#xi_{W})|<4 condition;log#xi_{E};log#xi_{W}");
+    Log2DTPCBBCLCut.SetNameTitle("Log2DTPCBBCLCutEfficiency", "Effect of TPC and BBCL cuts on log#xi_{W} vs log#xi_{E}");
+    //even more
+    TEfficiency pTEtaK0TPCBBCLEfficiency = TEfficiency(pTEtaK0TPCBBCL, pTEtaK0TPC);
+    pTEtaK0TPCBBCLEfficiency.SetNameTitle("pTEtaK0TPCBBCLEfficiency", "Effect of BBCL cut on p_{T} & #eta of K^{0}_{S}");
 
     //writing histograms to file
     if(folder.length()!=0){
@@ -264,7 +271,9 @@ int main(int argc, char const *argv[]){
     nParticlesWithMoreCuts.Write();
 
     //the other other things
-    pTEtaK0.Write();
+    pTEtaK0TPC.Write();
+    pTEtaK0TPCBBCL.Write();
+    pTEtaK0TPCBBCLEfficiency.Write();
     K0detectionProbability.Write();
 
     output1->Close();
