@@ -2,66 +2,68 @@
 
 using namespace std;
 
-int main(int argc, char** argv)  {
-    if (argc != 3) 
-    {
-        cerr << "two input files required" << std::endl;
+int main(int argc, char** argv) {
+
+    if (argc != 3) {
+        cerr << "two input files required" << endl;
         return 1;
     }
 
 
-    TFile* file1 = TFile::Open(argv[1]);
-    if (!file1) 
-    {
-        cerr << "Failed to open input file." << endl;
+    TFile file1(argv[1], "update");
+    if (!file1.IsOpen()) {
+        cerr << "Failed to open input file1." << endl;
         return 1;
     }
-    TTree* tree_1 = static_cast<TTree*>(file1->Get("mUPCTree")); 
 
+    TTree *UPCTree = static_cast<TTree*>(file1.Get("mUPCTree"));
+    if (!UPCTree) {
+        cerr << "Failed to retrieve mUPCTree tree." << endl;
+        file1.Close();
+        return 1;
+    }
 
-    ////
     static StUPCEvent *upcEvt = 0x0;
-    tree_1->SetBranchAddress("mUPCEvent", &upcEvt);
-    ////
+    UPCTree->SetBranchAddress("mUPCTree", &upcEvt);
 
-    std::vector<Int_t> eventIdVectors;
-    std::vector<Float_t> leadPtVectors, leadPhiVectors, leadEtaVectors;
-    std::vector<Float_t> subleadPtVectors, subleadPhiVectors, subleadEtaVectors;
-    std::vector<Float_t> p1PtVectors, p1PhiVectors, p1EtaVectors;
-    std::vector<Int_t> p1ChVectors, p1HasTOFInfoVectors;
-    std::vector<Float_t> p2PtVectors, p2PhiVectors, p2EtaVectors;
-    std::vector<Int_t> p2HasTOFInfoVectors;
-    std::vector<Int_t> pairChargeVectors;
-    std::vector<Float_t> pairPhiVectors, pairEtaVectors, pairPtVectors, pairMassVectors;
+    vector<Int_t> eventIdVectors;
+    vector<Float_t> leadPtVectors, leadPhiVectors, leadEtaVectors;
+    vector<Float_t> subleadPtVectors, subleadPhiVectors, subleadEtaVectors;
+    vector<Float_t> p1PtVectors, p1PhiVectors, p1EtaVectors;
+    vector<Int_t> p1ChVectors, p1HasTOFInfoVectors;
+    vector<Float_t> p2PtVectors, p2PhiVectors, p2EtaVectors;
+    vector<Int_t> p2HasTOFInfoVectors;
+    vector<Int_t> pairChargeVectors;
+    vector<Float_t> pairPhiVectors, pairEtaVectors, pairPtVectors, pairMassVectors;
 
-    TBranch *beventIdVectors = tree_1->Branch("eventIdVectors", &eventIdVectors);
-    TBranch *bleadPtVectors = tree_1->Branch("leadPtVectors", &leadPtVectors);
-    TBranch *bleadPhiVectors = tree_1->Branch("leadPhiVectors", &leadPhiVectors);
-    TBranch *bleadEtaVectors = tree_1->Branch("leadEtaVectors", &leadEtaVectors);
-    TBranch *bsubleadPtVectors = tree_1->Branch("subleadPtVectors", &subleadPtVectors);
-    TBranch *bsubleadPhiVectors = tree_1->Branch("subleadPhiVectors", &subleadPhiVectors);
-    TBranch *bsubleadEtaVectors = tree_1->Branch("subleadEtaVectors", &subleadEtaVectors);
-    TBranch *bp1PtVectors = tree_1->Branch("p1PtVectors", &p1PtVectors);
-    TBranch *bp1PhiVectors = tree_1->Branch("p1PhiVectors", &p1PhiVectors);
-    TBranch *bp1EtaVectors = tree_1->Branch("p1EtaVectors", &p1EtaVectors);
-    TBranch *bp1ChVectors = tree_1->Branch("p1ChVectors", &p1ChVectors);
-    TBranch *bp1HasTOFInfoVectors = tree_1->Branch("p1HasTOFInfoVectors", &p1HasTOFInfoVectors);
-    TBranch *bp2PtVectors = tree_1->Branch("p2PtVectors", &p2PtVectors);
-    TBranch *bp2PhiVectors = tree_1->Branch("p2PhiVectors", &p2PhiVectors);
-    TBranch *bp2EtaVectors = tree_1->Branch("p2EtaVectors", &p2EtaVectors);
-    TBranch *bp2HasTOFInfoVectors = tree_1->Branch("p2HasTOFInfoVectors", &p2HasTOFInfoVectors);
-    TBranch *bpairChargeVectors = tree_1->Branch("pairChargeVectors", &pairChargeVectors);
-    TBranch *bpairPhiVectors = tree_1->Branch("pairPhiVectors", &pairPhiVectors);
-    TBranch *bpairEtaVectors = tree_1->Branch("pairEtaVectors", &pairEtaVectors);
-    TBranch *bpairPtVectors = tree_1->Branch("pairPtVectors", &pairPtVectors);
-    TBranch *bpairMassVectors = tree_1->Branch("pairMassVectors", &pairMassVectors);
-
+    TBranch *beventIdVectors = UPCTree->Branch("eventIdVectors", &eventIdVectors);
+    TBranch *bleadPtVectors = UPCTree->Branch("leadPtVectors", &leadPtVectors);
+    TBranch *bleadPhiVectors = UPCTree->Branch("leadPhiVectors", &leadPhiVectors);
+    TBranch *bleadEtaVectors = UPCTree->Branch("leadEtaVectors", &leadEtaVectors);
+    TBranch *bsubleadPtVectors = UPCTree->Branch("subleadPtVectors", &subleadPtVectors);
+    TBranch *bsubleadPhiVectors = UPCTree->Branch("subleadPhiVectors", &subleadPhiVectors);
+    TBranch *bsubleadEtaVectors = UPCTree->Branch("subleadEtaVectors", &subleadEtaVectors);
+    TBranch *bp1PtVectors = UPCTree->Branch("p1PtVectors", &p1PtVectors);
+    TBranch *bp1PhiVectors = UPCTree->Branch("p1PhiVectors", &p1PhiVectors);
+    TBranch *bp1EtaVectors = UPCTree->Branch("p1EtaVectors", &p1EtaVectors);
+    TBranch *bp1ChVectors = UPCTree->Branch("p1ChVectors", &p1ChVectors);
+    TBranch *bp1HasTOFInfoVectors = UPCTree->Branch("p1HasTOFInfoVectors", &p1HasTOFInfoVectors);
+    TBranch *bp2PtVectors = UPCTree->Branch("p2PtVectors", &p2PtVectors);
+    TBranch *bp2PhiVectors = UPCTree->Branch("p2PhiVectors", &p2PhiVectors);
+    TBranch *bp2EtaVectors = UPCTree->Branch("p2EtaVectors", &p2EtaVectors);
+    TBranch *bp2HasTOFInfoVectors = UPCTree->Branch("p2HasTOFInfoVectors", &p2HasTOFInfoVectors);
+    TBranch *bpairChargeVectors = UPCTree->Branch("pairChargeVectors", &pairChargeVectors);
+    TBranch *bpairPhiVectors = UPCTree->Branch("pairPhiVectors", &pairPhiVectors);
+    TBranch *bpairEtaVectors = UPCTree->Branch("pairEtaVectors", &pairEtaVectors);
+    TBranch *bpairPtVectors = UPCTree->Branch("pairPtVectors", &pairPtVectors);
+    TBranch *bpairMassVectors = UPCTree->Branch("pairMassVectors", &pairMassVectors);
 
     const char* inputFile2 = argv[2];
     TFile* file2 = TFile::Open(inputFile2);
-    if (!file2) 
-    {
-        cerr << "Failed to open second input file." << endl;
+    if (!file2) {
+        cerr << "Failed to open second input file2." << endl;
+        file1.Close();
+        // delete upcEvt;
         return 1;
     }
     TTree* tree_2 = static_cast<TTree*>(file2->Get("ntp_K0s"));
@@ -69,9 +71,9 @@ int main(int argc, char** argv)  {
 
     ReadPicoLambdaK0 Read_K0(tree_2);
 
-    for (Long64_t i = 0; i < tree_1->GetEntries(); ++i) {
+    for (Long64_t i = 0; i < UPCTree->GetEntries(); ++i) {
 
-        Read_K0.ProcessData(i, upcEvt, tree_1, tree_2);
+        Read_K0.ProcessData(i, upcEvt, UPCTree, tree_2);
 
         eventIdVectors = Read_K0.eventIdVectors;
         leadPtVectors = Read_K0.leadPtVectors;
@@ -117,12 +119,12 @@ int main(int argc, char** argv)  {
         bpairPtVectors->Fill();
         bpairMassVectors->Fill();
     }   
-
-    tree_1->Write();
-    file1->Close();
+    //file1.cd("mUPCTree");
+    //UPCTree->Write();
+    UPCTree->Write("", TObject::kOverwrite);
+    file1.Close();
     file2->Close();
-   
-
+    // delete upcEvt;
 
     return 0;
 }

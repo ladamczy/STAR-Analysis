@@ -4,10 +4,10 @@ using namespace std;
 
 int main(int argc, char** argv) {
 
-    // if (argc != 3) {
-    //     cerr << "two input files required" << endl;
-    //     return 1;
-    // }
+    if (argc != 3) {
+        cerr << "two input files required" << endl;
+        return 1;
+    }
 
 
     TFile file1(argv[1], "update");
@@ -24,7 +24,7 @@ int main(int argc, char** argv) {
     }
 
     static StUPCEvent *upcEvt = 0x0;
-    UPCTree->SetBranchAddress("mUPCTree", &upcEvt);
+    UPCTree->SetBranchAddress("mUPCEvent", &upcEvt);
 
     vector<Int_t> eventIdVectors;
     vector<Float_t> leadPtVectors, leadPhiVectors, leadEtaVectors;
@@ -63,7 +63,6 @@ int main(int argc, char** argv) {
     if (!file2) {
         cerr << "Failed to open second input file2." << endl;
         file1.Close();
-        // delete upcEvt;
         return 1;
     }
     TTree* tree_2 = static_cast<TTree*>(file2->Get("ntp_K0s"));
@@ -119,8 +118,9 @@ int main(int argc, char** argv) {
         bpairPtVectors->Fill();
         bpairMassVectors->Fill();
     }   
-
-    UPCTree->Write();
+    file1.cd();
+    // UPCTree->Write();
+    UPCTree->Write("", TObject::kOverwrite);
     file1.Close();
     file2->Close();
     // delete upcEvt;
