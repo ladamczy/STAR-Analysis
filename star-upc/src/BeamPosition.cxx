@@ -198,3 +198,71 @@ vector <double> FindPosition(int nFillNumber, double zPos, vector <double> &vFil
 	return vFinalPositions;
 
 }
+
+
+
+vector <double> GetBeamParameters(int nFillNumber, vector <double> &vFillNumber,  vector <double> &vXPosition, vector <double> &vYPosition,   vector <double> &vX2Position, vector <double> &vY2Position, vector <double> &vXSlope, vector <double> &vYSlope,   vector <double> &vX2Slope, vector <double> &vY2Slope)
+{
+
+	bool found = false;
+	int indexFill;
+
+	vector <double> vFinalPositions;
+	
+	for (unsigned int i = 0; i < vFillNumber.size(); i++)
+	{
+		if (nFillNumber == vFillNumber[i] )
+		{
+			indexFill = i;	
+			found = true;
+		}
+	}
+			
+	if (found == false)
+	{
+		vFinalPositions.push_back(nan(""));
+		vFinalPositions.push_back(nan(""));
+		return vFinalPositions;
+		
+	}
+						
+	double posX, posY, posX2, posY2, beamPositionX, beamPositionY;
+	double sX, sY, sX2, sY2;
+	posX = vXPosition[indexFill];
+	posY = vYPosition[indexFill];
+	posX2 = vX2Position[indexFill];
+	posY2 = vY2Position[indexFill];		 
+
+	sX = vXSlope[indexFill];
+	sY = vYSlope[indexFill];
+	sX2 = vX2Slope[indexFill];
+	sY2 = vY2Slope[indexFill];		 
+
+	if (std::isnan(posX) or std::isnan(posY))
+	{
+		vFinalPositions.push_back(nan(""));
+		vFinalPositions.push_back(nan(""));
+		return vFinalPositions;
+	}
+		
+	if (std::isnan(posX2) or std::isnan(posY2))
+	{
+		vFinalPositions[0] = posX;
+		vFinalPositions[1] = posY;
+		vFinalPositions[2] = sX;
+		vFinalPositions[3] = sY;
+	}
+			
+	else
+	{
+		vFinalPositions[0] = (posX+posX2)/2.0;
+		vFinalPositions[1] = (posY+posY2)/2.0;
+		vFinalPositions[2] = (sX+sX2)/2.0;
+		vFinalPositions[3] = (sY+sY2)/2.0;		
+	}
+			
+
+	
+	return vFinalPositions;
+
+}
