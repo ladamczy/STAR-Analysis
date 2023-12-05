@@ -172,14 +172,14 @@ vector <double> FindPosition(int nFillNumber, double zPos, vector <double> &vFil
 	sX2 = vX2Slope[indexFill];
 	sY2 = vY2Slope[indexFill];		 
 
-	if (isnan(posX) or isnan(posY))
+	if (std::isnan(posX) or std::isnan(posY))
 	{
 		vFinalPositions.push_back(nan(""));
 		vFinalPositions.push_back(nan(""));
 		return vFinalPositions;
 	}
 		
-	if (isnan(posX2) or isnan(posY2))
+	if (std::isnan(posX2) or std::isnan(posY2))
 	{
 		beamPositionX = posX + zPos*sX;
 		beamPositionY = posY + zPos*sY;	

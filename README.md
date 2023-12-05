@@ -31,6 +31,9 @@ Praca Pana Truhlara (https://drupal.star.bnl.gov/STAR/system/files/dp_ejcf_20_tr
 
 Nota techniczna na temat analizy starych danych STAR (https://drupal.star.bnl.gov/STAR/system/files/DiffractiveAnalyses_AnalysisNote_ver2p0.pdf)
 
+O rekonstrukcji V0 [FengZhao_thesis.pdf](https://github.com/ladamczy/STAR-Analysis/files/13540392/FengZhao_thesis.pdf)
+
+
 # BeamPosition
 
 Plik BeamPosition.cxx zawiera dwie funkcje ReadFillPositionData i FindPosition.

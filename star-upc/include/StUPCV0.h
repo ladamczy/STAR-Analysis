@@ -35,23 +35,26 @@ class StUPCV0 : public TObject
   StUPCV0(StUPCTrack const * particle1, StUPCTrack const * particle2, 
 	   float p1MassHypo, float p2MassHypo,
 	   unsigned short p1Idx, unsigned short p2Idx,
-	   TVector3 const & vtx, float bField, bool isMC, bool useStraightLine = true);
+	   TVector3 const & vtx, double * beamLine, float bField, bool isMC, bool useStraightLine = true);
 
   ~StUPCV0() {;}
   
 
   TLorentzVector const & lorentzVector() const;
   TVector3 const & decayVertex() const;
+  TVector3 const & prodVertexHypo() const;
   TVector3 const & prodPlane() const;
   float m()    const;
   float pt()   const;
   float eta()  const;
   float phi()  const;
   float pointingAngle() const;
+  float pointingAngleHypo() const;
   float pointingAngle(TVector3 const & vtx2) const;
   float decayLength() const;
+  float decayLengthHypo() const;
   float decayLength(TVector3 const & vtx2) const;
-
+  float DCABeamLine() const;
   float particle1Dca() const;
   float particle1Dca(StPicoPhysicalHelix  p1Helix, TVector3 const & vtx2, float bField) const;
   float particle2Dca() const;
@@ -77,6 +80,10 @@ class StUPCV0 : public TObject
 
   TVector3 mProdPlane; //production plane vector: unity vector perpendicular to production plane
 
+  float mDCABeamLine;
+  TVector3 mProdVertexHypo;
+  float mPointingAngleHypo;
+  float mDecayLengthHypo;
   float mPointingAngle;
   float mDecayLength;
   float mParticle1Dca;
@@ -103,6 +110,10 @@ inline float StUPCV0::py()   const { return mLorentzVector.Py();}
 inline float StUPCV0::pz()   const { return mLorentzVector.Pz();}
 inline float StUPCV0::pointingAngle() const { return mPointingAngle;}
 inline float StUPCV0::decayLength()   const { return mDecayLength;}
+inline TVector3 const &  StUPCV0::prodVertexHypo() const { return mProdVertexHypo;}
+inline float StUPCV0::pointingAngleHypo() const { return mPointingAngleHypo;}
+inline float StUPCV0::decayLengthHypo()   const { return mDecayLengthHypo;}
+inline float StUPCV0::DCABeamLine()   const { return mDCABeamLine;}
 inline float StUPCV0::particle1Dca()  const { return mParticle1Dca;}
 inline float StUPCV0::particle2Dca()  const { return mParticle2Dca;}
 inline unsigned short StUPCV0::particle1Idx() const { return mParticle1Idx;}
