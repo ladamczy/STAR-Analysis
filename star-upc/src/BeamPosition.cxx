@@ -156,11 +156,13 @@ vector <double> FindPosition(int nFillNumber, double zPos, vector <double> &vFil
 	{
 		vFinalPositions.push_back(nan(""));
 		vFinalPositions.push_back(nan(""));
+		vFinalPositions.push_back(nan(""));
+		vFinalPositions.push_back(nan(""));
 		return vFinalPositions;
 		
 	}
 						
-	double posX, posY, posX2, posY2, beamPositionX, beamPositionY;
+	double posX, posY, posX2, posY2, beamPositionX, beamPositionY, slopeX, slopeY;
 	double sX, sY, sX2, sY2;
 	posX = vXPosition[indexFill];
 	posY = vYPosition[indexFill];
@@ -176,24 +178,32 @@ vector <double> FindPosition(int nFillNumber, double zPos, vector <double> &vFil
 	{
 		vFinalPositions.push_back(nan(""));
 		vFinalPositions.push_back(nan(""));
+		vFinalPositions.push_back(nan(""));
+		vFinalPositions.push_back(nan(""));
 		return vFinalPositions;
 	}
 		
 	if (std::isnan(posX2) or std::isnan(posY2))
 	{
 		beamPositionX = posX + zPos*sX;
-		beamPositionY = posY + zPos*sY;	
+		beamPositionY = posY+zPos*sY;
+		slopeX = sX;
+		slopeY = sY;
 	}
 			
 	else
 	{
 		beamPositionX = ( ( posX + zPos*sX )+ ( posX2 + zPos*sX2) )/2.0;
-		beamPositionY = ( ( posY + zPos*sY )+ ( posY2 + zPos*sY2) )/2.0;			
+		beamPositionY = ((posY+zPos*sY)+(posY2+zPos*sY2))/2.0;
+		slopeX = (sX+sX2)/2.0;
+		slopeY = (sY+sY2)/2.0;
 	}
 			
 
 	vFinalPositions.push_back(beamPositionX);
 	vFinalPositions.push_back(beamPositionY);
+	vFinalPositions.push_back(slopeX);
+	vFinalPositions.push_back(slopeY);
 	
 	return vFinalPositions;
 
