@@ -33,7 +33,7 @@ StUPCV0::StUPCV0(StUPCV0 const * t) : mLorentzVector(t->mLorentzVector), mDecayV
 // _________________________________________________________
 StUPCV0::StUPCV0(StUPCTrack const * const particle1, StUPCTrack const * const particle2,
 		   float p1MassHypo, float p2MassHypo, unsigned short const p1Idx, unsigned short const p2Idx,
-		   TVector3 const & vtx, float const bField, bool const isMC, bool const useStraightLine) : 
+		   TVector3 const & vtx, double * beamLine, float const bField, bool const isMC, bool const useStraightLine) : 
   mLorentzVector(TLorentzVector()), mDecayVertex(TVector3()),
   mPointingAngle(std::numeric_limits<float>::quiet_NaN()), mDecayLength(std::numeric_limits<float>::quiet_NaN()),
   mParticle1Dca(std::numeric_limits<float>::quiet_NaN()), mParticle2Dca(std::numeric_limits<float>::quiet_NaN()),
@@ -122,7 +122,7 @@ StUPCV0::StUPCV0(StUPCTrack const * const particle1, StUPCTrack const * const pa
   TLorentzVector const p1FourMom(p1MomAtDca, sqrt(p1MomAtDca.Mag2() + p1MassHypo*p1MassHypo));
   TLorentzVector const p2FourMom(p2MomAtDca, sqrt(p2MomAtDca.Mag2() + p2MassHypo*p2MassHypo));
 
-  mLorentzVector = p1FourMom + p2FourMom;
+  mLorentzVector = p1FourMom + p2FourMom; // K0 momentum
 
   // -- calculate cosThetaStar
   TLorentzVector const pairFourMomReverse(-mLorentzVector.Px(), -mLorentzVector.Py(), -mLorentzVector.Pz(), mLorentzVector.E());
@@ -131,23 +131,32 @@ StUPCV0::StUPCV0(StUPCTrack const * const particle1, StUPCTrack const * const pa
   p1FourMomStar.Boost(pairFourMomReverse.BoostVector());  
   mCosThetaStar = std::cos(p1FourMomStar.Vect().Angle(mLorentzVector.Vect()));
 
-  TVector3 beamVector(0.,0.,1.); //unity vector along the beam axis
+//  TVector3 beamVector(0.,0.,1.); //unity vector along the beam axis
+  TVector3 beamVector(beamLine[2],beamLine[3],1.); //unity vector along the beam axis with beamLine3D
+
   TVector3 mProdPlane_work = beamVector.Cross(mLorentzVector.Vect());
-  mProdPlane = ( mProdPlane_work )*(1./mProdPlane_work.Mag() );
+  mProdPlane = ( mProdPlane_work )*(1./mProdPlane_work.Mag() ); //unity normal vector to production plane
 
   mThetaProdPlane = mProdPlane.Angle(p1FourMomStar.Vect());
-
+  
   //cout<<mThetaProdPlane<<endl; 
 
   // -- calculate decay vertex (secondary or tertiary) 
   mDecayVertex = (p1AtDcaToP2 + p2AtDcaToP1) * 0.5 ;
- 
+  mDCABeamLine = abs(mProdPlane*mDecayVertex);
+  float t = mDecayVertex.Cross(beamVector).Mag()/mProdPlane_work.Mag();
+  mProdVertexHypo = mDecayVertex - t*mLorentzVector.Vect();
+  mProdVertexHypo.SetX(beamLine[0]+beamLine[2]* mProdVertexHypo.Z());
+  mProdVertexHypo.SetY(beamLine[1]+beamLine[3]* mProdVertexHypo.Z());
   // -- calculate pointing angle and decay length with respect to primary vertex 
   //    if decay vertex is a tertiary vertex
   //    -> only rough estimate -> needs to be updated after secondary vertex is found
   TVector3 const vtxToV0 = mDecayVertex - vtx;
+  TVector3 const ProdvtxToV0 = mDecayVertex - mProdVertexHypo;
   mPointingAngle = vtxToV0.Angle(mLorentzVector.Vect());
+  mPointingAngleHypo = cos(ProdvtxToV0.Angle(mLorentzVector.Vect()));
   mDecayLength = vtxToV0.Mag();
+  mDecayLengthHypo = ProdvtxToV0.Mag();
   mDcaToPrimaryVertex = mDecayLength*sin(mPointingAngle); // sine law: DcaToPrimaryVertex/sin(pointingAngle) = decayLength/sin(90°)
 
   // -- calculate DCA of tracks to primary vertex

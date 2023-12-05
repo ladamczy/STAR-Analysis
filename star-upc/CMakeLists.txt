@@ -3,6 +3,7 @@ cmake_minimum_required (VERSION 2.8.12)
 
 #sources for shared library LIB
 set (SRCS
+  src/BeamPosition.cxx
   src/StUPCEvent.cxx
   src/StUPCTrack.cxx
   src/StUPCBemcCluster.cxx
@@ -23,6 +24,7 @@ set (LIB star-upc)
 
 #sources for ROOT dictionary
 set (SRCS_DICT
+  src/BeamPosition.cxx
   src/StUPCEvent.cxx
   src/StUPCTrack.cxx
   src/StUPCBemcCluster.cxx
