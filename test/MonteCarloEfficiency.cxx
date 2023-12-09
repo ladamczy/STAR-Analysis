@@ -118,8 +118,8 @@ int main(int argc, char** argv)
       } 
 
        cout << "Fill " << upcEvt->getFillNumber() << " " << x0 << " " << y0 << " " << xs << " " << ys << endl;
-//      double beamline[4] = {x0, y0, xs, ys} ;
-double beamline[4] = {0, 0, 0, 0};
+      double beamline[4] = {x0, y0, xs, ys} ;
+// double beamline[4] = {0, 0, 0, 0};
 //     cout << "ntracks total  " << upcEvt->getNumberOfTracks() << endl;
 
         TrueK0.clear();
@@ -166,10 +166,16 @@ double beamline[4] = {0, 0, 0, 0};
         TVector3 vertex(0,0,0);
         int id1,id2;
         TLorentzVector  v1,  v2;
-        upcEvt->getTrack(j)->getLorentzVector(v1, massPion);
-       	upcEvt->getTrack(jj)->getLorentzVector(v2, massPion);
+        if(upcEvt->getTrack(j)->getCharge() > 0) {
+          upcEvt->getTrack(j)->getLorentzVector(v1, massPion);
+          upcEvt->getTrack(jj)->getLorentzVector(v2, massPion);
+        } else {
+          upcEvt->getTrack(j)->getLorentzVector(v2, massPion);
+          upcEvt->getTrack(jj)->getLorentzVector(v1, massPion);
+        }
+
         if ( (v1+v2).M()>0.6 || (v1+v2).M()<0.4 ) continue;  
-        StUPCV0 V0(upcEvt->getTrack(j),upcEvt->getTrack(jj), massPion, massPion,id1,id2, vertex, beamline, upcEvt->getMagneticField(), false, false);
+        StUPCV0 V0(upcEvt->getTrack(j),upcEvt->getTrack(jj), massPion, massPion,id1,id2, vertex, beamline, upcEvt->getMagneticField(), false);
 
 //        std::cout << "V0 " << V0.dcaDaughters() << " " << V0.DCABeamLine() << " " <<sqrt( V0.prodVertexHypo().X()*V0.prodVertexHypo().X()+V0.prodVertexHypo().Y()*V0.prodVertexHypo().Y()) <<  std::endl;
 
@@ -195,7 +201,7 @@ double beamline[4] = {0, 0, 0, 0};
 
 
 
-        bool MasCut = V0.m()<0.6 && V0.m()>0.4;
+        bool MasCut = V0.m()<0.53 && V0.m()>0.46;
         bool DCADCut = V0.dcaDaughters()<1.5;
         bool DCABLCut = V0.DCABeamLine()<1.5;
         bool RCut = sqrt(V0.v0x()*V0.v0x()+V0.v0y()*V0.v0y())>1.5;
@@ -211,7 +217,8 @@ double beamline[4] = {0, 0, 0, 0};
                     NegPions[jj]->Momentum(mom2);
                     RecK0 = mom1 + mom2;
                        if ( abs(RecK0.Eta()-TrueK0[0]->Eta())<0.001 ) {
-                         PosPions[ii]->ProductionVertex(DecayVert0);
+//                         cout << "Pos pions " << abs(mom1.Eta()-v1.Eta()) << " " << abs(mom2.Eta()-v2.Eta()) << endl; 
+                        if( abs(mom1.Eta()-v1.Eta()) < 0.05 && abs(mom2.Eta()-v2.Eta()) < 0.05)  PosPions[ii]->ProductionVertex(DecayVert0);
                        }     
                     }
                    TrueK0[0]->ProductionVertex(ProdVert0);
@@ -229,7 +236,8 @@ double beamline[4] = {0, 0, 0, 0};
                     NegPions[jj]->Momentum(mom2);
                     RecK0 = mom1 + mom2;
                        if ( abs(RecK0.Eta()-TrueK0[1]->Eta())<0.001 ) {
-                         PosPions[ii]->ProductionVertex(DecayVert1);
+//                         cout << "Delta pions " << abs(mom1.Eta()-v1.Eta()) << " " << abs(mom2.Eta()-v2.Eta())<< endl;
+                         if( abs(mom1.Eta()-v1.Eta()) < 0.05 && abs(mom2.Eta()-v2.Eta()) < 0.05) PosPions[ii]->ProductionVertex(DecayVert1);
                        }
                     }
                    TrueK0[1]->ProductionVertex(ProdVert1);
@@ -500,7 +508,7 @@ double beamline[4] = {0, 0, 0, 0};
 //            cout << "paricle1 vertex " << vertex.X() << " " << vertex2.X() << endl;
             Int_t id1, id2;
 //upcEvt->getMagneticField()
-            StUPCV0 V0(tpcTrack[0],tpcTrack[1], massPion, massPion,id1,id2, vertex, beamline, upcEvt->getMagneticField(), false, false);
+            StUPCV0 V0(tpcTrack[0],tpcTrack[1], massPion, massPion,id1,id2, vertex, beamline, upcEvt->getMagneticField(), false);
             cout << "dca in the pair " << V0.dcaDaughters() << "len " << V0.decayLength() << "dcs to PV " 
                  << V0.DcaToPrimaryVertex() << "mass " << V0.m() << "dca1 2 " << V0.particle1Dca() << " " << 
                  V0.particle2Dca() << endl;

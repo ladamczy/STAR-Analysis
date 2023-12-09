@@ -35,26 +35,26 @@ class StUPCV0 : public TObject
   StUPCV0(StUPCTrack const * particle1, StUPCTrack const * particle2, 
 	   float p1MassHypo, float p2MassHypo,
 	   unsigned short p1Idx, unsigned short p2Idx,
-	   TVector3 const & vtx, double * beamLine, float bField, bool isMC, bool useStraightLine = true);
+	   TVector3 const & vtx, double * beamLine, float bField, bool useStraightLine = true);
 
   ~StUPCV0() {;}
   
 
   TLorentzVector const & lorentzVector() const;
-  TVector3 const & decayVertex() const;
-  TVector3 const & prodVertexHypo() const;
+  TVector3 const & decayVertex() const;    // V0 decay vertex
+  TVector3 const & prodVertexHypo() const; // V0 production vertex 
   TVector3 const & prodPlane() const;
   float m()    const;
   float pt()   const;
   float eta()  const;
   float phi()  const;
-  float pointingAngle() const;
-  float pointingAngleHypo() const;
+  float pointingAngle() const;       // Pointing angle using input vertex (vtx)
+  float pointingAngleHypo() const;   // Pointing angle using reconstructed V0 production vertex 
   float pointingAngle(TVector3 const & vtx2) const;
-  float decayLength() const;
-  float decayLengthHypo() const;
+  float decayLength() const; // decay Length using input vertex (vtx)
+  float decayLengthHypo() const; // decay Length using reconstructed V0 production vertex
   float decayLength(TVector3 const & vtx2) const;
-  float DCABeamLine() const;
+  float DCABeamLine() const; // DCA between V0 straight-line and beam-line
   float particle1Dca() const;
   float particle1Dca(StPicoPhysicalHelix  p1Helix, TVector3 const & vtx2, float bField) const;
   float particle2Dca() const;
