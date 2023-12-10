@@ -23,7 +23,7 @@ ProcessingInsideLoop::~ProcessingInsideLoop() {
 }
 
 void ProcessingInsideLoop::GetLocalHistograms(ProcessingOutsideLoop *outsideloop){
-    for(int i = 0; i<outsideloop->hist1dtab.size(); i++){
+    for(long unsigned int i = 0; i<outsideloop->hist1dtab.size(); i++){
         hist1dtabLocal.push_back(nullptr);
         hist2dtabLocal.push_back(nullptr);
         hist3dtabLocal.push_back(nullptr);

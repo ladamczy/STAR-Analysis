@@ -55,9 +55,9 @@ int main(int argc, char **argv){
     outsideprocessing.AddHistogram(TH1D("DCApipiK0", "DCA between #pi^{#pm} from leading K^{0}_{S};DCA_{#pi^{+}#pi^{-}-K^{0}_{S}};Number of pairs", 50, 0, 5));
     outsideprocessing.AddHistogram(TH1D("DCApipiPV", "DCA between #pi^{#pm} from subleading K^{0}_{S} (PV) when in narrow mass window;DCA_{#pi^{+}#pi^{-}-PV};Number of pairs", 50, 0, 5));
     outsideprocessing.AddHistogram(TH1D("DCAK0PV", "DCA between leading K^{0}_{S} and subleading K^{0}_{S};DCA_{#pi^{+}#pi^{-}-K^{0}_{S}};Number of pairs", 50, 0, 5));
-    outsideprocessing.AddHistogram(TH1D("LogProtons", "log(#xi_{E}*#xi_{W});log(#xi_{E}*#xi_{W});events", 200, -20, 0));
+    outsideprocessing.AddHistogram(TH1D("LogProtons", "log(#xi_{E}*#xi_{W});log(#xi_{E}*#xi_{W});events", 100, -10, 0));
     outsideprocessing.AddHistogram(TH1D("DivProtons", "ln(#xi_{E}/#xi_{W});ln(#xi_{E}/#xi_{W});events", 100, -10, 10));
-    outsideprocessing.AddHistogram(TH2D("Log2DProtons", "log#xi_{W} vs log#xi_{E};log#xi_{E};log#xi_{W}", 100, -9, 1, 100, -9, 1));
+    outsideprocessing.AddHistogram(TH2D("Log2DProtons", "log#xi_{W} vs log#xi_{E};log#xi_{E};log#xi_{W}", 60, -5, 1, 60, -5, 1));
     outsideprocessing.AddHistogram(TH1D("Mpipiafter", "K^{0}_{S} mass;m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 100, kaonMassWindowWideLow, kaonMassWindowWideHigh));
 
     // int triggers[] = { 570701, 570705, 570711, 590701, 590705, 590708 };
@@ -188,22 +188,23 @@ int main(int argc, char **argv){
                     insideprocessing.Fill(7, leading_particle->m());
                 }
             }
-            insideprocessing.Fill(4, log(tempRPpointer->getTrack(0)->xi(255.0)*tempRPpointer->getTrack(1)->xi(255.0)));
+
+            //filter to filter out badly reconstructed protons
+            if(tempRPpointer->getTrack(0)->xi(255.0)<0||tempRPpointer->getTrack(1)->xi(255.0)<0){
+                // cout<<log10(tempRPpointer->getTrack(0)->xi(255.0))<<" "<<log10(tempRPpointer->getTrack(1)->xi(255.0))<<endl;
+                continue;
+            }
+
+            //histograms
+            insideprocessing.Fill(4, log10(tempRPpointer->getTrack(0)->xi(255.0)*tempRPpointer->getTrack(1)->xi(255.0)));
             //0th track is east if branch <2
             if(tempRPpointer->getTrack(0)->branch()<2){
                 insideprocessing.Fill(5, log(tempRPpointer->getTrack(0)->xi(255.0)/tempRPpointer->getTrack(1)->xi(255.0)));
-                insideprocessing.Fill(6, log(tempRPpointer->getTrack(0)->xi(255.0)), log(tempRPpointer->getTrack(1)->xi(255.0)));
+                insideprocessing.Fill(6, log10(tempRPpointer->getTrack(0)->xi(255.0)), log10(tempRPpointer->getTrack(1)->xi(255.0)));
             } else{
                 insideprocessing.Fill(5, log(tempRPpointer->getTrack(1)->xi(255.0)/tempRPpointer->getTrack(0)->xi(255.0)));
-                insideprocessing.Fill(6, log(tempRPpointer->getTrack(1)->xi(255.0)), log(tempRPpointer->getTrack(0)->xi(255.0)));
+                insideprocessing.Fill(6, log10(tempRPpointer->getTrack(1)->xi(255.0)), log10(tempRPpointer->getTrack(0)->xi(255.0)));
             }
-
-            // //used triggers histograms
-            // for(int i = 0;i<6;i++){
-            //     if(tempUPCpointer->isTrigger(triggers[i])){
-            //         insideprocessing.Fill(1, i+1);
-            //     }
-            // }
         }
         return 0;
         };
