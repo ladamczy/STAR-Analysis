@@ -22,7 +22,15 @@
 #include "ProcessingInsideLoop.h"
 #include "ProcessingOutsideLoop.h"
 
-const double particleMass[3] = { 0.13957, 0.497611, 0.93827 }; // pion, kaon, proton in GeV /c^2 
+enum{
+    kAll = 1, kCPT, kRP, kOneVertex, kTPCTOF,
+    kTotQ, kMax
+};
+enum SIDE{ E = 0, East = 0, W = 1, West = 1, nSides };
+enum PARTICLES{ Pion = 0, Kaon = 1, Proton = 2, nParticles };
+const double particleMass[nParticles] = { 0.13957, 0.497611, 0.93827 }; // pion, kaon, proton in GeV /c^2 
+enum BRANCH_ID{ EU, ED, WU, WD, nBranches };
+enum RP_ID{ E1U, E1D, E2U, E2D, W1U, W1D, W2U, W2D, nRomanPots };
 
 int main(int argc, char **argv){
 
@@ -59,6 +67,8 @@ int main(int argc, char **argv){
     outsideprocessing.AddHistogram(TH1D("DivProtons", "ln(#xi_{E}/#xi_{W});ln(#xi_{E}/#xi_{W});events", 100, -10, 10));
     outsideprocessing.AddHistogram(TH2D("Log2DProtons", "log#xi_{W} vs log#xi_{E};log#xi_{E};log#xi_{W}", 60, -5, 1, 60, -5, 1));
     outsideprocessing.AddHistogram(TH1D("Mpipiafter", "K^{0}_{S} mass;m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 100, kaonMassWindowWideLow, kaonMassWindowWideHigh));
+    outsideprocessing.AddHistogram(TH1D("LogEproton", "log#xi_{E};log#xi_{E};events", 60, -5, 1));
+    outsideprocessing.AddHistogram(TH1D("LogWproton", "log#xi_{W};log#xi_{W};events", 60, -5, 1));
 
     // int triggers[] = { 570701, 570705, 570711, 590701, 590705, 590708 };
     // outsideprocessing.AddHistogram(TH1D("triggerHist", "Data triggers;Trigger ID;Number of events", 6, 0, 6));
@@ -174,10 +184,12 @@ int main(int argc, char **argv){
             // TH1D("DCApipiK0", "DCA between #pi^{#pm} from leading K^{0}_{S};DCA_{#pi^{+}#pi^{-}-K^{0}_{S}};Number of pairs", 50, 0, 5));
             // TH1D("DCApipiPV", "DCA between #pi^{#pm} from subleading K^{0}_{S} (PV) when in narrow mass window;DCA_{#pi^{+}#pi^{-}-PV};Number of pairs", 50, 0, 5));
             // TH1D("DCAK0PV", "DCA between leading K^{0}_{S} and subleading K^{0}_{S};DCA_{#pi^{+}#pi^{-}-K^{0}_{S}};Number of pairs", 50, 0, 5));
-            // TH1D("LogProtons", "log(#xi_{E}*#xi_{W});log(#xi_{E}*#xi_{W});events", 60, -6, 0));
+            // TH1D("LogProtons", "log(#xi_{E}*#xi_{W});log(#xi_{E}*#xi_{W});events", 100, -10, 0));
             // TH1D("DivProtons", "ln(#xi_{E}/#xi_{W});ln(#xi_{E}/#xi_{W});events", 100, -10, 10));
-            // TH2D("Log2DProtons", "log#xi_{W} vs log#xi_{E};log#xi_{E};log#xi_{W}", 50, -4, 1, 50, -4, 1));
+            // TH2D("Log2DProtons", "log#xi_{W} vs log#xi_{E};log#xi_{E};log#xi_{W}", 60, -5, 1, 60, -5, 1));
             // TH1D("Mpipiafter", "K^{0}_{S} mass;m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 100, kaonMassWindowWideLow, kaonMassWindowWideHigh));
+            // TH1D("LogEproton", "log#xi_{E};log#xi_{E};events", 60, -5, 1));
+            // TH1D("LogWproton", "log#xi_{W};log#xi_{W};events", 60, -5, 1));
 
             insideprocessing.Fill(0, leading_particle->m());
             insideprocessing.Fill(1, leading_particle->dcaDaughters());
@@ -201,9 +213,13 @@ int main(int argc, char **argv){
             if(tempRPpointer->getTrack(0)->branch()<2){
                 insideprocessing.Fill(5, log(tempRPpointer->getTrack(0)->xi(255.0)/tempRPpointer->getTrack(1)->xi(255.0)));
                 insideprocessing.Fill(6, log10(tempRPpointer->getTrack(0)->xi(255.0)), log10(tempRPpointer->getTrack(1)->xi(255.0)));
+                insideprocessing.Fill(8, log10(tempRPpointer->getTrack(0)->xi(255.0)));
+                insideprocessing.Fill(9, log10(tempRPpointer->getTrack(1)->xi(255.0)));
             } else{
                 insideprocessing.Fill(5, log(tempRPpointer->getTrack(1)->xi(255.0)/tempRPpointer->getTrack(0)->xi(255.0)));
                 insideprocessing.Fill(6, log10(tempRPpointer->getTrack(1)->xi(255.0)), log10(tempRPpointer->getTrack(0)->xi(255.0)));
+                insideprocessing.Fill(8, log10(tempRPpointer->getTrack(1)->xi(255.0)));
+                insideprocessing.Fill(9, log10(tempRPpointer->getTrack(0)->xi(255.0)));
             }
         }
         return 0;
