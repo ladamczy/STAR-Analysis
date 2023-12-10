@@ -100,6 +100,8 @@ int main(int argc, char **argv){
         vector<double> tempBeamVector;
         double beamValues[4];
         TVector3 vertexPrimary;
+        StUPCRpsTrack *eastTrack;
+        StUPCRpsTrack *westTrack;
 
         //actual loop
         while(myReader.Next()){
@@ -202,8 +204,9 @@ int main(int argc, char **argv){
             }
 
             //filter to filter out badly reconstructed protons
-            if(tempRPpointer->getTrack(0)->xi(255.0)<0||tempRPpointer->getTrack(1)->xi(255.0)<0){
-                // cout<<log10(tempRPpointer->getTrack(0)->xi(255.0))<<" "<<log10(tempRPpointer->getTrack(1)->xi(255.0))<<endl;
+            //as in with xi>1, cause those with xi<0 will get log(xi)=NaN and get registered as overflow
+            if(tempRPpointer->getTrack(0)->xi(255.0)>1||tempRPpointer->getTrack(1)->xi(255.0)>1){
+                cout<<log10(tempRPpointer->getTrack(0)->xi(255.0))<<" "<<log10(tempRPpointer->getTrack(1)->xi(255.0))<<endl;
                 continue;
             }
 
@@ -211,16 +214,16 @@ int main(int argc, char **argv){
             insideprocessing.Fill(4, log10(tempRPpointer->getTrack(0)->xi(255.0)*tempRPpointer->getTrack(1)->xi(255.0)));
             //0th track is east if branch <2
             if(tempRPpointer->getTrack(0)->branch()<2){
-                insideprocessing.Fill(5, log(tempRPpointer->getTrack(0)->xi(255.0)/tempRPpointer->getTrack(1)->xi(255.0)));
-                insideprocessing.Fill(6, log10(tempRPpointer->getTrack(0)->xi(255.0)), log10(tempRPpointer->getTrack(1)->xi(255.0)));
-                insideprocessing.Fill(8, log10(tempRPpointer->getTrack(0)->xi(255.0)));
-                insideprocessing.Fill(9, log10(tempRPpointer->getTrack(1)->xi(255.0)));
+                eastTrack = tempRPpointer->getTrack(0);
+                westTrack = tempRPpointer->getTrack(1);
             } else{
-                insideprocessing.Fill(5, log(tempRPpointer->getTrack(1)->xi(255.0)/tempRPpointer->getTrack(0)->xi(255.0)));
-                insideprocessing.Fill(6, log10(tempRPpointer->getTrack(1)->xi(255.0)), log10(tempRPpointer->getTrack(0)->xi(255.0)));
-                insideprocessing.Fill(8, log10(tempRPpointer->getTrack(1)->xi(255.0)));
-                insideprocessing.Fill(9, log10(tempRPpointer->getTrack(0)->xi(255.0)));
+                eastTrack = tempRPpointer->getTrack(1);
+                westTrack = tempRPpointer->getTrack(0);
             }
+            insideprocessing.Fill(5, log(eastTrack->xi(255.0)/westTrack->xi(255.0)));
+            insideprocessing.Fill(6, log10(eastTrack->xi(255.0)), log10(westTrack->xi(255.0)));
+            insideprocessing.Fill(8, log10(eastTrack->xi(255.0)));
+            insideprocessing.Fill(9, log10(westTrack->xi(255.0)));
         }
         return 0;
         };
