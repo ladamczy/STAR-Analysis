@@ -124,7 +124,7 @@ int main(int argc, char **argv){
             //actual loop
             for(long unsigned int i = 0; i<vector_Track.size()-1; i++){
                 for(long unsigned int j = i+1; j<vector_Track.size(); j++){
-                    tempParticle = new StUPCV0(vector_Track[i], vector_Track[j], particleMass[0], particleMass[0], 1, 1, vertexPrimary, beamValues, tempUPCpointer->getMagneticField(), false, true);
+                    tempParticle = new StUPCV0(vector_Track[i], vector_Track[j], particleMass[0], particleMass[0], 1, 1, vertexPrimary, beamValues, tempUPCpointer->getMagneticField(), true);
                     if(tempParticle->m()<kaonMassWindowWideLow||tempParticle->m()>kaonMassWindowWideHigh||vector_Track[i]->getCharge()*vector_Track[j]->getCharge()>0){
                         continue;
                     }
@@ -132,26 +132,26 @@ int main(int argc, char **argv){
                     if(leading_pair_indices[0]<0){
                         leading_pair_indices[0] = i;
                         leading_pair_indices[1] = j;
-                        leading_particle = new StUPCV0(vector_Track[i], vector_Track[j], particleMass[0], particleMass[0], 1, 1, vertexPrimary, beamValues, tempUPCpointer->getMagneticField(), false, true);
+                        leading_particle = new StUPCV0(vector_Track[i], vector_Track[j], particleMass[0], particleMass[0], 1, 1, vertexPrimary, beamValues, tempUPCpointer->getMagneticField(), true);
                     } else if(abs(tempParticle->m()-particleMass[0])<abs(leading_particle->m()-particleMass[0])){
                         subleading_pair_indices[0] = leading_pair_indices[0];
                         subleading_pair_indices[1] = leading_pair_indices[1];
                         leading_pair_indices[0] = i;
                         leading_pair_indices[1] = j;
                         delete subleading_particle;
-                        subleading_particle = new StUPCV0(vector_Track[subleading_pair_indices[0]], vector_Track[subleading_pair_indices[1]], particleMass[0], particleMass[0], 1, 1, vertexPrimary, beamValues, tempUPCpointer->getMagneticField(), false, true);
+                        subleading_particle = new StUPCV0(vector_Track[subleading_pair_indices[0]], vector_Track[subleading_pair_indices[1]], particleMass[0], particleMass[0], 1, 1, vertexPrimary, beamValues, tempUPCpointer->getMagneticField(), true);
                         delete leading_particle;
-                        leading_particle = new StUPCV0(vector_Track[i], vector_Track[j], particleMass[0], particleMass[0], 1, 1, vertexPrimary, beamValues, tempUPCpointer->getMagneticField(), false, true);
+                        leading_particle = new StUPCV0(vector_Track[i], vector_Track[j], particleMass[0], particleMass[0], 1, 1, vertexPrimary, beamValues, tempUPCpointer->getMagneticField(), true);
                     } else if(abs(tempParticle->m()-particleMass[0])>abs(leading_particle->m()-particleMass[0])&&subleading_pair_indices[0]<0){
                         subleading_pair_indices[0] = i;
                         subleading_pair_indices[1] = j;
                         delete subleading_particle;
-                        subleading_particle = new StUPCV0(vector_Track[i], vector_Track[j], particleMass[0], particleMass[0], 1, 1, vertexPrimary, beamValues, tempUPCpointer->getMagneticField(), false, true);
+                        subleading_particle = new StUPCV0(vector_Track[i], vector_Track[j], particleMass[0], particleMass[0], 1, 1, vertexPrimary, beamValues, tempUPCpointer->getMagneticField(), true);
                     } else if((abs(tempParticle->m()-particleMass[0])>abs(leading_particle->m()-particleMass[0]))&&(abs(tempParticle->m()-particleMass[0])<abs(subleading_particle->m()-particleMass[0]))){
                         subleading_pair_indices[0] = i;
                         subleading_pair_indices[1] = j;
                         delete subleading_particle;
-                        subleading_particle = new StUPCV0(vector_Track[i], vector_Track[j], particleMass[0], particleMass[0], 1, 1, vertexPrimary, beamValues, tempUPCpointer->getMagneticField(), false, true);
+                        subleading_particle = new StUPCV0(vector_Track[i], vector_Track[j], particleMass[0], particleMass[0], 1, 1, vertexPrimary, beamValues, tempUPCpointer->getMagneticField(), true);
                     }
                     delete tempParticle;
                 }
