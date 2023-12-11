@@ -222,8 +222,8 @@ int main(int argc, char **argv){
             }
             insideprocessing.Fill(5, log(eastTrack->xi(255.0)/westTrack->xi(255.0)));
             insideprocessing.Fill(6, log10(eastTrack->xi(255.0)), log10(westTrack->xi(255.0)));
-            insideprocessing.Fill(8, log10(eastTrack->xi(255.0)));
-            insideprocessing.Fill(9, log10(westTrack->xi(255.0)));
+            insideprocessing.Fill(7, log10(eastTrack->xi(255.0)));
+            insideprocessing.Fill(8, log10(westTrack->xi(255.0)));
         }
         return 0;
         };
