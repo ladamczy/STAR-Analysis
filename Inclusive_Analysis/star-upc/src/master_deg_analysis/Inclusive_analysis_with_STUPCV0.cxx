@@ -55,18 +55,19 @@ int main(int argc, char **argv){
     double kaonMassWindowNarrowHigh = 0.51;
     double kaonMassWindowWideLow = 0.44;
     double kaonMassWindowWideHigh = 0.54;
+    double kaonMassWindowPresentationLow = 0.46;
+    double kaonMassWindowPresentationHigh = 0.53;
     vector<vector<double>> beamData = ReadFillPositionData("../../../../share/Run7PolarizationWithPosition.csv");
 
     //histograms
     ProcessingOutsideLoop outsideprocessing;
     outsideprocessing.AddHistogram(TH1D("Mpipibefore", "K^{0}_{S} mass;m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 100, kaonMassWindowWideLow, kaonMassWindowWideHigh));
-    outsideprocessing.AddHistogram(TH1D("DCApipiK0", "DCA between #pi^{#pm} from leading K^{0}_{S};DCA_{#pi^{+}#pi^{-}-K^{0}_{S}};Number of pairs", 50, 0, 5));
-    outsideprocessing.AddHistogram(TH1D("DCApipiPV", "DCA between #pi^{#pm} from subleading K^{0}_{S} (PV) when in narrow mass window;DCA_{#pi^{+}#pi^{-}-PV};Number of pairs", 50, 0, 5));
-    outsideprocessing.AddHistogram(TH1D("DCAK0PV", "DCA between leading K^{0}_{S} and subleading K^{0}_{S};DCA_{#pi^{+}#pi^{-}-K^{0}_{S}};Number of pairs", 50, 0, 5));
+    outsideprocessing.AddHistogram(TH1D("DCApipiK0", "DCA between #pi^{#pm} from K0 K^{0}_{S};DCA_{#pi^{+}#pi^{-}-K^{0}_{S}};Number of pairs", 50, 0, 5));
+    outsideprocessing.AddHistogram(TH1D("DCApipiPV", "DCA between #pi^{#pm} from vertex when K^{0}_{S} in narrow mass window;DCA_{#pi^{+}#pi^{-}-PV};Number of pairs", 50, 0, 5));
+    outsideprocessing.AddHistogram(TH1D("DCAK0PV", "DCA between K^{0}_{S} and vertex;DCA_{#pi^{+}#pi^{-}-K^{0}_{S}};Number of pairs", 50, 0, 5));
     outsideprocessing.AddHistogram(TH1D("LogProtons", "log(#xi_{E}*#xi_{W});log(#xi_{E}*#xi_{W});events", 100, -10, 0));
     outsideprocessing.AddHistogram(TH1D("DivProtons", "ln(#xi_{E}/#xi_{W});ln(#xi_{E}/#xi_{W});events", 100, -10, 10));
     outsideprocessing.AddHistogram(TH2D("Log2DProtons", "log#xi_{W} vs log#xi_{E};log#xi_{E};log#xi_{W}", 60, -5, 1, 60, -5, 1));
-    outsideprocessing.AddHistogram(TH1D("Mpipiafter", "K^{0}_{S} mass;m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 100, kaonMassWindowWideLow, kaonMassWindowWideHigh));
     outsideprocessing.AddHistogram(TH1D("LogEproton", "log#xi_{E};log#xi_{E};events", 60, -5, 1));
     outsideprocessing.AddHistogram(TH1D("LogWproton", "log#xi_{W};log#xi_{W};events", 60, -5, 1));
 
@@ -92,10 +93,10 @@ int main(int argc, char **argv){
 
         //helpful variables
         std::vector<StUPCTrack *> vector_Track;
-        int leading_pair_indices[] = { -1,-1 };
-        int subleading_pair_indices[] = { -1,-1 };
-        StUPCV0 *leading_particle = nullptr;
-        StUPCV0 *subleading_particle = nullptr;
+        int K0_pair_indices[] = { -1,-1 };
+        int vertex_pair_indices[] = { -1,-1 };
+        StUPCV0 *K0_pair = nullptr;
+        StUPCV0 *vertex_pair = nullptr;
         StUPCV0 *tempParticle = nullptr;
         vector<double> tempBeamVector;
         double beamValues[4];
@@ -111,12 +112,12 @@ int main(int argc, char **argv){
 
             //cleaning the loop
             //these deletes were unnecessary
-            // delete leading_particle;
-            // delete subleading_particle;
-            leading_pair_indices[0] = -1;
-            leading_pair_indices[1] = -1;
-            subleading_pair_indices[0] = -1;
-            subleading_pair_indices[1] = -1;
+            // delete K0_pair;
+            // delete vertex_pair;
+            K0_pair_indices[0] = -1;
+            K0_pair_indices[1] = -1;
+            vertex_pair_indices[0] = -1;
+            vertex_pair_indices[1] = -1;
             vector_Track.clear();
 
             //cuts & histogram filling
@@ -137,70 +138,69 @@ int main(int argc, char **argv){
             for(long unsigned int i = 0; i<vector_Track.size()-1; i++){
                 for(long unsigned int j = i+1; j<vector_Track.size(); j++){
                     tempParticle = new StUPCV0(vector_Track[i], vector_Track[j], particleMass[0], particleMass[0], 1, 1, vertexPrimary, beamValues, tempUPCpointer->getMagneticField(), true);
-                    if(tempParticle->m()<kaonMassWindowWideLow||tempParticle->m()>kaonMassWindowWideHigh||vector_Track[i]->getCharge()*vector_Track[j]->getCharge()>0){
+                    //tests if accept the particle
+                    bool K0test1 = vector_Track[i]->getCharge()*vector_Track[j]->getCharge()<0;
+                    bool K0test2 = tempParticle->dcaDaughters()<1.5;
+                    bool K0test3 = tempParticle->pointingAngleHypo()>0.925;
+                    bool K0test4 = tempParticle->DCABeamLine()<1.5;
+                    bool K0test5 = tempParticle->m()>kaonMassWindowPresentationLow||tempParticle->m()<kaonMassWindowPresentationHigh;
+                    if(!(K0test1&&K0test2&&K0test3&&K0test4&&K0test5)){
                         continue;
                     }
-                    //testing the place it should belong
-                    if(leading_pair_indices[0]<0){
-                        leading_pair_indices[0] = i;
-                        leading_pair_indices[1] = j;
-                        leading_particle = new StUPCV0(vector_Track[i], vector_Track[j], particleMass[0], particleMass[0], 1, 1, vertexPrimary, beamValues, tempUPCpointer->getMagneticField(), true);
-                    } else if(abs(tempParticle->m()-particleMass[0])<abs(leading_particle->m()-particleMass[0])){
-                        subleading_pair_indices[0] = leading_pair_indices[0];
-                        subleading_pair_indices[1] = leading_pair_indices[1];
-                        leading_pair_indices[0] = i;
-                        leading_pair_indices[1] = j;
-                        delete subleading_particle;
-                        subleading_particle = new StUPCV0(vector_Track[subleading_pair_indices[0]], vector_Track[subleading_pair_indices[1]], particleMass[0], particleMass[0], 1, 1, vertexPrimary, beamValues, tempUPCpointer->getMagneticField(), true);
-                        delete leading_particle;
-                        leading_particle = new StUPCV0(vector_Track[i], vector_Track[j], particleMass[0], particleMass[0], 1, 1, vertexPrimary, beamValues, tempUPCpointer->getMagneticField(), true);
-                    } else if(abs(tempParticle->m()-particleMass[0])>abs(leading_particle->m()-particleMass[0])&&subleading_pair_indices[0]<0){
-                        subleading_pair_indices[0] = i;
-                        subleading_pair_indices[1] = j;
-                        delete subleading_particle;
-                        subleading_particle = new StUPCV0(vector_Track[i], vector_Track[j], particleMass[0], particleMass[0], 1, 1, vertexPrimary, beamValues, tempUPCpointer->getMagneticField(), true);
-                    } else if((abs(tempParticle->m()-particleMass[0])>abs(leading_particle->m()-particleMass[0]))&&(abs(tempParticle->m()-particleMass[0])<abs(subleading_particle->m()-particleMass[0]))){
-                        subleading_pair_indices[0] = i;
-                        subleading_pair_indices[1] = j;
-                        delete subleading_particle;
-                        subleading_particle = new StUPCV0(vector_Track[i], vector_Track[j], particleMass[0], particleMass[0], 1, 1, vertexPrimary, beamValues, tempUPCpointer->getMagneticField(), true);
+                    //filling
+                    if(K0_pair_indices[0]<0){
+                        K0_pair_indices[0] = i;
+                        K0_pair_indices[1] = j;
+                        K0_pair = new StUPCV0(vector_Track[i], vector_Track[j], particleMass[0], particleMass[0], 1, 1, vertexPrimary, beamValues, tempUPCpointer->getMagneticField(), true);
+                    } else if(abs(tempParticle->m()-particleMass[0])<abs(K0_pair->m()-particleMass[0])){
+                        K0_pair_indices[0] = i;
+                        K0_pair_indices[1] = j;
+                        delete K0_pair;
+                        K0_pair = new StUPCV0(vector_Track[i], vector_Track[j], particleMass[0], particleMass[0], 1, 1, vertexPrimary, beamValues, tempUPCpointer->getMagneticField(), true);
                     }
+                    //finishing
                     delete tempParticle;
                 }
             }
-            //check if any leading particle was found
-            if(leading_pair_indices[0]<0){
+            //check if any K0 particle was found
+            if(K0_pair_indices[0]<0){
                 continue;
             }
             //setting second vertex
-            bool isSubleadingK0Present = false;
+            //under assumption there are 4 particles
+            bool isvertexPresent = false;
+            vector<int> temp = { 0, 1, 2, 3 };
+            temp.erase(std::find(temp.begin(), temp.end(), K0_pair_indices[0]));
+            temp.erase(std::find(temp.begin(), temp.end(), K0_pair_indices[1]));
+            vertex_pair_indices[0] = temp[0];
+            vertex_pair_indices[1] = temp[1];
+            vertex_pair = new StUPCV0(vector_Track[vertex_pair_indices[0]], vector_Track[vertex_pair_indices[1]], particleMass[0], particleMass[0], 1, 1, vertexPrimary, beamValues, tempUPCpointer->getMagneticField(), true);
+            //tests to see if vertex suggestion is okay
             TVector3 correctedVertex;
-            if(subleading_pair_indices[0]<0){
-                correctedVertex = { beamValues[0], beamValues[1], tempUPCpointer->getVertex(0)->getPosZ() };
+            bool PVtest1 = vertex_pair->dcaDaughters()<1.5;
+            bool PVtest2 = vertex_pair->DCABeamLine()<1.5;
+            if(PVtest1&&PVtest2){
+                correctedVertex = vertex_pair->decayVertex();
+                isvertexPresent = true;
             } else{
-                correctedVertex = subleading_particle->decayVertex();
-                isSubleadingK0Present = true;
+                correctedVertex = { beamValues[0], beamValues[1], tempUPCpointer->getVertex(0)->getPosZ() };
             }
 
             // TH1D("Mpipibefore", "K^{0}_{S} mass;m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 100, kaonMassWindowWideLow, kaonMassWindowWideHigh));
-            // TH1D("DCApipiK0", "DCA between #pi^{#pm} from leading K^{0}_{S};DCA_{#pi^{+}#pi^{-}-K^{0}_{S}};Number of pairs", 50, 0, 5));
-            // TH1D("DCApipiPV", "DCA between #pi^{#pm} from subleading K^{0}_{S} (PV) when in narrow mass window;DCA_{#pi^{+}#pi^{-}-PV};Number of pairs", 50, 0, 5));
-            // TH1D("DCAK0PV", "DCA between leading K^{0}_{S} and subleading K^{0}_{S};DCA_{#pi^{+}#pi^{-}-K^{0}_{S}};Number of pairs", 50, 0, 5));
+            // TH1D("DCApipiK0", "DCA between #pi^{#pm} from K0 K^{0}_{S};DCA_{#pi^{+}#pi^{-}-K^{0}_{S}};Number of pairs", 50, 0, 5));
+            // TH1D("DCApipiPV", "DCA between #pi^{#pm} from vertex K^{0}_{S} (PV) when in narrow mass window;DCA_{#pi^{+}#pi^{-}-PV};Number of pairs", 50, 0, 5));
+            // TH1D("DCAK0PV", "DCA between K0 K^{0}_{S} and vertex K^{0}_{S};DCA_{#pi^{+}#pi^{-}-K^{0}_{S}};Number of pairs", 50, 0, 5));
             // TH1D("LogProtons", "log(#xi_{E}*#xi_{W});log(#xi_{E}*#xi_{W});events", 100, -10, 0));
             // TH1D("DivProtons", "ln(#xi_{E}/#xi_{W});ln(#xi_{E}/#xi_{W});events", 100, -10, 10));
             // TH2D("Log2DProtons", "log#xi_{W} vs log#xi_{E};log#xi_{E};log#xi_{W}", 60, -5, 1, 60, -5, 1));
-            // TH1D("Mpipiafter", "K^{0}_{S} mass;m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 100, kaonMassWindowWideLow, kaonMassWindowWideHigh));
             // TH1D("LogEproton", "log#xi_{E};log#xi_{E};events", 60, -5, 1));
             // TH1D("LogWproton", "log#xi_{W};log#xi_{W};events", 60, -5, 1));
 
-            insideprocessing.Fill(0, leading_particle->m());
-            insideprocessing.Fill(1, leading_particle->dcaDaughters());
-            if(isSubleadingK0Present&&subleading_particle->m()>kaonMassWindowNarrowLow&&subleading_particle->m()<kaonMassWindowNarrowHigh){
-                insideprocessing.Fill(2, subleading_particle->dcaDaughters());
-                insideprocessing.Fill(3, (leading_particle->decayVertex()-subleading_particle->decayVertex()).Mag());
-                if(subleading_particle->dcaDaughters()<1.5&&subleading_particle->DCABeamLine()<1.5&&subleading_particle->pointingAngleHypo()>0.925){
-                    insideprocessing.Fill(7, leading_particle->m());
-                }
+            insideprocessing.Fill(0, K0_pair->m());
+            insideprocessing.Fill(1, K0_pair->dcaDaughters());
+            if(isvertexPresent&&K0_pair->m()>kaonMassWindowNarrowLow&&K0_pair->m()<kaonMassWindowNarrowHigh){
+                insideprocessing.Fill(2, vertex_pair->dcaDaughters());
+                insideprocessing.Fill(3, (K0_pair->decayVertex()-vertex_pair->decayVertex()).Mag());
             }
 
             //filter to filter out badly reconstructed protons
