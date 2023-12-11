@@ -13,7 +13,9 @@ public:
     ~ProcessingInsideLoop();
     void GetLocalHistograms(ProcessingOutsideLoop *);
     void Fill(int, double);
+    void Fill(const char *, double);
     void Fill(int, double, double);
+    void Fill(const char *, double, double);
 };
 
 ProcessingInsideLoop::ProcessingInsideLoop(/* args */) {
@@ -42,6 +44,15 @@ void ProcessingInsideLoop::Fill(int hist_number, double x){
     hist1dtabLocal[hist_number]->Fill(x);
 }
 
+void ProcessingInsideLoop::Fill(const char *hist_name, double x){
+    for(long unsigned int i = 0; i<hist1dtabLocal.size(); i++){
+        if(hist1dtabLocal[i]!=nullptr&&strcmp(hist_name, hist1dtabLocal[i]->GetName())==0){
+            ProcessingInsideLoop::Fill(i, x);
+            break;
+        }
+    }
+}
+
 void ProcessingInsideLoop::Fill(int hist_number, double x, double y_or_w){
     if(hist1dtabLocal[hist_number]!=nullptr){
         hist1dtabLocal[hist_number]->Fill(x, y_or_w);
@@ -49,6 +60,23 @@ void ProcessingInsideLoop::Fill(int hist_number, double x, double y_or_w){
         hist2dtabLocal[hist_number]->Fill(x, y_or_w);
     }
 
+}
+
+void ProcessingInsideLoop::Fill(const char *hist_name, double x, double y_or_w){
+    //looking through 1d histograms
+    for(long unsigned int i = 0; i<hist1dtabLocal.size(); i++){
+        if(hist1dtabLocal[i]!=nullptr&&strcmp(hist_name, hist1dtabLocal[i]->GetName())==0){
+            ProcessingInsideLoop::Fill(i, x, y_or_w);
+            break;
+        }
+    }
+    //looking through 2d histograms
+    for(long unsigned int i = 0; i<hist2dtabLocal.size(); i++){
+        if(hist2dtabLocal[i]!=nullptr&&strcmp(hist_name, hist2dtabLocal[i]->GetName())==0){
+            ProcessingInsideLoop::Fill(i, x, y_or_w);
+            break;
+        }
+    }
 }
 
 #endif
