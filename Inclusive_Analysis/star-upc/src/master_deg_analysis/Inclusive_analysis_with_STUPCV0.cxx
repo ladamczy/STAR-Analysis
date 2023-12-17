@@ -57,11 +57,11 @@ int main(int argc, char **argv){
     double kaonMassWindowWideHigh = 0.54;
     double kaonMassWindowPresentationLow = 0.46;
     double kaonMassWindowPresentationHigh = 0.53;
-    vector<vector<double>> beamData = ReadFillPositionData("../../../../share/Run7PolarizationWithPosition.csv");
+    vector<vector<double>> beamData = ReadFillPositionData("STAR-Analysis/share/Run7PolarizationWithPosition.csv");
 
     //histograms
     ProcessingOutsideLoop outsideprocessing;
-    outsideprocessing.AddHistogram(TH1D("Mpipibefore", "K^{0}_{S} mass;m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 100, kaonMassWindowWideLow, kaonMassWindowWideHigh));
+    outsideprocessing.AddHistogram(TH1D("Mpipi", "K^{0}_{S} mass;m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 70, kaonMassWindowPresentationLow, kaonMassWindowPresentationHigh));
     outsideprocessing.AddHistogram(TH1D("DCApipiK0", "DCA between #pi^{#pm} from K0 K^{0}_{S};DCA_{#pi^{+}#pi^{-}-K^{0}_{S}};Number of pairs", 50, 0, 5));
     outsideprocessing.AddHistogram(TH1D("DCApipiPV", "DCA between #pi^{#pm} from vertex when K^{0}_{S} in narrow mass window;DCA_{#pi^{+}#pi^{-}-PV};Number of pairs", 50, 0, 5));
     outsideprocessing.AddHistogram(TH1D("DCAK0PV", "DCA between K^{0}_{S} and vertex;DCA_{#pi^{+}#pi^{-}-K^{0}_{S}};Number of pairs", 50, 0, 5));
@@ -70,6 +70,9 @@ int main(int argc, char **argv){
     outsideprocessing.AddHistogram(TH2D("Log2DProtons", "log#xi_{W} vs log#xi_{E};log#xi_{E};log#xi_{W}", 60, -5, 1, 60, -5, 1));
     outsideprocessing.AddHistogram(TH1D("LogEproton", "log#xi_{E};log#xi_{E};events", 60, -5, 1));
     outsideprocessing.AddHistogram(TH1D("LogWproton", "log#xi_{W};log#xi_{W};events", 60, -5, 1));
+    outsideprocessing.AddHistogram(TH2D("dcaDaughtersvsMass", ";m_{#pi^{+}#pi^{-}} [GeV];dcaDaughters", 70, kaonMassWindowPresentationLow, kaonMassWindowPresentationHigh, 30, 0, 3));
+    outsideprocessing.AddHistogram(TH2D("pointingAngleHypovsMass", ";m_{#pi^{+}#pi^{-}} [GeV];pointingAngleHypo", 70, kaonMassWindowPresentationLow, kaonMassWindowPresentationHigh, 20, -1., 1.));
+    outsideprocessing.AddHistogram(TH2D("DCABeamLinevsMass", ";m_{#pi^{+}#pi^{-}} [GeV];DCABeamLine", 70, kaonMassWindowPresentationLow, kaonMassWindowPresentationHigh, 30, 0, 3));
 
     // int triggers[] = { 570701, 570705, 570711, 590701, 590705, 590708 };
     // outsideprocessing.AddHistogram(TH1D("triggerHist", "Data triggers;Trigger ID;Number of events", 6, 0, 6));
@@ -143,7 +146,7 @@ int main(int argc, char **argv){
                     bool K0test2 = tempParticle->dcaDaughters()<1.5;
                     bool K0test3 = tempParticle->pointingAngleHypo()>0.925;
                     bool K0test4 = tempParticle->DCABeamLine()<1.5;
-                    bool K0test5 = tempParticle->m()>kaonMassWindowPresentationLow||tempParticle->m()<kaonMassWindowPresentationHigh;
+                    bool K0test5 = tempParticle->m()>kaonMassWindowPresentationLow&&tempParticle->m()<kaonMassWindowPresentationHigh;
                     if(!(K0test1&&K0test2&&K0test3&&K0test4&&K0test5)){
                         continue;
                     }
@@ -186,18 +189,27 @@ int main(int argc, char **argv){
                 correctedVertex = { beamValues[0], beamValues[1], tempUPCpointer->getVertex(0)->getPosZ() };
             }
 
+            //0
             // TH1D("Mpipibefore", "K^{0}_{S} mass;m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 100, kaonMassWindowWideLow, kaonMassWindowWideHigh));
             // TH1D("DCApipiK0", "DCA between #pi^{#pm} from K0 K^{0}_{S};DCA_{#pi^{+}#pi^{-}-K^{0}_{S}};Number of pairs", 50, 0, 5));
             // TH1D("DCApipiPV", "DCA between #pi^{#pm} from vertex K^{0}_{S} (PV) when in narrow mass window;DCA_{#pi^{+}#pi^{-}-PV};Number of pairs", 50, 0, 5));
             // TH1D("DCAK0PV", "DCA between K0 K^{0}_{S} and vertex K^{0}_{S};DCA_{#pi^{+}#pi^{-}-K^{0}_{S}};Number of pairs", 50, 0, 5));
             // TH1D("LogProtons", "log(#xi_{E}*#xi_{W});log(#xi_{E}*#xi_{W});events", 100, -10, 0));
+            //5
             // TH1D("DivProtons", "ln(#xi_{E}/#xi_{W});ln(#xi_{E}/#xi_{W});events", 100, -10, 10));
             // TH2D("Log2DProtons", "log#xi_{W} vs log#xi_{E};log#xi_{E};log#xi_{W}", 60, -5, 1, 60, -5, 1));
             // TH1D("LogEproton", "log#xi_{E};log#xi_{E};events", 60, -5, 1));
             // TH1D("LogWproton", "log#xi_{W};log#xi_{W};events", 60, -5, 1));
+            // TH2D("dcaDaughtersvsMass", ";m_{#pi^{+}#pi^{-}} [GeV];dcaDaughters", 100, kaonMassWindowWideLow, kaonMassWindowWideHigh, 20, 0, 10));
+            //10
+            // TH2D("pointingAngleHypovsMass", ";m_{#pi^{+}#pi^{-}} [GeV];pointingAngleHypo", 100, kaonMassWindowWideLow, kaonMassWindowWideHigh, 20, -1, 1));
+            // TH2D("DCABeamLinevsMass", ";m_{#pi^{+}#pi^{-}} [GeV];DCABeamLine", 100, kaonMassWindowWideLow, kaonMassWindowWideHigh, 20, 0, 10));
 
             insideprocessing.Fill(0, K0_pair->m());
             insideprocessing.Fill(1, K0_pair->dcaDaughters());
+            insideprocessing.Fill(9, K0_pair->m(), K0_pair->dcaDaughters());
+            insideprocessing.Fill(10, K0_pair->m(), K0_pair->pointingAngleHypo());
+            insideprocessing.Fill(11, K0_pair->m(), K0_pair->DCABeamLine());
             if(isvertexPresent&&K0_pair->m()>kaonMassWindowNarrowLow&&K0_pair->m()<kaonMassWindowNarrowHigh){
                 insideprocessing.Fill(2, vertex_pair->dcaDaughters());
                 insideprocessing.Fill(3, (K0_pair->decayVertex()-vertex_pair->decayVertex()).Mag());
