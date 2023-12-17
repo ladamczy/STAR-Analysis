@@ -73,12 +73,15 @@ int main(int argc, char **argv){
     outsideprocessing.AddHistogram(TH2D("dcaDaughtersvsMass", ";m_{#pi^{+}#pi^{-}} [GeV];dcaDaughters", 70, kaonMassWindowPresentationLow, kaonMassWindowPresentationHigh, 30, 0, 3));
     outsideprocessing.AddHistogram(TH2D("pointingAngleHypovsMass", ";m_{#pi^{+}#pi^{-}} [GeV];pointingAngleHypo", 70, kaonMassWindowPresentationLow, kaonMassWindowPresentationHigh, 20, -1., 1.));
     outsideprocessing.AddHistogram(TH2D("DCABeamLinevsMass", ";m_{#pi^{+}#pi^{-}} [GeV];DCABeamLine", 70, kaonMassWindowPresentationLow, kaonMassWindowPresentationHigh, 30, 0, 3));
-
+    outsideprocessing.AddHistogram(TH1D("XiEproton", "#xi_{E};#xi_{E};events", 40, -0.002, 0.002));
+    outsideprocessing.AddHistogram(TH1D("XiWproton", "#xi_{W};#xi_{W};events", 40, -0.002, 0.002));
     // int triggers[] = { 570701, 570705, 570711, 590701, 590705, 590708 };
     // outsideprocessing.AddHistogram(TH1D("triggerHist", "Data triggers;Trigger ID;Number of events", 6, 0, 6));
     // for(int i = 0;i<6;i++){
     //     outsideprocessing.GetPointer1D(1)->GetXaxis()->SetBinLabel(i+1, to_string(triggers[i]).c_str());
     // }
+
+    int lackOfCandidates = 0;
 
     //processing
     //defining TreeProcessor
@@ -187,6 +190,7 @@ int main(int argc, char **argv){
                 isvertexPresent = true;
             } else{
                 correctedVertex = { beamValues[0], beamValues[1], tempUPCpointer->getVertex(0)->getPosZ() };
+                lackOfCandidates++;
             }
 
             //0
@@ -204,6 +208,8 @@ int main(int argc, char **argv){
             //10
             // TH2D("pointingAngleHypovsMass", ";m_{#pi^{+}#pi^{-}} [GeV];pointingAngleHypo", 100, kaonMassWindowWideLow, kaonMassWindowWideHigh, 20, -1, 1));
             // TH2D("DCABeamLinevsMass", ";m_{#pi^{+}#pi^{-}} [GeV];DCABeamLine", 100, kaonMassWindowWideLow, kaonMassWindowWideHigh, 20, 0, 10));
+            // TH1D("XiEproton", "#xi_{E};#xi_{E};events", 200, -0.001, 0.001));
+            // TH1D("XiWproton", "#xi_{W};#xi_{W};events", 200, -0.001, 0.001));
 
             insideprocessing.Fill(0, K0_pair->m());
             insideprocessing.Fill(1, K0_pair->dcaDaughters());
@@ -222,8 +228,6 @@ int main(int argc, char **argv){
                 continue;
             }
 
-            //histograms
-            insideprocessing.Fill(4, log10(tempRPpointer->getTrack(0)->xi(255.0)*tempRPpointer->getTrack(1)->xi(255.0)));
             //0th track is east if branch <2
             if(tempRPpointer->getTrack(0)->branch()<2){
                 eastTrack = tempRPpointer->getTrack(0);
@@ -232,10 +236,22 @@ int main(int argc, char **argv){
                 eastTrack = tempRPpointer->getTrack(1);
                 westTrack = tempRPpointer->getTrack(0);
             }
-            insideprocessing.Fill(5, log(eastTrack->xi(255.0)/westTrack->xi(255.0)));
+            //histograms
+            if(eastTrack->xi(255.0)<0.005||westTrack->xi(255.0)<0.005){
+                insideprocessing.Fill(4, 2*log10(0.005));
+            } else{
+                insideprocessing.Fill(4, log10(tempRPpointer->getTrack(0)->xi(255.0)*tempRPpointer->getTrack(1)->xi(255.0)));
+            }
+            if(eastTrack->xi(255.0)<0.005||westTrack->xi(255.0)<0.005){
+                insideprocessing.Fill(4, 0);
+            } else{
+                insideprocessing.Fill(5, log(eastTrack->xi(255.0)/westTrack->xi(255.0)));
+            }
             insideprocessing.Fill(6, log10(eastTrack->xi(255.0)), log10(westTrack->xi(255.0)));
             insideprocessing.Fill(7, log10(eastTrack->xi(255.0)));
             insideprocessing.Fill(8, log10(westTrack->xi(255.0)));
+            insideprocessing.Fill(12, eastTrack->xi(255.0));
+            insideprocessing.Fill(13, westTrack->xi(255.0));
         }
         return 0;
         };
@@ -251,6 +267,8 @@ int main(int argc, char **argv){
     TFile *outputFileHist = TFile::Open(outfileName.c_str(), "recreate");
     outsideprocessing.SaveToFile(outputFileHist);
     outputFileHist->Close();
+
+    cout<<"Lack of candidates: "<<lackOfCandidates<<endl;
 
     return 0;
 }
