@@ -73,8 +73,10 @@ int main(int argc, char **argv){
     outsideprocessing.AddHistogram(TH2D("dcaDaughtersvsMass", ";m_{#pi^{+}#pi^{-}} [GeV];dcaDaughters", 70, kaonMassWindowPresentationLow, kaonMassWindowPresentationHigh, 30, 0, 3));
     outsideprocessing.AddHistogram(TH2D("pointingAngleHypovsMass", ";m_{#pi^{+}#pi^{-}} [GeV];pointingAngleHypo", 70, kaonMassWindowPresentationLow, kaonMassWindowPresentationHigh, 20, -1., 1.));
     outsideprocessing.AddHistogram(TH2D("DCABeamLinevsMass", ";m_{#pi^{+}#pi^{-}} [GeV];DCABeamLine", 70, kaonMassWindowPresentationLow, kaonMassWindowPresentationHigh, 30, 0, 3));
-    outsideprocessing.AddHistogram(TH1D("XiEproton", "#xi_{E};#xi_{E};events", 40, -0.002, 0.002));
-    outsideprocessing.AddHistogram(TH1D("XiWproton", "#xi_{W};#xi_{W};events", 40, -0.002, 0.002));
+    outsideprocessing.AddHistogram(TH1D("XiEproton", "#xi_{E};#xi_{E};events", 84, -0.05, 1));
+    outsideprocessing.AddHistogram(TH1D("XiWproton", "#xi_{W};#xi_{W};events", 84, -0.05, 1));
+    outsideprocessing.AddHistogram(TH1D("XiEprotoncloser", "#xi_{E};#xi_{E};events", 40, -0.05, 0.15));
+    outsideprocessing.AddHistogram(TH1D("XiWprotoncloser", "#xi_{W};#xi_{W};events", 40, -0.05, 0.15));
     // int triggers[] = { 570701, 570705, 570711, 590701, 590705, 590708 };
     // outsideprocessing.AddHistogram(TH1D("triggerHist", "Data triggers;Trigger ID;Number of events", 6, 0, 6));
     // for(int i = 0;i<6;i++){
@@ -208,8 +210,11 @@ int main(int argc, char **argv){
             //10
             // TH2D("pointingAngleHypovsMass", ";m_{#pi^{+}#pi^{-}} [GeV];pointingAngleHypo", 100, kaonMassWindowWideLow, kaonMassWindowWideHigh, 20, -1, 1));
             // TH2D("DCABeamLinevsMass", ";m_{#pi^{+}#pi^{-}} [GeV];DCABeamLine", 100, kaonMassWindowWideLow, kaonMassWindowWideHigh, 20, 0, 10));
-            // TH1D("XiEproton", "#xi_{E};#xi_{E};events", 200, -0.001, 0.001));
-            // TH1D("XiWproton", "#xi_{W};#xi_{W};events", 200, -0.001, 0.001));
+            // TH1D("XiEproton", "#xi_{E};#xi_{E};events", 84, -0.05, 1));
+            // TH1D("XiWproton", "#xi_{W};#xi_{W};events", 84, -0.05, 1));
+            // TH1D("XiEprotoncloser", "#xi_{E};#xi_{E};events", 40, -0.05, 0.15));
+            //15
+            // TH1D("XiWprotoncloser", "#xi_{W};#xi_{W};events", 40, -0.05, 0.15));
 
             insideprocessing.Fill(0, K0_pair->m());
             insideprocessing.Fill(1, K0_pair->dcaDaughters());
@@ -252,6 +257,8 @@ int main(int argc, char **argv){
             insideprocessing.Fill(8, log10(westTrack->xi(255.0)));
             insideprocessing.Fill(12, eastTrack->xi(255.0));
             insideprocessing.Fill(13, westTrack->xi(255.0));
+            insideprocessing.Fill(14, eastTrack->xi(255.0));
+            insideprocessing.Fill(15, westTrack->xi(255.0));
         }
         return 0;
         };
