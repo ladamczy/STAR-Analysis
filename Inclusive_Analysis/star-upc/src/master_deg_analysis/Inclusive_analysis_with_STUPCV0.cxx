@@ -77,6 +77,9 @@ int main(int argc, char **argv){
     outsideprocessing.AddHistogram(TH1D("XiWproton", "#xi_{W};#xi_{W};events", 84, -0.05, 1));
     outsideprocessing.AddHistogram(TH1D("XiEprotoncloser", "#xi_{E};#xi_{E};events", 40, -0.05, 0.15));
     outsideprocessing.AddHistogram(TH1D("XiWprotoncloser", "#xi_{W};#xi_{W};events", 40, -0.05, 0.15));
+    outsideprocessing.AddHistogram(TH1D("vertex_pair_dcaDaughters", "Vertex pair dcaDaughters();dcaDaughters;events", 60, 0, 3));
+    outsideprocessing.AddHistogram(TH1D("vertex_pair_DCABeamLine", "Vertex pair DCABeamLine();DCABeamLine;events", 60, 0, 3));
+
     // int triggers[] = { 570701, 570705, 570711, 590701, 590705, 590708 };
     // outsideprocessing.AddHistogram(TH1D("triggerHist", "Data triggers;Trigger ID;Number of events", 6, 0, 6));
     // for(int i = 0;i<6;i++){
@@ -215,6 +218,8 @@ int main(int argc, char **argv){
             // TH1D("XiEprotoncloser", "#xi_{E};#xi_{E};events", 40, -0.05, 0.15));
             //15
             // TH1D("XiWprotoncloser", "#xi_{W};#xi_{W};events", 40, -0.05, 0.15));
+            // TH1D("vertex_pair_dcaDaughters", "Vertex pair dcaDaughters();dcaDaughters;events", 60, 0, 3));
+            // TH1D("vertex_pair_DCABeamLine", "Vertex pair DCABeamLine();DCABeamLine;events", 60, 0, 3));
 
             insideprocessing.Fill(0, K0_pair->m());
             insideprocessing.Fill(1, K0_pair->dcaDaughters());
@@ -259,6 +264,10 @@ int main(int argc, char **argv){
             insideprocessing.Fill(13, westTrack->xi(255.0));
             insideprocessing.Fill(14, eastTrack->xi(255.0));
             insideprocessing.Fill(15, westTrack->xi(255.0));
+            if(isvertexPresent){
+                insideprocessing.Fill(16, vertex_pair->dcaDaughters());
+                insideprocessing.Fill(17, vertex_pair->DCABeamLine());
+            }
         }
         return 0;
         };
