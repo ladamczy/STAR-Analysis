@@ -46,8 +46,10 @@ int main(int argc, char** argv)
 
 ///    TH1D* HistV0MDet = new TH1D("HistV0MDet", "; M^{V0} [GeV]; # events", 100, 0.4, 0.6);
 ///    TH1D* HistV0MDetK0 = new TH1D("HistV0MDetK0", "; M^{V0} [GeV]; # events", 100, 0.4,  0.6);
-    TH1D* HistV0MDet = new TH1D("HistV0MDet", "; M^{V0} [GeV]; # events", 50, 1.0, 1.2);
-    TH1D* HistV0MDetK0 = new TH1D("HistV0MDetK0", "; M^{V0} [GeV]; # events", 50, 1.0,  1.2);
+/// TH2D* HistV0MvsDecayLDet = new TH2D("HistV0MvsDecayLDet", "; M^{V0} [GeV]; Decay Length", 50, 0., 25., 100, 0.4, 0.6);
+    TH1D* HistV0MDet = new TH1D("HistV0MDet", "; M^{V0} [GeV]; # events", 100, 1.0, 1.2);
+    TH2D* HistV0MvsDecayLDet = new TH2D("HistV0MvsDecayLDet", "; M^{V0} [GeV]; Decay Length", 50, 0., 25., 100, 1.0, 1.2);
+    TH1D* HistV0MDetK0 = new TH1D("HistV0MDetK0", "; M^{V0} [GeV]; # events", 100, 1.0,  1.2);
 
     TH1D* HistV0DCAD = new TH1D("HistV0DCAD", "; DCAD [cm]; # events", 100, 0.0, 5.0);
     TH1D* HistV0R = new TH1D("HistV0R", "; R [cm]; # events", 150, 0.0, 15.0);
@@ -301,7 +303,10 @@ int main(int argc, char** argv)
          }
         }
         } else {
-         if( DCADCut&&DCABLCut&& RCut &&PACut) HistV0MDet->Fill(V0.m());
+         if( DCADCut&&DCABLCut&& RCut &&PACut) { 
+              HistV0MDet->Fill(V0.m());
+              HistV0MvsDecayLDet->Fill(V0.decayLengthHypo(),V0.m());
+         }
          if( MasCut&&DCABLCut&& RCut &&PACut) HistV0DCAD->Fill(V0.dcaDaughters());
          if( DCADCut&&MasCut&&DCABLCut &&PACut) HistV0R->Fill(sqrt(V0.v0x()*V0.v0x()+V0.v0y()*V0.v0y()));
          if( DCADCut&&MasCut&& RCut&&PACut) HistV0DCABeamLine->Fill(V0.DCABeamLine());
@@ -623,6 +628,7 @@ int main(int argc, char** argv)
     HistDeltaX->Write();
     HistDeltaL->Write();
     HistDeltaR->Write();
+    HistV0MvsDecayLDet->Write();
 
     outfile->Close();
 
