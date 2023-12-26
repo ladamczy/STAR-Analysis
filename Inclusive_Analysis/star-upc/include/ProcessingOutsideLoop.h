@@ -67,7 +67,7 @@ void ProcessingOutsideLoop::AddHistogram(TH3D hist){
 }
 
 void ProcessingOutsideLoop::Merge(){
-    for(int i = 0; i<hist1dtab.size(); i++){
+    for(long unsigned int i = 0; i<hist1dtab.size(); i++){
         hist1dtabFinal.push_back(nullptr);
         hist2dtabFinal.push_back(nullptr);
         hist3dtabFinal.push_back(nullptr);
@@ -83,7 +83,7 @@ void ProcessingOutsideLoop::Merge(){
 
 void ProcessingOutsideLoop::SaveToFile(TFile *file){
     file->cd();
-    for(int i = 0; i<hist1dtabFinal.size(); i++){
+    for(long unsigned int i = 0; i<hist1dtabFinal.size(); i++){
         if(hist1dtabFinal[i]!=nullptr){
             hist1dtabFinal[i]->Write();
         } else if(hist2dtabFinal[i]!=nullptr){
