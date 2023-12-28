@@ -75,14 +75,17 @@ int main(int argc, char **argv){
     outsideprocessing.AddHistogram(TH2D("DCABeamLinevsMass", ";m_{#pi^{+}#pi^{-}} [GeV];DCABeamLine", 70, kaonMassWindowPresentationLow, kaonMassWindowPresentationHigh, 30, 0, 3));
     outsideprocessing.AddHistogram(TH1D("XiEproton", "#xi_{E};#xi_{E};events", 84, -0.05, 1));
     outsideprocessing.AddHistogram(TH1D("XiWproton", "#xi_{W};#xi_{W};events", 84, -0.05, 1));
-    outsideprocessing.AddHistogram(TH1D("XiEprotoncloser", "#xi_{E};#xi_{E};events", 40, -0.05, 0.15));
-    outsideprocessing.AddHistogram(TH1D("XiWprotoncloser", "#xi_{W};#xi_{W};events", 40, -0.05, 0.15));
+    outsideprocessing.AddHistogram(TH1D("XiEprotoncloser", "#xi_{E};#xi_{E};events", 400, -0.05, 0.15));
+    outsideprocessing.AddHistogram(TH1D("XiWprotoncloser", "#xi_{W};#xi_{W};events", 400, -0.05, 0.15));
     outsideprocessing.AddHistogram(TH1D("vertex_pair_dcaDaughters", "Vertex pair dcaDaughters();dcaDaughters;events", 60, 0, 3));
     outsideprocessing.AddHistogram(TH1D("vertex_pair_DCABeamLine", "Vertex pair DCABeamLine();DCABeamLine;events", 60, 0, 3));
     outsideprocessing.AddHistogram(TH1D("K0decayLengthHypo", "decayLengthHypo() of K^{0}_{S} pair;length [cm];events", 120, 0, 6));
     outsideprocessing.AddHistogram(TH1D("vertexdecayLengthHypo", "decayLengthHypo() of vertex pair;length [cm];events", 120, 0, 6));
-    outsideprocessing.AddHistogram(TH2D("decayLengthHypovsMass", "decayLengthHypo ();m_{#pi^{+}#pi^{-}} [GeV];decayLengthHypo() [cm]", 35, kaonMassWindowPresentationLow, kaonMassWindowPresentationHigh, 30, 0, 6));
-    outsideprocessing.AddHistogram(TH1D("decayvertexZdifference", "#Delta Z of K^{0}_{S} and PV decay vertices;#Delta Z [cm];events", 60, -15, 15));
+    outsideprocessing.AddHistogram(TH2D("decayLengthHypovsMass", "decayLengthHypo();m_{#pi^{+}#pi^{-}} [GeV];decayLengthHypo() [cm]", 35, kaonMassWindowPresentationLow, kaonMassWindowPresentationHigh, 30, 0, 6));
+    outsideprocessing.AddHistogram(TH1D("decayvertexZdifference", "#DeltaZ of K^{0}_{S} and PV decay vertices;#DeltaZ [cm];events", 60, -15, 15));
+    outsideprocessing.AddHistogram(TH2D("Xi2DProtons", "#xi_{W} vs #xi_{E};#xi_{E};#xi_{W}", 60, -0.01, 0.05, 60, -0.01, 0.05));
+    outsideprocessing.AddHistogram(TH2D("deltaTheta2DProtons", "Difference in #theta_{x} and #theta_{y} of protons;#Delta#theta_{x};#Delta#theta_{y}", 100, -1e-2, 1e-2, 100, -1e-2, 1e-2));
+    outsideprocessing.AddHistogram(TH2D("sump2DProtons", "Sum of p_{x} and p_{y} of protons;#Sigmap_{x};#Sigmap_{y}", 100, -2, 2, 100, -2, 2));
     // int triggers[] = { 570701, 570705, 570711, 590701, 590705, 590708 };
     // outsideprocessing.AddHistogram(TH1D("triggerHist", "Data triggers;Trigger ID;Number of events", 6, 0, 6));
     // for(int i = 0;i<6;i++){
@@ -226,6 +229,10 @@ int main(int argc, char **argv){
             //20
             // TH2D("decayLengthHypovsMass", "decayLengthHypo ();m_{#pi^{+}#pi^{-}} [GeV];decayLengthHypo() [cm]", 60, 0, 3, 70, kaonMassWindowPresentationLow, kaonMassWindowPresentationHigh));
             // TH1D("decayvertexZdifference", "#Delta Z of K^{0}_{S} and PV decay vertices;#Delta Z [cm];events", 200, -100, 100));
+            // TH2D("Xi2DProtons", "#xi_{W} vs #xi_{E};#xi_{E};#xi_{W}", 400, -0.05, 0.15, 400, -0.05, 0.15));
+            // TH2D("deltaTheta2DProtons", "Difference in #theta_{x} and #theta_{y} of protons;#Delta#theta_{x};#Delta#theta_{y}", 200, -0.2, 0.2, 200, -0.2, 0.2));
+            // TH2D("sump2DProtons", "Sum of p_{x} and p_{y} of protons;#Sigmap_{x};#Sigmap_{y}", 100, -1, 1, 100, -1, 1));
+
 
             insideprocessing.Fill(0, K0_pair->m());
             insideprocessing.Fill(1, K0_pair->dcaDaughters());
@@ -276,6 +283,10 @@ int main(int argc, char **argv){
             insideprocessing.Fill("vertexdecayLengthHypo", vertex_pair->decayLengthHypo());
             insideprocessing.Fill("decayLengthHypovsMass", K0_pair->m(), K0_pair->decayLengthHypo());
             insideprocessing.Fill("decayvertexZdifference", K0_pair->decayVertex().Z()-vertex_pair->decayVertex().Z());
+            insideprocessing.Fill("Xi2DProtons", eastTrack->xi(255.0), westTrack->xi(255.0));
+            insideprocessing.Fill("deltaTheta2DProtons", eastTrack->theta(StUPCRpsTrack::rpsAngleThetaX)-westTrack->theta(StUPCRpsTrack::rpsAngleThetaX), eastTrack->theta(StUPCRpsTrack::rpsAngleThetaY)-westTrack->theta(StUPCRpsTrack::rpsAngleThetaY));
+            insideprocessing.Fill("sump2DProtons", eastTrack->pVec().X()+westTrack->pVec().X(), eastTrack->pVec().Y()+westTrack->pVec().Y());
+
         }
         return 0;
         };
