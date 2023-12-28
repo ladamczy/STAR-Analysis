@@ -44,9 +44,9 @@ int main(int argc, char** argv)
     TH1D* HistXM4T = new TH1D("HistXM4T", "; M^{#pi^{+}#pi^{-}} [GeV]; # events",21, 0.9, 3.0);
     TH1D* HistXM2P = new TH1D("HistXM2P", "; M^{#pi^{+}#pi^{-}} [GeV]; # events",21, 0.9, 3.0);
 
-///    TH1D* HistV0MDet = new TH1D("HistV0MDet", "; M^{V0} [GeV]; # events", 100, 0.4, 0.6);
-///    TH1D* HistV0MDetK0 = new TH1D("HistV0MDetK0", "; M^{V0} [GeV]; # events", 100, 0.4,  0.6);
-/// TH2D* HistV0MvsDecayLDet = new TH2D("HistV0MvsDecayLDet", "; M^{V0} [GeV]; Decay Length", 50, 0., 25., 100, 0.4, 0.6);
+//    TH1D* HistV0MDet = new TH1D("HistV0MDet", "; M^{V0} [GeV]; # events", 100, 0.4, 0.6);
+//    TH1D* HistV0MDetK0 = new TH1D("HistV0MDetK0", "; M^{V0} [GeV]; # events", 100, 0.4,  0.6);
+//    TH2D* HistV0MvsDecayLDet = new TH2D("HistV0MvsDecayLDet", "; M^{V0} [GeV]; Decay Length", 50, 0., 25., 100, 0.4, 0.6);
     TH1D* HistV0MDet = new TH1D("HistV0MDet", "; M^{V0} [GeV]; # events", 100, 1.0, 1.2);
     TH2D* HistV0MvsDecayLDet = new TH2D("HistV0MvsDecayLDet", "; M^{V0} [GeV]; Decay Length", 50, 0., 25., 100, 1.0, 1.2);
     TH1D* HistV0MDetK0 = new TH1D("HistV0MDetK0", "; M^{V0} [GeV]; # events", 100, 1.0,  1.2);
@@ -171,7 +171,7 @@ int main(int argc, char** argv)
                if( (upcEvt->getTrack(j)->getCharge() != upcEvt->getTrack(jj)->getCharge()) 
                  && upcEvt->getTrack(j)->getNhits()>25 && upcEvt->getTrack(jj)->getNhits()>25 
                  && (upcEvt->getTrack(j)->getFlag(StUPCTrack::kTof) 
-                 || upcEvt->getTrack(jj)->getFlag(StUPCTrack::kTof)) 
+                 && upcEvt->getTrack(jj)->getFlag(StUPCTrack::kTof)) 
                  && upcEvt->getTrack(jj)->getPt()>0.15 && upcEvt->getTrack(j)->getPt()>0.15 
                  && abs(upcEvt->getTrack(jj)->getEta())<1.0 &&  abs(upcEvt->getTrack(j)->getEta())<1.0 ) {
 
@@ -221,7 +221,7 @@ int main(int argc, char** argv)
 
         }
 //        bool MasCut = V0.m()<0.53 && V0.m()>0.46;
-          bool MasCut = V0.m()<1.115+0.035 && V0.m()>1.115-0.035;
+          bool MasCut = V0.m()<1.15 && V0.m()>1.08;
 //        MasCut = true;
         bool DCADCut = V0.dcaDaughters()<1.5;
         bool DCABLCut = V0.DCABeamLine()<1.5;
