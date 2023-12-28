@@ -53,8 +53,8 @@ int main(int argc, char **argv){
     //useful constants
     double kaonMassWindowNarrowLow = 0.48;
     double kaonMassWindowNarrowHigh = 0.51;
-    double kaonMassWindowWideLow = 0.44;
-    double kaonMassWindowWideHigh = 0.54;
+    // double kaonMassWindowWideLow = 0.44;
+    // double kaonMassWindowWideHigh = 0.54;
     double kaonMassWindowPresentationLow = 0.46;
     double kaonMassWindowPresentationHigh = 0.53;
     vector<vector<double>> beamData = ReadFillPositionData("STAR-Analysis/share/Run7PolarizationWithPosition.csv");
@@ -79,7 +79,10 @@ int main(int argc, char **argv){
     outsideprocessing.AddHistogram(TH1D("XiWprotoncloser", "#xi_{W};#xi_{W};events", 40, -0.05, 0.15));
     outsideprocessing.AddHistogram(TH1D("vertex_pair_dcaDaughters", "Vertex pair dcaDaughters();dcaDaughters;events", 60, 0, 3));
     outsideprocessing.AddHistogram(TH1D("vertex_pair_DCABeamLine", "Vertex pair DCABeamLine();DCABeamLine;events", 60, 0, 3));
-
+    outsideprocessing.AddHistogram(TH1D("K0decayLengthHypo", "decayLengthHypo() of K^{0}_{S} pair;length [cm];events", 120, 0, 6));
+    outsideprocessing.AddHistogram(TH1D("vertexdecayLengthHypo", "decayLengthHypo() of vertex pair;length [cm];events", 120, 0, 6));
+    outsideprocessing.AddHistogram(TH2D("decayLengthHypovsMass", "decayLengthHypo ();m_{#pi^{+}#pi^{-}} [GeV];decayLengthHypo() [cm]", 35, kaonMassWindowPresentationLow, kaonMassWindowPresentationHigh, 30, 0, 6));
+    outsideprocessing.AddHistogram(TH1D("decayvertexZdifference", "#Delta Z of K^{0}_{S} and PV decay vertices;#Delta Z [cm];events", 60, -15, 15));
     // int triggers[] = { 570701, 570705, 570711, 590701, 590705, 590708 };
     // outsideprocessing.AddHistogram(TH1D("triggerHist", "Data triggers;Trigger ID;Number of events", 6, 0, 6));
     // for(int i = 0;i<6;i++){
@@ -179,7 +182,6 @@ int main(int argc, char **argv){
             }
             //setting second vertex
             //under assumption there are 4 particles
-            bool isvertexPresent = false;
             vector<int> temp = { 0, 1, 2, 3 };
             temp.erase(std::find(temp.begin(), temp.end(), K0_pair_indices[0]));
             temp.erase(std::find(temp.begin(), temp.end(), K0_pair_indices[1]));
@@ -192,10 +194,9 @@ int main(int argc, char **argv){
             bool PVtest2 = vertex_pair->DCABeamLine()<1.5;
             if(PVtest1&&PVtest2){
                 correctedVertex = vertex_pair->decayVertex();
-                isvertexPresent = true;
             } else{
-                correctedVertex = { beamValues[0], beamValues[1], tempUPCpointer->getVertex(0)->getPosZ() };
                 lackOfCandidates++;
+                continue;
             }
 
             //0
@@ -220,13 +221,18 @@ int main(int argc, char **argv){
             // TH1D("XiWprotoncloser", "#xi_{W};#xi_{W};events", 40, -0.05, 0.15));
             // TH1D("vertex_pair_dcaDaughters", "Vertex pair dcaDaughters();dcaDaughters;events", 60, 0, 3));
             // TH1D("vertex_pair_DCABeamLine", "Vertex pair DCABeamLine();DCABeamLine;events", 60, 0, 3));
+            // TH1D("K0decayLengthHypo", "decayLengthHypo() of K^{0}_{S} pair;length [cm];events", 60, 0, 3));
+            // TH1D("vertexdecayLengthHypo", "decayLengthHypo() of vertex pair;length [cm];events", 60, 0, 3));
+            //20
+            // TH2D("decayLengthHypovsMass", "decayLengthHypo ();m_{#pi^{+}#pi^{-}} [GeV];decayLengthHypo() [cm]", 60, 0, 3, 70, kaonMassWindowPresentationLow, kaonMassWindowPresentationHigh));
+            // TH1D("decayvertexZdifference", "#Delta Z of K^{0}_{S} and PV decay vertices;#Delta Z [cm];events", 200, -100, 100));
 
             insideprocessing.Fill(0, K0_pair->m());
             insideprocessing.Fill(1, K0_pair->dcaDaughters());
             insideprocessing.Fill(9, K0_pair->m(), K0_pair->dcaDaughters());
             insideprocessing.Fill(10, K0_pair->m(), K0_pair->pointingAngleHypo());
             insideprocessing.Fill(11, K0_pair->m(), K0_pair->DCABeamLine());
-            if(isvertexPresent&&K0_pair->m()>kaonMassWindowNarrowLow&&K0_pair->m()<kaonMassWindowNarrowHigh){
+            if(K0_pair->m()>kaonMassWindowNarrowLow&&K0_pair->m()<kaonMassWindowNarrowHigh){
                 insideprocessing.Fill(2, vertex_pair->dcaDaughters());
                 insideprocessing.Fill(3, (K0_pair->decayVertex()-vertex_pair->decayVertex()).Mag());
             }
@@ -264,10 +270,12 @@ int main(int argc, char **argv){
             insideprocessing.Fill(13, westTrack->xi(255.0));
             insideprocessing.Fill(14, eastTrack->xi(255.0));
             insideprocessing.Fill(15, westTrack->xi(255.0));
-            if(isvertexPresent){
-                insideprocessing.Fill(16, vertex_pair->dcaDaughters());
-                insideprocessing.Fill(17, vertex_pair->DCABeamLine());
-            }
+            insideprocessing.Fill(16, vertex_pair->dcaDaughters());
+            insideprocessing.Fill(17, vertex_pair->DCABeamLine());
+            insideprocessing.Fill("K0decayLengthHypo", K0_pair->decayLengthHypo());
+            insideprocessing.Fill("vertexdecayLengthHypo", vertex_pair->decayLengthHypo());
+            insideprocessing.Fill("decayLengthHypovsMass", K0_pair->m(), K0_pair->decayLengthHypo());
+            insideprocessing.Fill("decayvertexZdifference", K0_pair->decayVertex().Z()-vertex_pair->decayVertex().Z());
         }
         return 0;
         };
