@@ -236,7 +236,7 @@ vector <double> GetBeamParameters(int nFillNumber, vector <double> &vFillNumber,
 		
 	}
 						
-	double posX, posY, posX2, posY2, beamPositionX, beamPositionY;
+	double posX, posY, posX2, posY2;
 	double sX, sY, sX2, sY2;
 	posX = vXPosition[indexFill];
 	posY = vYPosition[indexFill];
@@ -257,20 +257,21 @@ vector <double> GetBeamParameters(int nFillNumber, vector <double> &vFillNumber,
 		
 	if (std::isnan(posX2) or std::isnan(posY2))
 	{
-		vFinalPositions[0] = posX;
-		vFinalPositions[1] = posY;
-		vFinalPositions[2] = sX;
-		vFinalPositions[3] = sY;
+		vFinalPositions.push_back(posX);
+		vFinalPositions.push_back(posY);
+		vFinalPositions.push_back(sX);
+		vFinalPositions.push_back(sY);
 	}
 			
 	else
 	{
-		vFinalPositions[0] = (posX+posX2)/2.0;
-		vFinalPositions[1] = (posY+posY2)/2.0;
-		vFinalPositions[2] = (sX+sX2)/2.0;
-		vFinalPositions[3] = (sY+sY2)/2.0;		
+		vFinalPositions.push_back((posX+posX2)/2.0);
+		vFinalPositions.push_back((posY+posY2)/2.0);
+		vFinalPositions.push_back((sX+sX2)/2.0);
+		vFinalPositions.push_back((sY+sY2)/2.0);
 	}
-			
+	
+	
 
 	
 	return vFinalPositions;
