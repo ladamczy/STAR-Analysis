@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<job  maxFilesPerProcess="1"  fileListSyntax="xrootd" mail="true" simulateSubmission="false">
+        <command>
+@ nFile = 0
+eval set filename = '$INPUTFILE'$nFile
+set scriptdir = "/star/u/adamczyk/STAR-Analysis/test/build"
+set libdir = "/star/u/adamczyk/STAR-Analysis/star-upc/build"
+rm -rf /star/data05/scratch/adamczyk/test4/&file;
+source /afs/rhic.bnl.gov/star/ROOT/6.20.08/build/bin/thisroot.csh
+setenv LD_LIBRARY_PATH "${LD_LIBRARY_PATH}:${libdir}/"
+${scriptdir}/MonteCarloEfficiency ${filename} &file;
+        </command>
+        <stdout URL="file:/star/data05/scratch/adamczyk/test4/$JOBID.out" />
+        <stderr URL="file:/star/data05/scratch/adamczyk/test4/$JOBID.err" />
+        <input URL="file:/gpfs01/star/pwg/adamczyk/picoUPC/MuDST/&file;" />
+	<output fromScratch="&file;" toURL="file:/star/data05/scratch/adamczyk/test4/" />
+</job>

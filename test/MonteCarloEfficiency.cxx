@@ -5,7 +5,8 @@ using namespace std;
 int main(int argc, char** argv)  
 {
     double massPion = 0.13957061;
-    double massKaon =  497.611;
+    double massKaon =  0.497611;
+    double massProton = 0.93827;     
 
     ifstream inputFilePathList(argv[1]);
     if (!inputFilePathList) 
@@ -43,8 +44,13 @@ int main(int argc, char** argv)
     TH1D* HistXM4T = new TH1D("HistXM4T", "; M^{#pi^{+}#pi^{-}} [GeV]; # events",21, 0.9, 3.0);
     TH1D* HistXM2P = new TH1D("HistXM2P", "; M^{#pi^{+}#pi^{-}} [GeV]; # events",21, 0.9, 3.0);
 
-    TH1D* HistV0MDet = new TH1D("HistV0MDet", "; M^{V0} [GeV]; # events", 100, 0.4, 0.6);
-    TH1D* HistV0MDetK0 = new TH1D("HistV0MDetK0", "; M^{V0} [GeV]; # events", 100, 0.4, 0.6);
+//    TH1D* HistV0MDet = new TH1D("HistV0MDet", "; M^{V0} [GeV]; # events", 100, 0.4, 0.6);
+//    TH1D* HistV0MDetK0 = new TH1D("HistV0MDetK0", "; M^{V0} [GeV]; # events", 100, 0.4,  0.6);
+//    TH2D* HistV0MvsDecayLDet = new TH2D("HistV0MvsDecayLDet", "; M^{V0} [GeV]; Decay Length", 50, 0., 25., 100, 0.4, 0.6);
+    TH1D* HistV0MDet = new TH1D("HistV0MDet", "; M^{V0} [GeV]; # events", 100, 1.0, 1.2);
+    TH2D* HistV0MvsDecayLDet = new TH2D("HistV0MvsDecayLDet", "; M^{V0} [GeV]; Decay Length", 50, 0., 25., 100, 1.0, 1.2);
+    TH1D* HistV0MDetK0 = new TH1D("HistV0MDetK0", "; M^{V0} [GeV]; # events", 100, 1.0,  1.2);
+
     TH1D* HistV0DCAD = new TH1D("HistV0DCAD", "; DCAD [cm]; # events", 100, 0.0, 5.0);
     TH1D* HistV0R = new TH1D("HistV0R", "; R [cm]; # events", 150, 0.0, 15.0);
     TH1D* HistV0DCABeamLine = new TH1D("HistV0DCABeamLine", "; DCABeamLine [cm]; # events", 150, 0.0, 15.0);
@@ -96,6 +102,7 @@ int main(int argc, char** argv)
     double x0=0,y0=0,xs=0,ys=0;
 
     for (Long64_t i = 0; i < chain->GetEntries(); ++i) 
+//    for (Long64_t i = 0; i < 1000; ++i)
     {
        TLorentzVector lorentzVectorX;
        chain->GetEntry(i);
@@ -117,10 +124,10 @@ int main(int argc, char** argv)
 	}
       } 
 
-       cout << "Fill " << upcEvt->getFillNumber() << " " << x0 << " " << y0 << " " << xs << " " << ys << endl;
+//       cout << "Fill " << upcEvt->getFillNumber() << " " << x0 << " " << y0 << " " << xs << " " << ys << endl;
       double beamline[4] = {x0, y0, xs, ys} ;
 // double beamline[4] = {0, 0, 0, 0};
-//     cout << "ntracks total  " << upcEvt->getNumberOfTracks() << endl;
+     cout << "ntracks total  " << upcEvt->getNumberOfTracks() << endl;
 
         TrueK0.clear();
 
@@ -132,17 +139,20 @@ int main(int argc, char** argv)
 
 //            cout << "Code " << particle->GetPDG()->PdgCode() << endl; 
     
-        if (particle->GetPDG()->PdgCode() == 310)
+////        if (particle->GetPDG()->PdgCode() == 310)
+           if (   abs(particle->GetPDG()->PdgCode()) == 3122)
            {
            TrueK0.push_back(particle);
            }
 
-        if (particle->GetPDG()->PdgCode() == 211)
+////        if (particle->GetPDG()->PdgCode() == 211)
+            if (particle->GetPDG()->PdgCode() == 2212 and particle->GetFirstMother() != 1 or particle->GetPDG()->PdgCode() == 211)
             {
              	PosPions.push_back(particle);
             }
 
-            else if (particle->GetPDG()->PdgCode() == -211)
+////            else if (particle->GetPDG()->PdgCode() == -211)
+            else if (particle->GetPDG()->PdgCode() == -2212 and particle->GetFirstMother() != 1 or particle->GetPDG()->PdgCode() == -211)
             {
              	NegPions.push_back(particle);
             }
@@ -154,12 +164,14 @@ int main(int argc, char** argv)
             }
 	}
 
+     cout << "True KO, pos, neg " << TrueK0.size() << " " << PosPions.size() << " " << NegPions.size() << endl;
+
      for (int j = 0; j < upcEvt->getNumberOfTracks(); j++) {
              for (int jj = j; jj < upcEvt->getNumberOfTracks(); jj++) {       
                if( (upcEvt->getTrack(j)->getCharge() != upcEvt->getTrack(jj)->getCharge()) 
                  && upcEvt->getTrack(j)->getNhits()>25 && upcEvt->getTrack(jj)->getNhits()>25 
                  && (upcEvt->getTrack(j)->getFlag(StUPCTrack::kTof) 
-                 || upcEvt->getTrack(jj)->getFlag(StUPCTrack::kTof)) 
+                 && upcEvt->getTrack(jj)->getFlag(StUPCTrack::kTof)) 
                  && upcEvt->getTrack(jj)->getPt()>0.15 && upcEvt->getTrack(j)->getPt()>0.15 
                  && abs(upcEvt->getTrack(jj)->getEta())<1.0 &&  abs(upcEvt->getTrack(j)->getEta())<1.0 ) {
 
@@ -173,15 +185,22 @@ int main(int argc, char** argv)
           upcEvt->getTrack(j)->getLorentzVector(v2, massPion);
           upcEvt->getTrack(jj)->getLorentzVector(v1, massPion);
         }
-
-        if ( (v1+v2).M()>0.6 || (v1+v2).M()<0.4 ) continue;  
-        StUPCV0 V0(upcEvt->getTrack(j),upcEvt->getTrack(jj), massPion, massPion,id1,id2, vertex, beamline, upcEvt->getMagneticField(), false);
-
-//        std::cout << "V0 " << V0.dcaDaughters() << " " << V0.DCABeamLine() << " " <<sqrt( V0.prodVertexHypo().X()*V0.prodVertexHypo().X()+V0.prodVertexHypo().Y()*V0.prodVertexHypo().Y()) <<  std::endl;
-
+//        continue;
+//        if ( (v1+v2).M()>0.6 || (v1+v2).M()<0.4 ) continue;  
+        StUPCV0 V0(upcEvt->getTrack(j),upcEvt->getTrack(jj), massProton, massPion,id1,id2, vertex, beamline, upcEvt->getMagneticField(), false);
+////        continue;
+        std::cout << "V0 " << V0.dcaDaughters() 
+                  << " " << V0.DCABeamLine() 
+  << " " <<sqrt( V0.prodVertexHypo().X()*V0.prodVertexHypo().X()+V0.prodVertexHypo().Y()*V0.prodVertexHypo().Y()) 
+        <<  std::endl;
+//        continue;
         TParticle V0Part;
         V0Part.SetMomentum(V0.px(),V0.py(),V0.pz(),sqrt(V0.m()*V0.m()+V0.px()*V0.px()+V0.py()*V0.py()+V0.pz()*V0.pz()));
 
+        double Delta1 = 1000.;
+        double Delta2 = 1000.;
+
+        if ( TrueK0.size() == 2) {
         double pi=acos(-1.);
         double DeltaPhi1=V0Part.Phi()-TrueK0[0]->Phi();
        	double DeltaPhi2=V0Part.Phi()-TrueK0[1]->Phi();
@@ -192,20 +211,23 @@ int main(int argc, char** argv)
         if ( DeltaPhi2 > pi )  DeltaPhi2 =2*pi-DeltaPhi2;
 
 
-        double Delta1 = sqrt((V0Part.Eta()-TrueK0[0]->Eta())*(V0Part.Eta()-TrueK0[0]->Eta())+DeltaPhi1*DeltaPhi1);
-        double Delta2 = sqrt((V0Part.Eta()-TrueK0[1]->Eta())*(V0Part.Eta()-TrueK0[1]->Eta())+DeltaPhi2*DeltaPhi2);
+        Delta1 = sqrt((V0Part.Eta()-TrueK0[0]->Eta())*(V0Part.Eta()-TrueK0[0]->Eta())+DeltaPhi1*DeltaPhi1);
+        Delta2 = sqrt((V0Part.Eta()-TrueK0[1]->Eta())*(V0Part.Eta()-TrueK0[1]->Eta())+DeltaPhi2*DeltaPhi2);
 
 
         HistMatch->Fill(sqrt((V0Part.Eta()-TrueK0[0]->Eta())*(V0Part.Eta()-TrueK0[0]->Eta())+DeltaPhi1*DeltaPhi1));
         HistMatch->Fill(sqrt((V0Part.Eta()-TrueK0[1]->Eta())*(V0Part.Eta()-TrueK0[1]->Eta())+DeltaPhi2*DeltaPhi2));
 
 
-
-        bool MasCut = V0.m()<0.53 && V0.m()>0.46;
+        }
+//        bool MasCut = V0.m()<0.53 && V0.m()>0.46;
+          bool MasCut = V0.m()<1.15 && V0.m()>1.08;
+//        MasCut = true;
         bool DCADCut = V0.dcaDaughters()<1.5;
         bool DCABLCut = V0.DCABeamLine()<1.5;
         bool RCut = sqrt(V0.v0x()*V0.v0x()+V0.v0y()*V0.v0y())>1.5;
         RCut = true; 
+//        continue;
         bool PACut = V0.pointingAngleHypo()>0.925;
         TLorentzVector ProdVert0,  DecayVert0(0,0,0,0), ProdVert1,  DecayVert1(0,0,0,0) , RecK0, mom1, mom2;
 
@@ -281,7 +303,10 @@ int main(int argc, char** argv)
          }
         }
         } else {
-         if( DCADCut&&DCABLCut&& RCut &&PACut) HistV0MDet->Fill(V0.m());
+         if( DCADCut&&DCABLCut&& RCut &&PACut) { 
+              HistV0MDet->Fill(V0.m());
+              HistV0MvsDecayLDet->Fill(V0.decayLengthHypo(),V0.m());
+         }
          if( MasCut&&DCABLCut&& RCut &&PACut) HistV0DCAD->Fill(V0.dcaDaughters());
          if( DCADCut&&MasCut&&DCABLCut &&PACut) HistV0R->Fill(sqrt(V0.v0x()*V0.v0x()+V0.v0y()*V0.v0y()));
          if( DCADCut&&MasCut&& RCut&&PACut) HistV0DCABeamLine->Fill(V0.DCABeamLine());
@@ -603,6 +628,7 @@ int main(int argc, char** argv)
     HistDeltaX->Write();
     HistDeltaL->Write();
     HistDeltaR->Write();
+    HistV0MvsDecayLDet->Write();
 
     outfile->Close();
 
