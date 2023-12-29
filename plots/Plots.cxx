@@ -52,7 +52,7 @@ int main(int argc, char** argv) {
                 StUPCV0 v0(track1, track2, pionMass, pionMass, 1, 1, tryVec, beamLine, event->getMagneticField(), true);
 
                 // Wypełnianie histogramów z odpowiednimi cięciami
-                if (v0.pointingAngle() < TMath::Pi() / 4) {
+                if (v0.pointingAngle() /*< TMath::Pi() / 4*/) {
                     histPointingAngle->Fill(v0.pointingAngle());
                 }
                 if (v0.DCABeamLine() /*< 0.5*/) {
