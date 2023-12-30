@@ -88,6 +88,7 @@ int main(int argc, char** argv)
     TLorentzVector trackVector;
     Double_t PYPY=1;
 
+    int good_events = 0;
     double truthVertexR, truthVertexZ, truthEta, truthPt;
     double detVertexR, detVertexZ, detEta, detPt, detM, V0M;
 
@@ -139,20 +140,20 @@ int main(int argc, char** argv)
 
 //            cout << "Code " << particle->GetPDG()->PdgCode() << endl; 
     
-////        if (particle->GetPDG()->PdgCode() == 310)
-           if (   abs(particle->GetPDG()->PdgCode()) == 3122)
+        if (particle->GetPDG()->PdgCode() == 310)
+////           if (   abs(particle->GetPDG()->PdgCode()) == 3122)
            {
            TrueK0.push_back(particle);
            }
 
-////        if (particle->GetPDG()->PdgCode() == 211)
-            if (particle->GetPDG()->PdgCode() == 2212 and particle->GetFirstMother() != 1 or particle->GetPDG()->PdgCode() == 211)
+        if (particle->GetPDG()->PdgCode() == 211 && abs(particle->Eta())<1.0 && particle->Pt()>0.1 )
+////            if (particle->GetPDG()->PdgCode() == 2212 and particle->GetFirstMother() != 1 or particle->GetPDG()->PdgCode() == 211)
             {
              	PosPions.push_back(particle);
             }
 
-////            else if (particle->GetPDG()->PdgCode() == -211)
-            else if (particle->GetPDG()->PdgCode() == -2212 and particle->GetFirstMother() != 1 or particle->GetPDG()->PdgCode() == -211)
+            else if (particle->GetPDG()->PdgCode() == -211 && abs(particle->Eta())<1.0 && particle->Pt()>0.1 )
+////            else if (particle->GetPDG()->PdgCode() == -2212 and particle->GetFirstMother() != 1 or particle->GetPDG()->PdgCode() == -211)
             {
              	NegPions.push_back(particle);
             }
@@ -164,7 +165,10 @@ int main(int argc, char** argv)
             }
 	}
 
-     cout << "True KO, pos, neg " << TrueK0.size() << " " << PosPions.size() << " " << NegPions.size() << endl;
+     if (TrueK0.size()==2 && PosPions.size()==2 && NegPions.size()==2)  good_events++;
+     
+     cout << "True KO, pos, neg " << TrueK0.size() << " " << PosPions.size() << " " << NegPions.size() 
+          << " good events " << good_events << endl;
 
      for (int j = 0; j < upcEvt->getNumberOfTracks(); j++) {
              for (int jj = j; jj < upcEvt->getNumberOfTracks(); jj++) {       
@@ -220,8 +224,8 @@ int main(int argc, char** argv)
 
 
         }
-//        bool MasCut = V0.m()<0.53 && V0.m()>0.46;
-          bool MasCut = V0.m()<1.15 && V0.m()>1.08;
+        bool MasCut = V0.m()<0.53 && V0.m()>0.46;
+//          bool MasCut = V0.m()<1.15 && V0.m()>1.08;
 //        MasCut = true;
         bool DCADCut = V0.dcaDaughters()<1.5;
         bool DCABLCut = V0.DCABeamLine()<1.5;
