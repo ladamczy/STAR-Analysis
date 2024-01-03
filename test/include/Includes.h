@@ -57,6 +57,7 @@
 #include <StUPCBemcCluster.h>
 #include <StUPCVertex.h>
 #include <StUPCTofHit.h>
+#include <Afterburner.h>
 #include "MatchFillPosition.h"
 #include "ReadFillPositionFile.h"
 #include "StUPCV0.h"
