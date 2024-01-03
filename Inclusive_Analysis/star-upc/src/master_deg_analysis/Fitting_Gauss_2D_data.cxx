@@ -32,11 +32,14 @@ int main(int argc, char *argv[]){
     HistFile->GetObject("MpipiAfterElasticCut", mHistAfter);
     mHistAfter->SetDirectory(0);
     TH1D mHistDifference = *(TH1D *)mHist->Clone()-*(TH1D *)mHistAfter->Clone();
+    TH2D *thetaHist;
+    HistFile->GetObject("sumTheta2DProtonsExact", thetaHist);
+    thetaHist->SetDirectory(0);
 
     HistFile->Close();
 
     //fitting
-    TF2 *XiGauss = new TF2("XiGauss", "[0]*TMath::Gaus(x,[1],[2])*TMath::Gaus(y,[3],[4])", -0.01, 0.01, -0.01, 0.01);
+    TF2 *XiGauss = new TF2("XiGauss", "[0]*TMath::Gaus(x,[1],[2])*TMath::Gaus(y,[3],[4])", -0.01, 0.015, -0.01, 0.015);
     XiGauss->SetParameters(40, 0.005, 0.001, 0.005, 0.001);
     XiGauss->SetParNames("const", "x_0", "sigma_x", "y_0", "sigma_y");
     XiHist->Fit(XiGauss, "0");
@@ -58,19 +61,27 @@ int main(int argc, char *argv[]){
 
     //drawing new things
     TCanvas *c1 = new TCanvas("c1", "c1", 1600, 1200);
-    gStyle->SetOptStat(10);
-    gStyle->SetOptFit(1);
+    // gStyle->SetOptStat(10);
+    // gStyle->SetOptFit(1);
+    gStyle->SetOptStat(0);
+    gStyle->SetOptFit(0);
+    XiHist->SetTitle("");
     XiHist->Draw("colz");
-    XiEllipse->Draw("same");
+    // XiEllipse->Draw("same");
+    c1->SetLeftMargin(0.15);
+    c1->SetRightMargin(0.15);
     c1->SetRealAspectRatio();
     c1->Draw();
     c1->Print("Xi.pdf");
 
     TCanvas *c2 = new TCanvas("c2", "c2", 1600, 1200);
-    gStyle->SetOptStat(10);
-    gStyle->SetOptFit(1);
+    // gStyle->SetOptStat(10);
+    // gStyle->SetOptFit(1);
+    gStyle->SetOptStat(0);
+    gStyle->SetOptFit(0);
+    pHist->SetTitle("");
     pHist->Draw("colz");
-    pEllipse->Draw("same");
+    // pEllipse->Draw("same");
     c2->SetRealAspectRatio();
     c2->Draw();
     c2->Print("p.pdf");
@@ -83,6 +94,7 @@ int main(int argc, char *argv[]){
     mHistAfter->SetLineColor(2);
     mHistDifference.SetLineWidth(2);
     mHistDifference.SetLineColor(3);
+    mHist->SetTitle("");
     mHist->Draw();
     mHistAfter->Draw("same");
     mHistDifference.Draw("same");
@@ -94,6 +106,20 @@ int main(int argc, char *argv[]){
     legend.Draw("same");
     c3->Draw();
     c3->Print("K0.pdf");
+
+    TCanvas *c4 = new TCanvas("c4", "c4", 1600, 1200);
+    // gStyle->SetOptStat(10);
+    // gStyle->SetOptFit(1);
+    gStyle->SetOptStat(0);
+    gStyle->SetOptFit(0);
+    thetaHist->SetTitle(";#Sigma#theta_{x};#Sigma#theta_{y}");
+    thetaHist->Draw("colz");
+    // pEllipse->Draw("same");
+    c4->SetLeftMargin(0.15);
+    c4->SetRightMargin(0.15);
+    c4->SetRealAspectRatio();
+    c4->Draw();
+    c4->Print("theta.pdf");
 
     theApp.Run();
     return 0;

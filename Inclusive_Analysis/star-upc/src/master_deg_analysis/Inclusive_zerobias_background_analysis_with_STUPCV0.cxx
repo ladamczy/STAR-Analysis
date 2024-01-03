@@ -54,56 +54,32 @@ int main(int argc, char **argv){
     const string &outputFolder = argv[2];
 
     //useful constants
-    double kaonMassWindowNarrowLow = 0.48;
-    double kaonMassWindowNarrowHigh = 0.51;
-    // double kaonMassWindowWideLow = 0.44;
-    // double kaonMassWindowWideHigh = 0.54;
-    double kaonMassWindowPresentationLow = 0.46;
-    double kaonMassWindowPresentationHigh = 0.53;
     vector<vector<double>> beamData = ReadFillPositionData("STAR-Analysis/share/Run7PolarizationWithPosition.csv");
 
     //histograms
     ProcessingOutsideLoop outsideprocessing;
-    outsideprocessing.AddHistogram(TH1D("Mpipi", "K^{0}_{S} mass;m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 70, kaonMassWindowPresentationLow, kaonMassWindowPresentationHigh));
-    outsideprocessing.AddHistogram(TH1D("DCApipiK0", "DCA between #pi^{#pm} from K0 K^{0}_{S};DCA_{#pi^{+}#pi^{-}-K^{0}_{S}};Number of pairs", 50, 0, 5));
-    outsideprocessing.AddHistogram(TH1D("DCApipiPV", "DCA between #pi^{#pm} from vertex when K^{0}_{S} in narrow mass window;DCA_{#pi^{+}#pi^{-}-PV};Number of pairs", 50, 0, 5));
-    outsideprocessing.AddHistogram(TH1D("DCAK0PV", "DCA between K^{0}_{S} and vertex;DCA_{#pi^{+}#pi^{-}-K^{0}_{S}};Number of pairs", 50, 0, 5));
     outsideprocessing.AddHistogram(TH1D("LogProtons", "log(#xi_{E}*#xi_{W});log(#xi_{E}*#xi_{W});events", 100, -10, 0));
     outsideprocessing.AddHistogram(TH1D("DivProtons", "ln(#xi_{E}/#xi_{W});ln(#xi_{E}/#xi_{W});events", 100, -10, 10));
     outsideprocessing.AddHistogram(TH2D("Log2DProtons", "log#xi_{W} vs log#xi_{E};log#xi_{E};log#xi_{W}", 60, -5, 1, 60, -5, 1));
     outsideprocessing.AddHistogram(TH1D("LogEproton", "log#xi_{E};log#xi_{E};events", 60, -5, 1));
     outsideprocessing.AddHistogram(TH1D("LogWproton", "log#xi_{W};log#xi_{W};events", 60, -5, 1));
-    outsideprocessing.AddHistogram(TH2D("dcaDaughtersvsMass", ";m_{#pi^{+}#pi^{-}} [GeV];dcaDaughters", 70, kaonMassWindowPresentationLow, kaonMassWindowPresentationHigh, 30, 0, 3));
-    outsideprocessing.AddHistogram(TH2D("pointingAngleHypovsMass", ";m_{#pi^{+}#pi^{-}} [GeV];pointingAngleHypo", 70, kaonMassWindowPresentationLow, kaonMassWindowPresentationHigh, 20, -1., 1.));
-    outsideprocessing.AddHistogram(TH2D("DCABeamLinevsMass", ";m_{#pi^{+}#pi^{-}} [GeV];DCABeamLine", 70, kaonMassWindowPresentationLow, kaonMassWindowPresentationHigh, 30, 0, 3));
     outsideprocessing.AddHistogram(TH1D("XiEproton", "#xi_{E};#xi_{E};events", 84, -0.05, 1));
     outsideprocessing.AddHistogram(TH1D("XiWproton", "#xi_{W};#xi_{W};events", 84, -0.05, 1));
     outsideprocessing.AddHistogram(TH1D("XiEprotoncloser", "#xi_{E};#xi_{E};events", 400, -0.05, 0.15));
     outsideprocessing.AddHistogram(TH1D("XiWprotoncloser", "#xi_{W};#xi_{W};events", 400, -0.05, 0.15));
-    outsideprocessing.AddHistogram(TH1D("vertex_pair_dcaDaughters", "Vertex pair dcaDaughters();dcaDaughters;events", 60, 0, 3));
-    outsideprocessing.AddHistogram(TH1D("vertex_pair_DCABeamLine", "Vertex pair DCABeamLine();DCABeamLine;events", 60, 0, 3));
-    outsideprocessing.AddHistogram(TH1D("K0decayLengthHypo", "decayLengthHypo() of K^{0}_{S} pair;length [cm];events", 120, 0, 6));
-    outsideprocessing.AddHistogram(TH1D("vertexdecayLengthHypo", "decayLengthHypo() of vertex pair;length [cm];events", 120, 0, 6));
-    outsideprocessing.AddHistogram(TH2D("decayLengthHypovsMass", "decayLengthHypo();m_{#pi^{+}#pi^{-}} [GeV];decayLengthHypo() [cm]", 35, kaonMassWindowPresentationLow, kaonMassWindowPresentationHigh, 30, 0, 6));
-    outsideprocessing.AddHistogram(TH1D("decayvertexZdifference", "#DeltaZ of K^{0}_{S} and PV decay vertices;#DeltaZ [cm];events", 60, -15, 15));
     outsideprocessing.AddHistogram(TH2D("Xi2DProtons", "#xi_{W} vs #xi_{E};#xi_{E};#xi_{W}", 60, -0.01, 0.05, 60, -0.01, 0.05));
-    outsideprocessing.AddHistogram(TH2D("sumTheta2DProtons", "Sum of #theta_{x} and #theta_{y} of protons;#Delta#theta_{x};#Delta#theta_{y}", 100, -1e-2, 1e-2, 100, -1e-2, 1e-2));
-    outsideprocessing.AddHistogram(TH2D("sumTheta2DProtonsExact", "Sum of #theta_{x} and #theta_{y} of protons;#Delta#theta_{x};#Delta#theta_{y}", 100, -3e-3, 3e-3, 100, -2e-3, 2e-3));
+    outsideprocessing.AddHistogram(TH2D("sumTheta2DProtons", "Sum of #theta_{x} and #theta_{y} of protons;#Delta#theta_{x};#Delta#theta_{y}", 100, -3e-3, 3e-3, 100, -2e-3, 2e-3));
     outsideprocessing.AddHistogram(TH2D("sump2DProtons", "Sum of p_{x} and p_{y} of protons;#Sigmap_{x};#Sigmap_{y}", 100, -2, 2, 100, -2, 2));
     outsideprocessing.AddHistogram(TH2D("sump2DProtonsExact", "Sum of p_{x} and p_{y} of protons;#Sigmap_{x};#Sigmap_{y}", 80, -0.6, 1., 50, -0.5, 0.5));
-    outsideprocessing.AddHistogram(TH2D("etavsK0Mass", "#eta in function of K^{0}_{S} candidate mass;m_{#pi^{+}#pi^{-}} [GeV];#eta", 70, kaonMassWindowPresentationLow, kaonMassWindowPresentationHigh, 60, -3, 3));
 
     outsideprocessing.AddHistogram(TH1D("XiEprotoncloserAfterElasticCut", "#xi_{E};#xi_{E};events", 400, -0.05, 0.15));
     outsideprocessing.AddHistogram(TH1D("XiWprotoncloserAfterElasticCut", "#xi_{W};#xi_{W};events", 400, -0.05, 0.15));
-    outsideprocessing.AddHistogram(TH1D("MpipiAfterElasticCut", "K^{0}_{S} mass;m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 70, kaonMassWindowPresentationLow, kaonMassWindowPresentationHigh));
 
     // int triggers[] = { 570701, 570705, 570711, 590701, 590705, 590708 };
     // outsideprocessing.AddHistogram(TH1D("triggerHist", "Data triggers;Trigger ID;Number of events", 6, 0, 6));
     // for(int i = 0;i<6;i++){
     //     outsideprocessing.GetPointer1D(1)->GetXaxis()->SetBinLabel(i+1, to_string(triggers[i]).c_str());
     // }
-
-    int lackOfCandidates = 0;
 
     //processing
     //defining TreeProcessor
@@ -115,103 +91,20 @@ int main(int argc, char **argv){
         TTreeReaderValue<StUPCEvent> StUPCEventInstance(myReader, "mUPCEvent");
         TTreeReaderValue<StRPEvent> StRPEventInstance(myReader, "mRPEvent");
         ProcessingInsideLoop insideprocessing;
-        StUPCEvent *tempUPCpointer;
+        // StUPCEvent *tempUPCpointer;
         StRPEvent *tempRPpointer;
         insideprocessing.GetLocalHistograms(&outsideprocessing);
 
         //helpful variables
-        std::vector<StUPCTrack *> vector_Track;
-        int K0_pair_indices[] = { -1,-1 };
-        int vertex_pair_indices[] = { -1,-1 };
-        StUPCV0 *K0_pair = nullptr;
-        StUPCV0 *vertex_pair = nullptr;
-        StUPCV0 *tempParticle = nullptr;
         vector<double> tempBeamVector;
-        double beamValues[4];
-        TVector3 vertexPrimary;
         StUPCRpsTrack *eastTrack;
         StUPCRpsTrack *westTrack;
 
         //actual loop
         while(myReader.Next()){
             //in a TTree, it *would* be constant, in TChain however not necessarily
-            tempUPCpointer = StUPCEventInstance.Get();
+            // tempUPCpointer = StUPCEventInstance.Get();
             tempRPpointer = StRPEventInstance.Get();
-
-            //cleaning the loop
-            //these deletes were unnecessary
-            // delete K0_pair;
-            // delete vertex_pair;
-            K0_pair_indices[0] = -1;
-            K0_pair_indices[1] = -1;
-            vertex_pair_indices[0] = -1;
-            vertex_pair_indices[1] = -1;
-            vector_Track.clear();
-
-            //cuts & histogram filling
-            //selecting TOF tracks
-            for(int i = 0; i<tempUPCpointer->getNumberOfTracks(); i++){
-                if(tempUPCpointer->getTrack(i)->getFlag(StUPCTrack::kTof)){
-                    vector_Track.push_back(tempUPCpointer->getTrack(i));
-                }
-            }
-            //selecting two highest kaons
-            vertexPrimary = { tempUPCpointer->getVertex(0)->getPosX(), tempUPCpointer->getVertex(0)->getPosY(), tempUPCpointer->getVertex(0)->getPosZ() };
-            tempBeamVector = FindPosition(tempUPCpointer->getFillNumber(), vertexPrimary.Z(), beamData[0], beamData[1], beamData[2], beamData[3], beamData[4], beamData[5], beamData[6], beamData[7], beamData[8]);
-            beamValues[0] = tempBeamVector[0];
-            beamValues[1] = tempBeamVector[1];
-            beamValues[2] = tempBeamVector[2];
-            beamValues[3] = tempBeamVector[3];
-            //actual loop
-            for(long unsigned int i = 0; i<vector_Track.size()-1; i++){
-                for(long unsigned int j = i+1; j<vector_Track.size(); j++){
-                    tempParticle = new StUPCV0(vector_Track[i], vector_Track[j], particleMass[0], particleMass[0], 1, 1, vertexPrimary, beamValues, tempUPCpointer->getMagneticField(), true);
-                    //tests if accept the particle
-                    bool K0test1 = vector_Track[i]->getCharge()*vector_Track[j]->getCharge()<0;
-                    bool K0test2 = tempParticle->dcaDaughters()<1.5;
-                    bool K0test3 = tempParticle->pointingAngleHypo()>0.925;
-                    bool K0test4 = tempParticle->DCABeamLine()<1.5;
-                    bool K0test5 = tempParticle->m()>kaonMassWindowPresentationLow&&tempParticle->m()<kaonMassWindowPresentationHigh;
-                    if(!(K0test1&&K0test2&&K0test3&&K0test4&&K0test5)){
-                        continue;
-                    }
-                    //filling
-                    if(K0_pair_indices[0]<0){
-                        K0_pair_indices[0] = i;
-                        K0_pair_indices[1] = j;
-                        K0_pair = new StUPCV0(vector_Track[i], vector_Track[j], particleMass[0], particleMass[0], 1, 1, vertexPrimary, beamValues, tempUPCpointer->getMagneticField(), true);
-                    } else if(abs(tempParticle->m()-particleMass[0])<abs(K0_pair->m()-particleMass[0])){
-                        K0_pair_indices[0] = i;
-                        K0_pair_indices[1] = j;
-                        delete K0_pair;
-                        K0_pair = new StUPCV0(vector_Track[i], vector_Track[j], particleMass[0], particleMass[0], 1, 1, vertexPrimary, beamValues, tempUPCpointer->getMagneticField(), true);
-                    }
-                    //finishing
-                    delete tempParticle;
-                }
-            }
-            //check if any K0 particle was found
-            if(K0_pair_indices[0]<0){
-                continue;
-            }
-            //setting second vertex
-            //under assumption there are 4 particles
-            vector<int> temp = { 0, 1, 2, 3 };
-            temp.erase(std::find(temp.begin(), temp.end(), K0_pair_indices[0]));
-            temp.erase(std::find(temp.begin(), temp.end(), K0_pair_indices[1]));
-            vertex_pair_indices[0] = temp[0];
-            vertex_pair_indices[1] = temp[1];
-            vertex_pair = new StUPCV0(vector_Track[vertex_pair_indices[0]], vector_Track[vertex_pair_indices[1]], particleMass[0], particleMass[0], 1, 1, vertexPrimary, beamValues, tempUPCpointer->getMagneticField(), true);
-            //tests to see if vertex suggestion is okay
-            TVector3 correctedVertex;
-            bool PVtest1 = vertex_pair->dcaDaughters()<1.5;
-            bool PVtest2 = vertex_pair->DCABeamLine()<1.5;
-            if(PVtest1&&PVtest2){
-                correctedVertex = vertex_pair->decayVertex();
-            } else{
-                lackOfCandidates++;
-                continue;
-            }
 
             //0
             // TH1D("Mpipibefore", "K^{0}_{S} mass;m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 100, kaonMassWindowWideLow, kaonMassWindowWideHigh));
@@ -250,17 +143,6 @@ int main(int argc, char **argv){
             // TH1D("XiWprotoncloserAfterElasticCut", "#xi_{W};#xi_{W};events", 400, -0.05, 0.15));
             // TH1D("MpipiAfterElasticCut", "K^{0}_{S} mass;m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 70, kaonMassWindowPresentationLow, kaonMassWindowPresentationHigh));
 
-
-            insideprocessing.Fill(0, K0_pair->m());
-            insideprocessing.Fill(1, K0_pair->dcaDaughters());
-            insideprocessing.Fill(9, K0_pair->m(), K0_pair->dcaDaughters());
-            insideprocessing.Fill(10, K0_pair->m(), K0_pair->pointingAngleHypo());
-            insideprocessing.Fill(11, K0_pair->m(), K0_pair->DCABeamLine());
-            if(K0_pair->m()>kaonMassWindowNarrowLow&&K0_pair->m()<kaonMassWindowNarrowHigh){
-                insideprocessing.Fill(2, vertex_pair->dcaDaughters());
-                insideprocessing.Fill(3, (K0_pair->decayVertex()-vertex_pair->decayVertex()).Mag());
-            }
-
             //filter to filter out badly reconstructed protons
             //as in with xi>1, cause those with xi<0 will get log(xi)=NaN and get registered as overflow
             if(tempRPpointer->getTrack(0)->xi(255.0)>1||tempRPpointer->getTrack(1)->xi(255.0)>1){
@@ -278,40 +160,31 @@ int main(int argc, char **argv){
             }
             //histograms
             if(eastTrack->xi(255.0)<0.005||westTrack->xi(255.0)<0.005){
-                insideprocessing.Fill(4, 2*log10(0.005));
+                insideprocessing.Fill("LogProtons", 2*log10(0.005));
             } else{
-                insideprocessing.Fill(4, log10(tempRPpointer->getTrack(0)->xi(255.0)*tempRPpointer->getTrack(1)->xi(255.0)));
+                insideprocessing.Fill("LogProtons", log10(tempRPpointer->getTrack(0)->xi(255.0)*tempRPpointer->getTrack(1)->xi(255.0)));
             }
             if(eastTrack->xi(255.0)<0.005||westTrack->xi(255.0)<0.005){
-                insideprocessing.Fill(4, 0);
+                insideprocessing.Fill("LogProtons", 0);
             } else{
-                insideprocessing.Fill(5, log(eastTrack->xi(255.0)/westTrack->xi(255.0)));
+                insideprocessing.Fill("DivProtons", log(eastTrack->xi(255.0)/westTrack->xi(255.0)));
             }
-            insideprocessing.Fill(6, log10(eastTrack->xi(255.0)), log10(westTrack->xi(255.0)));
-            insideprocessing.Fill(7, log10(eastTrack->xi(255.0)));
-            insideprocessing.Fill(8, log10(westTrack->xi(255.0)));
-            insideprocessing.Fill(12, eastTrack->xi(255.0));
-            insideprocessing.Fill(13, westTrack->xi(255.0));
-            insideprocessing.Fill(14, eastTrack->xi(255.0));
-            insideprocessing.Fill(15, westTrack->xi(255.0));
-            insideprocessing.Fill(16, vertex_pair->dcaDaughters());
-            insideprocessing.Fill(17, vertex_pair->DCABeamLine());
-            insideprocessing.Fill("K0decayLengthHypo", K0_pair->decayLengthHypo());
-            insideprocessing.Fill("vertexdecayLengthHypo", vertex_pair->decayLengthHypo());
-            insideprocessing.Fill("decayLengthHypovsMass", K0_pair->m(), K0_pair->decayLengthHypo());
-            insideprocessing.Fill("decayvertexZdifference", K0_pair->decayVertex().Z()-vertex_pair->decayVertex().Z());
+            insideprocessing.Fill("Log2DProtons", log10(eastTrack->xi(255.0)), log10(westTrack->xi(255.0)));
+            insideprocessing.Fill("LogEproton", log10(eastTrack->xi(255.0)));
+            insideprocessing.Fill("LogWproton", log10(westTrack->xi(255.0)));
+            insideprocessing.Fill("XiEproton", eastTrack->xi(255.0));
+            insideprocessing.Fill("XiWproton", westTrack->xi(255.0));
+            insideprocessing.Fill("XiEprotoncloser", eastTrack->xi(255.0));
+            insideprocessing.Fill("XiWprotoncloser", westTrack->xi(255.0));
             insideprocessing.Fill("Xi2DProtons", eastTrack->xi(255.0), westTrack->xi(255.0));
             insideprocessing.Fill("sumTheta2DProtons", eastTrack->theta(StUPCRpsTrack::rpsAngleThetaX)+westTrack->theta(StUPCRpsTrack::rpsAngleThetaX), eastTrack->theta(StUPCRpsTrack::rpsAngleThetaY)+westTrack->theta(StUPCRpsTrack::rpsAngleThetaY));
-            insideprocessing.Fill("sumTheta2DProtonsExact", eastTrack->theta(StUPCRpsTrack::rpsAngleThetaX)+westTrack->theta(StUPCRpsTrack::rpsAngleThetaX), eastTrack->theta(StUPCRpsTrack::rpsAngleThetaY)+westTrack->theta(StUPCRpsTrack::rpsAngleThetaY));
             insideprocessing.Fill("sump2DProtons", eastTrack->pVec().X()+westTrack->pVec().X(), eastTrack->pVec().Y()+westTrack->pVec().Y());
             insideprocessing.Fill("sump2DProtonsExact", eastTrack->pVec().X()+westTrack->pVec().X(), eastTrack->pVec().Y()+westTrack->pVec().Y());
-            insideprocessing.Fill("etavsK0Mass", K0_pair->m(), K0_pair->eta());
 
             //part dedicated to check the elastic cut
             if(!IsInXiElasticSpot(eastTrack, westTrack)&&!IsInMomElasticSpot(eastTrack, westTrack)){
                 insideprocessing.Fill("XiEprotoncloserAfterElasticCut", eastTrack->xi(255.0));
                 insideprocessing.Fill("XiWprotoncloserAfterElasticCut", westTrack->xi(255.0));
-                insideprocessing.Fill("MpipiAfterElasticCut", K0_pair->m());
             }
 
         }
@@ -335,24 +208,22 @@ int main(int argc, char **argv){
     outsideprocessing.SaveToFile(outputFileHist);
     outputFileHist->Close();
 
-    cout<<"Lack of candidates: "<<lackOfCandidates<<endl;
-
     return 0;
 }
 
 bool IsInXiElasticSpot(StUPCRpsTrack *east, StUPCRpsTrack *west){
-    double x_0 = 4.30002e-03;
-    double sigma_x = 1.83778e-03;
-    double y_0 = 1.75326e-03;
-    double sigma_y = 2.11677e-03;
+    double x_0 = 4.30588e-03;
+    double sigma_x = 2.02340e-03;
+    double y_0 = 1.72097e-03;
+    double sigma_y = 2.26638e-03;
     return pow((east->xi(255.0)-x_0)/sigma_x, 2)+pow((west->xi(255.0)-y_0)/sigma_y, 2)<3*3;
 }
 
 bool IsInMomElasticSpot(StUPCRpsTrack *east, StUPCRpsTrack *west){
-    double x_0 = -3.86337e-02;
-    double sigma_x = 3.32301e-02;
-    double y_0 = 3.87718e-03;
-    double sigma_y = 3.13326e-02;
+    double x_0 = -3.82151e-02;
+    double sigma_x = 3.67545e-02;
+    double y_0 = 1.98348e-03;
+    double sigma_y = 3.40440e-02;
     double x = east->pVec().X()+west->pVec().X();
     double y = east->pVec().Y()+west->pVec().Y();
     return pow((x-x_0)/sigma_x, 2)+pow((y-y_0)/sigma_y, 2)<3*3;
