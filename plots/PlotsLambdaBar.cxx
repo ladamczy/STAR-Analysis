@@ -43,7 +43,7 @@ int main(int argc, char** argv) {
     TH1D* histDcaDaughters = new TH1D("DcaDaughters", ";DCA (cm);Counts", 100, 0, 5);
     TH1D* histDcaBeamLine = new TH1D("DcaBeamLine", ";DCA (cm);Counts", 100, 0, 2.5);
     TH1D* histPointingAngleHypo = new TH1D("PointingAngleHypo", ";Cos(#theta);Counts", 100, -1, 1);
-    TH1D* histInvariantMassLambdaBar = new TH1D("InvariantMassLambdaBar", ";Mass (GeV/c^2);Counts", 100, 1.08, 1.15);
+    TH1D* histInvariantMassLambdaBar = new TH1D("InvariantMass", ";Mass (GeV/c^2);Counts", 100, 1.08, 1.15);
     TH1D* histDecayLengthHypo = new TH1D("DecayLengthHypo", ";Length (cm);Counts", 100, 0, 20);
 
     Long64_t nEntries = tree->GetEntries();
