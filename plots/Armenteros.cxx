@@ -55,68 +55,83 @@ int main(int argc, char** argv) {
             for (int k = j + 1; k < event->getNumberOfTracks(); ++k) {
                 StUPCTrack* track2 = event->getTrack(k);
 
-                // Selekcja dla Lambda
-                if ((track1->getCharge() > 0 && track2->getCharge() < 0) && /* pozostałe warunki */) {
-                    StUPCV0 v0(track1, track2, protonMass, pionMass, /* pozostałe parametry */);
-                    if (v0.m() > lowerLimitOfInvMassLambda && v0.m() < upperLimitOfInvMassLambda) {
-                        TVector3 p1, p2;
-                        track1->getMomentum(p1); // Proton
-                        track2->getMomentum(p2); // Pion
+                // TVector3 const tryVec(0,0,0);
+                // double beamLine[] = {0,0,0,0};
 
-                        // Przeliczanie na układ środka masy (CMS) - przykładowe, wymaga dostosowania
-                        TVector3 pCMS = p1 + p2;
-                        TVector3 beta = -pCMS.BoostVector();
-                        TLorentzVector p1Lorentz(p1, track1->getEnergy(protonMass));
-                        TLorentzVector p2Lorentz(p2, track2->getEnergy(pionMass));
-                        p1Lorentz.Boost(beta);
-                        p2Lorentz.Boost(beta);
+                // Uproszczona selekcja
+                if ((track1->getCharge() > 0 && track2->getCharge() < 0) &&  // track1 is proton and track2 is negative pion
+                track1->getNhits() > 15 && track2->getNhits() > 15 &&
+                track1->getPt() > 0.15 && track2->getPt() > 0.15 &&
+                abs(track1->getEta()) < 1.1 && abs(track2->getEta()) < 1.1 &&
+                (track1->getFlag(StUPCTrack::kTof) || track2->getFlag(StUPCTrack::kTof))) {
 
-                        float alpha = (p1Lorentz.Pz() - p2Lorentz.Pz()) / (p1Lorentz.Pz() + p2Lorentz.Pz());
-                        hArmenteros->Fill(alpha, v0.pt());
-                    }
+                    TVector3 const tryVec(0,0,0);
+                    double beamLine[] = {0,0,0,0};
+                    
+                    StUPCV0 v0(track1, track2, protonMass, pionMass, 1, 1, tryVec, beamLine, event->getMagneticField(), true);
+
+                    TVector3 p1, p2;
+                    track1->getMomentum(p1);
+                    track2->getMomentum(p2);
+
+                    double energy1 = sqrt(p1.Mag2() + protonMass * protonMass);
+                    double energy2 = sqrt(p2.Mag2() + pionMass * pionMass);
+                    TLorentzVector p1Lorentz(p1, energy1);
+                    TLorentzVector p2Lorentz(p2, energy2);
+
+                    TLorentzVector pSum = p1Lorentz + p2Lorentz;
+                    TVector3 beta = -pSum.BoostVector();
+                    p1Lorentz.Boost(beta);
+                    p2Lorentz.Boost(beta);
+
+                    float alpha = (p1Lorentz.Pz() - p2Lorentz.Pz()) / (p1Lorentz.Pz() + p2Lorentz.Pz());
+                    float pT = v0.pt();
+
+                    hArmenteros->Fill(alpha, pT); // Wpisz dane do histogramu
                 }
 
-                // Selekcja dla LambdaBar
-                if ((track1->getCharge() < 0 && track2->getCharge() > 0) && /* pozostałe warunki */) {
-                    StUPCV0 v0(track1, track2, protonMass, pionMass, /* pozostałe parametry */);
-                    if (v0.m() > lowerLimitOfInvMassLambda && v0.m() < upperLimitOfInvMassLambda) {
-                        TVector3 p1, p2;
-                        track1->getMomentum(p1); // Antyproton
-                        track2->getMomentum(p2); // Pion
+                // // Selekcja dla LambdaBar
+                // if ((track1->getCharge() < 0 && track2->getCharge() > 0) && /* pozostałe warunki */) {
+                //     StUPCV0 v0(track1, track2, protonMass, pionMass, /* pozostałe parametry */);
+                //     if (v0.m() > lowerLimitOfInvMassLambda && v0.m() < upperLimitOfInvMassLambda) {
+                //         TVector3 p1, p2;
+                //         track1->getMomentum(p1); // Antyproton
+                //         track2->getMomentum(p2); // Pion
 
-                        // Przeliczanie na układ środka masy (CMS) - przykładowe, wymaga dostosowania
-                        TVector3 pCMS = p1 + p2;
-                        TVector3 beta = -pCMS.BoostVector();
-                        TLorentzVector p1Lorentz(p1, track1->getEnergy(protonMass)); // Używamy masy protonu
-                        TLorentzVector p2Lorentz(p2, track2->getEnergy(pionMass));
-                        p1Lorentz.Boost(beta);
-                        p2Lorentz.Boost(beta);
+                //         // Przeliczanie na układ środka masy (CMS) - przykładowe, wymaga dostosowania
+                //         TVector3 pCMS = p1 + p2;
+                //         TVector3 beta = -pCMS.BoostVector();
+                //         TLorentzVector p1Lorentz(p1, track1->getEnergy(protonMass)); // Używamy masy protonu
+                //         TLorentzVector p2Lorentz(p2, track2->getEnergy(pionMass));
+                //         p1Lorentz.Boost(beta);
+                //         p2Lorentz.Boost(beta);
 
-                        float alpha = (p2Lorentz.Pz() - p1Lorentz.Pz()) / (p2Lorentz.Pz() + p1Lorentz.Pz());
-                        hArmenteros->Fill(alpha, v0.pt());
-                    }
-                }
+                //         float alpha = (p2Lorentz.Pz() - p1Lorentz.Pz()) / (p2Lorentz.Pz() + p1Lorentz.Pz());
+                //         hArmenteros->Fill(alpha, v0.pt());
+                //     }
+                // }
 
-                // Selekcja dla K0
-                if (track1->getCharge() != track2->getCharge() && /* pozostałe warunki */) {
-                    StUPCV0 v0(track1, track2, pionMass, pionMass, /* pozostałe parametry */);
-                    if (v0.m() > lowerLimitOfInvMassK0 && v0.m() < upperLimitOfInvMassK0) {
-                        TVector3 p1, p2;
-                        track1->getMomentum(p1); // Pion
-                        track2->getMomentum(p2); // Pion
+                // // Selekcja dla K0
+                // if (track1->getCharge() != track2->getCharge() && /* pozostałe warunki */) {
+                //     StUPCV0 v0(track1, track2, pionMass, pionMass, /* pozostałe parametry */);
+                //     if (v0.m() > lowerLimitOfInvMassK0 && v0.m() < upperLimitOfInvMassK0) {
+                //         TVector3 p1, p2;
+                //         track1->getMomentum(p1); // Pion
+                //         track2->getMomentum(p2); // Pion
 
-                        // Przeliczanie na układ środka masy (CMS) - przykładowe, wymaga dostosowania
-                        TVector3 pCMS = p1 + p2;
-                        TVector3 beta = -pCMS.BoostVector();
-                        TLorentzVector p1Lorentz(p1, track1->getEnergy(pionMass));
-                        TLorentzVector p2Lorentz(p2, track2->getEnergy(pionMass));
-                        p1Lorentz.Boost(beta);
-                        p2Lorentz.Boost(beta);
+                //         // Przeliczanie na układ środka masy (CMS) - przykładowe, wymaga dostosowania
+                //         TVector3 pCMS = p1 + p2;
+                //         TVector3 beta = -pCMS.BoostVector();
+                //         TLorentzVector p1Lorentz(p1, track1->getEnergy(pionMass));
+                //         TLorentzVector p2Lorentz(p2, track2->getEnergy(pionMass));
+                //         p1Lorentz.Boost(beta);
+                //         p2Lorentz.Boost(beta);
 
-                        float alpha = (p1Lorentz.Pz() - p2Lorentz.Pz()) / (p1Lorentz.Pz() + p2Lorentz.Pz());
-                        hArmenteros->Fill(alpha, v0.pt());
-                    }
-                }
+                //         float alpha = (p1Lorentz.Pz() - p2Lorentz.Pz()) / (p1Lorentz.Pz() + p2Lorentz.Pz());
+                //         hArmenteros->Fill(alpha, v0.pt());
+                //     }
+                // }
+
             }
         }
     }
