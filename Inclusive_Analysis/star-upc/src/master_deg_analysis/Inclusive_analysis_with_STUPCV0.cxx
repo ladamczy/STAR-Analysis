@@ -32,6 +32,9 @@ const double particleMass[nParticles] = { 0.13957, 0.497611, 0.93827 }; // pion,
 enum BRANCH_ID{ EU, ED, WU, WD, nBranches };
 enum RP_ID{ E1U, E1D, E2U, E2D, W1U, W1D, W2U, W2D, nRomanPots };
 
+bool IsInXiElasticSpot(StUPCRpsTrack *, StUPCRpsTrack *);
+bool IsInMomElasticSpot(StUPCRpsTrack *, StUPCRpsTrack *);
+
 int main(int argc, char **argv){
 
     int nthreads = 2;
@@ -84,8 +87,16 @@ int main(int argc, char **argv){
     outsideprocessing.AddHistogram(TH2D("decayLengthHypovsMass", "decayLengthHypo();m_{#pi^{+}#pi^{-}} [GeV];decayLengthHypo() [cm]", 35, kaonMassWindowPresentationLow, kaonMassWindowPresentationHigh, 30, 0, 6));
     outsideprocessing.AddHistogram(TH1D("decayvertexZdifference", "#DeltaZ of K^{0}_{S} and PV decay vertices;#DeltaZ [cm];events", 60, -15, 15));
     outsideprocessing.AddHistogram(TH2D("Xi2DProtons", "#xi_{W} vs #xi_{E};#xi_{E};#xi_{W}", 60, -0.01, 0.05, 60, -0.01, 0.05));
-    outsideprocessing.AddHistogram(TH2D("deltaTheta2DProtons", "Difference in #theta_{x} and #theta_{y} of protons;#Delta#theta_{x};#Delta#theta_{y}", 100, -1e-2, 1e-2, 100, -1e-2, 1e-2));
+    outsideprocessing.AddHistogram(TH2D("sumTheta2DProtons", "Sum of #theta_{x} and #theta_{y} of protons;#Delta#theta_{x};#Delta#theta_{y}", 100, -1e-2, 1e-2, 100, -1e-2, 1e-2));
+    outsideprocessing.AddHistogram(TH2D("sumTheta2DProtonsExact", "Sum of #theta_{x} and #theta_{y} of protons;#Delta#theta_{x};#Delta#theta_{y}", 100, -3e-3, 3e-3, 100, -2e-3, 2e-3));
     outsideprocessing.AddHistogram(TH2D("sump2DProtons", "Sum of p_{x} and p_{y} of protons;#Sigmap_{x};#Sigmap_{y}", 100, -2, 2, 100, -2, 2));
+    outsideprocessing.AddHistogram(TH2D("sump2DProtonsExact", "Sum of p_{x} and p_{y} of protons;#Sigmap_{x};#Sigmap_{y}", 80, -0.6, 1., 50, -0.5, 0.5));
+    outsideprocessing.AddHistogram(TH2D("etavsK0Mass", "#eta in function of K^{0}_{S} candidate mass;m_{#pi^{+}#pi^{-}} [GeV];#eta", 70, kaonMassWindowPresentationLow, kaonMassWindowPresentationHigh, 60, -3, 3));
+
+    outsideprocessing.AddHistogram(TH1D("XiEprotoncloserAfterElasticCut", "#xi_{E};#xi_{E};events", 400, -0.05, 0.15));
+    outsideprocessing.AddHistogram(TH1D("XiWprotoncloserAfterElasticCut", "#xi_{W};#xi_{W};events", 400, -0.05, 0.15));
+    outsideprocessing.AddHistogram(TH1D("MpipiAfterElasticCut", "K^{0}_{S} mass;m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 70, kaonMassWindowPresentationLow, kaonMassWindowPresentationHigh));
+
     // int triggers[] = { 570701, 570705, 570711, 590701, 590705, 590708 };
     // outsideprocessing.AddHistogram(TH1D("triggerHist", "Data triggers;Trigger ID;Number of events", 6, 0, 6));
     // for(int i = 0;i<6;i++){
@@ -232,6 +243,12 @@ int main(int argc, char **argv){
             // TH2D("Xi2DProtons", "#xi_{W} vs #xi_{E};#xi_{E};#xi_{W}", 400, -0.05, 0.15, 400, -0.05, 0.15));
             // TH2D("deltaTheta2DProtons", "Difference in #theta_{x} and #theta_{y} of protons;#Delta#theta_{x};#Delta#theta_{y}", 200, -0.2, 0.2, 200, -0.2, 0.2));
             // TH2D("sump2DProtons", "Sum of p_{x} and p_{y} of protons;#Sigmap_{x};#Sigmap_{y}", 100, -1, 1, 100, -1, 1));
+            //25
+            // TH2D("sump2DProtonsExact", "Sum of p_{x} and p_{y} of protons;#Sigmap_{x};#Sigmap_{y}", 80, -0.6, 1., 50, -0.5, 0.5));
+            // TH2D("etavsK0Mass", "#eta in function of K^{0}_{S} candidate mass;m_{#pi^{+}#pi^{-}} [GeV];#eta", 70, kaonMassWindowPresentationLow, kaonMassWindowPresentationHigh, 60, -3, 3));
+            // TH1D("XiEprotoncloserAfterElasticCut", "#xi_{E};#xi_{E};events", 400, -0.05, 0.15));
+            // TH1D("XiWprotoncloserAfterElasticCut", "#xi_{W};#xi_{W};events", 400, -0.05, 0.15));
+            // TH1D("MpipiAfterElasticCut", "K^{0}_{S} mass;m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 70, kaonMassWindowPresentationLow, kaonMassWindowPresentationHigh));
 
 
             insideprocessing.Fill(0, K0_pair->m());
@@ -284,8 +301,18 @@ int main(int argc, char **argv){
             insideprocessing.Fill("decayLengthHypovsMass", K0_pair->m(), K0_pair->decayLengthHypo());
             insideprocessing.Fill("decayvertexZdifference", K0_pair->decayVertex().Z()-vertex_pair->decayVertex().Z());
             insideprocessing.Fill("Xi2DProtons", eastTrack->xi(255.0), westTrack->xi(255.0));
-            insideprocessing.Fill("deltaTheta2DProtons", eastTrack->theta(StUPCRpsTrack::rpsAngleThetaX)+westTrack->theta(StUPCRpsTrack::rpsAngleThetaX), eastTrack->theta(StUPCRpsTrack::rpsAngleThetaY)+westTrack->theta(StUPCRpsTrack::rpsAngleThetaY));
+            insideprocessing.Fill("sumTheta2DProtons", eastTrack->theta(StUPCRpsTrack::rpsAngleThetaX)+westTrack->theta(StUPCRpsTrack::rpsAngleThetaX), eastTrack->theta(StUPCRpsTrack::rpsAngleThetaY)+westTrack->theta(StUPCRpsTrack::rpsAngleThetaY));
+            insideprocessing.Fill("sumTheta2DProtonsExact", eastTrack->theta(StUPCRpsTrack::rpsAngleThetaX)+westTrack->theta(StUPCRpsTrack::rpsAngleThetaX), eastTrack->theta(StUPCRpsTrack::rpsAngleThetaY)+westTrack->theta(StUPCRpsTrack::rpsAngleThetaY));
             insideprocessing.Fill("sump2DProtons", eastTrack->pVec().X()+westTrack->pVec().X(), eastTrack->pVec().Y()+westTrack->pVec().Y());
+            insideprocessing.Fill("sump2DProtonsExact", eastTrack->pVec().X()+westTrack->pVec().X(), eastTrack->pVec().Y()+westTrack->pVec().Y());
+            insideprocessing.Fill("etavsK0Mass", K0_pair->m(), K0_pair->eta());
+
+            //part dedicated to check the elastic cut
+            if(!IsInXiElasticSpot(eastTrack, westTrack)&&!IsInMomElasticSpot(eastTrack, westTrack)){
+                insideprocessing.Fill("XiEprotoncloserAfterElasticCut", eastTrack->xi(255.0));
+                insideprocessing.Fill("XiWprotoncloserAfterElasticCut", westTrack->xi(255.0));
+                insideprocessing.Fill("MpipiAfterElasticCut", K0_pair->m());
+            }
 
         }
         return 0;
@@ -297,7 +324,12 @@ int main(int argc, char **argv){
 
     //setting up a tree & output file
     string path = string(argv[0]);
-    string outfileName = outputFolder+"AnaOutput_"+path.substr(path.find_last_of("/\\")+1)+".root";
+    string outfileName;
+    if(outputFolder.find(".root")!=std::string::npos){
+        outfileName = outputFolder;
+    } else{
+        outfileName = outputFolder+"AnaOutput_"+path.substr(path.find_last_of("/\\")+1)+".root";
+    }
     cout<<"Created output file "<<outfileName<<endl;
     TFile *outputFileHist = TFile::Open(outfileName.c_str(), "recreate");
     outsideprocessing.SaveToFile(outputFileHist);
@@ -306,4 +338,22 @@ int main(int argc, char **argv){
     cout<<"Lack of candidates: "<<lackOfCandidates<<endl;
 
     return 0;
+}
+
+bool IsInXiElasticSpot(StUPCRpsTrack *east, StUPCRpsTrack *west){
+    double x_0 = 4.30002e-03;
+    double sigma_x = 1.83778e-03;
+    double y_0 = 1.75326e-03;
+    double sigma_y = 2.11677e-03;
+    return pow((east->xi(255.0)-x_0)/sigma_x, 2)+pow((west->xi(255.0)-y_0)/sigma_y, 2)<3*3;
+}
+
+bool IsInMomElasticSpot(StUPCRpsTrack *east, StUPCRpsTrack *west){
+    double x_0 = -3.86337e-02;
+    double sigma_x = 3.32301e-02;
+    double y_0 = 3.87718e-03;
+    double sigma_y = 3.13326e-02;
+    double x = east->pVec().X()+west->pVec().X();
+    double y = east->pVec().Y()+west->pVec().Y();
+    return pow((x-x_0)/sigma_x, 2)+pow((y-y_0)/sigma_y, 2)<3*3;
 }

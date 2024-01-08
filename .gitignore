@@ -6,4 +6,6 @@ test/build
 test/run
 star-upc/build
 Exclusive_Analysis/build
+plots/dime_K0K0.root
+plots/dime_LLBar.root
 .vscode

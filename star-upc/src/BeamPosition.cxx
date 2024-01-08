@@ -9,11 +9,11 @@
 
 using namespace std;
 
-vector <vector<double>> ReadFillPositionData(string file)
+vector <vector<double> > ReadFillPositionData(string file)
 {
 	ifstream FileName(file);
 	string line;
-	vector <vector<string>> Data;
+	vector <vector<string> > Data;
 	while (getline(FileName, line))
 	{
 		vector <string> data;
@@ -119,7 +119,7 @@ vector <vector<double>> ReadFillPositionData(string file)
 		vY2Slope.push_back(dY2Slope);
 	}			
 
-	vector <vector<double>> AllData;
+	vector <vector<double> > AllData;
 	AllData.push_back(vFillNumber);
  	AllData.push_back(vXPosition);
  	AllData.push_back(vYPosition);
