@@ -16,6 +16,7 @@
 #include "StUPCTofHit.h"
 #include "StUPCV0.h"
 #include "BeamPosition.h"
+#include <Afterburner.h>
 
 //my headers
 #include "UsefulThings.h"
@@ -26,11 +27,11 @@ enum{
     kAll = 1, kCPT, kRP, kOneVertex, kTPCTOF,
     kTotQ, kMax
 };
-enum SIDE{ E = 0, East = 0, W = 1, West = 1, nSides };
-enum PARTICLES{ Pion = 0, Kaon = 1, Proton = 2, nParticles };
+// enum SIDE{ E = 0, East = 0, W = 1, West = 1, nSides };
+// enum PARTICLES{ Pion = 0, Kaon = 1, Proton = 2, nParticles };
 const double particleMass[nParticles] = { 0.13957, 0.497611, 0.93827 }; // pion, kaon, proton in GeV /c^2 
-enum BRANCH_ID{ EU, ED, WU, WD, nBranches };
-enum RP_ID{ E1U, E1D, E2U, E2D, W1U, W1D, W2U, W2D, nRomanPots };
+// enum BRANCH_ID{ EU, ED, WU, WD, nBranches };
+// enum RP_ID{ E1U, E1D, E2U, E2D, W1U, W1D, W2U, W2D, nRomanPots };
 
 bool IsInXiElasticSpot(StUPCRpsTrack *, StUPCRpsTrack *);
 bool IsInMomElasticSpot(StUPCRpsTrack *, StUPCRpsTrack *);
@@ -105,6 +106,9 @@ int main(int argc, char **argv){
 
     int lackOfCandidates = 0;
 
+    //Afterburner things
+    LoadOffsetFile("STAR-Analysis/share/OffSetsCorrectionsRun17.list", mCorrection);
+
     //processing
     //defining TreeProcessor
     ROOT::TTreeProcessorMT TreeProc(*upcChain, nthreads);
@@ -136,7 +140,11 @@ int main(int argc, char **argv){
         while(myReader.Next()){
             //in a TTree, it *would* be constant, in TChain however not necessarily
             tempUPCpointer = StUPCEventInstance.Get();
-            tempRPpointer = StRPEventInstance.Get();
+            // tempRPpointer = StRPEventInstance.Get();
+            //modified for afterburner
+            tempRPpointer = new StRPEvent(*StRPEventInstance.Get());
+            tempRPpointer->clearEvent();
+            runAfterburner(StRPEventInstance.Get(), tempRPpointer, tempUPCpointer->getRunNumber());
 
             //cleaning the loop
             //these deletes were unnecessary
@@ -314,6 +322,8 @@ int main(int argc, char **argv){
                 insideprocessing.Fill("MpipiAfterElasticCut", K0_pair->m());
             }
 
+            //final in-loop cleaning after Afterburner
+            delete tempRPpointer;
         }
         return 0;
         };
@@ -341,18 +351,30 @@ int main(int argc, char **argv){
 }
 
 bool IsInXiElasticSpot(StUPCRpsTrack *east, StUPCRpsTrack *west){
-    double x_0 = 4.30002e-03;
-    double sigma_x = 1.83778e-03;
-    double y_0 = 1.75326e-03;
-    double sigma_y = 2.11677e-03;
+    //before Afterburner
+    // double x_0 = 4.30588e-03;
+    // double sigma_x = 2.02340e-03;
+    // double y_0 = 1.72097e-03;
+    // double sigma_y = 2.26638e-03;
+    //after Afterburner
+    double x_0 = 4.55173e-03;
+    double sigma_x = 1.77034e-03;
+    double y_0 = 4.19417e-03;
+    double sigma_y = 2.10993e-03;
     return pow((east->xi(255.0)-x_0)/sigma_x, 2)+pow((west->xi(255.0)-y_0)/sigma_y, 2)<3*3;
 }
 
 bool IsInMomElasticSpot(StUPCRpsTrack *east, StUPCRpsTrack *west){
-    double x_0 = -3.86337e-02;
-    double sigma_x = 3.32301e-02;
-    double y_0 = 3.87718e-03;
-    double sigma_y = 3.13326e-02;
+    //before Afterburner
+    // double x_0 = -3.82151e-02;
+    // double sigma_x = 3.67545e-02;
+    // double y_0 = 1.98348e-03;
+    // double sigma_y = 3.40440e-02;
+    //after Afterburner
+    double x_0 = -4.30765e-02;
+    double sigma_x = 3.39596e-02;
+    double y_0 = 6.26489e-04;
+    double sigma_y = 3.15149e-02;
     double x = east->pVec().X()+west->pVec().X();
     double y = east->pVec().Y()+west->pVec().Y();
     return pow((x-x_0)/sigma_x, 2)+pow((y-y_0)/sigma_y, 2)<3*3;

@@ -17,7 +17,6 @@
 
 using namespace std;
 
-const int nTriggers = 17;
 const int triggerID[] = { 570209, 570219, 570229, 570701, 570702, 570703, 570704, 570705, 
                   570709, 570711, 570712, 570719, 590701, 590703, 590705, 590708, 590709};
 // 570702 RP_UPC // 570712 RP_UPC // 570703 RP_SDT // 570709 RP_ET // 570719 RP_ET // 570701 RP_CPT2 // 570711 RP_CPT2 // 570705 RP_CPT2noBBCL // 570704 RP_Zerobias // 590703 RP_SDT // 590709 RP_ET // 590701 RP_CPT2 // 590705 RP_CPT2noBBCL // 590708 RP_CPTnoBBCL // 570209 JPsi*HTTP // 570219 JPsi*HTTP // 570229 JPsi*HTTP
@@ -26,6 +25,7 @@ const int CEPCutDowntriggers[] = { 570701, 570705, 570711 };
 
 bool CheckTriggers(StUPCEvent* localupcEvt){
     bool CPTtrigger = false;
+    const int nTriggers = 17;
     for(int var = 0; var < nTriggers; ++var){
         if(localupcEvt->isTrigger(triggerID[var])){
             //Checked if it is CPT trigger
