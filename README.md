@@ -38,10 +38,10 @@ O rekonstrukcji V0 [FengZhao_thesis.pdf](https://github.com/ladamczy/STAR-Analys
 
 Plik BeamPosition.cxx zawiera dwie funkcje ReadFillPositionData i FindPosition.
 
-Funkcja vector <vector <double>> ReadFillPositionData(string file) służy do wczytywania danych z pliku csv https://github.com/ladamczy/STAR-Analysis/blob/main/share/Run7PolarizationWithPosition.csv w którym znajduje się informacja o numerze fillu, pozycji wiązki oraz nachyleniu w kierunku x i y. Istnieją przypadki gdzie do jednego numeru fillu przyporządkowano dwie pozycje wiązki.
-Funkcja zwraca dwuwymiarow wektor vector <vector <double>> Data z powyższymi informacjiami. W przypadku gdy na jeden numer fillu przypada jedna pozycja wiązki, wartościom drugiej pozycji i nachyenia przypisano nan.
+Funkcja vector <vector <double>> ReadFillPositionData(string file) służy do wczytywania danych z pliku csv https://github.com/ladamczy/STAR-Analysis/blob/main/share/Run7PolarizationWithPosition.csv (runNumberWithPosition.csv) w którym znajduje się informacja o numerze fillu (runu), pozycji wiązki oraz nachyleniu w kierunku x i y. Istnieją przypadki gdzie do jednego numeru fillu (runu) przyporządkowano dwie pozycje wiązki.
+Funkcja zwraca dwuwymiarow wektor vector <vector <double>> Data z powyższymi informacjiami. W przypadku gdy na jeden numer fillu (runu) przypada jedna pozycja wiązki, wartościom drugiej pozycji i nachyenia przypisano nan.
 
-Data[0] - fill number
+Data[0] - fill (run) number
 Data[1] - beam position x 
 Data[2] - beam position y
 Data[3] - beam position x2
@@ -55,7 +55,7 @@ Data[8] - beam slope y2
 Funckja vector <double> FindPosition(int nFillNumber, double zPos, vector <double> &vFillNumber,  vector <double> &vXPosition, vector <double> &vYPosition,   vector <double> &vX2Position, vector <double> &vY2Position, vector <double> &vXSlope, vector <double> &vYSlope, vector <double> &vX2Slope, vector <double> &vY2Slope)
 
 Funkcja FindPosition korzysta z danych wczytaych z wykorzystaniem ReadFillPositionData.
-Do funkcji jest przekazywany numer fillu oraz na współrzędna z położenia werteksu zPos. W przypadku gdy na jeden numer fillu przypadają dwie pozycje wiązki obliczono ich średnią arytmetyczną. Funckja zwraca wektor położenia wiązki: vector <double> beam.  beam[0] = x, beam[1] = y
+Do funkcji jest przekazywany numer fillu (runu) oraz na współrzędna z położenia werteksu zPos. W przypadku gdy na jeden numer fillu (runu) przypadają dwie pozycje wiązki obliczono ich średnią arytmetyczną. Funckja zwraca wektor położenia wiązki: vector <double> beam.  beam[0] = x, beam[1] = y
 
 
 
