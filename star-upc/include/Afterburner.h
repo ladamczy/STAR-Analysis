@@ -4,6 +4,14 @@
 #include <StUPCRpsCluster.h>
 #include <Util.h>
 
+//added includes because of compilation issues
+#include <map>
+#include "StRPEvent.h"
+#include "StUPCRpsTrackPoint.h"
+#include "StUPCRpsTrack.h"
+#include <fstream>
+#include <sstream>
+
 const int nPlanesUsed = 3;
 
 
