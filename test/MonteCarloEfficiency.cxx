@@ -49,12 +49,14 @@ int main(int argc, char** argv)
     TH1D* HistXM4T = new TH1D("HistXM4T", "; M^{#pi^{+}#pi^{-}} [GeV]; # events",21, 0.9, 3.0);
     TH1D* HistXM2P = new TH1D("HistXM2P", "; M^{#pi^{+}#pi^{-}} [GeV]; # events",21, 0.9, 3.0);
 
-    TH1D* HistV0MDet = new TH1D("HistV0MDet", "; M^{V0} [GeV]; # events", 100, 0.4, 0.6);
-    TH1D* HistV0MDetK0 = new TH1D("HistV0MDetK0", "; M^{V0} [GeV]; # events", 100, 0.4,  0.6);
-    TH2D* HistV0MvsDecayLDet = new TH2D("HistV0MvsDecayLDet", "; M^{V0} [GeV]; Decay Length", 50, 0., 25., 100, 0.4, 0.6);
-//    TH1D* HistV0MDet = new TH1D("HistV0MDet", "; M^{V0} [GeV]; # events", 100, 1.0, 1.2);
-//    TH2D* HistV0MvsDecayLDet = new TH2D("HistV0MvsDecayLDet", "; M^{V0} [GeV]; Decay Length", 50, 0., 25., 100, 1.0, 1.2);
-//    TH1D* HistV0MDetK0 = new TH1D("HistV0MDetK0", "; M^{V0} [GeV]; # events", 100, 1.0,  1.2);
+//    TH1D* HistV0MDet = new TH1D("HistV0MDet", "; M^{V0} [GeV]; # events", 100, 0.4, 0.6);
+//    TH1D* HistV0MDetK0 = new TH1D("HistV0MDetK0", "; M^{V0} [GeV]; # events", 100, 0.4,  0.6);
+//    TH2D* HistV0MvsDecayLDet = new TH2D("HistV0MvsDecayLDet", "; M^{V0} [GeV]; Decay Length", 50, 0., 25., 200,-1, 1);
+//    TH2D* HistV0MvsDecayLDetK0 = new TH2D("HistV0MvsDecayLDetK0", "; M^{V0} [GeV]; Decay Length", 50, 0., 25., 200, -1, 1);
+    TH1D* HistV0MDet = new TH1D("HistV0MDet", "; M^{V0} [GeV]; # events", 100, 1.0, 1.2);
+    TH1D* HistV0MDetK0 = new TH1D("HistV0MDetK0", "; M^{V0} [GeV]; # events", 100, 1.0,  1.2);
+    TH2D* HistV0MvsDecayLDet = new TH2D("HistV0MvsDecayLDet", "; M^{V0} [GeV]; Decay Length", 50, 0., 25., 200, -1.0, 1.0);
+    TH2D* HistV0MvsDecayLDetK0 = new TH2D("HistV0MvsDecayLDetK0", "; M^{V0} [GeV]; Decay Length", 50, 0., 25., 200, -1.0, 1.0);
 
     TH1D* HistV0DCAD = new TH1D("HistV0DCAD", "; DCAD [cm]; # events", 100, 0.0, 5.0);
     TH1D* HistV0R = new TH1D("HistV0R", "; R [cm]; # events", 150, 0.0, 15.0);
@@ -119,6 +121,7 @@ int main(int argc, char** argv)
 
 
        correctedRpEvent = new StRPEvent(*origRpEvt);
+       correctedRpEvent->clearEvent();
        runAfterburner(origRpEvt, correctedRpEvent,upcEvt->getRunNumber());
        
        cout << "RP " << origRpEvt->getNumberOfClusters() << " " << correctedRpEvent->getNumberOfClusters() << endl;
@@ -154,20 +157,20 @@ int main(int argc, char** argv)
 
 //            cout << "Code " << particle->GetPDG()->PdgCode() << endl; 
     
-        if (particle->GetPDG()->PdgCode() == 310)
-////           if (   abs(particle->GetPDG()->PdgCode()) == 3122)
+////        if (particle->GetPDG()->PdgCode() == 310)
+           if (   abs(particle->GetPDG()->PdgCode()) == 3122)
            {
            TrueK0.push_back(particle);
            }
 
-        if (particle->GetPDG()->PdgCode() == 211 && abs(particle->Eta())<1.0 && particle->Pt()>0.1 )
-////            if (particle->GetPDG()->PdgCode() == 2212 and particle->GetFirstMother() != 1 or particle->GetPDG()->PdgCode() == 211)
+////        if (particle->GetPDG()->PdgCode() == 211 && abs(particle->Eta())<1.0 && particle->Pt()>0.1 )
+            if (particle->GetPDG()->PdgCode() == 2212 and particle->GetFirstMother() != 1 or particle->GetPDG()->PdgCode() == 211)
             {
              	PosPions.push_back(particle);
             }
 
-            else if (particle->GetPDG()->PdgCode() == -211 && abs(particle->Eta())<1.0 && particle->Pt()>0.1 )
-////            else if (particle->GetPDG()->PdgCode() == -2212 and particle->GetFirstMother() != 1 or particle->GetPDG()->PdgCode() == -211)
+////            else if (particle->GetPDG()->PdgCode() == -211 && abs(particle->Eta())<1.0 && particle->Pt()>0.1 )
+            else if (particle->GetPDG()->PdgCode() == -2212 and particle->GetFirstMother() != 1 or particle->GetPDG()->PdgCode() == -211)
             {
              	NegPions.push_back(particle);
             }
@@ -187,7 +190,7 @@ int main(int argc, char** argv)
      for (int j = 0; j < upcEvt->getNumberOfTracks(); j++) {
              for (int jj = j; jj < upcEvt->getNumberOfTracks(); jj++) {       
                if( (upcEvt->getTrack(j)->getCharge() != upcEvt->getTrack(jj)->getCharge()) 
-                 && upcEvt->getTrack(j)->getNhits()>25 && upcEvt->getTrack(jj)->getNhits()>25 
+                 && upcEvt->getTrack(j)->getNhits()>15 && upcEvt->getTrack(jj)->getNhits()>15 
                  && (upcEvt->getTrack(j)->getFlag(StUPCTrack::kTof) 
                  && upcEvt->getTrack(jj)->getFlag(StUPCTrack::kTof)) 
                  && upcEvt->getTrack(jj)->getPt()>0.15 && upcEvt->getTrack(j)->getPt()>0.15 
@@ -205,7 +208,7 @@ int main(int argc, char** argv)
         }
 //        continue;
 //        if ( (v1+v2).M()>0.6 || (v1+v2).M()<0.4 ) continue;  
-        StUPCV0 V0(upcEvt->getTrack(j),upcEvt->getTrack(jj), massProton, massPion,id1,id2, vertex, beamline, upcEvt->getMagneticField(), false);
+        StUPCV0 V0(upcEvt->getTrack(j),upcEvt->getTrack(jj), massPion, massProton,id1,id2, vertex, beamline, upcEvt->getMagneticField(), false);
 ////        continue;
         std::cout << "V0 " << V0.dcaDaughters() 
                   << " " << V0.DCABeamLine() 
@@ -238,15 +241,14 @@ int main(int argc, char** argv)
 
 
         }
-        bool MasCut = V0.m()<0.53 && V0.m()>0.46;
-//          bool MasCut = V0.m()<1.15 && V0.m()>1.08;
+//        bool MasCut = V0.m()<0.53 && V0.m()>0.46;
+          bool MasCut = V0.m()<1.13 && V0.m()>1.10;
 //        MasCut = true;
-        bool DCADCut = V0.dcaDaughters()<1.5;
-        bool DCABLCut = V0.DCABeamLine()<1.5;
-        bool RCut = sqrt(V0.v0x()*V0.v0x()+V0.v0y()*V0.v0y())>1.5;
-        RCut = true; 
-//        continue;
-        bool PACut = V0.pointingAngleHypo()>0.925;
+        bool DCADCut = V0.dcaDaughters()<2.0;
+        bool DCABLCut = V0.DCABeamLine()<2.0;
+        bool RCut = V0.decayLengthHypo()<3.0;
+        bool PACut = V0.pointingAngleHypo()>0.9;
+   
         TLorentzVector ProdVert0,  DecayVert0(0,0,0,0), ProdVert1,  DecayVert1(0,0,0,0) , RecK0, mom1, mom2;
 
         if( Delta1<0.05 || Delta2<0.05 ) { 
@@ -287,18 +289,19 @@ int main(int argc, char** argv)
 //                                                            << " " << (DecayVert1-ProdVert1).Vect().Mag() << std::endl;
              }
 
-
+          if ( abs(TrueK0[1]->Vz()) > 100 ) continue; 
 //        DecayVert0.Print();
 //        DecayVert1.Print();
      
           if ( DecayVert0.Rho()!=0 || DecayVert1.Rho()!=0 ) {
-            if( DCADCut&&DCABLCut&& RCut&&PACut ) HistV0MDetK0->Fill(V0.m());
-            if( MasCut&&DCABLCut&& RCut&&PACut) HistV0DCADK0->Fill(V0.dcaDaughters());
-            if( DCADCut&&MasCut&&DCABLCut&&PACut) HistV0RK0->Fill(sqrt(V0.v0x()*V0.v0x()+V0.v0y()*V0.v0y()));
-            if( DCADCut&&MasCut&& RCut&&PACut) HistV0DCABeamLineK0->Fill(V0.DCABeamLine());
-            if( DCADCut&&MasCut&&DCABLCut&& RCut) HistV0PointingAngleK0->Fill(V0.pointingAngleHypo());
-            if( DCADCut&&MasCut&&DCABLCut&& RCut &&PACut) HistV0DecayLengthK0->Fill(V0.decayLengthHypo());
-            if( DCADCut&&MasCut&&DCABLCut&& RCut &&PACut) {
+            if( DCADCut&&DCABLCut&& (RCut||PACut) ) HistV0MDetK0->Fill(V0.m());
+            if( MasCut&&DCABLCut&& (RCut||PACut) ) HistV0DCADK0->Fill(V0.dcaDaughters());
+            if( DCADCut&&MasCut&&DCABLCut&&(!PACut) ) HistV0RK0->Fill(V0.decayLengthHypo());
+            if( DCADCut&&MasCut&& (RCut||PACut) ) HistV0DCABeamLineK0->Fill(V0.DCABeamLine());
+            if( DCADCut&&MasCut&&DCABLCut&& (!RCut) ) HistV0PointingAngleK0->Fill(V0.pointingAngleHypo());
+            if( DCADCut&&MasCut&&DCABLCut) HistV0MvsDecayLDetK0->Fill(V0.decayLengthHypo(),V0.pointingAngleHypo());            
+            if( DCADCut&&MasCut&&DCABLCut&& (RCut||PACut) ) HistV0DecayLengthK0->Fill(V0.decayLengthHypo());
+            if( DCADCut&&MasCut&&DCABLCut&& (RCut||PACut) ) {
 
               if( DecayVert0.Rho()!=0 ) {
               HistDeltaZ->Fill(ProdVert0.Vect().Z()-V0.prodVertexHypo().Z());
@@ -321,15 +324,15 @@ int main(int argc, char** argv)
          }
         }
         } else {
-         if( DCADCut&&DCABLCut&& RCut &&PACut) { 
+         if( DCADCut&&DCABLCut&& (RCut||PACut) ) { 
               HistV0MDet->Fill(V0.m());
-              HistV0MvsDecayLDet->Fill(V0.decayLengthHypo(),V0.m());
          }
-         if( MasCut&&DCABLCut&& RCut &&PACut) HistV0DCAD->Fill(V0.dcaDaughters());
-         if( DCADCut&&MasCut&&DCABLCut &&PACut) HistV0R->Fill(sqrt(V0.v0x()*V0.v0x()+V0.v0y()*V0.v0y()));
-         if( DCADCut&&MasCut&& RCut&&PACut) HistV0DCABeamLine->Fill(V0.DCABeamLine());
-         if( DCADCut&&MasCut&&DCABLCut&& RCut) HistV0PointingAngle->Fill(V0.pointingAngleHypo());
-         if( DCADCut&&MasCut&&DCABLCut&& RCut&&PACut) HistV0DecayLength->Fill(V0.decayLengthHypo());
+         if( MasCut&&DCABLCut&& (RCut||PACut) ) HistV0DCAD->Fill(V0.dcaDaughters());
+         if( DCADCut&&MasCut&&DCABLCut &&(!PACut) ) HistV0R->Fill(V0.decayLengthHypo());
+         if( DCADCut&&MasCut&& (RCut||PACut) ) HistV0DCABeamLine->Fill(V0.DCABeamLine());
+         if( DCADCut&&MasCut&&DCABLCut&& (!RCut) ) HistV0PointingAngle->Fill(V0.pointingAngleHypo());
+         if( DCADCut&&MasCut&&DCABLCut) HistV0MvsDecayLDet->Fill(V0.decayLengthHypo(),V0.pointingAngleHypo());
+         if( DCADCut&&MasCut&&DCABLCut&& (RCut||PACut) ) HistV0DecayLength->Fill(V0.decayLengthHypo());
       
         }
         if ( V0.dcaDaughters()>1.5 ) {
@@ -567,9 +570,9 @@ int main(int argc, char** argv)
             {
                 HistKaonPtDet->Fill(detPt);
                 HistKaonMDet->Fill(detM);
-                HistV0MDet->Fill(V0.m());
-                HistV0DCAD->Fill(V0.dcaDaughters());
-                HistV0R->Fill(sqrt(V0.v0x()*V0.v0x()+V0.v0y()*V0.v0y()));
+//                HistV0MDet->Fill(V0.m());
+//                HistV0DCAD->Fill(V0.dcaDaughters());
+//                HistV0R->Fill(sqrt(V0.v0x()*V0.v0x()+V0.v0y()*V0.v0y()));
             }
 
             if ( detVertexR < 3.0 and abs(detVertexZ) < 200)
@@ -647,6 +650,7 @@ int main(int argc, char** argv)
     HistDeltaL->Write();
     HistDeltaR->Write();
     HistV0MvsDecayLDet->Write();
+    HistV0MvsDecayLDetK0->Write();
 
     outfile->Close();
 

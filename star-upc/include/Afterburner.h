@@ -103,12 +103,12 @@ void runAfterburner(StRPEvent *event, StRPEvent *newRpEvent, int RunNumber)
 TVector3 CalculateMomentumVector(double TPx, double TPy, double TPz, StUPCRpsTrack *track)
 {
    // default values for pp run17 
-   double mXYZ_IP[] = { 0, 0, 0}; /* collision coordinates at the IP; 0=X, 1=Y, 2=Z */
-   double mThetaXY_tilt[] = { 0, 0}; /* tilt angles of the beam at collision; 0=X, 1=Y */
+   double mXYZ_IP[] = { -0.0011, 0, 0}; /* collision coordinates at the IP; 0=X, 1=Y, 2=Z */
+   double mThetaXY_tilt[] = { -0.000070, 0}; /* tilt angles of the beam at collision; 0=X, 1=Y */
    double mDistanceFromIPtoDX[] = { 9.8, 9.8}; /* distance from the IP to the DX magnet in the East and West; 0=E, 1=W */
    double mLDX[] = { 3.7, 3.7};     /* length of DX in the East and West; 0=E, 1=W */
    double mBendingAngle[] = { 0.018832292, 0.018826657};     /* DX bending angles in the East and West; 0=E, 1=W */
-   double beamMomenta[2] = { 255. , 255};
+   double beamMomenta[2] = { 254.867  , 254.867 };
 
    int sign = (TPz < 0 ? -1 : 1 );
    int iSide = (TPz < 0 ? E : W );
