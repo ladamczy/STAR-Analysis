@@ -1,4 +1,64 @@
-#include "Includes.h"
+#include <iostream>
+#include <string>    
+#include <utility>
+#include <sstream> 
+#include <algorithm> 
+#include <stdio.h> 
+#include <stdlib.h> 
+#include <vector> 
+#include <fstream> 
+#include <cmath> 
+#include <cstdlib>
+#include <sys/stat.h>
+#include <iterator>
+#include <ostream>
+#include <iomanip>
+#include <stdexcept>
+#include <limits>
+#include "TROOT.h"
+#include "TSystem.h"
+#include "TThread.h"
+#include "TFile.h"
+#include "TTree.h"
+#include "TChain.h"
+#include "TH1D.h"
+#include "TProfile.h"
+#include <TH2.h> 
+#include <TF1.h> 
+#include <TF2.h> 
+#include <THStack.h> 
+#include <TStyle.h> 
+#include <TGraph.h> 
+#include <TGraph2D.h> 
+#include <TGraphErrors.h> 
+#include <TCanvas.h> 
+#include <TLegend.h> 
+#include <TGaxis.h> 
+#include <TString.h> 
+#include <TColor.h> 
+#include <TLine.h> 
+#include <TExec.h> 
+#include <TFitResultPtr.h> 
+#include <TFitResult.h> 
+#include <TLatex.h> 
+#include <TMath.h>
+#include <TLorentzVector.h>
+#include <ROOT/TThreadedObject.hxx>
+#include <TTreeReader.h>
+#include <ROOT/TTreeProcessorMT.hxx>
+#include "StRPEvent.h"
+#include "StUPCRpsTrack.h"
+#include "StUPCRpsTrackPoint.h"
+#include "StUPCEvent.h"
+#include "StUPCTrack.h"
+#include "StUPCBemcCluster.h"
+#include "StUPCVertex.h"
+#include "StUPCTofHit.h"
+#include "MatchFillPosition.h"
+#include "ReadFillPositionFile.h"
+#include <Afterburner.h>
+#include <StRPEvent.h>
+#include <map>
 
 using namespace std;
 
@@ -39,30 +99,32 @@ int main(int argc, char** argv)
 
     static StUPCEvent *upcEvt = 0x0;
     static StRPEvent *rpEvt = 0x0;
+    static StRPEvent  *correctedRpEvent = 0x0;
+
     chain->SetBranchAddress("mUPCEvent", &upcEvt);
     chain->SetBranchAddress("mRPEvent", &rpEvt);
 
+    LoadOffsetFile("../share/OffSetsCorrectionsRun17.list", mCorrection);
+
     TTree* mUPCTree = new TTree("mUPCTree", "mUPCTree");
-    mUPCTree->Branch("mUPCEvent", &upcEvt);
-    mUPCTree->Branch("mRPEvent", &rpEvt);
+   // mUPCTree->Branch("mUPCEvent", &upcEvt);
+   // mUPCTree->Branch("correctedRpEvent", &correctedRpEvent);
 
 	TVector3 pVector;
 
     int iCutFlow;
 
     const vector <int> triggerID = {570209, 570219, 570229, 570701, 570702, 570703, 570704, 570705, 570709, 570711, 570712, 570719, 590701, 590703, 590705, 590708, 590709};
-    const vector <int> triggerCEP = {570701, 570705, 570711, 590701, 590705, 590708};
+    const vector <int> triggerCEP = {570701, 570705, 570711};
 
     for (Long64_t i = 0; i < chain->GetEntries(); ++i) 
     {
-
-        iCutFlow = 0;
-
-        chain->GetEntry(i);
-        HistCutFlow->Fill(iCutFlow);  // cutflow: all data
-
         if (i%1000000 == 0)  { cout << i << "/" <<  chain->GetEntries()  << endl;}
+        chain->GetEntry(i);
 
+        correctedRpEvent = new StRPEvent(*rpEvt);
+        runAfterburner(rpEvt, correctedRpEvent, upcEvt->getRunNumber());
+/*
         // triggers - one event can have several triggers
         for (unsigned long int i = 0; i < triggerID.size(); i++)
         {
@@ -81,9 +143,7 @@ int main(int argc, char** argv)
                 isCepTrigger = 1;
             }
         }
-        if (isCepTrigger == 0) {continue;} 
-        iCutFlow+=1;
-        HistCutFlow->Fill(iCutFlow); // cutflow: CEP trigger
+
 
         // post-selection triggers
         for (unsigned long int i = 0; i < triggerID.size(); i++)
@@ -100,9 +160,11 @@ int main(int argc, char** argv)
 		int numberOfTracksWest = 0;
 		int indexWest = 0;
 		int indexEast = 0;
-		for(UInt_t i = 0; i < rpEvt->getNumberOfTracks(); i++)
+
+
+		for(UInt_t i = 0; i < correctedRpEvent->getNumberOfTracks(); i++)
 		{
-			int iBranch = rpEvt->getTrack(i)->branch();
+			int iBranch = correctedRpEvent->getTrack(i)->branch();
             HistRpTrackBranch->Fill(iBranch);
 			if (iBranch < 2) {numberOfTracksEast+=1; indexEast = i;}
 		    else {numberOfTracksWest+=1; indexWest  = i;}
@@ -111,63 +173,68 @@ int main(int argc, char** argv)
 		{
 			hasTwoRpTracksOppositeSide = 1;
 		}
-		if (hasTwoRpTracksOppositeSide == 0) {continue;}	
-        iCutFlow+=1;
-  		HistCutFlow->Fill(iCutFlow); // cutflow: two RP tracks on opposite sides of the detector
+
 
         // post-selection RP branches
-		for(UInt_t i = 0; i < rpEvt->getNumberOfTracks(); i++)
+		for(UInt_t i = 0; i < correctedRpEvent->getNumberOfTracks(); i++)
         {
-			int iBranch = rpEvt->getTrack(i)->branch();
+			int iBranch = correctedRpEvent->getTrack(i)->branch();
             HistRpTrackBranchPostSelection->Fill(iBranch);
         }
 
         // RP trackpoints: # of used planes - at least 3 out of 4
     	bool useAtLeastThreePlanes = 1;
-		for(UInt_t i = 0; i < rpEvt->getNumberOfTrackPoints(); i++)
+		for(UInt_t i = 0; i < correctedRpEvent->getNumberOfTrackPoints(); i++)
 		{
-            HistRpTrackPointPlanesUsed->Fill(rpEvt->getTrackPoint(i)->planesUsed());
-			if(rpEvt->getTrackPoint(i)->planesUsed() < 3)
+            HistRpTrackPointPlanesUsed->Fill(correctedRpEvent->getTrackPoint(i)->planesUsed());
+			if(correctedRpEvent->getTrackPoint(i)->planesUsed() < 3)
 			{
 				useAtLeastThreePlanes = 0;		
 				break;
 			}
 		}		
-		if (useAtLeastThreePlanes == 0) {continue;}	
-        iCutFlow+=1;
-  		HistCutFlow->Fill(iCutFlow); // cutflow: 3 out of 4 silicon planes were used for the reconstruction
 
         // post-selection: # of planes per tracpoint
-		for(UInt_t i = 0; i < rpEvt->getNumberOfTrackPoints(); i++)
+		for(UInt_t i = 0; i < correctedRpEvent->getNumberOfTrackPoints(); i++)
 		{
-            HistRpTrackPointPlanesUsedPostSelection->Fill(rpEvt->getTrackPoint(i)->planesUsed());
+            HistRpTrackPointPlanesUsedPostSelection->Fill(correctedRpEvent->getTrackPoint(i)->planesUsed());
         }
 
         // fiducial region
     	bool withinFiducialRegion = 1;
-	    for(unsigned int k = 0; k < rpEvt->getNumberOfTracks(); ++k)
+	    for(unsigned int k = 0; k < correctedRpEvent->getNumberOfTracks(); ++k)
 	    {		
-			StUPCRpsTrack *trk = rpEvt->getTrack(k);
-		    trk->setEvent(rpEvt);
-		    pVector = trk->pVec();
-			HistRpTrackPxPy->Fill(pVector.X(), pVector.Y());
+			StUPCRpsTrack *trk = correctedRpEvent->getTrack(k);
+		    trk->setEvent(correctedRpEvent);
+            double thetaX = trk->thetaRp(0);
+            double thetaY = trk->thetaRp(1);
+            double thetaZ = trk->thetaRp(2);
+            double px = 255*thetaX;
+            double py = 255*thetaY;
+            double pz = 255*thetaZ;     
 
-			if ((abs(pVector.Y()) >= 0.8 or abs(pVector.Y()) <= 0.4) or (pVector.X() <= -0.27) or (pow(pVector.X()+0.6,2) + pow(pVector.Y(), 2)  >=  pow(1.25,2)))
+
+			HistRpTrackPxPy->Fill(px, py);
+
+			if ((abs(py) >= 0.8 or abs(py) <= 0.4) or (px <= -0.27) or (pow(px+0.6,2) + pow(py, 2)  >=  (1.25)))
 			{
 				withinFiducialRegion = 0;
 			}  	
 		}
-		if (withinFiducialRegion == 0) {continue;}    
-        iCutFlow+=1;
-		HistCutFlow->Fill(iCutFlow); // cutflow: fiducial region
 
         // post-seletcion: fiducial region
-	    for(unsigned int k = 0; k < rpEvt->getNumberOfTracks(); ++k)
+	    for(unsigned int k = 0; k < correctedRpEvent->getNumberOfTracks(); ++k)
 	    {		
-			StUPCRpsTrack *trk = rpEvt->getTrack(k);
-		    trk->setEvent(rpEvt);
-		    pVector = trk->pVec();
-			HistRpTrackPxPyPostSelection->Fill(pVector.X(), pVector.Y());
+			StUPCRpsTrack *trk = correctedRpEvent->getTrack(k);
+		    trk->setEvent(correctedRpEvent);
+            double thetaX = trk->thetaRp(0);
+            double thetaY = trk->thetaRp(1);
+            double thetaZ = trk->thetaRp(2);
+            double px = 255*thetaX;
+            double py = 255*thetaY;
+            double pz = 255*thetaZ;  
+	
+			HistRpTrackPxPyPostSelection->Fill(px, py);
         }
  
 		// vector for TOF matched tracks
@@ -183,21 +250,19 @@ int main(int argc, char** argv)
 		// two TOF-matched primary tracks
         HistNumTofMatchedTracks->Fill(tracksWithTofHit.size());
 		bool isValidNumberOfTofMatchedTracks = 0;
-		if (tracksWithTofHit.size() == 4 or tracksWithTofHit.size() == 3)
+		if (tracksWithTofHit.size() <= 4)
 		{
 			isValidNumberOfTofMatchedTracks = 1;
 		}
-		if (isValidNumberOfTofMatchedTracks == 0) {continue;} 
-        iCutFlow+=1;
-		HistCutFlow->Fill(iCutFlow); // cutflow: 3 or 4 tpc tracks matched w/ TOF       
-        HistNumTofMatchedTracksPostSelection->Fill(tracksWithTofHit.size()); // post-selection: # events with 3 or 4 TOF-matched tracks
-    
+
         // set branch adress
         mUPCTree->SetBranchAddress("mUPCEvent", &upcEvt);
-        mUPCTree->SetBranchAddress("mRPEvent", &rpEvt);
+        mUPCTree->SetBranchAddress("correctedRpEvent", &correctedRpEvent);
         
         // fill tree
-        mUPCTree->Fill();
+        mUPCTree->Fill();*/
+        
+        delete correctedRpEvent;
     }
 
     // save root files that passed selection
@@ -207,7 +272,7 @@ int main(int argc, char** argv)
 
     // save histograms
     TFile *outfile = TFile::Open(argv[2], "recreate"); 
-    HistCutFlow->Write(); 
+
     HistTriggers->Write();
     HistRpTrackBranch->Write();
     HistRpTrackPointPlanesUsed->Write();
