@@ -22,6 +22,7 @@ const int triggerID[] = { 570209, 570219, 570229, 570701, 570702, 570703, 570704
 // 570702 RP_UPC // 570712 RP_UPC // 570703 RP_SDT // 570709 RP_ET // 570719 RP_ET // 570701 RP_CPT2 // 570711 RP_CPT2 // 570705 RP_CPT2noBBCL // 570704 RP_Zerobias // 590703 RP_SDT // 590709 RP_ET // 590701 RP_CPT2 // 590705 RP_CPT2noBBCL // 590708 RP_CPTnoBBCL // 570209 JPsi*HTTP // 570219 JPsi*HTTP // 570229 JPsi*HTTP
 const int CEPtriggers[] = { 570701, 570705, 570711, 590701, 590705, 590708};
 const int CEPCutDowntriggers[] = { 570701, 570705, 570711 };
+const double beamMomentum = 254.867;
 
 bool CheckTriggers(StUPCEvent* localupcEvt){
     bool CPTtrigger = false;

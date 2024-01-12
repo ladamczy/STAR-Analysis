@@ -271,8 +271,8 @@ int main(int argc, char **argv){
 
             //filter to filter out badly reconstructed protons
             //as in with xi>1, cause those with xi<0 will get log(xi)=NaN and get registered as overflow
-            if(tempRPpointer->getTrack(0)->xi(255.0)>1||tempRPpointer->getTrack(1)->xi(255.0)>1){
-                cout<<log10(tempRPpointer->getTrack(0)->xi(255.0))<<" "<<log10(tempRPpointer->getTrack(1)->xi(255.0))<<endl;
+            if(tempRPpointer->getTrack(0)->xi(beamMomentum)>1||tempRPpointer->getTrack(1)->xi(beamMomentum)>1){
+                cout<<log10(tempRPpointer->getTrack(0)->xi(beamMomentum))<<" "<<log10(tempRPpointer->getTrack(1)->xi(beamMomentum))<<endl;
                 continue;
             }
 
@@ -285,30 +285,30 @@ int main(int argc, char **argv){
                 westTrack = tempRPpointer->getTrack(0);
             }
             //histograms
-            if(eastTrack->xi(255.0)<0.005||westTrack->xi(255.0)<0.005){
+            if(eastTrack->xi(beamMomentum)<0.005||westTrack->xi(beamMomentum)<0.005){
                 insideprocessing.Fill(4, 2*log10(0.005));
             } else{
-                insideprocessing.Fill(4, log10(tempRPpointer->getTrack(0)->xi(255.0)*tempRPpointer->getTrack(1)->xi(255.0)));
+                insideprocessing.Fill(4, log10(tempRPpointer->getTrack(0)->xi(beamMomentum) *tempRPpointer->getTrack(1)->xi(beamMomentum)));
             }
-            if(eastTrack->xi(255.0)<0.005||westTrack->xi(255.0)<0.005){
+            if(eastTrack->xi(beamMomentum)<0.005||westTrack->xi(beamMomentum)<0.005){
                 insideprocessing.Fill(4, 0);
             } else{
-                insideprocessing.Fill(5, log(eastTrack->xi(255.0)/westTrack->xi(255.0)));
+                insideprocessing.Fill(5, log(eastTrack->xi(beamMomentum)/westTrack->xi(beamMomentum)));
             }
-            insideprocessing.Fill(6, log10(eastTrack->xi(255.0)), log10(westTrack->xi(255.0)));
-            insideprocessing.Fill(7, log10(eastTrack->xi(255.0)));
-            insideprocessing.Fill(8, log10(westTrack->xi(255.0)));
-            insideprocessing.Fill(12, eastTrack->xi(255.0));
-            insideprocessing.Fill(13, westTrack->xi(255.0));
-            insideprocessing.Fill(14, eastTrack->xi(255.0));
-            insideprocessing.Fill(15, westTrack->xi(255.0));
+            insideprocessing.Fill(6, log10(eastTrack->xi(beamMomentum)), log10(westTrack->xi(beamMomentum)));
+            insideprocessing.Fill(7, log10(eastTrack->xi(beamMomentum)));
+            insideprocessing.Fill(8, log10(westTrack->xi(beamMomentum)));
+            insideprocessing.Fill(12, eastTrack->xi(beamMomentum));
+            insideprocessing.Fill(13, westTrack->xi(beamMomentum));
+            insideprocessing.Fill(14, eastTrack->xi(beamMomentum));
+            insideprocessing.Fill(15, westTrack->xi(beamMomentum));
             insideprocessing.Fill(16, vertex_pair->dcaDaughters());
             insideprocessing.Fill(17, vertex_pair->DCABeamLine());
             insideprocessing.Fill("K0decayLengthHypo", K0_pair->decayLengthHypo());
             insideprocessing.Fill("vertexdecayLengthHypo", vertex_pair->decayLengthHypo());
             insideprocessing.Fill("decayLengthHypovsMass", K0_pair->m(), K0_pair->decayLengthHypo());
             insideprocessing.Fill("decayvertexZdifference", K0_pair->decayVertex().Z()-vertex_pair->decayVertex().Z());
-            insideprocessing.Fill("Xi2DProtons", eastTrack->xi(255.0), westTrack->xi(255.0));
+            insideprocessing.Fill("Xi2DProtons", eastTrack->xi(beamMomentum), westTrack->xi(beamMomentum));
             insideprocessing.Fill("sumTheta2DProtons", eastTrack->theta(StUPCRpsTrack::rpsAngleThetaX)+westTrack->theta(StUPCRpsTrack::rpsAngleThetaX), eastTrack->theta(StUPCRpsTrack::rpsAngleThetaY)+westTrack->theta(StUPCRpsTrack::rpsAngleThetaY));
             insideprocessing.Fill("sumTheta2DProtonsExact", eastTrack->theta(StUPCRpsTrack::rpsAngleThetaX)+westTrack->theta(StUPCRpsTrack::rpsAngleThetaX), eastTrack->theta(StUPCRpsTrack::rpsAngleThetaY)+westTrack->theta(StUPCRpsTrack::rpsAngleThetaY));
             insideprocessing.Fill("sump2DProtons", eastTrack->pVec().X()+westTrack->pVec().X(), eastTrack->pVec().Y()+westTrack->pVec().Y());
@@ -317,8 +317,8 @@ int main(int argc, char **argv){
 
             //part dedicated to check the elastic cut
             if(!IsInXiElasticSpot(eastTrack, westTrack)&&!IsInMomElasticSpot(eastTrack, westTrack)){
-                insideprocessing.Fill("XiEprotoncloserAfterElasticCut", eastTrack->xi(255.0));
-                insideprocessing.Fill("XiWprotoncloserAfterElasticCut", westTrack->xi(255.0));
+                insideprocessing.Fill("XiEprotoncloserAfterElasticCut", eastTrack->xi(beamMomentum));
+                insideprocessing.Fill("XiWprotoncloserAfterElasticCut", westTrack->xi(beamMomentum));
                 insideprocessing.Fill("MpipiAfterElasticCut", K0_pair->m());
             }
 
@@ -361,7 +361,7 @@ bool IsInXiElasticSpot(StUPCRpsTrack *east, StUPCRpsTrack *west){
     double sigma_x = 1.77034e-03;
     double y_0 = 4.19417e-03;
     double sigma_y = 2.10993e-03;
-    return pow((east->xi(255.0)-x_0)/sigma_x, 2)+pow((west->xi(255.0)-y_0)/sigma_y, 2)<3*3;
+    return pow((east->xi(beamMomentum)-x_0)/sigma_x, 2)+pow((west->xi(beamMomentum)-y_0)/sigma_y, 2)<3*3;
 }
 
 bool IsInMomElasticSpot(StUPCRpsTrack *east, StUPCRpsTrack *west){
