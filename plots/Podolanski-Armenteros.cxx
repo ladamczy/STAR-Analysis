@@ -21,7 +21,7 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    TFile inputFile2(argv[1], "READ");
+    TFile inputFile2(argv[2], "READ");
     if (!inputFile2.IsOpen()) {
         cerr << "Failed to open input file 2." << endl;
         return 1;
@@ -65,12 +65,13 @@ int main(int argc, char** argv) {
             StUPCTrack* track1 = event1->getTrack(j);
             for (int k = j + 1; k < event1->getNumberOfTracks(); ++k) {
                 StUPCTrack* track2 = event1->getTrack(k);
-
+                // K0s
                 if ((track1->getCharge() > 0 && track2->getCharge() < 0) &&
                     track1->getNhits() > 15 && track2->getNhits() > 15 &&
                     track1->getPt() > 0.15 && track2->getPt() > 0.15 &&
                     abs(track1->getEta()) < 1.1 && abs(track2->getEta()) < 1.1 &&
-                    (track1->getFlag(StUPCTrack::kTof) || track2->getFlag(StUPCTrack::kTof))) {
+                    (track1->getFlag(StUPCTrack::kTof) || track2->getFlag(StUPCTrack::kTof)) &&
+                    abs(track1->getNSigmasTPCPion()) < 2.5 && abs(track2->getNSigmasTPCPion()) < 2.5) {
 
                     // Tworzenie obiektu StUPCV0
                     TVector3 const tryVec(0,0,0);
@@ -118,18 +119,18 @@ int main(int argc, char** argv) {
             StUPCTrack* track1 = event2->getTrack(j);
             for (int k = j + 1; k < event2->getNumberOfTracks(); ++k) {
                 StUPCTrack* track2 = event2->getTrack(k);
-
+                // Lambda
                 if ((track1->getCharge() > 0 && track2->getCharge() < 0) &&
                     track1->getNhits() > 15 && track2->getNhits() > 15 &&
                     track1->getPt() > 0.15 && track2->getPt() > 0.15 &&
                     abs(track1->getEta()) < 1.1 && abs(track2->getEta()) < 1.1 &&
-                    (track1->getFlag(StUPCTrack::kTof) || track2->getFlag(StUPCTrack::kTof))) {
+                    (track1->getFlag(StUPCTrack::kTof) || track2->getFlag(StUPCTrack::kTof)) &&
+                    abs(track1->getNSigmasTPCProton()) < 2.5 && abs(track2->getNSigmasTPCPion()) < 2.5) {
 
                     // Tworzenie obiektu StUPCV0
                     TVector3 const tryVec(0,0,0);
                     double beamLine[] = {0,0,0,0};
                     StUPCV0 v0(track1, track2, protonMass, pionMass, 1, 1, tryVec, beamLine, event2->getMagneticField(), true);
-
 
                     if (v0.m() > lowerLimitOfInvMassLambda && v0.m() < upperLimitOfInvMassLambda) {
                         TVector3 p1Vec, p2Vec;
@@ -159,12 +160,13 @@ int main(int argc, char** argv) {
                         hArmenteros->Fill(alpha, pT);
                     }
                 }
-
+                // LambdaBar
                 if ((track1->getCharge() < 0 && track2->getCharge() > 0) &&
                     track1->getNhits() > 15 && track2->getNhits() > 15 &&
                     track1->getPt() > 0.15 && track2->getPt() > 0.15 &&
                     abs(track1->getEta()) < 1.1 && abs(track2->getEta()) < 1.1 &&
-                    (track1->getFlag(StUPCTrack::kTof) || track2->getFlag(StUPCTrack::kTof))) {
+                    (track1->getFlag(StUPCTrack::kTof) || track2->getFlag(StUPCTrack::kTof)) &&
+                    abs(track1->getNSigmasTPCProton()) < 2.5 && abs(track2->getNSigmasTPCPion()) < 2.5) {
 
                     // Tworzenie obiektu StUPCV0
                     TVector3 const tryVec(0,0,0);
@@ -205,7 +207,7 @@ int main(int argc, char** argv) {
     }
 
     
-    TFile outputFile(argv[2], "RECREATE");
+    TFile outputFile(argv[3], "RECREATE");
     hArmenteros->Write();
     outputFile.Close();
     inputFile1.Close();
