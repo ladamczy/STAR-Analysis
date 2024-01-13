@@ -40,7 +40,7 @@ int main(int argc, char** argv) {
     double lowerLimitOfInvMassK0 = 0.46;
     double upperLimitOfInvMassK0 = 0.53;
 
-    TH2D* hArmenteros = new TH2D("hArmenteros", "Armenteros Plot;alpha;pT (GeV/c)", 200, -1, 1, 100, 0, 1);
+    TH2D* hArmenteros = new TH2D("hArmenteros", "Armenteros Plot;alpha;pT (GeV/c)", 200, -1, 1, 100, 0, 0.3);
 
     Long64_t nEntries = tree->GetEntries();
     for (Long64_t i = 0; i < nEntries; ++i) {
@@ -62,28 +62,31 @@ int main(int argc, char** argv) {
                     double beamLine[] = {0,0,0,0};
                     StUPCV0 v0(track1, track2, pionMass, pionMass, 1, 1, tryVec, beamLine, event->getMagneticField(), true);
 
+
                     if (v0.m() > lowerLimitOfInvMassK0 && v0.m() < upperLimitOfInvMassK0) {
-                        TVector3 v0Momentum = v0.lorentzVector().Vect().Unit();
-                        TVector3 p1Vec;
+                        TVector3 p1Vec, p2Vec;
                         track1->getMomentum(p1Vec);
-                        TVector3 p2Vec;
                         track2->getMomentum(p2Vec);
 
-                        // Obrót wektorów pędu córek
+                        TVector3 v0Momentum = TVector3(v0.px(), v0.py(), v0.pz()).Unit();
                         TVector3 zAxis(0, 0, 1);
-                        TVector3 axisOfRotation = zAxis.Cross(v0Momentum).Unit();
-                        double angle = acos(zAxis.Dot(v0Momentum));
-                        TRotation rot;
-                        rot.Rotate(angle, axisOfRotation);
-                        TVector3 rotatedP1 = rot * p1Vec;
-                        TVector3 rotatedP2 = rot * p2Vec;
+                        TVector3 rotationAxis = zAxis.Cross(v0Momentum).Unit();
+                        double rotationAngle = acos(zAxis.Dot(v0Momentum));
+                        TRotation rotation;
+                        rotation.Rotate(-rotationAngle, rotationAxis);
 
-                        // Składowe równoległe do pędu V0 po obrocie
-                        float pL1 = rotatedP1.Z();
-                        float pL2 = rotatedP2.Z();
+                        TVector3 p1MomentumRotated = rotation * p1Vec;
+                        TVector3 p2MomentumRotated = rotation * p2Vec;
+
+                        float pL1 = p1MomentumRotated.Z();
+                        float pL2 = p2MomentumRotated.Z();
+
+                        // Calculate transverse momentum components in the rotated system
+                        float pT1 = p1MomentumRotated.Perp();
+                        float pT2 = p2MomentumRotated.Perp();
 
                         float alpha = (pL1 - pL2) / (pL1 + pL2);
-                        float pT = v0.lorentzVector().Perp();
+                        float pT = (pT1 + pT2) / 2; // Average transverse momentum
 
                         hArmenteros->Fill(alpha, pT);
                     }
