@@ -32,20 +32,6 @@ int main(int argc, char** argv) {
     StUPCEvent* event = nullptr;
     tree->SetBranchAddress("mUPCEvent", &event);
 
-    const float pionMass = 0.13957;                  // Mass of the pion in GeV/c^2
-    const float protonMass = 0.938;                  // Mass of the proton in GeV/c^2
-    const double centralOfInvMassK0 = 0.495;         // Central value of the invariant mass of K0
-    const double deltaOfInvMass = 0.035;             // Delta value of the invariant mass of K0
-
-    double lowerLimitOfInvMassK0 = centralOfInvMassK0 - deltaOfInvMass;
-    double upperLimitOfInvMassK0 = centralOfInvMassK0 + deltaOfInvMass;
-
-    TH1D* histDcaDaughters = new TH1D("DcaDaughters", ";DCA (cm);Counts", 100, 0, 5);
-    TH1D* histDcaBeamLine = new TH1D("DcaBeamLine", ";DCA (cm);Counts", 100, 0, 2.5);
-    TH1D* histPointingAngleHypo = new TH1D("PointingAngleHypo", ";Cos(#theta);Counts", 100, -1, 1);
-    TH1D* histInvariantMassK0 = new TH1D("InvariantMass", ";Mass (GeV/c^2);Counts", 100, lowerLimitOfInvMassK0, upperLimitOfInvMassK0);
-    TH1D* histDecayLengthHypo = new TH1D("DecayLengthHypo", ";Length (cm);Counts", 100, 0, 20);
-
     Long64_t nEntries = tree->GetEntries();
     for (Long64_t i = 0; i < nEntries; ++i) {
         tree->GetEntry(i);

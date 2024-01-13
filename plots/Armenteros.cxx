@@ -3,7 +3,6 @@
 #include <TTree.h>
 #include <TH2D.h>
 #include <TMath.h>
-#include <TVector3.h>
 #include "StUPCEvent.h"
 #include "StUPCTrack.h"
 #include "StUPCV0.h"
@@ -24,7 +23,7 @@ int main(int argc, char** argv) {
 
     TTree* tree = static_cast<TTree*>(inputFile.Get("mUPCTree"));
     if (!tree) {
-        cerr << "Failed to retrieve mUPCTree." << endl;
+        cerr << "Failed to retrieve mUPCTree from the input file." << endl;
         inputFile.Close();
         return 1;
     }
@@ -32,19 +31,16 @@ int main(int argc, char** argv) {
     StUPCEvent* event = nullptr;
     tree->SetBranchAddress("mUPCEvent", &event);
 
-    TH2D* hArmenteros = new TH2D("hArmenteros", "Armenteros Plot;alpha;pT (GeV/c)", 200, -1, 1, 200, 0, 1);
 
-    const float pionMass = 0.13957; // Mass of the pion in GeV/c^2
-    const float protonMass = 0.938; // Mass of the proton in GeV/c^2
-    const double centralOfInvMassLambda = 1.115; // Central value of Lambda invariant mass
-    const double deltaOfInvMass = 0.035; // Delta of invariant mass for Lambda
-    const double centralOfInvMassK0 = 0.495; // Central value of K0 invariant mass
-    const double deltaOfInvMassK0 = 0.035; // Delta of invariant mass for K0
+    const float pionMass = 0.13957;
+    const float protonMass = 0.938;
 
-    double lowerLimitOfInvMassLambda = centralOfInvMassLambda - deltaOfInvMass;
-    double upperLimitOfInvMassLambda = centralOfInvMassLambda + deltaOfInvMass;
-    double lowerLimitOfInvMassK0 = centralOfInvMassK0 - deltaOfInvMassK0;
-    double upperLimitOfInvMassK0 = centralOfInvMassK0 + deltaOfInvMassK0;
+    double lowerLimitOfInvMassLambda = 1.08;
+    double upperLimitOfInvMassLambda = 1.15;
+    double lowerLimitOfInvMassK0 = 0.46;
+    double upperLimitOfInvMassK0 = 0.53;
+
+    TH2D* hArmenteros = new TH2D("hArmenteros", "Armenteros Plot;alpha;pT (GeV/c)", 200, -1, 1, 100, 0, 1);
 
     Long64_t nEntries = tree->GetEntries();
     for (Long64_t i = 0; i < nEntries; ++i) {
@@ -55,91 +51,51 @@ int main(int argc, char** argv) {
             for (int k = j + 1; k < event->getNumberOfTracks(); ++k) {
                 StUPCTrack* track2 = event->getTrack(k);
 
-                // TVector3 const tryVec(0,0,0);
-                // double beamLine[] = {0,0,0,0};
+                if ((track1->getCharge() > 0 && track2->getCharge() < 0) &&
+                    track1->getNhits() > 15 && track2->getNhits() > 15 &&
+                    track1->getPt() > 0.15 && track2->getPt() > 0.15 &&
+                    abs(track1->getEta()) < 1.1 && abs(track2->getEta()) < 1.1 &&
+                    (track1->getFlag(StUPCTrack::kTof) || track2->getFlag(StUPCTrack::kTof))) {
 
-                // Uproszczona selekcja
-                if ((track1->getCharge() > 0 && track2->getCharge() < 0) &&  // track1 is proton and track2 is negative pion
-                track1->getNhits() > 15 && track2->getNhits() > 15 &&
-                track1->getPt() > 0.15 && track2->getPt() > 0.15 &&
-                abs(track1->getEta()) < 1.1 && abs(track2->getEta()) < 1.1 &&
-                (track1->getFlag(StUPCTrack::kTof) || track2->getFlag(StUPCTrack::kTof))) {
-
+                    // Tworzenie obiektu StUPCV0
                     TVector3 const tryVec(0,0,0);
                     double beamLine[] = {0,0,0,0};
-                    
-                    StUPCV0 v0(track1, track2, protonMass, pionMass, 1, 1, tryVec, beamLine, event->getMagneticField(), true);
+                    StUPCV0 v0(track1, track2, pionMass, pionMass, 1, 1, tryVec, beamLine, event->getMagneticField(), true);
 
-                    TVector3 p1, p2;
-                    track1->getMomentum(p1);
-                    track2->getMomentum(p2);
+                    if (v0.m() > lowerLimitOfInvMassK0 && v0.m() < upperLimitOfInvMassK0) {
+                        TVector3 v0Momentum = v0.lorentzVector().Vect().Unit();
+                        TVector3 p1Vec;
+                        track1->getMomentum(p1Vec);
+                        TVector3 p2Vec;
+                        track2->getMomentum(p2Vec);
 
-                    double energy1 = sqrt(p1.Mag2() + protonMass * protonMass);
-                    double energy2 = sqrt(p2.Mag2() + pionMass * pionMass);
-                    TLorentzVector p1Lorentz(p1, energy1);
-                    TLorentzVector p2Lorentz(p2, energy2);
+                        // Obrót wektorów pędu córek
+                        TVector3 zAxis(0, 0, 1);
+                        TVector3 axisOfRotation = zAxis.Cross(v0Momentum).Unit();
+                        double angle = acos(zAxis.Dot(v0Momentum));
+                        TRotation rot;
+                        rot.Rotate(angle, axisOfRotation);
+                        TVector3 rotatedP1 = rot * p1Vec;
+                        TVector3 rotatedP2 = rot * p2Vec;
 
-                    TLorentzVector pSum = p1Lorentz + p2Lorentz;
-                    TVector3 beta = -pSum.BoostVector();
-                    p1Lorentz.Boost(beta);
-                    p2Lorentz.Boost(beta);
+                        // Składowe równoległe do pędu V0 po obrocie
+                        float pL1 = rotatedP1.Z();
+                        float pL2 = rotatedP2.Z();
 
-                    float alpha = (p1Lorentz.Pz() - p2Lorentz.Pz()) / (p1Lorentz.Pz() + p2Lorentz.Pz());
-                    float pT = v0.pt();
+                        float alpha = (pL1 - pL2) / (pL1 + pL2);
+                        float pT = v0.lorentzVector().Perp();
 
-                    hArmenteros->Fill(alpha, pT); // Wpisz dane do histogramu
+                        hArmenteros->Fill(alpha, pT);
+                    }
                 }
-
-                // // Selekcja dla LambdaBar
-                // if ((track1->getCharge() < 0 && track2->getCharge() > 0) && /* pozostałe warunki */) {
-                //     StUPCV0 v0(track1, track2, protonMass, pionMass, /* pozostałe parametry */);
-                //     if (v0.m() > lowerLimitOfInvMassLambda && v0.m() < upperLimitOfInvMassLambda) {
-                //         TVector3 p1, p2;
-                //         track1->getMomentum(p1); // Antyproton
-                //         track2->getMomentum(p2); // Pion
-
-                //         // Przeliczanie na układ środka masy (CMS) - przykładowe, wymaga dostosowania
-                //         TVector3 pCMS = p1 + p2;
-                //         TVector3 beta = -pCMS.BoostVector();
-                //         TLorentzVector p1Lorentz(p1, track1->getEnergy(protonMass)); // Używamy masy protonu
-                //         TLorentzVector p2Lorentz(p2, track2->getEnergy(pionMass));
-                //         p1Lorentz.Boost(beta);
-                //         p2Lorentz.Boost(beta);
-
-                //         float alpha = (p2Lorentz.Pz() - p1Lorentz.Pz()) / (p2Lorentz.Pz() + p1Lorentz.Pz());
-                //         hArmenteros->Fill(alpha, v0.pt());
-                //     }
-                // }
-
-                // // Selekcja dla K0
-                // if (track1->getCharge() != track2->getCharge() && /* pozostałe warunki */) {
-                //     StUPCV0 v0(track1, track2, pionMass, pionMass, /* pozostałe parametry */);
-                //     if (v0.m() > lowerLimitOfInvMassK0 && v0.m() < upperLimitOfInvMassK0) {
-                //         TVector3 p1, p2;
-                //         track1->getMomentum(p1); // Pion
-                //         track2->getMomentum(p2); // Pion
-
-                //         // Przeliczanie na układ środka masy (CMS) - przykładowe, wymaga dostosowania
-                //         TVector3 pCMS = p1 + p2;
-                //         TVector3 beta = -pCMS.BoostVector();
-                //         TLorentzVector p1Lorentz(p1, track1->getEnergy(pionMass));
-                //         TLorentzVector p2Lorentz(p2, track2->getEnergy(pionMass));
-                //         p1Lorentz.Boost(beta);
-                //         p2Lorentz.Boost(beta);
-
-                //         float alpha = (p1Lorentz.Pz() - p2Lorentz.Pz()) / (p1Lorentz.Pz() + p2Lorentz.Pz());
-                //         hArmenteros->Fill(alpha, v0.pt());
-                //     }
-                // }
-
             }
         }
     }
 
+    
     TFile outputFile(argv[2], "RECREATE");
     hArmenteros->Write();
     outputFile.Close();
-
     inputFile.Close();
 
     return 0;
