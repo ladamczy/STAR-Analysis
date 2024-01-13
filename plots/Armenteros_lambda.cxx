@@ -60,15 +60,16 @@ int main(int argc, char** argv) {
                     // Tworzenie obiektu StUPCV0
                     TVector3 const tryVec(0,0,0);
                     double beamLine[] = {0,0,0,0};
-                    StUPCV0 v0(track1, track2, pionMass, pionMass, 1, 1, tryVec, beamLine, event->getMagneticField(), true);
+                    StUPCV0 v0(track1, track2, protonMass, pionMass, 1, 1, tryVec, beamLine, event->getMagneticField(), true);
 
 
-                    if (v0.m() > lowerLimitOfInvMassK0 && v0.m() < upperLimitOfInvMassK0) {
+                    if (v0.m() > lowerLimitOfInvMassLambda && v0.m() < upperLimitOfInvMassLambda) {
                         TVector3 p1Vec, p2Vec;
                         track1->getMomentum(p1Vec);
                         track2->getMomentum(p2Vec);
 
-                        TVector3 v0Momentum = TVector3(v0.px(), v0.py(), v0.pz()).Unit();
+                        TVector3 V0_ped = TVector3(v0.px(), v0.py(), v0.pz());
+                        TVector3 v0Momentum = V0_ped.Unit();
                         TVector3 zAxis(0, 0, 1);
                         TVector3 rotationAxis = zAxis.Cross(v0Momentum).Unit();
                         double rotationAngle = acos(zAxis.Dot(v0Momentum));
@@ -77,18 +78,27 @@ int main(int argc, char** argv) {
 
                         TVector3 p1MomentumRotated = rotation * p1Vec;
                         TVector3 p2MomentumRotated = rotation * p2Vec;
+                        // TVector3 ptMomentumRotated = rotation * V0_ped;
 
                         float pL1 = p1MomentumRotated.Z();
                         float pL2 = p2MomentumRotated.Z();
 
-                        // Calculate transverse momentum components in the rotated system
                         float pT1 = p1MomentumRotated.Perp();
                         float pT2 = p2MomentumRotated.Perp();
 
-                        float alpha = (pL1 - pL2) / (pL1 + pL2);
-                        float pT = (pT1 + pT2) / 2; // Average transverse momentum
+                        // Calculate cos(θ*) for each daughter particle in the V0 rest frame
+                        TVector3 p1VecRest = p1Vec - v0Momentum * (v0Momentum.Dot(p1Vec) / v0Momentum.Mag2());
+                        TVector3 p2VecRest = p2Vec - v0Momentum * (v0Momentum.Dot(p2Vec) / v0Momentum.Mag2());
 
-                        hArmenteros->Fill(alpha, pT);
+                        float cosThetaStar1 = cos(p1VecRest.Angle(v0Momentum));
+                        float cosThetaStar2 = cos(p2VecRest.Angle(v0Momentum));
+
+                        // Apply the cut on cos(θ*)
+                        if (cosThetaStar1 > -0.95 && cosThetaStar1 < 0.8 && cosThetaStar2 > -0.95 && cosThetaStar2 < 0.8) {
+                            float alpha = (pL1 - pL2) / (pL1 + pL2);
+                            float pT = (pT1 + pT2) / 2;
+                            hArmenteros->Fill(alpha, pT);
+                        }
                     }
                 }
             }
