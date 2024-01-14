@@ -2,7 +2,7 @@
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-rm -r build/ThetaStar_LambdaBar
+rm -r build/ThetaStar_K0 #LambdaBar
 cd build
 
-g++ -g $DIR/ThetaStar_Lambda.cxx -o ThetaStar_LambdaBar -Wl,--copy-dt-needed-entries `root-config --cflags` `root-config --libs` -I $DIR/../star-upc/include/ -I $DIR/include -L $DIR/../star-upc/build/ -lstar-upc
+g++ -g $DIR/ThetaStar_K0.cxx -o ThetaStar_K0 -Wl,--copy-dt-needed-entries `root-config --cflags` `root-config --libs` -I $DIR/../star-upc/include/ -I $DIR/include -L $DIR/../star-upc/build/ -lstar-upc

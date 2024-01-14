@@ -6,8 +6,28 @@
 #include "StUPCEvent.h"
 #include "StUPCTrack.h"
 #include "StUPCV0.h"
+#include <TLorentzVector.h>
+#include <TVector3.h>
 
 using namespace std;
+
+void RotateToV0RestFrame(TLorentzVector& p, const TLorentzVector& v0) {
+    // Określenie kierunku oś-Z w układzie V0
+    TVector3 zAxis = v0.Vect().Unit();
+
+    // Określenie kierunku oś-X w układzie V0
+    TVector3 xAxis = v0.Vect().Cross(TVector3(0, 0, 1)).Unit();
+
+    // Określenie kierunku oś-Y w układzie V0
+    TVector3 yAxis = zAxis.Cross(xAxis).Unit();
+
+    // Określenie kąta obrotu do płaszczyzny yz
+    double theta_yz = TMath::ATan2(xAxis.Y(), xAxis.X());
+
+    // Obrót do płaszczyzny yz
+    p.RotateUz(zAxis);
+    p.Rotate(theta_yz, TVector3(0, 1, 0));
+}
 
 int main(int argc, char** argv) {
     if (argc != 3) {
@@ -40,7 +60,7 @@ int main(int argc, char** argv) {
     double lowerLimitOfInvMassK0 = 0.46;
     double upperLimitOfInvMassK0 = 0.53;
 
-    TH1D* hThetaStar = new TH1D("#theta Angle in CMS", ";#theta*;Counts", 100, -TMath::Pi(), TMath::Pi());
+    TH1D* hThetaStar = new TH1D("#theta Angle in CMS", ";cos(#theta*);Counts", 100, -TMath::Pi(), TMath::Pi());
     
     Long64_t nEntries = tree->GetEntries();
     for (Long64_t i = 0; i < nEntries; ++i) {
@@ -57,67 +77,35 @@ int main(int argc, char** argv) {
                     abs(track1->getEta()) < 1.1 && abs(track2->getEta()) < 1.1 &&
                     (track1->getFlag(StUPCTrack::kTof) || track2->getFlag(StUPCTrack::kTof))) {
 
-                    // Tworzenie obiektu StUPCV0
                     TVector3 const tryVec(0,0,0);
                     double beamLine[] = {0,0,0,0};
                     StUPCV0 v0(track1, track2, pionMass, pionMass, 1, 1, tryVec, beamLine, event->getMagneticField(), true);
 
-                    // if (v0.m() > lowerLimitOfInvMassK0 && v0.m() < upperLimitOfInvMassK0) {
-                    //     TVector3 p1Vec, p2Vec;
-                    //     track1->getMomentum(p1Vec);
-                    //     track2->getMomentum(p2Vec);
-                    //     TVector3 v0Momentum = TVector3(v0.px(), v0.py(), v0.pz());
-
-                    //     // Calculate cos(θ*) for each daughter particle in the V0 rest frame
-                    //     TVector3 p1VecRest = p1Vec - v0Momentum * (v0Momentum.Dot(p1Vec) / v0Momentum.Mag2());
-                    //     TVector3 p2VecRest = p2Vec - v0Momentum * (v0Momentum.Dot(p2Vec) / v0Momentum.Mag2());
-
-                    //     float cosThetaStar1 = cos(p1VecRest.Angle(v0Momentum));
-                    //     float cosThetaStar2 = cos(p2VecRest.Angle(v0Momentum));
-
-                    //     if (cosThetaStar1 > -0.95 && cosThetaStar1 < 0.8 && cosThetaStar2 > -0.95 && cosThetaStar2 < 0.8) {
-                    //         // Calculate θ* angle for each daughter particle
-                    //         float thetaStar1 = acos(cosThetaStar1);
-                    //         float thetaStar2 = acos(cosThetaStar2);
-
-                    //         // Fill the histogram with θ* angles for both daughters
-                    //         hThetaStar->Fill(thetaStar1);
-                    //         hThetaStar->Fill(thetaStar2);
-                    //     }
-                    // }
-
-                    // podejscie z TLorentzVector
                     if (v0.m() > lowerLimitOfInvMassK0 && v0.m() < upperLimitOfInvMassK0) {
                         TLorentzVector p1, p2, v0;
-                        TVector3 p1Vec, p2Vec;
+                        TVector3 p1Vec, p2Vec, L;
 
-                        // Get momenta from tracks
                         track1->getMomentum(p1Vec);
                         track2->getMomentum(p2Vec);
 
-                        // Set TLorentzVector for each particle (assuming you have mass for each particle)
-                        p1.SetVectM(p1Vec, pionMass); // mass1 is the mass of the first particle
-                        p2.SetVectM(p2Vec, pionMass); // mass2 is the mass of the second particle
+                        p1.SetVectM(p1Vec, pionMass);
+                        p2.SetVectM(p2Vec, pionMass);
 
-                        // Calculate the V0 Lorentz vector
                         v0 = p1 + p2;
 
-                        // Boost to the V0 rest frame
                         TVector3 boostVector = -v0.BoostVector();
+                        // p1.RotateUz(boostVector);
+                        // p2.RotateUz(boostVector);
+                        TVector3 zAxis = v0.Vect().Unit();
+
+                        p1.RotateUz(zAxis);
+                        p2.RotateUz(zAxis);
                         p1.Boost(boostVector);
-                        p2.Boost(boostVector);
+                        p2.Boost(boostVector);;
 
-                        // Calculate cos(θ*) for each daughter particle in the V0 rest frame
-                        float cosThetaStar1 = cos(p1.Vect().Angle(v0.Vect()));
-                        float cosThetaStar2 = cos(p2.Vect().Angle(v0.Vect()));
+                        float cosThetaStar1 = p1.Vect().Z() / p1.Vect().Mag();
+                        hThetaStar->Fill(cosThetaStar1);
 
-                        // Calculate θ* angle for each daughter particle
-                        float thetaStar1 = acos(cosThetaStar1);
-                        float thetaStar2 = acos(cosThetaStar2);
-
-                        // Fill the histogram with θ* angles for both daughters
-                        hThetaStar->Fill(thetaStar1);
-                        hThetaStar->Fill(thetaStar2);
                     }
 
                 }
@@ -126,8 +114,8 @@ int main(int argc, char** argv) {
     }
 
     
-    // TFile outputFile(argv[2], "RECREATE");
-    TFile outputFile(argv[2], "UPDATE");
+    TFile outputFile(argv[2], "RECREATE");
+    // TFile outputFile(argv[2], "UPDATE");
     hThetaStar->Write();
     outputFile.Close();
     inputFile.Close();

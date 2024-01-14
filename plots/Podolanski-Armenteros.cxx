@@ -6,8 +6,11 @@
 #include "StUPCEvent.h"
 #include "StUPCTrack.h"
 #include "StUPCV0.h"
+#include <TROOT.h> 
+#include <TCanvas.h>
 
 using namespace std;
+
 
 int main(int argc, char** argv) {
     if (argc != 4) {
@@ -54,9 +57,14 @@ int main(int argc, char** argv) {
     double lowerLimitOfInvMassK0 = 0.46;
     double upperLimitOfInvMassK0 = 0.53;
 
-    TH2D* hArmenteros = new TH2D("hArmenteros", "Armenteros Plot;alpha;pT (GeV/c)", 200, -1, 1, 100, 0, 0.3);
+    TH2D* hArmenteros = new TH2D("hArmenteros", "Armenteros Plot;#alpha;pT (GeV/c)", 200, -1, 1, 100, 0, 0.3);
 
-    // petla po pliku danych K0s
+    // Setting log scale for the z-axis directly in the histogram object
+    // hArmenteros->SetOption("colz");  // Setting the color representation for 2D histogram
+    // hArmenteros->SetContour(100);    // Setting the number of contour levels for better visualization
+    // hArmenteros->SetLogz();           // Setting log scale for the z-axis
+    // hArmenteros->Draw("colz");
+
     Long64_t nEntries1 = tree1->GetEntries();
     for (Long64_t i = 0; i < nEntries1; ++i) {
         tree1->GetEntry(i);
@@ -132,7 +140,7 @@ int main(int argc, char** argv) {
                     double beamLine[] = {0,0,0,0};
                     StUPCV0 v0(track1, track2, protonMass, pionMass, 1, 1, tryVec, beamLine, event2->getMagneticField(), true);
 
-                    if (v0.m() > lowerLimitOfInvMassLambda && v0.m() < upperLimitOfInvMassLambda) {
+                    if (v0.m() > lowerLimitOfInvMassLambda && v0.m() < upperLimitOfInvMassLambda && v0.decayLengthHypo() > 3.0) {
                         TVector3 p1Vec, p2Vec;
                         track1->getMomentum(p1Vec);
                         track2->getMomentum(p2Vec);
@@ -174,7 +182,7 @@ int main(int argc, char** argv) {
                     StUPCV0 v0(track1, track2, protonMass, pionMass, 1, 1, tryVec, beamLine, event2->getMagneticField(), true);
 
 
-                    if (v0.m() > lowerLimitOfInvMassLambda && v0.m() < upperLimitOfInvMassLambda) {
+                    if (v0.m() > lowerLimitOfInvMassLambda && v0.m() < upperLimitOfInvMassLambda && v0.decayLengthHypo() > 3.0) {
                         TVector3 p1Vec, p2Vec;
                         track1->getMomentum(p1Vec);
                         track2->getMomentum(p2Vec);
@@ -206,7 +214,12 @@ int main(int argc, char** argv) {
         }
     }
 
-    
+    TCanvas* canvas = new TCanvas("canvas", "Armenteros Plot Canvas", 800, 600);
+    hArmenteros->Draw("colz");
+    canvas->SetLogz();
+    canvas->SaveAs("output_canvas.jpg");
+
+
     TFile outputFile(argv[3], "RECREATE");
     hArmenteros->Write();
     outputFile.Close();
