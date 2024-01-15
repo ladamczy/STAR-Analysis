@@ -59,7 +59,7 @@ int main(int argc, char** argv) {
                     track1->getNhits() > 15 && track2->getNhits() > 15 &&
                     track1->getPt() > 0.15 && track2->getPt() > 0.15 &&
                     abs(track1->getEta()) < 1.1 && abs(track2->getEta()) < 1.1 &&
-                    (track1->getFlag(StUPCTrack::kTof) || track2->getFlag(StUPCTrack::kTof))) {
+                    (track1->getFlag(StUPCTrack::kTof) && track2->getFlag(StUPCTrack::kTof))) {
                     
                     TVector3 const tryVec(0,0,0);
                     double beamLine[] = {0,0,0,0};
