@@ -42,7 +42,7 @@ int main(int argc, char** argv) {
     double lowerLimitOfInvMassK0 = 0.46;
     double upperLimitOfInvMassK0 = 0.53;
 
-    TH1D* hThetaStar = new TH1D("#theta Angle in CMS", ";cos(#theta*);Counts", 100, -1, 1);
+    TH1D* hThetaStar = new TH1D("hThetaStar", ";cos(#theta*);Counts", 100, -1, 1);
     
     Long64_t nEntries = tree->GetEntries();
     for (Long64_t i = 0; i < nEntries; ++i) {

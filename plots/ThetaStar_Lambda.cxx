@@ -51,7 +51,7 @@ int main(int argc, char** argv) {
             for (int k = j + 1; k < event->getNumberOfTracks(); ++k) {
                 StUPCTrack* track2 = event->getTrack(k);
 
-                if ((track1->getCharge() < 0 && track2->getCharge() > 0) &&
+                if ((track1->getCharge() > 0 && track2->getCharge() < 0) &&
                     track1->getNhits() > 15 && track2->getNhits() > 15 &&
                     track1->getPt() > 0.15 && track2->getPt() > 0.15 &&
                     abs(track1->getEta()) < 1.1 && abs(track2->getEta()) < 1.1 &&
