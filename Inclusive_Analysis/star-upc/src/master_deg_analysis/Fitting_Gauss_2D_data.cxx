@@ -42,11 +42,17 @@ int main(int argc, char *argv[]){
     TF2 *XiGauss = new TF2("XiGauss", "[0]*TMath::Gaus(x,[1],[2])*TMath::Gaus(y,[3],[4])", -0.01, 0.015, -0.01, 0.015);
     XiGauss->SetParameters(40, 0.005, 0.001, 0.005, 0.001);
     XiGauss->SetParNames("const", "x_0", "sigma_x", "y_0", "sigma_y");
+    XiGauss->SetParLimits(2, 0, 100);
+    XiGauss->SetParLimits(4, 0, 100);
     XiHist->Fit(XiGauss, "0");
 
     TF2 *pGauss = new TF2("pGauss", "[0]*TMath::Gaus(x,[1],[2])*TMath::Gaus(y,[3],[4]) + [5]*TMath::Gaus(x,[6],[7])*TMath::Gaus(y,[8],[9])", -0.6, 1., -0.5, 0.5);
     pGauss->SetParameters(40, -0.04, 0.04, 0.0, 0.04, 5, -0.04, 0.2, 0.0, 0.2);
     pGauss->SetParNames("const_n", "x_0_n", "sigma_x_n", "y_0_n", "sigma_y_n", "const_w", "x_0_w", "sigma_x_w", "y_0_w", "sigma_y_w");
+    pGauss->SetParLimits(2, 0, 100);
+    pGauss->SetParLimits(4, 0, 100);
+    pGauss->SetParLimits(7, 0, 100);
+    pGauss->SetParLimits(9, 0, 100);
     pHist->Fit(pGauss, "0");
 
     TEllipse *XiEllipse = new TEllipse(XiGauss->GetParameter(1), XiGauss->GetParameter(3), 3*XiGauss->GetParameter(2), 3*XiGauss->GetParameter(4));

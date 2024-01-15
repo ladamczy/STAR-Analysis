@@ -357,10 +357,10 @@ bool IsInXiElasticSpot(StUPCRpsTrack *east, StUPCRpsTrack *west){
     // double y_0 = 1.72097e-03;
     // double sigma_y = 2.26638e-03;
     //after Afterburner
-    double x_0 = 4.55173e-03;
-    double sigma_x = 1.77034e-03;
-    double y_0 = 4.19417e-03;
-    double sigma_y = 2.10993e-03;
+    double x_0 = -4.48170e-04;
+    double sigma_x = 1.79095e-03;
+    double y_0 = -8.04898e-04;
+    double sigma_y = 2.12035e-03;
     return pow((east->xi(beamMomentum)-x_0)/sigma_x, 2)+pow((west->xi(beamMomentum)-y_0)/sigma_y, 2)<3*3;
 }
 
@@ -371,10 +371,10 @@ bool IsInMomElasticSpot(StUPCRpsTrack *east, StUPCRpsTrack *west){
     // double y_0 = 1.98348e-03;
     // double sigma_y = 3.40440e-02;
     //after Afterburner
-    double x_0 = -4.30765e-02;
-    double sigma_x = 3.39596e-02;
-    double y_0 = 6.26489e-04;
-    double sigma_y = 3.15149e-02;
+    double x_0 = 5.06472e-03;
+    double sigma_x = 3.42004e-02;
+    double y_0 = 5.98219e-04;
+    double sigma_y = 3.15726e-02;
     double x = east->pVec().X()+west->pVec().X();
     double y = east->pVec().Y()+west->pVec().Y();
     return pow((x-x_0)/sigma_x, 2)+pow((y-y_0)/sigma_y, 2)<3*3;

@@ -37,16 +37,22 @@ int main(int argc, char *argv[]){
     TF2 *XiGauss = new TF2("XiGauss", "[0]*TMath::Gaus(x,[1],[2])*TMath::Gaus(y,[3],[4])", -0.01, 0.015, -0.01, 0.015);
     XiGauss->SetParameters(40, 0.005, 0.001, 0.005, 0.001);
     XiGauss->SetParNames("const", "x_{0}", "#sigma_{x}", "y_{0}", "#sigma_{y}");
+    XiGauss->SetParLimits(2, 0, 100);
+    XiGauss->SetParLimits(4, 0, 100);
     XiHist->Fit(XiGauss, "0R");
 
     TF2 *pGauss = new TF2("pGauss", "[0]*TMath::Gaus(x,[1],[2])*TMath::Gaus(y,[3],[4])", -0.2, 0.2, -0.2, 0.2);
     pGauss->SetParameters(40, -0.04, 0.04, 0.0, 0.04);
     pGauss->SetParNames("const", "x_{0}", "#sigma_{x}", "y_{0}", "#sigma_{y}");
+    pGauss->SetParLimits(2, 0, 100);
+    pGauss->SetParLimits(4, 0, 100);
     pHist->Fit(pGauss, "0R");
 
     TF2 *thetaGauss = new TF2("thetaGauss", "[0]*TMath::Gaus(x,[1],[2])*TMath::Gaus(y,[3],[4])", -0.0006, 0.0006, -0.0006, 0.0006);
     thetaGauss->SetParameters(40, -0.0, 0.0002, 0.0, 0.0002);
     thetaGauss->SetParNames("const", "x_{0}", "#sigma_{x}", "y_{0}", "#sigma_{y}");
+    thetaGauss->SetParLimits(2, 0, 100);
+    thetaGauss->SetParLimits(4, 0, 100);
     thetaHist->Fit(thetaGauss, "0");
 
     TEllipse *XiEllipse = new TEllipse(XiGauss->GetParameter(1), XiGauss->GetParameter(3), 3*XiGauss->GetParameter(2), 3*XiGauss->GetParameter(4));
