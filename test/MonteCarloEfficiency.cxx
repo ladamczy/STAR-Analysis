@@ -213,6 +213,7 @@ int main(int argc, char** argv)
         std::cout << "V0 " << V0.dcaDaughters() 
                   << " " << V0.DCABeamLine() 
   << " " <<sqrt( V0.prodVertexHypo().X()*V0.prodVertexHypo().X()+V0.prodVertexHypo().Y()*V0.prodVertexHypo().Y()) 
+  << " theta* " << V0.cosThetaStar() 
         <<  std::endl;
 //        continue;
         TParticle V0Part;

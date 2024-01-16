@@ -47,7 +47,7 @@ set (LINKDEF "${LIB}LinkDef.h")
 set (CMAKE_CXX_COMPILER /usr/bin/g++)
 #option -Wl,--no-as-needed is necessary only with root5
 #set (CMAKE_CXX_FLAGS "-Wall -g -Wl,--no-as-needed")
-set(CMAKE_CXX_FLAGS "-Wall -g")
+set(CMAKE_CXX_FLAGS "-Wall -g -std=c++11")
 include_directories (include)
 
 #ROOT section

@@ -102,9 +102,13 @@ StUPCV0::StUPCV0(StUPCTrack const * const particle1, StUPCTrack const * const pa
 
   // -- calculate cosThetaStar
   TLorentzVector const pairFourMomReverse(-mLorentzVector.Px(), -mLorentzVector.Py(), -mLorentzVector.Pz(), mLorentzVector.E());
-  TLorentzVector p1FourMomStar = p1FourMom;
-  p1FourMomStar.Boost(pairFourMomReverse.BoostVector());  
-  mCosThetaStar = std::cos(p1FourMomStar.Vect().Angle(mLorentzVector.Vect()));
+  TLorentzVector FourMomStar;
+  if ( particle1->getCharge() ) {
+    FourMomStar = p1FourMom; }
+  else { 
+    FourMomStar = p2FourMom; }
+  FourMomStar.Boost(pairFourMomReverse.BoostVector());  
+  mCosThetaStar = std::cos(FourMomStar.Vect().Angle(mLorentzVector.Vect()));
 
 //  TVector3 beamVector(0.,0.,1.); //unity vector along the beam axis
   TVector3 beamVector(beamLine[2],beamLine[3],1.); //unity vector along the beam axis with beamLine3D
@@ -112,7 +116,7 @@ StUPCV0::StUPCV0(StUPCTrack const * const particle1, StUPCTrack const * const pa
   TVector3 mProdPlane_work = beamVector.Cross(mLorentzVector.Vect());
   mProdPlane = ( mProdPlane_work )*(1./mProdPlane_work.Mag() ); //unity normal vector to production plane
 
-  mThetaProdPlane = mProdPlane.Angle(p1FourMomStar.Vect());
+  mThetaProdPlane = mProdPlane.Angle(FourMomStar.Vect());
   
   // -- calculate decay vertex (secondary or tertiary) 
   mDecayVertex = (p1AtDcaToP2 + p2AtDcaToP1) * 0.5 ;
