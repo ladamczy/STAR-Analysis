@@ -56,7 +56,7 @@ int main(int argc, char** argv) {
     double lowerLimitOfInvMassK0 = 0.46;
     double upperLimitOfInvMassK0 = 0.53;
 
-    TH2D* hArmenteros = new TH2D("hArmenteros", "Armenteros Plot;#alpha;pT (GeV/c)", 200, -1, 1, 100, 0, 0.3);
+    TH2D* hArmenteros = new TH2D("hArmenteros", ";#alpha;pT (GeV/c)", 200, -1, 1, 100, 0, 0.3);
 
     Long64_t nEntries1 = tree1->GetEntries();
     for (Long64_t i = 0; i < nEntries1; ++i) {
@@ -139,10 +139,11 @@ int main(int argc, char** argv) {
         }
     }
 
-    TCanvas* canvas = new TCanvas("canvas", "Armenteros Plot Canvas", 800, 600);
+    TCanvas* canvas = new TCanvas("canvas", "Armenteros Plot Canvas", 2560, 1440);
+    hArmenteros->SetStats(0);
     hArmenteros->Draw("colz");
     canvas->SetLogz();
-    canvas->SaveAs("ARMENTEROS.jpg");
+    canvas->SaveAs("ARMENTEROS_BEZ.jpg");
 
 
     TFile outputFile(argv[3], "RECREATE");
