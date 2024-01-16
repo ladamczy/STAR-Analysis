@@ -103,7 +103,7 @@ StUPCV0::StUPCV0(StUPCTrack const * const particle1, StUPCTrack const * const pa
   // -- calculate cosThetaStar
   TLorentzVector const pairFourMomReverse(-mLorentzVector.Px(), -mLorentzVector.Py(), -mLorentzVector.Pz(), mLorentzVector.E());
   TLorentzVector FourMomStar;
-  if ( particle1->getCharge() ) {
+  if ( particle1->getCharge() == 1 ) {
     FourMomStar = p1FourMom; }
   else { 
     FourMomStar = p2FourMom; }
