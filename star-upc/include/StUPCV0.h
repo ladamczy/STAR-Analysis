@@ -71,6 +71,8 @@ class StUPCV0 : public TObject
   float py() const;
   float pz() const;
   float DcaToPrimaryVertex() const;
+  float alphaAP() const;
+  float ptAP() const;
 
  private:
   StUPCV0(StUPCV0 const &);
@@ -96,7 +98,8 @@ class StUPCV0 : public TObject
   float mDcaDaughters;
   float mCosThetaStar;
   float mThetaProdPlane; //anlgle between momentum of particle1 and mProdPlane vector in mother rest frame
-
+  float mAlphaAP;
+  float mPtAP;
   ClassDef(StUPCV0,2)
 };
 
@@ -127,5 +130,7 @@ inline float StUPCV0::v0x() const { return mDecayVertex.x();}
 inline float StUPCV0::v0y() const { return mDecayVertex.y();}
 inline float StUPCV0::v0z() const { return mDecayVertex.z();}
 inline float StUPCV0::DcaToPrimaryVertex() const { return mDcaToPrimaryVertex; }
+inline float StUPCV0::alphaAP() const { return mAlphaAP; }
+inline float StUPCV0::ptAP() const { return mPtAP; }
 #endif
 
