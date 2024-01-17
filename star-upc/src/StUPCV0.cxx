@@ -102,54 +102,13 @@ StUPCV0::StUPCV0(StUPCTrack const * const particle1, StUPCTrack const * const pa
 
   // -- calculate cosThetaStar
   TLorentzVector const pairFourMomReverse(-mLorentzVector.Px(), -mLorentzVector.Py(), -mLorentzVector.Pz(), mLorentzVector.E());
-  
   TLorentzVector FourMomStar;
-  // -- only for a positive daughter
   if (particle1->getCharge() > 0)
-    FourMomStar  = p1FourMom;
+    FourMomStar = p1FourMom;
   else
-    FourMomStar  = p2FourMom;
-
-  base
-  FourMomStar.Boost(pairFourMomReverse.BoostVector());
+    FourMomStar = p2FourMom;
+  FourMomStar.Boost(pairFourMomReverse.BoostVector());  
   mCosThetaStar = std::cos(FourMomStar.Vect().Angle(mLorentzVector.Vect()));
-
-
-  // FourMomStar.Boost(-mLorentzVector.BoostVector()); // K0 boost
-  // mCosThetaStar = FourMomStar.Vect().Dot(mLorentzVector.Vect()) / (FourMomStar.Vect().Mag() * mLorentzVector.Vect().Mag());
-
-        // // -- calculate cosThetaStar
-        // TLorentzVector const pairFourMomReverse(-mLorentzVector.Px(), -mLorentzVector.Py(), -mLorentzVector.Pz(), mLorentzVector.E());
-        // TLorentzVector FourMomStar;
-        // if ( particle1->getCharge() ) {
-        //   FourMomStar = p1FourMom; }
-        // else { 
-        //   FourMomStar = p2FourMom; }
-        // FourMomStar.Boost(pairFourMomReverse.BoostVector());  
-        // mCosThetaStar = std::cos(FourMomStar.Vect().Angle(mLorentzVector.Vect()));
-
-  // FourMomStar.Boost(mLorentzVector.BoostVector());
-  // mCosThetaStar = std::cos(FourMomStar.Vect().Angle(pairFourMomReverse.Vect()));
-
-  // // above not working correctly , fix that
-  // FourMomStar.Boost(-mLorentzVector.BoostVector());
-  // // TLorentzVector temp = mLorentzVector;
-  // // temp.Boost(-pairFourMomReverse.BoostVector());
-  // mCosThetaStar = FourMomStar.Vect().Dot(mLorentzVector.Vect()) / (FourMomStar.Vect().Mag() * mLorentzVector.Vect().Mag());
-
-  // attempt to fix 1
-  // FourMomStar.Boost(-mLorentzVector.BoostVector()); // K0 boost
-  // mCosThetaStar = FourMomStar.Vect().Z() / FourMomStar.Vect().Mag(); 
-
-  // attempt to fix 2
-  // FourMomStar.Boost(-mLorentzVector.BoostVector()); // K0 boost
-  // mCosThetaStar = FourMomStar.Vect().Dot(mLorentzVector.Vect()) / (FourMomStar.Vect().Mag() * mLorentzVector.Vect().Mag());
-
-  // attempt to fix 3
-  // FourMomStar.Boost(-mLorentzVector.BoostVector()); // K0 boost
-  // mCosThetaStar = FourMomStar.Vect().Dot(mLorentzVector.Vect()) / (FourMomStar.Vect().Mag() * mLorentzVector.Vect().Mag());
-
-  // attempt to fix 4
   // FourMomStar.Boost(pairFourMomReverse.BoostVector());
   // mCosThetaStar = FourMomStar.Vect().Z() / FourMomStar.Vect().Mag();
 
