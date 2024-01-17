@@ -40,10 +40,6 @@ int main(int argc, char** argv) {
     double lowerLimitOfInvMassLambda = centralOfInvMassLambda - deltaOfInvMass;
     double upperLimitOfInvMassLambda = centralOfInvMassLambda + deltaOfInvMass;
 
-    TH1D* histDcaDaughters = new TH1D("DcaDaughters", ";DCA (cm);Events", 100, 0, 5);
-    TH1D* histDcaBeamLine = new TH1D("DcaBeamLine", ";DCA (cm);Events", 100, 0, 2.5);
-    TH1D* histPointingAngleHypo = new TH1D("PointingAngleHypo", ";Cos(#theta);Events", 100, -1, 1);
-    TH1D* histInvariantMassLambda = new TH1D("InvariantMassLambda", ";Mass (GeV/c^{2});Events", 100, 1.08, 1.15);
     TH1D* histDecayLengthHypo = new TH1D("DecayLengthHypo", ";Length (cm);Events", 100, 0, 9);
 
     Long64_t nEntries = tree->GetEntries();
@@ -66,32 +62,14 @@ int main(int argc, char** argv) {
                     double beamLine[] = {0,0,0,0};
                     StUPCV0 v0(track1, track2, protonMass, pionMass, 1, 1, tryVec, beamLine, event->getMagneticField(), true);
 
-                    double invMass = v0.m();
-
-                    if (v0.DCABeamLine() < 1.5) {
-                        if (v0.pointingAngleHypo() > 0.925) {
-                            if (invMass > lowerLimitOfInvMassLambda && invMass < upperLimitOfInvMassLambda) {
-                                histDcaDaughters->Fill(v0.dcaDaughters());
-                            }
-                        }
-                    }
-
                     if (v0.dcaDaughters() < 1.5) {
                         if (v0.DCABeamLine() < 1.5) {
-                            if (v0.pointingAngleHypo() > 0.925) {
-                                if (invMass > lowerLimitOfInvMassLambda && invMass < upperLimitOfInvMassLambda) {
+                            if (v0.pointingAngleHypo() < 0.925) {
+                                if (v0.m() > lowerLimitOfInvMassLambda && v0.m() < upperLimitOfInvMassLambda) {
                                     histDecayLengthHypo->Fill(v0.decayLengthHypo());
                                 }
-                                histInvariantMassLambda->Fill(invMass);
                             }
-                            if (invMass > lowerLimitOfInvMassLambda && invMass < upperLimitOfInvMassLambda) {
-                                histPointingAngleHypo->Fill(v0.pointingAngleHypo());
-                            }
-                        }
-                        if (v0.pointingAngleHypo() > 0.925) {
-                            if (invMass > lowerLimitOfInvMassLambda && invMass < upperLimitOfInvMassLambda) {
-                                histDcaBeamLine->Fill(v0.DCABeamLine());
-                            }
+
                         }
                     }
 
@@ -100,11 +78,9 @@ int main(int argc, char** argv) {
         }
     }
 
+    histDecayLengthHypo->SetStats(0);
+
     TFile outputFile(argv[2], "RECREATE");
-    histDcaDaughters->Write();
-    histDcaBeamLine->Write();
-    histPointingAngleHypo->Write();
-    histInvariantMassLambda->Write();
     histDecayLengthHypo->Write();
 
     outputFile.Close();

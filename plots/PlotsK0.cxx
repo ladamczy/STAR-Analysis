@@ -100,7 +100,13 @@ int main(int argc, char** argv) {
             }
         }
     }
-
+    
+    histDcaDaughters->SetStats(0);
+    histDcaBeamLine->SetStats(0);
+    histPointingAngleHypo->SetStats(0);
+    histInvariantMassK0->SetStats(0);
+    histDecayLengthHypo->SetStats(0);
+    
     TFile outputFile(argv[2], "RECREATE");
     histDcaDaughters->Write();
     histDcaBeamLine->Write();
