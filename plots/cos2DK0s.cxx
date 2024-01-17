@@ -58,18 +58,17 @@ int main(int argc, char** argv) {
                     track1->getNhits() > 15 && track2->getNhits() > 15 &&
                     track1->getPt() > 0.15 && track2->getPt() > 0.15 &&
                     abs(track1->getEta()) < 1.1 && abs(track2->getEta()) < 1.1 &&
-                    (track1->getFlag(StUPCTrack::kTof) && track2->getFlag(StUPCTrack::kTof))) {
+                    (track1->getFlag(StUPCTrack::kTof) && track2->getFlag(StUPCTrack::kTof)) &&
+                    abs(track1->getNSigmasTPCPion()) < 2.5 && abs(track2->getNSigmasTPCPion()) < 2.5){
                     
                     TVector3 const tryVec(0,0,0);
                     double beamLine[] = {0,0,0,0};
                     StUPCV0 v0(track1, track2, pionMass, pionMass, 1, 1, tryVec, beamLine, event->getMagneticField(), true);
                    
-                    double invMass = v0.m();
-
                     if (v0.m() > lowerLimitOfInvMassK0 && v0.m() < upperLimitOfInvMassK0) {
                         float cospointingAngleHypo = v0.pointingAngleHypo();
                         float decayLengthHypo = v0.decayLengthHypo();
-                        cosPointingAngle_DecayLength->Fill(decayLengthHypo, cospointingAngleHypo);
+                        cosPointingAngle_DecayLength->Fill(cospointingAngleHypo, decayLengthHypo);
                     }
                 }
             }

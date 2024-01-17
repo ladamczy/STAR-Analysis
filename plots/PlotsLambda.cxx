@@ -40,11 +40,11 @@ int main(int argc, char** argv) {
     double lowerLimitOfInvMassLambda = centralOfInvMassLambda - deltaOfInvMass;
     double upperLimitOfInvMassLambda = centralOfInvMassLambda + deltaOfInvMass;
 
-    TH1D* histDcaDaughters = new TH1D("DcaDaughters", ";DCA (cm);Counts", 100, 0, 5);
-    TH1D* histDcaBeamLine = new TH1D("DcaBeamLine", ";DCA (cm);Counts", 100, 0, 2.5);
-    TH1D* histPointingAngleHypo = new TH1D("PointingAngleHypo", ";Cos(#theta);Counts", 100, -1, 1);
-    TH1D* histInvariantMassLambda = new TH1D("InvariantMass", ";Mass (GeV/c^2);Counts", 100, 1.08, 1.15);
-    TH1D* histDecayLengthHypo = new TH1D("DecayLengthHypo", ";Length (cm);Counts", 100, 0, 20);
+    TH1D* histDcaDaughters = new TH1D("DcaDaughters", ";DCA (cm);Events", 100, 0, 5);
+    TH1D* histDcaBeamLine = new TH1D("DcaBeamLine", ";DCA (cm);Events", 100, 0, 2.5);
+    TH1D* histPointingAngleHypo = new TH1D("PointingAngleHypo", ";Cos(#theta);Events", 100, -1, 1);
+    TH1D* histInvariantMassLambda = new TH1D("InvariantMassLambda", ";Mass (GeV/c^{2});Events", 100, 1.08, 1.15);
+    TH1D* histDecayLengthHypo = new TH1D("DecayLengthHypo", ";Length (cm);Events", 100, 0, 9);
 
     Long64_t nEntries = tree->GetEntries();
     for (Long64_t i = 0; i < nEntries; ++i) {

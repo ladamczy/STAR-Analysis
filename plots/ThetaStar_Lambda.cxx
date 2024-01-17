@@ -40,7 +40,7 @@ int main(int argc, char** argv) {
     double lowerLimitOfInvMassK0 = 0.46;
     double upperLimitOfInvMassK0 = 0.53;
 
-    TH1D* hThetaStar = new TH1D("#theta Angle in CMS", ";cos(#theta*);Counts", 100, -1, 1);
+    TH1D* hThetaStar = new TH1D("ThetaStar", ";cos(#theta^{*});Events", 100, -1, 1);
     
     Long64_t nEntries = tree->GetEntries();
     for (Long64_t i = 0; i < nEntries; ++i) {
@@ -55,7 +55,8 @@ int main(int argc, char** argv) {
                     track1->getNhits() > 15 && track2->getNhits() > 15 &&
                     track1->getPt() > 0.15 && track2->getPt() > 0.15 &&
                     abs(track1->getEta()) < 1.1 && abs(track2->getEta()) < 1.1 &&
-                    (track1->getFlag(StUPCTrack::kTof) && track2->getFlag(StUPCTrack::kTof))) {
+                    (track1->getFlag(StUPCTrack::kTof) && track2->getFlag(StUPCTrack::kTof)) &&
+                    abs(track1->getNSigmasTPCProton()) < 2.5 && abs(track2->getNSigmasTPCPion()) < 2.5) {
 
                     TVector3 const tryVec(0,0,0);
                     double beamLine[] = {0,0,0,0};
