@@ -103,14 +103,12 @@ StUPCV0::StUPCV0(StUPCTrack const * const particle1, StUPCTrack const * const pa
   // -- calculate cosThetaStar
   TLorentzVector const pairFourMomReverse(-mLorentzVector.Px(), -mLorentzVector.Py(), -mLorentzVector.Pz(), mLorentzVector.E());
   TLorentzVector FourMomStar;
-  if (particle1->getCharge() > 0)
-    FourMomStar = p1FourMom;
-  else
-    FourMomStar = p2FourMom;
+  if ( particle1->getCharge() == 1 ) {
+    FourMomStar = p1FourMom; }
+  else { 
+    FourMomStar = p2FourMom; }
   FourMomStar.Boost(pairFourMomReverse.BoostVector());  
   mCosThetaStar = std::cos(FourMomStar.Vect().Angle(mLorentzVector.Vect()));
-  // FourMomStar.Boost(pairFourMomReverse.BoostVector());
-  // mCosThetaStar = FourMomStar.Vect().Z() / FourMomStar.Vect().Mag();
 
 //  TVector3 beamVector(0.,0.,1.); //unity vector along the beam axis
   TVector3 beamVector(beamLine[2],beamLine[3],1.); //unity vector along the beam axis with beamLine3D
@@ -145,42 +143,6 @@ StUPCV0::StUPCV0(StUPCTrack const * const particle1, StUPCTrack const * const pa
   //    -> only rough estimate -> needs to be updated after secondary vertex is found
   mParticle1Dca = (p1Helix.origin() - vtx).Mag();
   mParticle2Dca = (p2Helix.origin() - vtx).Mag();
-
-  // -- calculate alpha of Armenteros-Podolanski plot
-  TVector3 PositiveDaughterMomentum;
-  TVector3 NegativeDaughterMomentum;
-  if (particle1->getCharge() > 0){
-    particle1->getMomentum(PositiveDaughterMomentum);
-    particle2->getMomentum(NegativeDaughterMomentum);
-  }
-  else {
-    particle1->getMomentum(NegativeDaughterMomentum);
-    particle2->getMomentum(PositiveDaughterMomentum);
-  }
-
-  TVector3 V0Momentum = TVector3(mLorentzVector.Px(), mLorentzVector.Py(), mLorentzVector.Pz());
-  TVector3 V0Direction= V0Momentum.Unit();
-  TVector3 zAxis(0, 0, 1);
-  TVector3 rotationAxis = zAxis.Cross(V0Direction).Unit();
-  double rotationAngle = acos(zAxis.Dot(V0Direction));
-  TRotation rotation;
-  rotation.Rotate(-rotationAngle, rotationAxis);
-
-  TVector3 PDMRotated = rotation * PositiveDaughterMomentum;
-  TVector3 NDMRotated = rotation * NegativeDaughterMomentum;
-
-  float pL1 = PDMRotated.Z();
-  float pL2 = NDMRotated.Z();
-
-  mAlphaAP = (pL1 - pL2) / (pL1 + pL2); 
-
-  // -- calculate pt of Armenteros-Podolanski plot
-  if (particle1->getCharge() > 0){
-    mPtAP = PDMRotated.Perp();
-  }
-  else {
-    mPtAP = NDMRotated.Perp();
-  }
 }
 // _________________________________________________________
 float StUPCV0::pointingAngle(TVector3 const & vtx2) const{
