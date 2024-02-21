@@ -1,3 +1,0 @@
-/star/u/adamczyk/STAR-Analysis/star-upc-new/build/CMakeFiles/rebuild_cache.dir
-/star/u/adamczyk/STAR-Analysis/star-upc-new/build/CMakeFiles/edit_cache.dir
-/star/u/adamczyk/STAR-Analysis/star-upc-new/build/CMakeFiles/star-upc.dir
