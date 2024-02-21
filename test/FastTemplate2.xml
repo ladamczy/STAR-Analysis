@@ -12,6 +12,6 @@ ${scriptdir}/MonteCarloEfficiency ${filename} &file;
         </command>
         <stdout URL="file:/star/data05/scratch/adamczyk/test4/$JOBID.out" />
         <stderr URL="file:/star/data05/scratch/adamczyk/test4/$JOBID.err" />
-        <input URL="file:/gpfs01/star/pwg/adamczyk/picoUPC/dime_LLBar/&file;" />
-	<output fromScratch="&file;" toURL="file:/star/data05/scratch/adamczyk/test4/" />
+        <input URL="file:/gpfs01/star/pwg/adamczyk/picoUPC/test7_picodst/&file;" />
+	<output fromScratch="&file;" toURL="file:/star/data05/scratch/adamczyk/test10/" />
 </job>

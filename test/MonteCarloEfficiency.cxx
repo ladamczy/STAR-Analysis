@@ -10,30 +10,59 @@ int main(int argc, char** argv)
 
     ifstream inputFilePathList(argv[1]);
     if (!inputFilePathList) 
+
     {
         cerr << "Failed to open input file." << std::endl;
         return 1;
     }
 
     TChain *chain = new TChain("mUPCTree"); 
+    TChain *chainpico = new TChain("mUPCTree");
+
+    chainpico->AddFile("0.root");
+    chainpico->AddFile("1.root");
+    chainpico->AddFile("2.root");
+    chainpico->AddFile("3.root");
+    chainpico->AddFile("4.root");
+    chainpico->AddFile("5.root");
+    chainpico->AddFile("6.root");
+    chainpico->AddFile("7.root");
+    chainpico->AddFile("8.root");
+    chainpico->AddFile("9.root");
 
     string inputFileName;
     vector <string> rootFiles;
 
+    
 //    while (std::getline(inputFilePathList, inputFileName))
 //    {
 //        std::cout << inputFileName.c_str() << std::endl; 
         chain->AddFile(argv[1]);
+        TFile *picoFile = new TFile("0.root");
+        TTree *picoTree = (TTree*)picoFile->Get("mUPCTree");
+
 //    }
 //    inputFilePathList.close();
 
     static StUPCEvent *upcEvt = 0x0;
+    static StUPCEvent *picoEvt = 0x0;
+    static StUPCEvent *pico2Evt = 0x0;
 
     static StRPEvent  * origRpEvt = 0x0;
     static StRPEvent  * correctedRpEvent = 0x0;
 
+    Int_t picoRun, picoEvent, picoFill;
+
     chain->SetBranchAddress("mUPCEvent", &upcEvt);
-    chain->SetBranchAddress("mRPEvent",  &origRpEvt);
+    chainpico->SetBranchAddress("mUPCEvent", &picoEvt);
+    chainpico->BuildIndex("Run","Event");
+
+      picoTree->SetBranchAddress("Run", &picoRun);
+      picoTree->SetBranchAddress("Event", &picoEvent);
+      picoTree->SetBranchAddress("Fill", &picoFill);
+      picoTree->SetBranchAddress("mUPCEvent", &pico2Evt);
+      picoTree->BuildIndex("Run","Event");
+//    chain->SetBranchAddress("mRPEvent",  &origRpEvt);
 
     TH1D* HistKaonPtTruth = new TH1D("HistKaonPtTruth", "; pT_{K^{0}} [GeV]; # events", 25 ,0, 2.5);
     TH1D* HistKaonEtaTruth = new TH1D("HistKaonEtaTruth", "; #eta_{K^{0}}; # events", 25 ,-4.5, 4.5);
@@ -113,18 +142,42 @@ int main(int argc, char** argv)
 
     LoadOffsetFile("../share/OffSetsCorrectionsRun17.list", mCorrection);
 
-    for (Long64_t i = 0; i < chain->GetEntries(); ++i) 
-//    for (Long64_t i = 0; i < 1000; ++i)
+//    cout << picoTree->GetEntries() << endl;
+//    for (Long64_t i = 0; i < 10; ++i){
+//    picoTree->GetEntry(i);
+//    cout << pico2Evt->getRunNumber() << endl;
+//    }
+
+//    cout << chainpico->GetEntries() << endl;
+//    for (Long64_t i = 0; i < 10; ++i){
+//    chainpico->GetEntry(i);
+//    cout << picoRun << endl;    
+//
+//    }
+
+
+//    for (Long64_t i = 0; i < chain->GetEntries(); ++i) 
+    for (Long64_t i = 0; i < 100; ++i)
     {
        TLorentzVector lorentzVectorX;
        chain->GetEntry(i);
 
 
-       correctedRpEvent = new StRPEvent(*origRpEvt);
-       correctedRpEvent->clearEvent();
-       runAfterburner(origRpEvt, correctedRpEvent,upcEvt->getRunNumber());
+cout << "Pico " << picoTree->GetEntryWithIndex(upcEvt->getRunNumber(),upcEvt->getEventNumber()) << endl;
+//        cout << "Pico " << chainpico->GetEntryWithIndex(upcEvt->getRunNumber(),upcEvt->getEventNumber()) << endl;
+//       if( chainpico->GetEntryWithIndex(upcEvt->getRunNumber(),upcEvt->getEventNumber()) > 0 ) {
+//        cout << "Run " << picoEvt->getRunNumber() << " " <<  upcEvt->getRunNumber() << endl;
+//        cout << "Event " << picoEvt->getEventNumber()  << " " <<  upcEvt->getEventNumber() << endl;
+//        cout << "Fill " << picoEvt->getFillNumber() << " " <<  upcEvt->getFillNumber() << endl;
+//       }
        
-       cout << "RP " << origRpEvt->getNumberOfClusters() << " " << correctedRpEvent->getNumberOfClusters() << endl;
+       continue;
+
+//       correctedRpEvent = new StRPEvent(*origRpEvt);
+//       correctedRpEvent->clearEvent();
+//       runAfterburner(origRpEvt, correctedRpEvent,upcEvt->getRunNumber());
+       
+//       cout << "RP " << origRpEvt->getNumberOfClusters() << " " << correctedRpEvent->getNumberOfClusters() << endl;
        if( fillNumberOld != upcEvt->getFillNumber() ) {
 	fillNumberOld = upcEvt->getFillNumber();
 
@@ -143,9 +196,19 @@ int main(int argc, char** argv)
       } 
 
 //       cout << "Fill " << upcEvt->getFillNumber() << " " << x0 << " " << y0 << " " << xs << " " << ys << endl;
-      double beamline[4] = {x0, y0, xs, ys} ;
-// double beamline[4] = {0, 0, 0, 0};
+//      double beamline[4] = {x0, y0, xs, ys} ;
+ double beamline[4] = {0, 0, 0, 0};
      cout << "ntracks total  " << upcEvt->getNumberOfTracks() << endl;
+
+
+//    if( upcEvt->getNumberOfVertices() == 0) continue;
+
+      TVector3 vertex(0,0,0); 
+//    if( upcEvt->getNumberOfVertices() > 0) {
+//      vertex.SetX(upcEvt->getVertex(0)->getPosX());
+//      vertex.SetY(upcEvt->getVertex(0)->getPosY());
+//      vertex.SetZ(upcEvt->getVertex(0)->getPosZ());
+//    }
 
         TrueK0.clear();
 
@@ -188,15 +251,17 @@ int main(int argc, char** argv)
           << " good events " << good_events << endl;
 
      for (int j = 0; j < upcEvt->getNumberOfTracks(); j++) {
-             for (int jj = j; jj < upcEvt->getNumberOfTracks(); jj++) {       
-               if( (upcEvt->getTrack(j)->getCharge() != upcEvt->getTrack(jj)->getCharge()) 
+             for (int jj = 0; jj < upcEvt->getNumberOfTracks(); jj++) {       
+               if( ( upcEvt->getTrack(j)->getCharge()>0 && upcEvt->getTrack(jj)->getCharge()< 0 ||
+                     upcEvt->getTrack(j)->getCharge()<0 && upcEvt->getTrack(jj)->getCharge()> 0) 
                  && upcEvt->getTrack(j)->getNhits()>15 && upcEvt->getTrack(jj)->getNhits()>15 
                  && (upcEvt->getTrack(j)->getFlag(StUPCTrack::kTof) 
-                 && upcEvt->getTrack(jj)->getFlag(StUPCTrack::kTof)) 
+                 && upcEvt->getTrack(jj)->getFlag(StUPCTrack::kTof))
+                 && (!upcEvt->getTrack(j)->getFlag(StUPCTrack::kPrimary))
+       	       	 && (!upcEvt->getTrack(jj)->getFlag(StUPCTrack::kPrimary)) 
                  && upcEvt->getTrack(jj)->getPt()>0.15 && upcEvt->getTrack(j)->getPt()>0.15 
                  && abs(upcEvt->getTrack(jj)->getEta())<1.0 &&  abs(upcEvt->getTrack(j)->getEta())<1.0 ) {
 
-        TVector3 vertex(0,0,0);
         int id1,id2;
         TLorentzVector  v1,  v2;
         if(upcEvt->getTrack(j)->getCharge() > 0) {
@@ -208,12 +273,14 @@ int main(int argc, char** argv)
         }
 //        continue;
 //        if ( (v1+v2).M()>0.6 || (v1+v2).M()<0.4 ) continue;  
+        upcEvt->setMagneticField(-5.0);
         StUPCV0 V0(upcEvt->getTrack(j),upcEvt->getTrack(jj), massPion, massProton,id1,id2, vertex, beamline, upcEvt->getMagneticField(), false);
 ////        continue;
         std::cout << "V0 " << V0.dcaDaughters() 
                   << " " << V0.DCABeamLine() 
   << " " <<sqrt( V0.prodVertexHypo().X()*V0.prodVertexHypo().X()+V0.prodVertexHypo().Y()*V0.prodVertexHypo().Y()) 
   << " theta* " << V0.cosThetaStar() 
+  << " mass " << V0.m()
         <<  std::endl;
 //        continue;
         TParticle V0Part;
@@ -247,7 +314,7 @@ int main(int argc, char** argv)
 //        MasCut = true;
         bool DCADCut = V0.dcaDaughters()<2.0;
         bool DCABLCut = V0.DCABeamLine()<2.0;
-        bool RCut = V0.decayLengthHypo()<3.0;
+        bool RCut = V0.decayLengthHypo()<0.0;
         bool PACut = V0.pointingAngleHypo()>0.9;
    
         TLorentzVector ProdVert0,  DecayVert0(0,0,0,0), ProdVert1,  DecayVert1(0,0,0,0) , RecK0, mom1, mom2;
