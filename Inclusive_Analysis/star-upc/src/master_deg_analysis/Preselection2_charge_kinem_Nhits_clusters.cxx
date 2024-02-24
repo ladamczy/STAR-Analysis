@@ -147,17 +147,6 @@ int main(int argc, char **argv){
             vector_Track.clear();
 
             //tests
-            //4 TOF tracks
-            int nOfTOFTracks = 0;
-            for(int i = 0; i<tempUPCpointer->getNumberOfTracks(); i++){
-                if(tempUPCpointer->getTrack(i)->getFlag(StUPCTrack::kTof)){
-                    nOfTOFTracks++;
-                    vector_Track.push_back(tempUPCpointer->getTrack(i));
-                }
-            }
-            if(nOfTOFTracks!=4){
-                continue;
-            }
             //at least one pair of opposite signs
             int totalCharge = 0;
             for(int i = 0; i<tempUPCpointer->getNumberOfTracks(); i++){
@@ -273,10 +262,11 @@ int main(int argc, char **argv){
             if(totalCluster<=9){
                 isNumberOfTofClusterSmall = 1;
             }
-            //we want to keep it small
             if(!isNumberOfTofClusterSmall){
                 continue;
             }
+
+
             //end of tests
 
             //filling
