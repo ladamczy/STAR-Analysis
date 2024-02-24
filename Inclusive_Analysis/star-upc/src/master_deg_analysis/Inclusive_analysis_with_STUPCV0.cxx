@@ -98,6 +98,8 @@ int main(int argc, char **argv){
     outsideprocessing.AddHistogram(TH1D("XiWprotoncloserAfterElasticCut", "#xi_{W};#xi_{W};events", 400, -0.05, 0.15));
     outsideprocessing.AddHistogram(TH1D("MpipiAfterElasticCut", "K^{0}_{S} mass;m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 70, kaonMassWindowPresentationLow, kaonMassWindowPresentationHigh));
 
+    outsideprocessing.AddHistogram(TH2D("ArmPodPlot", "Armenteros-Podolanski Plot;#alpha;p_{T} [GeV]", 100, -1, 1, 50, 0, 1));
+
     // int triggers[] = { 570701, 570705, 570711, 590701, 590705, 590708 };
     // outsideprocessing.AddHistogram(TH1D("triggerHist", "Data triggers;Trigger ID;Number of events", 6, 0, 6));
     // for(int i = 0;i<6;i++){
@@ -135,6 +137,9 @@ int main(int argc, char **argv){
         TVector3 vertexPrimary;
         StUPCRpsTrack *eastTrack;
         StUPCRpsTrack *westTrack;
+        TVector3 flightVersor;
+        TLorentzVector Lplustemp, Lminustemp;
+        double Lplus, Lminus, pT;
 
         //actual loop
         while(myReader.Next()){
@@ -321,6 +326,22 @@ int main(int argc, char **argv){
                 insideprocessing.Fill("XiWprotoncloserAfterElasticCut", westTrack->xi(beamMomentum));
                 insideprocessing.Fill("MpipiAfterElasticCut", K0_pair->m());
             }
+
+            //Armenteros-Podolanski Plot
+            flightVersor = (K0_pair->decayVertex()-K0_pair->prodVertexHypo())*(1/K0_pair->decayLengthHypo());
+            if(vector_Track[K0_pair_indices[0]]->getCharge()>0){
+                vector_Track[K0_pair_indices[0]]->getLorentzVector(Lplustemp, particleMass[0]);
+                Lplus = flightVersor.Dot(Lplustemp.Vect());
+                vector_Track[K0_pair_indices[1]]->getLorentzVector(Lminustemp, particleMass[0]);
+                Lminus = flightVersor.Dot(Lminustemp.Vect());
+            } else{
+                vector_Track[K0_pair_indices[1]]->getLorentzVector(Lplustemp, particleMass[0]);
+                Lplus = flightVersor.Dot(Lplustemp.Vect());
+                vector_Track[K0_pair_indices[0]]->getLorentzVector(Lminustemp, particleMass[0]);
+                Lminus = flightVersor.Dot(Lminustemp.Vect());
+            }
+            pT = flightVersor.Cross(Lplustemp.Vect()).Mag();
+            insideprocessing.Fill("ArmPodPlot", (Lplus-Lminus)/(Lplus+Lminus), pT);
 
             //final in-loop cleaning after Afterburner
             delete tempRPpointer;
