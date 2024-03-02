@@ -18,7 +18,10 @@ private:
     std::vector<bool> IsHistogramCutFull;
     std::vector<TH1 *> histVector;
 public:
-    PartialHistograms(/* args */){}
+    PartialHistograms(/* args */){
+        privateAllowedRPTracks = new std::vector<int>;
+        privateAllowedUPCTracks = new std::vector<int>;
+    }
     ~PartialHistograms(){}
     void SetEventPointers(StRPEvent *, StUPCEvent *);
     void AddNecessaryCut(bool (*f)(StRPEvent *, StUPCEvent *, std::vector<int> *, std::vector<int> *), bool);
@@ -39,19 +42,15 @@ void PartialHistograms::AddHistogramCut(bool f(StRPEvent *, StUPCEvent *, TH1 *,
 
 void PartialHistograms::SetEventPointers(StRPEvent *RPEventPointer, StUPCEvent *UPCEventPointer){
     //cleaning
-    necessaryCutVector.clear();
-    histogramCutVector.clear();
-    IsNecessaryCutFull.clear();
-    IsHistogramCutFull.clear();
     privateAllowedRPTracks->clear();
     privateAllowedUPCTracks->clear();
     //filling again
     privateRPEventPointer = RPEventPointer;
     privateUPCEventPointer = UPCEventPointer;
-    for(int i = 0; i<privateRPEventPointer->getNumberOfTracks(); i++){
+    for(long unsigned int i = 0; i<privateRPEventPointer->getNumberOfTracks(); i++){
         privateAllowedRPTracks->push_back(i);
     }
-    for(int i = 0; i<privateUPCEventPointer->getNumberOfTracks(); i++){
+    for(long unsigned int i = 0; i<privateUPCEventPointer->getNumberOfTracks(); i++){
         privateAllowedUPCTracks->push_back(i);
     }
 
@@ -87,11 +86,11 @@ void PartialHistograms::ProcessEvent(){
                 continue;
             }
             if(IsHistogramCutFull[i]){
-                if(!histogramCutVector[i](privateRPEventPointer, privateUPCEventPointer, histVector[i], privateAllowedRPTracks, privateAllowedUPCTracks)){
+                if(!histogramCutVector[i](privateRPEventPointer, privateUPCEventPointer, nullptr, privateAllowedRPTracks, privateAllowedUPCTracks)){
                     return;
                 }
             } else{
-                histogramCutVector[i](privateRPEventPointer, privateUPCEventPointer, histVector[i], privateAllowedRPTracks, privateAllowedUPCTracks);
+                histogramCutVector[i](privateRPEventPointer, privateUPCEventPointer, nullptr, privateAllowedRPTracks, privateAllowedUPCTracks);
             }
         }
         //filling histogram associated with that one cut
