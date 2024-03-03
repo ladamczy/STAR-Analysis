@@ -149,10 +149,10 @@ int main(int argc, char **argv){
             //tests
             //at least one pair of opposite signs
             int totalCharge = 0;
-            for(int i = 0; i<tempUPCpointer->getNumberOfTracks(); i++){
-                totalCharge += tempUPCpointer->getTrack(i)->getCharge();
+            for(int i = 0; i<vector_Track.size(); i++){
+                totalCharge += vector_Track[i]->getCharge();
             }
-            if(abs(totalCharge)==tempUPCpointer->getNumberOfTracks()){
+            if(abs(totalCharge)==vector_Track.size()){
                 continue;
             }
             //kinematic range
