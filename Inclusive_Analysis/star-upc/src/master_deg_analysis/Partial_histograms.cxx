@@ -5,6 +5,7 @@
 #include <ROOT/TThreadedObject.hxx>
 #include <TTreeReader.h>
 #include <ROOT/TTreeProcessorMT.hxx>
+#include <TH2D.h>
 
 // picoDst headers
 #include "StRPEvent.h"
@@ -39,17 +40,21 @@ bool protonCuts(StRPEvent *, StUPCEvent *, std::vector<int> *, std::vector<int> 
 //histogram cuts
 bool enoughClusters(StRPEvent *, StUPCEvent *, TH1 *, std::vector<int> *, std::vector<int> *);
 bool oneVertex(StRPEvent *, StUPCEvent *, TH1 *, std::vector<int> *, std::vector<int> *);       //ok
-bool FourTOFTracks(StRPEvent *, StUPCEvent *, TH1 *, std::vector<int> *, std::vector<int> *);   //ok
+bool NTOFTracks(StRPEvent *, StUPCEvent *, TH1 *, std::vector<int> *, std::vector<int> *);   //ok
 bool OppositeCharges(StRPEvent *, StUPCEvent *, TH1 *, std::vector<int> *, std::vector<int> *);        //ok
 bool KinematicCut(StRPEvent *, StUPCEvent *, TH1 *, std::vector<int> *, std::vector<int> *);    //consider it ok
 bool QualityCut(StRPEvent *, StUPCEvent *, TH1 *, std::vector<int> *, std::vector<int> *);      //ok
-bool NothingCut(StRPEvent *, StUPCEvent *, TH1 *, std::vector<int> *, std::vector<int> *);      //ok
+bool K0massTest(StRPEvent *, StUPCEvent *, TH1 *, std::vector<int> *, std::vector<int> *);      //ok
+bool LambdamassTest(StRPEvent *, StUPCEvent *, TH1 *, std::vector<int> *, std::vector<int> *);      //ok
 //a special one
 bool CounterCut(StRPEvent *, StUPCEvent *, TH1 *, std::vector<int> *, std::vector<int> *);
 
 //global variables
 double kaonMassWindowPresentationLow = 0.46;
 double kaonMassWindowPresentationHigh = 0.53;
+double lambdaMassWindowPresentationLow = 1.080;
+double lambdaMassWindowPresentationHigh = 1.150;
+double Lambdamass = 1.115;
 //Afterburner, yet again
 vector<vector<double>> beamData = ReadFillPositionData("STAR-Analysis/share/Run7PolarizationWithPosition.csv");
 
@@ -72,28 +77,31 @@ int main(int argc, char **argv){
     LoadOffsetFile("STAR-Analysis/share/OffSetsCorrectionsRun17.list", mCorrection);
 
     //histograms
-    TH1D massWithoutClusters("massWithoutClusters", "K0 mass without cluster check", 70, kaonMassWindowPresentationLow, kaonMassWindowPresentationHigh);
-    TH1D massWithoutOneVertex("massWithoutOneVertex", "K0 mass without single vertex check", 70, kaonMassWindowPresentationLow, kaonMassWindowPresentationHigh);
-    TH1D massWithout4TOF("massWithout4TOF", "K0 mass without 4TOF check", 70, kaonMassWindowPresentationLow, kaonMassWindowPresentationHigh);
-    TH1D massWithoutKinematicCheck("massWithoutKinematicCheck", "K0 mass without kinematic range check", 70, kaonMassWindowPresentationLow, kaonMassWindowPresentationHigh);
-    TH1D massWithoutQualityCheck("massWithoutQualityCheck", "K0 mass without quality check", 70, kaonMassWindowPresentationLow, kaonMassWindowPresentationHigh);
-    TH1D massCheck("massCheck", "K0 mass check", 70, kaonMassWindowPresentationLow, kaonMassWindowPresentationHigh);
-    TH1D counterHist("counterHist", "counter", 1, 0, 1);
+    TH1D VertexNumber("VertexNumber", "Number of primary vertices", 10, 0, 10);
+    TH1D TOFhitsNumber("TOFhitsNumber", "Number of hits in TOF", 100, 0, 100);
+    TH2D ptEtaHist("ptEtaHist", "p_{T} vs #eta", 40, -2, 2, 40, 0, 2);
+    TH2D QualityCheck("QualityCheck", "NdE/dx vs Nhits", 50, 0, 50, 50, 0, 50);
+    TH1D ClusterNumber("ClusterNumber", "Cluster hit number", 50, 0, 50);
+    TH1D K0massCheck("K0massCheck", "K0 mass check", 70, kaonMassWindowPresentationLow, kaonMassWindowPresentationHigh);
+    TH1D LambdamassCheck("LambdamassCheck", "Lambda mass check", 70, lambdaMassWindowPresentationLow, lambdaMassWindowPresentationHigh);
+
+    //just in case
     TH1D dummyHist("dummyHist", "dummy histogram", 1, 0, 1);
-    TH1D testHist("testHist", "pt of tracks", 200, 0, 2);
+    TH1D counterHist("counterHist", "counter", 1, 0, 1);
 
     //necessary cuts
     // histObject.AddNecessaryCut(eventAndRunCut, true);
     histObject.AddNecessaryCut(protonCuts, true);
 
     //histogram cuts
-    histObject.AddHistogramCut(oneVertex, &massWithoutOneVertex, true);
-    histObject.AddHistogramCut(FourTOFTracks, &massWithout4TOF, true);
+    histObject.AddHistogramCut(oneVertex, &VertexNumber, true);
+    histObject.AddHistogramCut(NTOFTracks, &TOFhitsNumber, true);
     histObject.AddHistogramCut(OppositeCharges, &dummyHist, true);
-    histObject.AddHistogramCut(KinematicCut, &testHist, true);
-    histObject.AddHistogramCut(QualityCut, &massWithoutQualityCheck, true);
-    histObject.AddHistogramCut(enoughClusters, &massWithoutClusters, true);
-    histObject.AddHistogramCut(NothingCut, &massCheck, true);
+    histObject.AddHistogramCut(KinematicCut, &ptEtaHist, true);
+    histObject.AddHistogramCut(QualityCut, &QualityCheck, true);
+    histObject.AddHistogramCut(enoughClusters, &ClusterNumber, true);
+    histObject.AddHistogramCut(K0massTest, &K0massCheck, true);
+    histObject.AddHistogramCut(LambdamassTest, &LambdamassCheck, true);
     // histObject.AddHistogramCut(CounterCut, &counterHist, true);
 
     int counter = 0;
@@ -130,14 +138,14 @@ int main(int argc, char **argv){
 
     //histograms
     outputFileHist->cd();
-    massWithoutClusters.Write();
-    massWithoutOneVertex.Write();
-    massWithout4TOF.Write();
-    massWithoutKinematicCheck.Write();
-    massWithoutQualityCheck.Write();
-    massCheck.Write();
-    counterHist.Write();
-    testHist.Write();
+    ClusterNumber.Write();
+    VertexNumber.Write();
+    TOFhitsNumber.Write();
+    ptEtaHist.Write();
+    QualityCheck.Write();
+    K0massCheck.Write();
+    LambdamassCheck.Write();
+    // counterHist.Write();
 
     outputFileHist->Close();
     return 0;
@@ -219,6 +227,49 @@ bool protonCuts(StRPEvent *RPEvent, StUPCEvent *UPCEvent, std::vector<int> *RPTr
 
 
 
+bool oneVertex(StRPEvent *RPEvent, StUPCEvent *UPCEvent, TH1 *hist, std::vector<int> *RPTrackIDs, std::vector<int> *UPCTrackIDs){
+    //histogram
+    if(hist!=nullptr){
+        hist->Fill(UPCEvent->getNPrimVertices());
+    }
+    //cut
+    if(UPCEvent->getNPrimVertices()==0){
+        return false;
+    }
+    return true;
+}
+
+bool NTOFTracks(StRPEvent *RPEvent, StUPCEvent *UPCEvent, TH1 *hist, std::vector<int> *RPTrackIDs, std::vector<int> *UPCTrackIDs){
+    //histogram
+    if(hist!=nullptr){
+        int nOfTOFTracks = 0;
+        for(long unsigned int i = 0; i<UPCTrackIDs->size(); i++){
+            int trackID = (*UPCTrackIDs)[i];
+            if(UPCEvent->getTrack(trackID)->getFlag(StUPCTrack::kTof)){
+                nOfTOFTracks++;
+            }
+        }
+        return false;
+    }
+    //cut
+    int nOfTOFTracks = 0;
+    for(long unsigned int i = 0; i<UPCTrackIDs->size(); i++){
+        int trackID = (*UPCTrackIDs)[i];
+        if(UPCEvent->getTrack(trackID)->getFlag(StUPCTrack::kTof)){
+            nOfTOFTracks++;
+        } else{
+            UPCTrackIDs->erase(std::find(UPCTrackIDs->begin(), UPCTrackIDs->end(), trackID));
+            //because if it erases ith element, it's place gets (i+1)th, and then after i++
+            //you get i+2nd, so  the i+1st is not checked
+            i--;
+        }
+    }
+    if(nOfTOFTracks<2){
+        return false;
+    }
+    return true;
+}
+
 bool OppositeCharges(StRPEvent *RPEvent, StUPCEvent *UPCEvent, TH1 *hist, std::vector<int> *RPTrackIDs, std::vector<int> *UPCTrackIDs){
     int charge = 0;
     for(size_t i = 0; i<UPCTrackIDs->size(); i++){
@@ -228,61 +279,6 @@ bool OppositeCharges(StRPEvent *RPEvent, StUPCEvent *UPCEvent, TH1 *hist, std::v
 }
 
 bool enoughClusters(StRPEvent *RPEvent, StUPCEvent *UPCEvent, TH1 *hist, std::vector<int> *RPTrackIDs, std::vector<int> *UPCTrackIDs){
-    //histogram
-    if(hist!=nullptr){
-        //helpful variables
-        double beamValues[4];
-        TVector3 vertexPrimary;
-        vector<double> tempBeamVector;
-
-        //processing
-        vertexPrimary = { UPCEvent->getVertex(0)->getPosX(), UPCEvent->getVertex(0)->getPosY(), UPCEvent->getVertex(0)->getPosZ() };
-        tempBeamVector = FindPosition(UPCEvent->getFillNumber(), vertexPrimary.Z(), beamData[0], beamData[1], beamData[2], beamData[3], beamData[4], beamData[5], beamData[6], beamData[7], beamData[8]);
-        beamValues[0] = tempBeamVector[0];
-        beamValues[1] = tempBeamVector[1];
-        beamValues[2] = tempBeamVector[2];
-        beamValues[3] = tempBeamVector[3];
-        int first_K0_pion = -1;
-        // int second_K0_pion = -1;
-        StUPCTrack *first_track;
-        StUPCTrack *second_track;
-        StUPCV0 *tempParticle;
-        StUPCV0 *K0_pair;
-        //actual loop
-        for(long unsigned int i = 0; i<UPCTrackIDs->size()-1; i++){
-            for(long unsigned int j = i+1; j<UPCTrackIDs->size(); j++){
-                first_track = UPCEvent->getTrack((*UPCTrackIDs)[i]);
-                second_track = UPCEvent->getTrack((*UPCTrackIDs)[j]);
-                tempParticle = new StUPCV0(first_track, second_track, particleMass[0], particleMass[0], 1, 1, vertexPrimary, beamValues, UPCEvent->getMagneticField(), true);
-                //tests if accept the particle
-                bool K0test1 = first_track->getCharge()*second_track->getCharge()<0;
-                bool K0test2 = tempParticle->dcaDaughters()<1.5;
-                bool K0test3 = tempParticle->pointingAngleHypo()>0.925;
-                bool K0test4 = tempParticle->DCABeamLine()<1.5;
-                bool K0test5 = tempParticle->m()>kaonMassWindowPresentationLow&&tempParticle->m()<kaonMassWindowPresentationHigh;
-                if(!(K0test1&&K0test2&&K0test3&&K0test4&&K0test5)){
-                    continue;
-                }
-                //filling
-                if(first_K0_pion<0){
-                    first_K0_pion = i;
-                    // second_K0_pion = j;
-                    K0_pair = new StUPCV0(first_track, second_track, particleMass[0], particleMass[0], 1, 1, vertexPrimary, beamValues, UPCEvent->getMagneticField(), true);
-                } else if(abs(tempParticle->m()-particleMass[0])<abs(K0_pair->m()-particleMass[0])){
-                    first_K0_pion = i;
-                    // second_K0_pion = j;
-                    delete K0_pair;
-                    K0_pair = new StUPCV0(first_track, second_track, particleMass[0], particleMass[0], 1, 1, vertexPrimary, beamValues, UPCEvent->getMagneticField(), true);
-                }
-                //finishing
-                delete tempParticle;
-            }
-        }
-        if(first_K0_pion>0){
-            hist->Fill(K0_pair->m());
-        }
-    }
-
     //TODO selekcja Patrycji
     // SELECTION: number of cluster 
     int isNumberOfTofClusterSmall = 0;
@@ -358,47 +354,22 @@ bool enoughClusters(StRPEvent *RPEvent, StUPCEvent *UPCEvent, TH1 *hist, std::ve
         }
     }
 
-
-    if(totalCluster<=9){
-        isNumberOfTofClusterSmall = 1;
-    }
-    if(!isNumberOfTofClusterSmall){
+    if(hist!=nullptr){
+        hist->Fill(totalCluster);
         return false;
+    } else if(totalCluster<=9){
+        return true;
     }
-    return true;
+    return false;
 }
 
-bool oneVertex(StRPEvent *RPEvent, StUPCEvent *UPCEvent, TH1 *hist, std::vector<int> *RPTrackIDs, std::vector<int> *UPCTrackIDs){
-    if(UPCEvent->getNPrimVertices()!=1){
-        return false;
-    }
-    return true;
-}
 
-bool FourTOFTracks(StRPEvent *RPEvent, StUPCEvent *UPCEvent, TH1 *hist, std::vector<int> *RPTrackIDs, std::vector<int> *UPCTrackIDs){
-    int nOfTOFTracks = 0;
-    for(long unsigned int i = 0; i<UPCTrackIDs->size(); i++){
-        int trackID = (*UPCTrackIDs)[i];
-        if(UPCEvent->getTrack(trackID)->getFlag(StUPCTrack::kTof)){
-            nOfTOFTracks++;
-        } else{
-            UPCTrackIDs->erase(std::find(UPCTrackIDs->begin(), UPCTrackIDs->end(), trackID));
-            //because if it erases ith element, it's place gets (i+1)th, and then after i++
-            //you get i+2nd, so  the i+1st is not checked
-            i--;
-        }
-    }
-    if(nOfTOFTracks!=4){
-        return false;
-    }
-    return true;
-}
 
 bool KinematicCut(StRPEvent *RPEvent, StUPCEvent *UPCEvent, TH1 *hist, std::vector<int> *RPTrackIDs, std::vector<int> *UPCTrackIDs){
     //histogram
     if(hist!=nullptr){
         for(size_t i = 0; i<UPCTrackIDs->size(); i++){
-            hist->Fill(UPCEvent->getTrack((*UPCTrackIDs)[i])->getPt());
+            hist->Fill(UPCEvent->getTrack((*UPCTrackIDs)[i])->getEta(), UPCEvent->getTrack((*UPCTrackIDs)[i])->getPt());
         }
     }
 
@@ -425,7 +396,24 @@ bool KinematicCut(StRPEvent *RPEvent, StUPCEvent *UPCEvent, TH1 *hist, std::vect
     return true;
 }
 
-bool NothingCut(StRPEvent *RPEvent, StUPCEvent *UPCEvent, TH1 *hist, std::vector<int> *RPTrackIDs, std::vector<int> *UPCTrackIDs){
+bool QualityCut(StRPEvent *RPEvent, StUPCEvent *UPCEvent, TH1 *hist, std::vector<int> *RPTrackIDs, std::vector<int> *UPCTrackIDs){
+    //histogram
+    if(hist!=nullptr){
+        for(long unsigned int i = 0; i<UPCTrackIDs->size(); i++){
+            hist->Fill(UPCEvent->getTrack((*UPCTrackIDs)[i])->getNhitsFit(), UPCEvent->getTrack((*UPCTrackIDs)[i])->getNhitsDEdx());
+        }
+        return false;
+    }
+    //bad version
+    for(long unsigned int i = 0; i<UPCTrackIDs->size(); i++){
+        if(!(UPCEvent->getTrack((*UPCTrackIDs)[i])->getNhitsFit()>25&&UPCEvent->getTrack((*UPCTrackIDs)[i])->getNhitsDEdx()>15)){
+            return false;
+        }
+    }
+    return true;
+}
+
+bool K0massTest(StRPEvent *RPEvent, StUPCEvent *UPCEvent, TH1 *hist, std::vector<int> *RPTrackIDs, std::vector<int> *UPCTrackIDs){
     //histogram
     if(hist!=nullptr){
         //helpful variables
@@ -469,7 +457,7 @@ bool NothingCut(StRPEvent *RPEvent, StUPCEvent *UPCEvent, TH1 *hist, std::vector
                     first_K0_pion = i;
                     second_K0_pion = j;
                     K0_pair = new StUPCV0(first_track, second_track, particleMass[0], particleMass[0], 1, 1, vertexPrimary, beamValues, UPCEvent->getMagneticField(), true);
-                } else if(abs(tempParticle->m()-particleMass[0])<abs(K0_pair->m()-particleMass[0])){
+                } else if(abs(tempParticle->m()-particleMass[1])<abs(K0_pair->m()-particleMass[1])){
                     first_K0_pion = i;
                     second_K0_pion = j;
                     delete K0_pair;
@@ -498,15 +486,84 @@ bool NothingCut(StRPEvent *RPEvent, StUPCEvent *UPCEvent, TH1 *hist, std::vector
     return true;
 }
 
-bool QualityCut(StRPEvent *RPEvent, StUPCEvent *UPCEvent, TH1 *hist, std::vector<int> *RPTrackIDs, std::vector<int> *UPCTrackIDs){
-    //bad version
-    for(long unsigned int i = 0; i<UPCTrackIDs->size(); i++){
-        if(!(UPCEvent->getTrack((*UPCTrackIDs)[i])->getNhitsFit()>25&&UPCEvent->getTrack((*UPCTrackIDs)[i])->getNhitsDEdx()>15)){
-            return false;
+bool LambdamassTest(StRPEvent *RPEvent, StUPCEvent *UPCEvent, TH1 *hist, std::vector<int> *RPTrackIDs, std::vector<int> *UPCTrackIDs){
+    //histogram
+    if(hist!=nullptr){
+        //helpful variables
+        double beamValues[4];
+        TVector3 vertexPrimary;
+        vector<double> tempBeamVector;
+
+        //processing
+        vertexPrimary = { UPCEvent->getVertex(0)->getPosX(), UPCEvent->getVertex(0)->getPosY(), UPCEvent->getVertex(0)->getPosZ() };
+        tempBeamVector = FindPosition(UPCEvent->getFillNumber(), vertexPrimary.Z(), beamData[0], beamData[1], beamData[2], beamData[3], beamData[4], beamData[5], beamData[6], beamData[7], beamData[8]);
+        beamValues[0] = tempBeamVector[0];
+        beamValues[1] = tempBeamVector[1];
+        beamValues[2] = tempBeamVector[2];
+        beamValues[3] = tempBeamVector[3];
+        int first_K0_pion = -1;
+        int second_K0_pion = -1;
+        int first_vertex_pion = -1;
+        int second_vertex_pion = -1;
+        StUPCTrack *first_track;
+        StUPCTrack *second_track;
+        StUPCV0 *tempParticle;
+        StUPCV0 *K0_pair;
+        StUPCV0 *vertex_pair;
+        //actual loop
+        for(long unsigned int i = 0; i<UPCTrackIDs->size()-1; i++){
+            for(long unsigned int j = i+1; j<UPCTrackIDs->size(); j++){
+                first_track = UPCEvent->getTrack((*UPCTrackIDs)[i]);
+                second_track = UPCEvent->getTrack((*UPCTrackIDs)[j]);
+                tempParticle = new StUPCV0(first_track, second_track, particleMass[0], particleMass[0], 1, 1, vertexPrimary, beamValues, UPCEvent->getMagneticField(), true);
+                //tests if accept the particle
+                bool K0test1 = first_track->getCharge()*second_track->getCharge()<0;
+                bool K0test2 = tempParticle->dcaDaughters()<1.5;
+                bool K0test3 = tempParticle->pointingAngleHypo()>0.925;
+                bool K0test4 = tempParticle->DCABeamLine()<1.5;
+                bool K0test5 = tempParticle->m()>kaonMassWindowPresentationLow&&tempParticle->m()<kaonMassWindowPresentationHigh;
+                if(!(K0test1&&K0test2&&K0test3&&K0test4&&K0test5)){
+                    continue;
+                }
+                //filling
+                if(first_K0_pion<0){
+                    first_K0_pion = i;
+                    second_K0_pion = j;
+                    K0_pair = new StUPCV0(first_track, second_track, particleMass[2], particleMass[0], 1, 1, vertexPrimary, beamValues, UPCEvent->getMagneticField(), true);
+                } else if(abs(tempParticle->m()-Lambdamass)<abs(K0_pair->m()-Lambdamass)){
+                    first_K0_pion = i;
+                    second_K0_pion = j;
+                    delete K0_pair;
+                    K0_pair = new StUPCV0(first_track, second_track, particleMass[2], particleMass[0], 1, 1, vertexPrimary, beamValues, UPCEvent->getMagneticField(), true);
+                }
+                //finishing
+                delete tempParticle;
+            }
+        }
+        for(long unsigned int i = 0; i<UPCTrackIDs->size()-1; i++){
+            if(i!=first_K0_pion&&i!=second_K0_pion&&first_vertex_pion>0){
+                second_vertex_pion = i;
+            } else if(i!=first_K0_pion&&i!=second_K0_pion){
+                first_vertex_pion = i;
+            }
+        }
+        vertex_pair = new StUPCV0(UPCEvent->getTrack((*UPCTrackIDs)[first_vertex_pion]), UPCEvent->getTrack((*UPCTrackIDs)[second_vertex_pion]), particleMass[0], particleMass[0], 1, 1, vertexPrimary, beamValues, UPCEvent->getMagneticField(), true);
+        //tests to see if vertex suggestion is okay
+        bool PVtest1 = vertex_pair->dcaDaughters()<1.5;
+        bool PVtest2 = vertex_pair->DCABeamLine()<1.5;
+        if(PVtest1&&PVtest2&&first_K0_pion>0){
+            hist->Fill(K0_pair->m());
         }
     }
+    //cut
     return true;
 }
+
+
+
+
+
+//just in case
 
 bool CounterCut(StRPEvent *RPEvent, StUPCEvent *UPCEvent, TH1 *hist, std::vector<int> *RPTrackIDs, std::vector<int> *UPCTrackIDs){
     //histogram
