@@ -66,6 +66,7 @@
 #include "StUPCBemcCluster.h"
 #include "StUPCVertex.h"
 #include "StUPCTofHit.h"
+#include <Afterburner.h>
 
 //my headers
 #include "UsefulThings.h"
@@ -77,10 +78,10 @@ enum{
     kAll = 1, kCPT, kRP, kOneVertex, kTPCTOF,
     kTotQ, kMax
 };
-enum SIDE{ E = 0, East = 0, W = 1, West = 1, nSides };
-enum PARTICLES{ Pion = 0, Kaon = 1, Proton = 2, nParticles };
-enum BRANCH_ID{ EU, ED, WU, WD, nBranches };
-enum RP_ID{ E1U, E1D, E2U, E2D, W1U, W1D, W2U, W2D, nRomanPots };
+// enum SIDE{ E = 0, East = 0, W = 1, West = 1, nSides };
+// enum PARTICLES{ Pion = 0, Kaon = 1, Proton = 2, nParticles };
+// enum BRANCH_ID{ EU, ED, WU, WD, nBranches };
+// enum RP_ID{ E1U, E1D, E2U, E2D, W1U, W1D, W2U, W2D, nRomanPots };
 
 const double particleMass[nParticles] = { 0.13957, 0.497611, 0.93827 }; // pion, kaon, proton in GeV /c^2 
 
@@ -102,6 +103,9 @@ int main(int argc, char **argv){
     }
 
     const string &outputFolder = argv[2];
+
+    //Afterburner things
+    LoadOffsetFile("STAR-Analysis/share/OffSetsCorrectionsRun17.list", mCorrection);
 
     auto myFunction = [&](TFile *myFile){
         //test if tree is not empty
@@ -139,13 +143,26 @@ int main(int argc, char **argv){
         double firstBranch, secondBranch;
         bool f1, f2, f3;
         double px, py;
+        bool IsFirstLoop = true;
 
         // actual copying
         do{
             goodQuality = true;
             //for some reason it *needs* to be here, God knows why
             tempUPCpointer = StUPCEventInstance.Get();
-            tempRPpointer = StRPEventInstance.Get();
+            // tempRPpointer = StRPEventInstance.Get();
+            //modified for afterburner
+            if(!IsFirstLoop){
+                //final in-loop cleaning after Afterburner has to happen here cause we might not get to it later on
+                delete tempRPpointer;
+            }
+            IsFirstLoop = false;
+            tempRPpointer = new StRPEvent(*StRPEventInstance.Get());
+            tempRPpointer->clearEvent();
+            runAfterburner(StRPEventInstance.Get(), tempRPpointer, tempUPCpointer->getRunNumber());
+            //cause it chenged address
+            mUPCTree->SetBranchAddress("mRPEvent", &tempRPpointer);
+
 
             //tests
             //triggers
@@ -202,6 +219,7 @@ int main(int argc, char **argv){
                 mUPCTree->Fill();
                 filtered_entries++;
             }
+
         } while(myReader.Next());
 
         //waiting for file opening to check if there were any filtered entries
