@@ -81,20 +81,24 @@ void PartialHistograms::ProcessEvent(){
             privateAllowedUPCTracks->push_back(i);
         }
         //applying every cut except one
+        bool didPassAllTestsExceptOmittedOne = true;
         for(long unsigned int i = 0; i<histogramCutVector.size(); i++){
             if(i==omittedCut){
                 continue;
             }
             if(IsHistogramCutFull[i]){
                 if(!histogramCutVector[i](privateRPEventPointer, privateUPCEventPointer, nullptr, privateAllowedRPTracks, privateAllowedUPCTracks)){
-                    return;
+                    didPassAllTestsExceptOmittedOne = false;
+                    break;
                 }
             } else{
                 histogramCutVector[i](privateRPEventPointer, privateUPCEventPointer, nullptr, privateAllowedRPTracks, privateAllowedUPCTracks);
             }
         }
         //filling histogram associated with that one cut
-        histogramCutVector[omittedCut](privateRPEventPointer, privateUPCEventPointer, histVector[omittedCut], privateAllowedRPTracks, privateAllowedUPCTracks);
+        if(didPassAllTestsExceptOmittedOne){
+            histogramCutVector[omittedCut](privateRPEventPointer, privateUPCEventPointer, histVector[omittedCut], privateAllowedRPTracks, privateAllowedUPCTracks);
+        }
     }
 }
 
