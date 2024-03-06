@@ -179,11 +179,6 @@ int main(int argc, char **argv){
                 gSystem->Unlink(outfileNames[i].c_str());
             }
         }
-        if(total_filtered_entries==0){
-            cout<<"Finished operation on input file "<<fileName<<" with "<<tempTree->GetEntries()<<" entries and 0 filtered entries, all resulting files will be deleted"<<endl;
-            tempFile->Close();
-            return 0;
-        }
 
         for(int i = 0; i<4; i++){
             total_filtered_entries += filtered_entries[i];
@@ -192,6 +187,12 @@ int main(int argc, char **argv){
                 mUPCTrees[i]->Write();
                 outputFiles[i]->Close();
             }
+        }
+
+        if(total_filtered_entries==0){
+            cout<<"Finished operation on input file "<<fileName<<" with "<<tempTree->GetEntries()<<" entries and 0 filtered entries, all resulting files will be deleted"<<endl;
+            tempFile->Close();
+            return 0;
         }
 
         cout<<"Finished operation on input file "<<fileName<<" with "<<tempTree->GetEntries()<<" entries and "<<total_filtered_entries<<" filtered entries"<<endl;
