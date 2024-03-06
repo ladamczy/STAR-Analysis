@@ -211,7 +211,7 @@ bool protonCuts(StRPEvent *RPEvent, StUPCEvent *UPCEvent, std::vector<int> *RPTr
         double py = trk->pVec().Y();
         bool f1 = (0.4<abs(py)&&abs(py)<0.8);
         bool f2 = (-0.27<px);
-        bool f3 = (pow(px+0.6, 2)+pow(py, 2)<pow(1.25, 2));
+        bool f3 = (pow(px+0.6, 2)+pow(py, 2)<1.25);
         if(!(f1&&f2&&f3)){
             return false;
         }

@@ -160,7 +160,7 @@ int main(int argc, char **argv){
             tempRPpointer = new StRPEvent(*StRPEventInstance.Get());
             tempRPpointer->clearEvent();
             runAfterburner(StRPEventInstance.Get(), tempRPpointer, tempUPCpointer->getRunNumber());
-            //cause it chenged address
+            //cause it changed address
             mUPCTree->SetBranchAddress("mRPEvent", &tempRPpointer);
 
 
@@ -204,7 +204,7 @@ int main(int argc, char **argv){
                 py = trk->pVec().Y();
                 f1 = (0.4<abs(py)&&abs(py)<0.8);
                 f2 = (-0.27<px);
-                f3 = (pow(px+0.6, 2)+pow(py, 2)<pow(1.25, 2));
+                f3 = (pow(px+0.6, 2)+pow(py, 2)<1.25);
                 if(!(f1&&f2&&f3)){
                     goodQuality = false;
                     break;
