@@ -163,14 +163,14 @@ int main(int argc, char **argv){
             //actual loop
             for(long unsigned int i = 0; i<vector_Track_positive.size(); i++){
                 for(long unsigned int j = 0; j<vector_Track_negative.size(); j++){
-                    // tempParticle = new StUPCV0(vector_Track[i], vector_Track[j], particleMass[0], particleMass[0], 1, 1, vertexPrimary, beamValues, tempUPCpointer->getMagneticField(), true);
-                    tempParticle = new StUPCV0(vector_Track_positive[i], vector_Track_negative[j], particleMass[0], particleMass[0], 1, 1, { 0,0,0 }, beamValues, tempUPCpointer->getMagneticField(), true);
+                    // tempParticle = new StUPCV0(vector_Track[i], vector_Track[j], particleMass[0], particleMass[0], 1, 1, vertexPrimary, beamValues, tempUPCpointer->getMagneticField(), false);
+                    tempParticle = new StUPCV0(vector_Track_positive[i], vector_Track_negative[j], particleMass[0], particleMass[0], 1, 1, { 0,0,0 }, beamValues, tempUPCpointer->getMagneticField(), false);
                     //tests if accept the particle
                     //test unnecessary due to previous costraints
                     // bool K0test1 = vector_Track[i]->getCharge()*vector_Track[j]->getCharge()<0;
                     bool K0test2 = tempParticle->dcaDaughters()<=2.5;
                     bool K0test3 = tempParticle->DCABeamLine()<=2.5;
-                    bool K0test4 = (tempParticle->pointingAngleHypo()>0.925 or tempParticle->decayLength()<3.0);
+                    bool K0test4 = (tempParticle->pointingAngleHypo()>0.925 or tempParticle->decayLengthHypo()<3.0);
                     if(!(K0test2&&K0test3&&K0test4)){
                         continue;
                     }
