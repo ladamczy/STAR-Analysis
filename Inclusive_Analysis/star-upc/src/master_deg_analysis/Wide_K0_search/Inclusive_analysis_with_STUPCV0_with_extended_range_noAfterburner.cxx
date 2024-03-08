@@ -66,6 +66,7 @@ int main(int argc, char **argv){
     ProcessingOutsideLoop outsideprocessing;
     outsideprocessing.AddHistogram(TH1D("MpipiNarrow", "K^{0}_{S} mass in narrow range;m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", kaonMassWindowNarrowBins, kaonMassWindowNarrowLow, kaonMassWindowNarrowHigh));
     outsideprocessing.AddHistogram(TH1D("MpipiWide", "K^{0}_{S} mass in wide range;m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", kaonMassWindowWideBins, kaonMassWindowWideLow, kaonMassWindowWideHigh));
+    outsideprocessing.AddHistogram(TH1D("NotherTracks", "Number of tracks not used in K0 reconstruction", 20, 0, 20));
 
     // int triggers[] = { 570701, 570705, 570711, 590701, 590705, 590708 };
     // outsideprocessing.AddHistogram(TH1D("triggerHist", "Data triggers;Trigger ID;Number of events", 6, 0, 6));
@@ -90,11 +91,19 @@ int main(int argc, char **argv){
         insideprocessing.GetLocalHistograms(&outsideprocessing);
 
         //helpful variables
-        std::vector<StUPCTrack *> vector_Track;
+        std::vector<StUPCTrack *> vector_Track_positive;
+        std::vector<StUPCTrack *> vector_Track_negative;
+        StUPCTrack *tempTrack;
         TVector3 vertexPrimary;
         std::vector<double> tempBeamVector;
         double beamValues[4];
         StUPCV0 *tempParticle;
+        std::vector<int> vector_usedForK0_pair;
+        vector_usedForK0_pair.reserve(100);
+        std::vector<double> vector_usedForK0_DCAdaugters;
+        vector_usedForK0_DCAdaugters.reserve(100);
+        std::vector<int> vector_usedForK0_mass;
+        vector_usedForK0_mass.reserve(100);
 
         //actual loop
         while(myReader.Next()){
@@ -103,11 +112,14 @@ int main(int argc, char **argv){
             tempRPpointer = StRPEventInstance.Get();
 
             //cleaning the loop
-            vector_Track.clear();
+            vector_Track_positive.clear();
+            vector_Track_negative.clear();
+            vector_usedForK0_pair.clear();
+            vector_usedForK0_DCAdaugters.clear();
 
             //cause I want to see what's going on
             eventsProcessed++;
-            if(eventsProcessed%10000<5){
+            if(eventsProcessed%10000<nthreads){
                 cout<<"Processed "<<eventsProcessed<<" events"<<endl;
             }
 
@@ -117,16 +129,26 @@ int main(int argc, char **argv){
             //pt & eta 
             //Nhits
             for(int i = 0; i<tempUPCpointer->getNumberOfTracks(); i++){
-                if(!tempUPCpointer->getTrack(i)->getFlag(StUPCTrack::kTof)){
+                tempTrack = tempUPCpointer->getTrack(i);
+                if(!tempTrack->getFlag(StUPCTrack::kTof)){
                     continue;
                 }
-                if(tempUPCpointer->getTrack(i)->getPt()<=0.2 or abs(tempUPCpointer->getTrack(i)->getEta())>=0.9){
+                if(tempTrack->getPt()<=0.2 or abs(tempTrack->getEta())>=0.9){
                     continue;
                 }
-                if(tempUPCpointer->getTrack(i)->getNhits()<=20){
+                if(tempTrack->getNhits()<=20){
                     continue;
                 }
-                vector_Track.push_back(tempUPCpointer->getTrack(i));
+                if(tempTrack->getCharge()>0){
+                    vector_Track_positive.push_back(tempTrack);
+                } else{
+                    vector_Track_negative.push_back(tempTrack);
+                }
+            }
+            for(size_t i = 0; i<vector_Track_positive.size(); i++){
+                vector_usedForK0_pair[i] = -1;
+                vector_usedForK0_DCAdaugters[i] = 0;
+                vector_usedForK0_mass[i] = -1;
             }
             //selecting all K0s matching criteria:
             // DCAdaugter<=2.5cm
@@ -139,22 +161,47 @@ int main(int argc, char **argv){
             beamValues[2] = tempBeamVector[2];
             beamValues[3] = tempBeamVector[3];
             //actual loop
-            for(long unsigned int i = 0; i<vector_Track.size()-1; i++){
-                for(long unsigned int j = i+1; j<vector_Track.size(); j++){
+            for(long unsigned int i = 0; i<vector_Track_positive.size(); i++){
+                for(long unsigned int j = 0; j<vector_Track_negative.size(); j++){
                     // tempParticle = new StUPCV0(vector_Track[i], vector_Track[j], particleMass[0], particleMass[0], 1, 1, vertexPrimary, beamValues, tempUPCpointer->getMagneticField(), true);
-                    tempParticle = new StUPCV0(vector_Track[i], vector_Track[j], particleMass[0], particleMass[0], 1, 1, { 0,0,0 }, beamValues, tempUPCpointer->getMagneticField(), true);
+                    tempParticle = new StUPCV0(vector_Track_positive[i], vector_Track_negative[j], particleMass[0], particleMass[0], 1, 1, { 0,0,0 }, beamValues, tempUPCpointer->getMagneticField(), true);
                     //tests if accept the particle
-                    bool K0test1 = vector_Track[i]->getCharge()*vector_Track[j]->getCharge()<0;
+                    //test unnecessary due to previous costraints
+                    // bool K0test1 = vector_Track[i]->getCharge()*vector_Track[j]->getCharge()<0;
                     bool K0test2 = tempParticle->dcaDaughters()<=2.5;
                     bool K0test3 = tempParticle->DCABeamLine()<=2.5;
                     bool K0test4 = (tempParticle->pointingAngleHypo()>0.925 or tempParticle->decayLength()<3.0);
-                    if(!(K0test1&&K0test2&&K0test3&&K0test4)){
+                    if(!(K0test2&&K0test3&&K0test4)){
                         continue;
                     }
                     //filling
                     double mK0candidate = tempParticle->m();
                     if(mK0candidate>kaonMassWindowNarrowLow&&mK0candidate<kaonMassWindowNarrowHigh){
-                        insideprocessing.Fill("MpipiNarrow", mK0candidate);
+                        //check if other K0 shares a pi+
+                        if(vector_usedForK0_pair[i]>=0){
+                            if(vector_usedForK0_DCAdaugters[i]>tempParticle->dcaDaughters()){
+                                vector_usedForK0_pair[i] = j;
+                                vector_usedForK0_DCAdaugters[i] = tempParticle->dcaDaughters();
+                                vector_usedForK0_mass[i] = mK0candidate;
+                            }
+                            //then maybe it shares pi-?
+                        } else if(std::find(vector_usedForK0_pair.begin(), vector_usedForK0_pair.end(), j)!=vector_usedForK0_pair.end()){
+                            int index = std::find(vector_usedForK0_pair.begin(), vector_usedForK0_pair.end(), j)-vector_usedForK0_pair.begin();
+                            if(vector_usedForK0_DCAdaugters[index]>tempParticle->dcaDaughters()){
+                                vector_usedForK0_pair[index] = -1;
+                                vector_usedForK0_DCAdaugters[index] = 0;
+                                vector_usedForK0_mass[index] = -1;
+                                vector_usedForK0_pair[i] = j;
+                                vector_usedForK0_DCAdaugters[i] = tempParticle->dcaDaughters();
+                                vector_usedForK0_mass[i] = mK0candidate;
+                            }
+                            //if a new K0 shares nothing, we simply note it down
+                        } else{
+                            vector_usedForK0_pair[i] = j;
+                            vector_usedForK0_DCAdaugters[i] = tempParticle->dcaDaughters();
+                            vector_usedForK0_mass[i] = mK0candidate;
+                        }
+                        // insideprocessing.Fill("MpipiNarrow", mK0candidate);
                     }
                     if(mK0candidate>kaonMassWindowWideLow&&mK0candidate<kaonMassWindowWideHigh){
                         insideprocessing.Fill("MpipiWide", mK0candidate);
@@ -163,6 +210,20 @@ int main(int argc, char **argv){
                     delete tempParticle;
                 }
             }
+            //loop after all remaining K0
+            for(size_t i = 0; i<vector_usedForK0_pair.size(); i++){
+                if(vector_usedForK0_mass[i]>0){
+                    insideprocessing.Fill("MpipiNarrow", vector_usedForK0_mass[i]);
+                }
+            }
+            //sum of not used particles
+            int numberOfTracksNotUsed = vector_Track_positive.size()+vector_Track_negative.size();
+            for(size_t i = 0; i<vector_usedForK0_pair.size(); i++){
+                if(vector_usedForK0_pair[i]>=0){
+                    numberOfTracksNotUsed -= 2;
+                }
+            }
+            insideprocessing.Fill("NotherTracks", numberOfTracksNotUsed);
         }
         return 0;
         };
