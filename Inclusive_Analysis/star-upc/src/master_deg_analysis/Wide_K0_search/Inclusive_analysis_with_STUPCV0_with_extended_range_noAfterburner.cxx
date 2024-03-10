@@ -32,8 +32,8 @@ const double particleMass[nParticles] = { 0.13957, 0.497611, 0.93827 }; // pion,
 enum BRANCH_ID{ EU, ED, WU, WD, nBranches };
 enum RP_ID{ E1U, E1D, E2U, E2D, W1U, W1D, W2U, W2D, nRomanPots };
 
-bool IsInXiElasticSpot(StUPCRpsTrack *, StUPCRpsTrack *);
-bool IsInMomElasticSpot(StUPCRpsTrack *, StUPCRpsTrack *);
+bool tuple_sort(tuple<double, int, int>, tuple<double, int, int>);
+bool isPi(StUPCTrack *);
 
 int main(int argc, char **argv){
 
@@ -66,7 +66,18 @@ int main(int argc, char **argv){
     ProcessingOutsideLoop outsideprocessing;
     outsideprocessing.AddHistogram(TH1D("MpipiNarrow", "K^{0}_{S} mass in narrow range;m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", kaonMassWindowNarrowBins, kaonMassWindowNarrowLow, kaonMassWindowNarrowHigh));
     outsideprocessing.AddHistogram(TH1D("MpipiWide", "K^{0}_{S} mass in wide range;m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", kaonMassWindowWideBins, kaonMassWindowWideLow, kaonMassWindowWideHigh));
+    outsideprocessing.AddHistogram(TH1D("MpipiVeryWide", "Pion pair mass in a very wide range;m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 500, 0, 5));
+    outsideprocessing.AddHistogram(TH1D("MpipiNarrowWithPidEcut", "K^{0}_{S} mass in narrow range with dE/dx cuts;m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", kaonMassWindowNarrowBins, kaonMassWindowNarrowLow, kaonMassWindowNarrowHigh));
+    outsideprocessing.AddHistogram(TH1D("MpipiVeryWideWithPidEcut", "Pion pair mass in a very wide range with dE/dx cuts;m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 500, 0, 5));
     outsideprocessing.AddHistogram(TH1D("NotherTracks", "Number of tracks not used in K0 reconstruction", 20, 0, 20));
+    outsideprocessing.AddHistogram(TH2D("VertexMultiplicity", "Number of good quality tracks attributed to a vertex;vertex ID;tracks number", 10, 0, 10, 15, 0, 15));
+    outsideprocessing.AddHistogram(TH2D("VertexMultiplicityWithoutK0", "Number of good quality tracks attributed to a vertex except those making a K0;vertex ID;tracks number", 10, 0, 10, 15, 0, 15));
+    outsideprocessing.AddHistogram(TH1D("K0multiplicity", "Number of K0 detected", 5, 0, 5));
+    outsideprocessing.AddHistogram(TH1D("PVV0K0dist", "PV - V0K0 z axis distance;d[cm]", 200, -10, 10));
+    outsideprocessing.AddHistogram(TH1D("invdecaylenghthHypocut", "Mass of pion pair with decaylenghthHypo>3cm cut", kaonMassWindowWideBins, kaonMassWindowWideLow, kaonMassWindowWideHigh));
+    outsideprocessing.AddHistogram(TH1D("K0PVdistance", "Distance between K0 line-of-flight and PV;d[cm]", 100, 0, 100));
+    outsideprocessing.AddHistogram(TH2D("VertexIdvsPos", "Vertex ID vs vertex list position;position;ID", 10, 0, 10, 10, 0, 10));
+    outsideprocessing.AddHistogram(TH2D("VertexPrimvsAll", "Number of primary vertices vs number of all vertices;all;primary", 10, 0, 10, 10, 0, 10));
 
     // int triggers[] = { 570701, 570705, 570711, 590701, 590705, 590708 };
     // outsideprocessing.AddHistogram(TH1D("triggerHist", "Data triggers;Trigger ID;Number of events", 6, 0, 6));
@@ -87,7 +98,7 @@ int main(int argc, char **argv){
         TTreeReaderValue<StRPEvent> StRPEventInstance(myReader, "mRPEvent");
         ProcessingInsideLoop insideprocessing;
         StUPCEvent *tempUPCpointer;
-        StRPEvent *tempRPpointer;
+        // StRPEvent *tempRPpointer;
         insideprocessing.GetLocalHistograms(&outsideprocessing);
 
         //helpful variables
@@ -98,30 +109,30 @@ int main(int argc, char **argv){
         std::vector<double> tempBeamVector;
         double beamValues[4];
         StUPCV0 *tempParticle;
-        std::vector<int> vector_usedForK0_pair;
-        vector_usedForK0_pair.reserve(100);
-        std::vector<double> vector_usedForK0_DCAdaugters;
-        vector_usedForK0_DCAdaugters.reserve(100);
-        std::vector<int> vector_usedForK0_mass;
-        vector_usedForK0_mass.reserve(100);
+        std::vector<tuple<double, int, int>> vector_K0_pairs;
+        vector_K0_pairs.reserve(100);
+        std::vector<int> numberOfTracksTiedToVertex(100, 0);
 
         //actual loop
         while(myReader.Next()){
             //in a TTree, it *would* be constant, in TChain however not necessarily
             tempUPCpointer = StUPCEventInstance.Get();
-            tempRPpointer = StRPEventInstance.Get();
+            // tempRPpointer = StRPEventInstance.Get();
+
+            //test
+
 
             //cleaning the loop
             vector_Track_positive.clear();
             vector_Track_negative.clear();
-            vector_usedForK0_pair.clear();
-            vector_usedForK0_DCAdaugters.clear();
+            vector_K0_pairs.clear();
+            std::fill(numberOfTracksTiedToVertex.begin(), numberOfTracksTiedToVertex.end(), 0);
 
             //cause I want to see what's going on
-            eventsProcessed++;
             if(eventsProcessed%10000<nthreads){
                 cout<<"Processed "<<eventsProcessed<<" events"<<endl;
             }
+            eventsProcessed++;
 
             //cuts & histogram filling
             //selecting tracks matching criteria:
@@ -145,15 +156,25 @@ int main(int argc, char **argv){
                     vector_Track_negative.push_back(tempTrack);
                 }
             }
+            //testing amount of tracks tied to a vertex
             for(size_t i = 0; i<vector_Track_positive.size(); i++){
-                vector_usedForK0_pair[i] = -1;
-                vector_usedForK0_DCAdaugters[i] = 0;
-                vector_usedForK0_mass[i] = -1;
+                numberOfTracksTiedToVertex[vector_Track_positive[i]->getVertexId()]++;
+            }
+            for(size_t i = 0; i<vector_Track_negative.size(); i++){
+                numberOfTracksTiedToVertex[vector_Track_negative[i]->getVertexId()]++;
+            }
+            for(size_t i = 0; i<numberOfTracksTiedToVertex.size(); i++){
+                if(numberOfTracksTiedToVertex[i]!=0)
+                    insideprocessing.Fill("VertexMultiplicity", i, numberOfTracksTiedToVertex[i]);
             }
             //selecting all K0s matching criteria:
             // DCAdaugter<=2.5cm
             // DCAbeamline<=2.5cm
             // decayLenghth<3cm or cos(pointing angle)>0.925
+            for(size_t i = 0; i<tempUPCpointer->getNumberOfVertices(); i++){
+                insideprocessing.Fill("VertexIdvsPos", i, tempUPCpointer->getVertex(i)->getId());
+            }
+            insideprocessing.Fill("VertexPrimvsAll", tempUPCpointer->getNumberOfVertices(), tempUPCpointer->getNPrimVertices());
             vertexPrimary = { tempUPCpointer->getVertex(0)->getPosX(), tempUPCpointer->getVertex(0)->getPosY(), tempUPCpointer->getVertex(0)->getPosZ() };
             tempBeamVector = FindPosition(tempUPCpointer->getFillNumber(), vertexPrimary.Z(), beamData[0], beamData[1], beamData[2], beamData[3], beamData[4], beamData[5], beamData[6], beamData[7], beamData[8]);
             beamValues[0] = tempBeamVector[0];
@@ -170,60 +191,76 @@ int main(int argc, char **argv){
                     // bool K0test1 = vector_Track[i]->getCharge()*vector_Track[j]->getCharge()<0;
                     bool K0test2 = tempParticle->dcaDaughters()<=2.5;
                     bool K0test3 = tempParticle->DCABeamLine()<=2.5;
-                    bool K0test4 = (tempParticle->pointingAngleHypo()>0.925 or tempParticle->decayLengthHypo()<3.0);
-                    if(!(K0test2&&K0test3&&K0test4)){
+                    bool K0test4 = tempParticle->pointingAngleHypo()>0.925;
+                    bool K0test5 = tempParticle->decayLengthHypo()<3.0;
+                    //tests before filling
+                    double mK0candidate = tempParticle->m();
+                    if(!(K0test2&&K0test3&&K0test4&&(!K0test5))){
+                        insideprocessing.Fill("invdecaylenghthHypocut", mK0candidate);
+                    }
+                    if(!(K0test2&&K0test3&&K0test4&&K0test5)){
                         continue;
                     }
                     //filling
-                    double mK0candidate = tempParticle->m();
                     if(mK0candidate>kaonMassWindowNarrowLow&&mK0candidate<kaonMassWindowNarrowHigh){
-                        //check if other K0 shares a pi+
-                        if(vector_usedForK0_pair[i]>=0){
-                            if(vector_usedForK0_DCAdaugters[i]>tempParticle->dcaDaughters()){
-                                vector_usedForK0_pair[i] = j;
-                                vector_usedForK0_DCAdaugters[i] = tempParticle->dcaDaughters();
-                                vector_usedForK0_mass[i] = mK0candidate;
-                            }
-                            //then maybe it shares pi-?
-                        } else if(std::find(vector_usedForK0_pair.begin(), vector_usedForK0_pair.end(), j)!=vector_usedForK0_pair.end()){
-                            int index = std::find(vector_usedForK0_pair.begin(), vector_usedForK0_pair.end(), j)-vector_usedForK0_pair.begin();
-                            if(vector_usedForK0_DCAdaugters[index]>tempParticle->dcaDaughters()){
-                                vector_usedForK0_pair[index] = -1;
-                                vector_usedForK0_DCAdaugters[index] = 0;
-                                vector_usedForK0_mass[index] = -1;
-                                vector_usedForK0_pair[i] = j;
-                                vector_usedForK0_DCAdaugters[i] = tempParticle->dcaDaughters();
-                                vector_usedForK0_mass[i] = mK0candidate;
-                            }
-                            //if a new K0 shares nothing, we simply note it down
-                        } else{
-                            vector_usedForK0_pair[i] = j;
-                            vector_usedForK0_DCAdaugters[i] = tempParticle->dcaDaughters();
-                            vector_usedForK0_mass[i] = mK0candidate;
-                        }
-                        // insideprocessing.Fill("MpipiNarrow", mK0candidate);
+                        vector_K0_pairs.push_back(tuple(tempParticle->dcaDaughters(), i, j));
                     }
                     if(mK0candidate>kaonMassWindowWideLow&&mK0candidate<kaonMassWindowWideHigh){
                         insideprocessing.Fill("MpipiWide", mK0candidate);
+                    }
+                    insideprocessing.Fill("MpipiVeryWide", mK0candidate);
+                    if(isPi(vector_Track_positive[i])&&isPi(vector_Track_negative[j])){
+                        insideprocessing.Fill("MpipiVeryWideWithPidEcut", mK0candidate);
                     }
                     //finishing
                     delete tempParticle;
                 }
             }
+            //get rid of pairs with shared particles
+            //we sort in ascending order of DCAdaugters
+            std::sort(vector_K0_pairs.begin(), vector_K0_pairs.end(), tuple_sort);
+            //first, we check for repeating pi+
+            for(int i = 0; i<int(vector_K0_pairs.size())-1; i++){
+                for(size_t j = i+1; j<vector_K0_pairs.size(); j++){
+                    if(std::get<1>(vector_K0_pairs[i])==std::get<1>(vector_K0_pairs[j])){
+                        vector_K0_pairs.erase(vector_K0_pairs.begin()+j);
+                        j--;
+                    }
+                }
+            }
+            //then, for repeating pi-
+            for(int i = 0; i<int(vector_K0_pairs.size())-1; i++){
+                for(size_t j = i+1; j<vector_K0_pairs.size(); j++){
+                    if(std::get<2>(vector_K0_pairs[i])==std::get<2>(vector_K0_pairs[j])){
+                        vector_K0_pairs.erase(vector_K0_pairs.begin()+j);
+                        j--;
+                    }
+                }
+            }
             //loop after all remaining K0
-            for(size_t i = 0; i<vector_usedForK0_pair.size(); i++){
-                if(vector_usedForK0_mass[i]>0){
-                    insideprocessing.Fill("MpipiNarrow", vector_usedForK0_mass[i]);
+            for(size_t i = 0; i<vector_K0_pairs.size(); i++){
+                tempParticle = new StUPCV0(vector_Track_positive[std::get<1>(vector_K0_pairs[i])], vector_Track_negative[std::get<2>(vector_K0_pairs[i])], particleMass[0], particleMass[0], 1, 1, { 0,0,0 }, beamValues, tempUPCpointer->getMagneticField(), false);
+                insideprocessing.Fill("MpipiNarrow", tempParticle->m());
+                insideprocessing.Fill("PVV0K0dist", tempUPCpointer->getVertex(0)->getPosZ()-tempParticle->prodVertexHypo().Z());
+                insideprocessing.Fill("K0PVdistance", tempParticle->DcaToPrimaryVertex());
+                if(isPi(vector_Track_positive[std::get<1>(vector_K0_pairs[i])])&&isPi(vector_Track_negative[std::get<2>(vector_K0_pairs[i])])){
+                    insideprocessing.Fill("MpipiNarrowWithPidEcut", tempParticle->m());
                 }
+                delete tempParticle;
             }
+            insideprocessing.Fill("K0multiplicity", vector_K0_pairs.size());
             //sum of not used particles
-            int numberOfTracksNotUsed = vector_Track_positive.size()+vector_Track_negative.size();
-            for(size_t i = 0; i<vector_usedForK0_pair.size(); i++){
-                if(vector_usedForK0_pair[i]>=0){
-                    numberOfTracksNotUsed -= 2;
-                }
-            }
+            int numberOfTracksNotUsed = vector_Track_positive.size()+vector_Track_negative.size()-2*vector_K0_pairs.size();
             insideprocessing.Fill("NotherTracks", numberOfTracksNotUsed);
+            //testing amount of tracks tied to a vertex minus those used for K0
+            for(size_t i = 0; i<vector_K0_pairs.size(); i++){
+                numberOfTracksTiedToVertex[vector_Track_positive[std::get<1>(vector_K0_pairs[i])]->getVertexId()]--;
+                numberOfTracksTiedToVertex[vector_Track_negative[std::get<2>(vector_K0_pairs[i])]->getVertexId()]--;
+            }
+            for(size_t i = 0; i<numberOfTracksTiedToVertex.size(); i++){
+                if(numberOfTracksTiedToVertex[i]!=0)
+                    insideprocessing.Fill("VertexMultiplicityWithoutK0", i, numberOfTracksTiedToVertex[i]);
+            }
         }
         return 0;
         };
@@ -248,32 +285,13 @@ int main(int argc, char **argv){
     return 0;
 }
 
-bool IsInXiElasticSpot(StUPCRpsTrack *east, StUPCRpsTrack *west){
-    //before Afterburner
-    // double x_0 = 4.30588e-03;
-    // double sigma_x = 2.02340e-03;
-    // double y_0 = 1.72097e-03;
-    // double sigma_y = 2.26638e-03;
-    //after Afterburner
-    double x_0 = -4.48170e-04;
-    double sigma_x = 1.79095e-03;
-    double y_0 = -8.04898e-04;
-    double sigma_y = 2.12035e-03;
-    return pow((east->xi(beamMomentum)-x_0)/sigma_x, 2)+pow((west->xi(beamMomentum)-y_0)/sigma_y, 2)<3*3;
+bool tuple_sort(tuple<double, int, int> t1, tuple<double, int, int> t2){
+    return std::get<0>(t1)<std::get<0>(t2);
 }
 
-bool IsInMomElasticSpot(StUPCRpsTrack *east, StUPCRpsTrack *west){
-    //before Afterburner
-    // double x_0 = -3.82151e-02;
-    // double sigma_x = 3.67545e-02;
-    // double y_0 = 1.98348e-03;
-    // double sigma_y = 3.40440e-02;
-    //after Afterburner
-    double x_0 = 5.06472e-03;
-    double sigma_x = 3.42004e-02;
-    double y_0 = 5.98219e-04;
-    double sigma_y = 3.15726e-02;
-    double x = east->pVec().X()+west->pVec().X();
-    double y = east->pVec().Y()+west->pVec().Y();
-    return pow((x-x_0)/sigma_x, 2)+pow((y-y_0)/sigma_y, 2)<3*3;
+bool isPi(StUPCTrack *track){
+    if(track->getNhitsDEdx()<20){
+        return false;
+    }
+    return abs(track->getNSigmasTPCPion())<3;
 }
