@@ -195,10 +195,10 @@ int main(int argc, char **argv){
                     bool K0test5 = tempParticle->decayLengthHypo()<3.0;
                     //tests before filling
                     double mK0candidate = tempParticle->m();
-                    if(!(K0test2&&K0test3&&K0test4&&(!K0test5))){
+                    if(K0test2&&K0test3&&(K0test4||(!K0test5))){
                         insideprocessing.Fill("invdecaylenghthHypocut", mK0candidate);
                     }
-                    if(!(K0test2&&K0test3&&K0test4&&K0test5)){
+                    if(!(K0test2&&K0test3&&(K0test4||K0test5))){
                         continue;
                     }
                     //filling
