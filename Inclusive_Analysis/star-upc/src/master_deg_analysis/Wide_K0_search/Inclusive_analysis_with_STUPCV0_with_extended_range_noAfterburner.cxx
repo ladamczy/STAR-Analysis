@@ -171,7 +171,7 @@ int main(int argc, char **argv){
             // DCAdaugter<=2.5cm
             // DCAbeamline<=2.5cm
             // decayLenghth<3cm or cos(pointing angle)>0.925
-            for(size_t i = 0; i<tempUPCpointer->getNumberOfVertices(); i++){
+            for(int i = 0; i<tempUPCpointer->getNumberOfVertices(); i++){
                 insideprocessing.Fill("VertexIdvsPos", i, tempUPCpointer->getVertex(i)->getId());
             }
             insideprocessing.Fill("VertexPrimvsAll", tempUPCpointer->getNumberOfVertices(), tempUPCpointer->getNPrimVertices());
