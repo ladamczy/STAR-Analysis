@@ -126,12 +126,12 @@ int main(int argc, char **argv){
     StUPCEvent *tempUPCpointer;
     StRPEvent *tempRPpointerBeforeAfterburner;
     StRPEvent *tempRPpointer;
-    bool IsCPTAndRun;
-    bool IsCPTnoBBCLAndRun;
+    // bool IsCPTAndRun;
+    // bool IsCPTnoBBCLAndRun;
     bool goodQuality;
     double firstBranch, secondBranch;
-    bool f1, f2, f3;
-    double px, py;
+    // bool f1, f2, f3;
+    // double px, py;
     bool IsFirstLoop = true;
 
     // actual copying

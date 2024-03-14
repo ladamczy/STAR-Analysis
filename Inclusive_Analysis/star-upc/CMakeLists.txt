@@ -6,7 +6,8 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 #folder with shared code
-set(SHARED_FOLDER ../../star-upc)
+# set(SHARED_FOLDER ../../star-upc)
+set(SHARED_FOLDER ../../star-upc-new)
 
 #sources for shared library LIB
 file(GLOB_RECURSE SRCS "${SHARED_FOLDER}/src/*.cxx")
