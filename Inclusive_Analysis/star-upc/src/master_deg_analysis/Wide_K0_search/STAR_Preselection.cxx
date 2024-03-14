@@ -153,11 +153,14 @@ int main(int argc, char **argv){
             mUPCTree->Branch("mUPCEvent", tempUPCpointer);
             mUPCTree->Branch("mRPEvent", tempRPpointerBeforeAfterburner);
         }
-        IsCPTAndRun = false;
-        IsCPTnoBBCLAndRun = false;
+        // IsCPTAndRun = false;
+        // IsCPTnoBBCLAndRun = false;
         goodQuality = true;
         // has to be here or it doesnt work
-        // WILL REPORT AS A BUG
+        // IT IS NOT A BUG
+        // this class (StUPCwhatever) is just weird
+        // this .Get updates proxies, without what TTreeReaderValue are invalidated
+        // https://root.cern.ch/doc/master/classTTreeReader.html#ac972f6a5e4f06456b9fa190f0ac040ad
         StUPCEventInstance.Get();
         StRPEventInstance.Get();
         //Afterburner fixes
@@ -171,9 +174,9 @@ int main(int argc, char **argv){
         //tests
         //run & trigger combination test
         if(tempUPCpointer->isTrigger(570701)&&tempUPCpointer->getRunNumber()<=18083025){
-            IsCPTAndRun = true;
+            // IsCPTAndRun = true;
         } else if(tempUPCpointer->isTrigger(570705)&&tempUPCpointer->getRunNumber()>18083025){
-            IsCPTnoBBCLAndRun = true;
+            // IsCPTnoBBCLAndRun = true;
         } else{
             continue;
         }
@@ -208,44 +211,45 @@ int main(int argc, char **argv){
             }
 
             //fiducial
-            px = trk->pVec().X();
-            py = trk->pVec().Y();
-            f1 = (0.4<abs(py)&&abs(py)<0.8);
-            f2 = (-0.27<px);
-            f3 = (pow(px+0.6, 2)+pow(py, 2)<1.25);
-            if(!(f1&&f2&&f3)){
-                goodQuality = false;
-                break;
-            }
+            // px = trk->pVec().X();
+            // py = trk->pVec().Y();
+            // f1 = (0.4<abs(py)&&abs(py)<0.8);
+            // f2 = (-0.27<px);
+            // f3 = (pow(px+0.6, 2)+pow(py, 2)<1.25);
+            // if(!(f1&&f2&&f3)){
+            //     goodQuality = false;
+            //     break;
+            // }
 
             //Xi cut
-            if(IsCPTAndRun){
-                if(trk->xi(beamMomentum)<=0.005 or trk->xi(beamMomentum)>=0.2){
-                    goodQuality = false;
-                    break;
-                }
-            } else if(IsCPTnoBBCLAndRun){
-                if(trk->xi(beamMomentum)<=0.005 or trk->xi(beamMomentum)>=0.08){
-                    goodQuality = false;
-                    break;
-                }
-            } else{
-                goodQuality = false;
-                break;
-            }
+            // if(IsCPTAndRun){
+            //     if(trk->xi(beamMomentum)<=0.005 or trk->xi(beamMomentum)>=0.2){
+            //         goodQuality = false;
+            //         break;
+            //     }
+            // } else if(IsCPTnoBBCLAndRun){
+            //     if(trk->xi(beamMomentum)<=0.005 or trk->xi(beamMomentum)>=0.08){
+            //         goodQuality = false;
+            //         break;
+            //     }
+            // } else{
+            //     goodQuality = false;
+            //     break;
+            // }
         }
         if(!goodQuality){ continue; }
         //non-elastic
-        if(IsInXiElasticSpot(tempRPpointer->getTrack(0), tempRPpointer->getTrack(1)) or IsInMomElasticSpot(tempRPpointer->getTrack(0), tempRPpointer->getTrack(1))){
-            continue;
-        }
+        // if(IsInXiElasticSpot(tempRPpointer->getTrack(0), tempRPpointer->getTrack(1)) or IsInMomElasticSpot(tempRPpointer->getTrack(0), tempRPpointer->getTrack(1))){
+        //     continue;
+        // }
         //UPC tests
         //at least 2 good tracks of opposite signs
         int nOfGoodTracks = 0;
         int chargeOfGoodTracks = 0;
         for(int i = 0; i<tempUPCpointer->getNumberOfTracks(); i++){
             StUPCTrack *tmptrk = tempUPCpointer->getTrack(i);
-            if(tmptrk->getFlag(StUPCTrack::kTof)&&abs(tmptrk->getEta())<0.9&&tmptrk->getPt()>0.2&&tmptrk->getNhitsFit()>20){
+            // if(tmptrk->getFlag(StUPCTrack::kTof)&&abs(tmptrk->getEta())<0.9&&tmptrk->getPt()>0.2&&tmptrk->getNhitsFit()>20){
+            if(tmptrk->getFlag(StUPCTrack::kTof)&&abs(tmptrk->getEta())<1.1&&tmptrk->getPt()>0.15&&tmptrk->getNhitsFit()>15&&tmptrk->getFlag(StUPCTrack::kV0)){
                 nOfGoodTracks++;
                 chargeOfGoodTracks += tmptrk->getCharge();
             }
