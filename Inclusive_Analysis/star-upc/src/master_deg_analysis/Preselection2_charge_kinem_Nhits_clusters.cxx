@@ -135,84 +135,143 @@ int main(int argc, char **argv){
         mUPCTree->SetBranchAddress("mRPEvent", &tempRPpointer);
 
         // additional helpful variables
-        bool goodQuality;
-        double firstBranch, secondBranch;
-        bool f1, f2, f3;
-        double px, py;
+        std::vector<StUPCTrack *> vector_Track;
 
         // actual copying
         do{
-            goodQuality = true;
             //for some reason it *needs* to be here, God knows why
             tempUPCpointer = StUPCEventInstance.Get();
             tempRPpointer = StRPEventInstance.Get();
 
+            //clearing vectors and such
+            vector_Track.clear();
+
             //tests
-            //trigger 570704 (zero bias trigger)
-            if(!tempUPCpointer->isTrigger(570704)){
+            //at least one pair of opposite signs
+            int totalCharge = 0;
+            for(int i = 0; i<vector_Track.size(); i++){
+                totalCharge += vector_Track[i]->getCharge();
+            }
+            if(abs(totalCharge)==vector_Track.size()){
                 continue;
             }
-            //2 tracks
-            if(tempRPpointer->getNumberOfTracks()!=2){
-                continue;
-            }
-            //1 track east, 1 track west (neat trick - assigning negative to east by
-            //substracting 1.5, and if after multiplying they are <0, they are from opposite sides
-            firstBranch = tempRPpointer->getTrack(0)->branch();
-            secondBranch = tempRPpointer->getTrack(1)->branch();
-            if((firstBranch-1.5)*(secondBranch-1.5)>0){
-                continue;
-            }
-            //at least 3 out of 4 planes on both and both should have both RPs hit
-            //also fiducial
-            for(unsigned int k = 0; k<tempRPpointer->getNumberOfTracks(); ++k){
-                // Get pointer to k-th track in Roman Pot data collection
-                StUPCRpsTrack *trk = tempRPpointer->getTrack(k);
-                trk->setEvent(tempRPpointer);
-                //there were problems with apparently not having track point like, entirely???
-                //so the first is check point if they do have them
-                //and then if points are of good quality
-                if(trk->getTrackPoint(0)==nullptr||trk->getTrackPoint(1)==nullptr){
-                    goodQuality = false;
+            //kinematic range
+            bool areAllTracksInRange = true;
+            for(long unsigned int i = 0; i<vector_Track.size(); i++){
+                if(!(abs(vector_Track[i]->getEta())<0.9&&vector_Track[i]->getPt()>0.2)){
+                    areAllTracksInRange = false;
                     break;
                 }
-                //check if track has at least 3 of 4 RP planes used
-                if(trk->getTrackPoint(0)->planesUsed()<3||trk->getTrackPoint(1)->planesUsed()<3){
-                    goodQuality = false;
-                    break;
-                }
-
-                //fiducial
-                px = trk->pVec().X();
-                py = trk->pVec().Y();
-                f1 = (0.4<abs(py)&&abs(py)<0.8);
-                f2 = (-0.27<px);
-                f3 = (pow(px+0.6, 2)+pow(py, 2)<1.25);
-                if(!(f1&&f2&&f3)){
-                    goodQuality = false;
-                    break;
-                }
-
             }
-
-            if(!goodQuality){ continue; }
-
-            //no vertex
-            if(tempUPCpointer->getNPrimVertices()>0){
+            if(!areAllTracksInRange){
                 continue;
             }
-            //no BBCL
-            if(tempUPCpointer->getBEMCMultiplicity()>0){
+            //number of detection hits 
+            bool areAllTracksWithEnoughHits = true;
+            for(long unsigned int i = 0; i<vector_Track.size(); i++){
+                if(!(vector_Track[i]->getNhitsFit()>25&&vector_Track[i]->getNhitsDEdx()>15)){
+                    areAllTracksWithEnoughHits = false;
+                    break;
+                }
+            }
+            if(!areAllTracksWithEnoughHits){
                 continue;
             }
+
+            //TODO selekcja Patrycji
+            // SELECTION: number of cluster 
+            int isNumberOfTofClusterSmall = 0;
+            Int_t nTofHits = tempUPCpointer->getNumberOfHits();
+            vector <Int_t> vTray;
+            vector <Int_t> vTrayUniqueVector;
+            vector <Int_t> vMmodule;
+
+            //filling with trays and modules (a pair for every hit)
+            for(Int_t i = 0; i<nTofHits; i++){
+                vTray.push_back(Int_t(tempUPCpointer->getHit(i)->getTray()));
+                vTrayUniqueVector.push_back(Int_t(tempUPCpointer->getHit(i)->getTray()));
+                vMmodule.push_back(Int_t(tempUPCpointer->getHit(i)->getModule()));
+            }
+
+            //making vTrayUniqueVector unique 
+            sort(vTrayUniqueVector.begin(), vTrayUniqueVector.end());
+            auto last = unique(vTrayUniqueVector.begin(), vTrayUniqueVector.end());
+            vTrayUniqueVector.erase(last, vTrayUniqueVector.end());
+
+
+            vector <vector <Int_t>> vModuleUniqueTray;
+            //for every unique tray we add modules from hits with this unique tray
+            for(long unsigned int i = 0; i<vTrayUniqueVector.size(); i++){
+                vector <Int_t> vModuleUnique;
+                for(int j = 0; j<nTofHits; j++){
+                    if(vTrayUniqueVector[i]==vTray[j]){
+                        vModuleUnique.push_back(vMmodule[j]);
+                    }
+                }
+                vModuleUniqueTray.push_back(vModuleUnique);
+                vModuleUnique.clear();
+            }
+
+            int totalCluster = 0;
+            for(long unsigned int i = 0; i<vModuleUniqueTray.size(); i++){
+                //from modules of unique trays we make unique modules of unique trays
+                vector <Int_t> vec = vModuleUniqueTray[i];
+                sort(vec.begin(), vec.end());
+                auto last = unique(vec.begin(), vec.end());
+                vec.erase(last, vec.end());
+
+                //if there is one unique module for that unique tray for that hit we increase counter by 1
+                if(vec.size()==1){
+                    totalCluster += 1;
+                }
+
+                //if there is more than one unique module per hit per tray we
+                //
+                for(long unsigned int j = 0; j<vec.size()-1; j++){
+                    Int_t modNum = vec[j];
+                    int diff = 1;
+                    int num = 0;
+                    for(long unsigned int z = j+1; z<vec.size(); z++){
+                        //if the module is the next module by diff
+                        //you increase the difference and check the next pair
+                        if(modNum+diff==vec[z]){
+                            num += 0;
+                            diff += 1;
+
+                            if(z==j+1){
+                                num += 1;
+                            }
+                        }
+
+                        else if(j==(vec.size()-2)&&vec[vec.size()-2]+1!=vec[vec.size()-1]){
+                            num += 2;
+                            continue;
+                        }
+
+                        else{
+                            num += 1;
+                        }
+
+                        j += (diff);
+                    }
+                    totalCluster += num;
+                }
+            }
+
+
+            if(totalCluster<=9){
+                isNumberOfTofClusterSmall = 1;
+            }
+            if(!isNumberOfTofClusterSmall){
+                continue;
+            }
+
 
             //end of tests
 
             //filling
-            if(goodQuality){
-                mUPCTree->Fill();
-                filtered_entries++;
-            }
+            mUPCTree->Fill();
+            filtered_entries++;
         } while(myReader.Next());
 
         //waiting for file opening to check if there were any filtered entries

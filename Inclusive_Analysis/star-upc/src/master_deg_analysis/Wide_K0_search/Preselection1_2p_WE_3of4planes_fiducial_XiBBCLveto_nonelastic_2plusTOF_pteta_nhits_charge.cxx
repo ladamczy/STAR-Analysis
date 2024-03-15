@@ -66,6 +66,7 @@
 #include "StUPCBemcCluster.h"
 #include "StUPCVertex.h"
 #include "StUPCTofHit.h"
+#include <Afterburner.h>
 
 //my headers
 #include "UsefulThings.h"
@@ -77,12 +78,14 @@ enum{
     kAll = 1, kCPT, kRP, kOneVertex, kTPCTOF,
     kTotQ, kMax
 };
-enum SIDE{ E = 0, East = 0, W = 1, West = 1, nSides };
-enum PARTICLES{ Pion = 0, Kaon = 1, Proton = 2, nParticles };
-enum BRANCH_ID{ EU, ED, WU, WD, nBranches };
-enum RP_ID{ E1U, E1D, E2U, E2D, W1U, W1D, W2U, W2D, nRomanPots };
+// enum SIDE{ E = 0, East = 0, W = 1, West = 1, nSides };
+// enum PARTICLES{ Pion = 0, Kaon = 1, Proton = 2, nParticles };
+// enum BRANCH_ID{ EU, ED, WU, WD, nBranches };
+// enum RP_ID{ E1U, E1D, E2U, E2D, W1U, W1D, W2U, W2D, nRomanPots };
 
 const double particleMass[nParticles] = { 0.13957, 0.497611, 0.93827 }; // pion, kaon, proton in GeV /c^2 
+bool IsInXiElasticSpot(StUPCRpsTrack *, StUPCRpsTrack *);
+bool IsInMomElasticSpot(StUPCRpsTrack *, StUPCRpsTrack *);
 
 //_____________________________________________________________________________
 int main(int argc, char **argv){
@@ -102,6 +105,9 @@ int main(int argc, char **argv){
     }
 
     const string &outputFolder = argv[2];
+
+    //Afterburner things
+    LoadOffsetFile("STAR-Analysis/share/OffSetsCorrectionsRun17.list", mCorrection);
 
     auto myFunction = [&](TFile *myFile){
         //test if tree is not empty
@@ -139,19 +145,28 @@ int main(int argc, char **argv){
         double firstBranch, secondBranch;
         bool f1, f2, f3;
         double px, py;
+        bool IsFirstLoop = true;
 
         // actual copying
         do{
             goodQuality = true;
             //for some reason it *needs* to be here, God knows why
             tempUPCpointer = StUPCEventInstance.Get();
-            tempRPpointer = StRPEventInstance.Get();
+            // tempRPpointer = StRPEventInstance.Get();
+            //modified for afterburner
+            if(!IsFirstLoop){
+                //final in-loop cleaning after Afterburner has to happen here cause we might not get to it later on
+                delete tempRPpointer;
+            }
+            IsFirstLoop = false;
+            tempRPpointer = new StRPEvent(*StRPEventInstance.Get());
+            tempRPpointer->clearEvent();
+            runAfterburner(StRPEventInstance.Get(), tempRPpointer, tempUPCpointer->getRunNumber());
+            //cause it changed address
+            mUPCTree->SetBranchAddress("mRPEvent", &tempRPpointer);
+
 
             //tests
-            //trigger 570704 (zero bias trigger)
-            if(!tempUPCpointer->isTrigger(570704)){
-                continue;
-            }
             //2 tracks
             if(tempRPpointer->getNumberOfTracks()!=2){
                 continue;
@@ -193,16 +208,29 @@ int main(int argc, char **argv){
                     break;
                 }
 
+                //Xi cut (with BBCL veto)
+                if(trk->xi(beamMomentum)<=0.005 or trk->xi(beamMomentum)>=0.08){
+                    goodQuality = false;
+                    break;
+                }
             }
-
             if(!goodQuality){ continue; }
-
-            //no vertex
-            if(tempUPCpointer->getNPrimVertices()>0){
+            //non-elastic
+            if(IsInXiElasticSpot(tempRPpointer->getTrack(0), tempRPpointer->getTrack(1)) or IsInMomElasticSpot(tempRPpointer->getTrack(0), tempRPpointer->getTrack(1))){
                 continue;
             }
-            //no BBCL
-            if(tempUPCpointer->getBEMCMultiplicity()>0){
+            //UPC tests
+            //at least 2 good tracks of opposite signs
+            int nOfGoodTracks = 0;
+            int chargeOfGoodTracks = 0;
+            for(size_t i = 0; i<tempUPCpointer->getNumberOfTracks(); i++){
+                StUPCTrack *tmptrk = tempUPCpointer->getTrack(i);
+                if(tmptrk->getFlag(StUPCTrack::kTof)&&abs(tmptrk->getEta())<0.9&&tmptrk->getPt()>0.2&&tmptrk->getNhitsFit()>20){
+                    nOfGoodTracks++;
+                    chargeOfGoodTracks += tmptrk->getCharge();
+                }
+            }
+            if(nOfGoodTracks<2 or abs(chargeOfGoodTracks)==nOfGoodTracks){
                 continue;
             }
 
@@ -213,6 +241,7 @@ int main(int argc, char **argv){
                 mUPCTree->Fill();
                 filtered_entries++;
             }
+
         } while(myReader.Next());
 
         //waiting for file opening to check if there were any filtered entries
@@ -260,4 +289,35 @@ int main(int argc, char **argv){
     cout<<"Filtered total "<<filtered_entries<<" entries"<<endl;
     cout<<"Ending Analysis... GOOD BYE!"<<endl;
     return 0;
+}
+
+//NON MAIN
+bool IsInXiElasticSpot(StUPCRpsTrack *east, StUPCRpsTrack *west){
+    //before Afterburner
+    // double x_0 = 4.30588e-03;
+    // double sigma_x = 2.02340e-03;
+    // double y_0 = 1.72097e-03;
+    // double sigma_y = 2.26638e-03;
+    //after Afterburner
+    double x_0 = -4.48170e-04;
+    double sigma_x = 1.79095e-03;
+    double y_0 = -8.04898e-04;
+    double sigma_y = 2.12035e-03;
+    return pow((east->xi(beamMomentum)-x_0)/sigma_x, 2)+pow((west->xi(beamMomentum)-y_0)/sigma_y, 2)<3*3;
+}
+
+bool IsInMomElasticSpot(StUPCRpsTrack *east, StUPCRpsTrack *west){
+    //before Afterburner
+    // double x_0 = -3.82151e-02;
+    // double sigma_x = 3.67545e-02;
+    // double y_0 = 1.98348e-03;
+    // double sigma_y = 3.40440e-02;
+    //after Afterburner
+    double x_0 = 5.06472e-03;
+    double sigma_x = 3.42004e-02;
+    double y_0 = 5.98219e-04;
+    double sigma_y = 3.15726e-02;
+    double x = east->pVec().X()+west->pVec().X();
+    double y = east->pVec().Y()+west->pVec().Y();
+    return pow((x-x_0)/sigma_x, 2)+pow((y-y_0)/sigma_y, 2)<3*3;
 }

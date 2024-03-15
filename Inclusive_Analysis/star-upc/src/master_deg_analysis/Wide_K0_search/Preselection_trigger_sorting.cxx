@@ -118,124 +118,87 @@ int main(int argc, char **argv){
         TTreeReader myReader(tempTree);
         TTreeReaderValue<StUPCEvent> StUPCEventInstance(myReader, "mUPCEvent");
         TTreeReaderValue<StRPEvent> StRPEventInstance(myReader, "mRPEvent");
-        //setting up a tree & output file
-        string outfileName = outputFolder+fileName;
-        TFile *outputFile = TFile::Open(outfileName.c_str(), "recreate");
-        TTree *mUPCTree = new TTree("mUPCTree", "mUPCTree");
-        int filtered_entries = 0;
+        //setting up a tree & output files
+        string outfileNames[4];
+        TFile *outputFiles[4];
+        TTree *mUPCTrees[4];
+        outfileNames[0] = outputFolder+"570701upto18083025/"+fileName;
+        outfileNames[1] = outputFolder+"570704upto18083025/"+fileName;
+        outfileNames[2] = outputFolder+"570705over18083025/"+fileName;
+        outfileNames[3] = outputFolder+"570704over18083025/"+fileName;
+        for(int i = 0; i<4; i++){
+            outputFiles[i] = TFile::Open(outfileNames[i].c_str(), "recreate");
+            mUPCTrees[i] = new TTree("mUPCTree", "mUPCTree");
+        }
+        int filtered_entries[4] = { 0, 0, 0, 0 };
         //value initialization
         myReader.Next();
         //for changing branch address
         StUPCEvent *tempUPCpointer = StUPCEventInstance.Get();
         StRPEvent *tempRPpointer = StRPEventInstance.Get();
         //setting up branches
-        mUPCTree->Branch("mUPCEvent", tempUPCpointer);
-        mUPCTree->Branch("mRPEvent", tempRPpointer);
-        mUPCTree->SetBranchAddress("mUPCEvent", &tempUPCpointer);
-        mUPCTree->SetBranchAddress("mRPEvent", &tempRPpointer);
-
-        // additional helpful variables
-        bool goodQuality;
-        double firstBranch, secondBranch;
-        bool f1, f2, f3;
-        double px, py;
-
+        for(int i = 0; i<4; i++){
+            mUPCTrees[i]->Branch("mUPCEvent", tempUPCpointer);
+            mUPCTrees[i]->Branch("mRPEvent", tempRPpointer);
+            mUPCTrees[i]->SetBranchAddress("mUPCEvent", &tempUPCpointer);
+            mUPCTrees[i]->SetBranchAddress("mRPEvent", &tempRPpointer);
+        }
         // actual copying
         do{
-            goodQuality = true;
             //for some reason it *needs* to be here, God knows why
             tempUPCpointer = StUPCEventInstance.Get();
             tempRPpointer = StRPEventInstance.Get();
 
-            //tests
-            //trigger 570704 (zero bias trigger)
-            if(!tempUPCpointer->isTrigger(570704)){
-                continue;
+            //testing for all trigger and run number combinations
+            if(tempUPCpointer->isTrigger(570701)&&tempUPCpointer->getRunNumber()<=18083025){
+                mUPCTrees[0]->Fill();
+                filtered_entries[0]++;
             }
-            //2 tracks
-            if(tempRPpointer->getNumberOfTracks()!=2){
-                continue;
+            if(tempUPCpointer->isTrigger(570704)&&tempUPCpointer->getRunNumber()<=18083025){
+                mUPCTrees[1]->Fill();
+                filtered_entries[1]++;
             }
-            //1 track east, 1 track west (neat trick - assigning negative to east by
-            //substracting 1.5, and if after multiplying they are <0, they are from opposite sides
-            firstBranch = tempRPpointer->getTrack(0)->branch();
-            secondBranch = tempRPpointer->getTrack(1)->branch();
-            if((firstBranch-1.5)*(secondBranch-1.5)>0){
-                continue;
+            if(tempUPCpointer->isTrigger(570705)&&tempUPCpointer->getRunNumber()>18083025){
+                mUPCTrees[2]->Fill();
+                filtered_entries[2]++;
             }
-            //at least 3 out of 4 planes on both and both should have both RPs hit
-            //also fiducial
-            for(unsigned int k = 0; k<tempRPpointer->getNumberOfTracks(); ++k){
-                // Get pointer to k-th track in Roman Pot data collection
-                StUPCRpsTrack *trk = tempRPpointer->getTrack(k);
-                trk->setEvent(tempRPpointer);
-                //there were problems with apparently not having track point like, entirely???
-                //so the first is check point if they do have them
-                //and then if points are of good quality
-                if(trk->getTrackPoint(0)==nullptr||trk->getTrackPoint(1)==nullptr){
-                    goodQuality = false;
-                    break;
-                }
-                //check if track has at least 3 of 4 RP planes used
-                if(trk->getTrackPoint(0)->planesUsed()<3||trk->getTrackPoint(1)->planesUsed()<3){
-                    goodQuality = false;
-                    break;
-                }
-
-                //fiducial
-                px = trk->pVec().X();
-                py = trk->pVec().Y();
-                f1 = (0.4<abs(py)&&abs(py)<0.8);
-                f2 = (-0.27<px);
-                f3 = (pow(px+0.6, 2)+pow(py, 2)<1.25);
-                if(!(f1&&f2&&f3)){
-                    goodQuality = false;
-                    break;
-                }
-
+            if(tempUPCpointer->isTrigger(570704)&&tempUPCpointer->getRunNumber()>18083025){
+                mUPCTrees[3]->Fill();
+                filtered_entries[3]++;
             }
 
-            if(!goodQuality){ continue; }
-
-            //no vertex
-            if(tempUPCpointer->getNPrimVertices()>0){
-                continue;
-            }
-            //no BBCL
-            if(tempUPCpointer->getBEMCMultiplicity()>0){
-                continue;
-            }
-
-            //end of tests
-
-            //filling
-            if(goodQuality){
-                mUPCTree->Fill();
-                filtered_entries++;
-            }
         } while(myReader.Next());
 
         //waiting for file opening to check if there were any filtered entries
-        if(filtered_entries==0){
-            cout<<"Finished operation on output file "<<outfileName<<" with "<<tempTree->GetEntries()<<" entries and 0 filtered entries, the file will be deleted"<<endl;
+        int total_filtered_entries = 0;
+        for(int i = 0; i<4; i++){
+            if(filtered_entries[i]==0){
+                mUPCTrees[i]->Delete();
+                outputFiles[i]->cd();
+                outputFiles[i]->Close();
+                gSystem->Unlink(outfileNames[i].c_str());
+            }
+        }
 
+        for(int i = 0; i<4; i++){
+            total_filtered_entries += filtered_entries[i];
+            if(filtered_entries[i]!=0){
+                outputFiles[i]->cd();
+                mUPCTrees[i]->Write();
+                outputFiles[i]->Close();
+            }
+        }
+
+        if(total_filtered_entries==0){
+            cout<<"Finished operation on input file "<<fileName<<" with "<<tempTree->GetEntries()<<" entries and 0 filtered entries, all resulting files will be deleted"<<endl;
             tempFile->Close();
-            mUPCTree->Delete();
-
-            outputFile->cd();
-            outputFile->Close();
-            gSystem->Unlink(outfileName.c_str());
             return 0;
         }
 
-        outputFile->cd();
-        mUPCTree->Write();
-        outputFile->Close();
-
-        cout<<"Finished operation on output file "<<outfileName<<" with "<<tempTree->GetEntries()<<" entries and "<<filtered_entries<<" filtered entries"<<endl;
+        cout<<"Finished operation on input file "<<fileName<<" with "<<tempTree->GetEntries()<<" entries and "<<total_filtered_entries<<" filtered entries"<<endl;
         tempFile->Close();
 
-        return filtered_entries;
+        return total_filtered_entries;
         };
 
     auto redFunction = [](const std::vector<int> &mapV){

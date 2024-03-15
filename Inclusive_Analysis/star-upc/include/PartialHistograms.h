@@ -9,35 +9,96 @@ class PartialHistograms{
 private:
     StRPEvent *privateRPEventPointer;
     StUPCEvent *privateUPCEventPointer;
-    std::vector<bool(*)(StRPEvent *, StUPCEvent *, TH1 *)> functionVector;
+    std::vector<int> *privateAllowedRPTracks;
+    std::vector<int> *privateAllowedUPCTracks;
+    std::vector<bool(*)(StRPEvent *, StUPCEvent *, std::vector<int> *, std::vector<int> *)> necessaryCutVector;
+    std::vector<bool(*)(StRPEvent *, StUPCEvent *, TH1 *, std::vector<int> *, std::vector<int> *)> histogramCutVector;
+    //checks if whole event is deleted or just some tracks
+    std::vector<bool> IsNecessaryCutFull;
+    std::vector<bool> IsHistogramCutFull;
     std::vector<TH1 *> histVector;
-    std::vector<bool> boolVector;
 public:
-    PartialHistograms(/* args */){}
+    PartialHistograms(/* args */){
+        privateAllowedRPTracks = new std::vector<int>;
+        privateAllowedUPCTracks = new std::vector<int>;
+    }
     ~PartialHistograms(){}
-    void GetEventPointers(StRPEvent *, StUPCEvent *);
-    void AddCut(bool(StRPEvent *, StUPCEvent *, TH1 *), TH1 *);
+    void SetEventPointers(StRPEvent *, StUPCEvent *);
+    void AddNecessaryCut(bool (*f)(StRPEvent *, StUPCEvent *, std::vector<int> *, std::vector<int> *), bool);
+    void AddHistogramCut(bool (*f)(StRPEvent *, StUPCEvent *, TH1 *, std::vector<int> *, std::vector<int> *), TH1 *, bool);
     void ProcessEvent();
 };
 
-void PartialHistograms::AddCut(bool f(StRPEvent *, StUPCEvent *, TH1 *), TH1 *hist){
-    functionVector.push_back(f);
-    histVector.push_back(hist);
-    boolVector.push_back(false);
+void PartialHistograms::AddNecessaryCut(bool f(StRPEvent *, StUPCEvent *, std::vector<int> *, std::vector<int> *), bool DoesItCutOutWholeEvent){
+    necessaryCutVector.push_back(f);
+    IsNecessaryCutFull.push_back(DoesItCutOutWholeEvent);
 }
 
-void PartialHistograms::GetEventPointers(StRPEvent *RPEventPointer, StUPCEvent *UPCEventPointer){
+void PartialHistograms::AddHistogramCut(bool f(StRPEvent *, StUPCEvent *, TH1 *, std::vector<int> *, std::vector<int> *), TH1 *hist, bool DoesItCutOutWholeEvent){
+    histogramCutVector.push_back(f);
+    histVector.push_back(hist);
+    IsHistogramCutFull.push_back(DoesItCutOutWholeEvent);
+}
+
+void PartialHistograms::SetEventPointers(StRPEvent *RPEventPointer, StUPCEvent *UPCEventPointer){
+    //cleaning
+    privateAllowedRPTracks->clear();
+    privateAllowedUPCTracks->clear();
+    //filling again
     privateRPEventPointer = RPEventPointer;
     privateUPCEventPointer = UPCEventPointer;
+    for(long unsigned int i = 0; i<privateRPEventPointer->getNumberOfTracks(); i++){
+        privateAllowedRPTracks->push_back(i);
+    }
+    for(long unsigned int i = 0; i<privateUPCEventPointer->getNumberOfTracks(); i++){
+        privateAllowedUPCTracks->push_back(i);
+    }
+
 }
 
 void PartialHistograms::ProcessEvent(){
-    for(long unsigned int i = 0; i<functionVector.size(); i++){
-        boolVector[i] = functionVector[i](privateRPEventPointer, privateUPCEventPointer, nullptr);
+    //if there's something wrong, it just stops analysing that event, thanks to return
+
+    //necessary cuts
+    for(long unsigned int i = 0; i<necessaryCutVector.size(); i++){
+        if(IsNecessaryCutFull[i]){
+            if(!necessaryCutVector[i](privateRPEventPointer, privateUPCEventPointer, privateAllowedRPTracks, privateAllowedUPCTracks)){
+                return;
+            }
+        } else{
+            necessaryCutVector[i](privateRPEventPointer, privateUPCEventPointer, privateAllowedRPTracks, privateAllowedUPCTracks);
+        }
     }
-    if(std::count(boolVector.begin(), boolVector.end(), false)==1){
-        int index_of_false = std::find(boolVector.begin(), boolVector.end(), false)-boolVector.begin();
-        functionVector[index_of_false](privateRPEventPointer, privateUPCEventPointer, histVector[index_of_false]);
+    //histogram cuts
+    for(long unsigned int omittedCut = 0; omittedCut<histogramCutVector.size(); omittedCut++){
+        //reset for identical starting conditions
+        privateAllowedRPTracks->clear();
+        privateAllowedUPCTracks->clear();
+        for(int i = 0; i<privateRPEventPointer->getNumberOfTracks(); i++){
+            privateAllowedRPTracks->push_back(i);
+        }
+        for(int i = 0; i<privateUPCEventPointer->getNumberOfTracks(); i++){
+            privateAllowedUPCTracks->push_back(i);
+        }
+        //applying every cut except one
+        bool didPassAllTestsExceptOmittedOne = true;
+        for(long unsigned int i = 0; i<histogramCutVector.size(); i++){
+            if(i==omittedCut){
+                continue;
+            }
+            if(IsHistogramCutFull[i]){
+                if(!histogramCutVector[i](privateRPEventPointer, privateUPCEventPointer, nullptr, privateAllowedRPTracks, privateAllowedUPCTracks)){
+                    didPassAllTestsExceptOmittedOne = false;
+                    break;
+                }
+            } else{
+                histogramCutVector[i](privateRPEventPointer, privateUPCEventPointer, nullptr, privateAllowedRPTracks, privateAllowedUPCTracks);
+            }
+        }
+        //filling histogram associated with that one cut
+        if(didPassAllTestsExceptOmittedOne){
+            histogramCutVector[omittedCut](privateRPEventPointer, privateUPCEventPointer, histVector[omittedCut], privateAllowedRPTracks, privateAllowedUPCTracks);
+        }
     }
 }
 

@@ -134,85 +134,22 @@ int main(int argc, char **argv){
         mUPCTree->SetBranchAddress("mUPCEvent", &tempUPCpointer);
         mUPCTree->SetBranchAddress("mRPEvent", &tempRPpointer);
 
-        // additional helpful variables
-        bool goodQuality;
-        double firstBranch, secondBranch;
-        bool f1, f2, f3;
-        double px, py;
-
         // actual copying
         do{
-            goodQuality = true;
             //for some reason it *needs* to be here, God knows why
             tempUPCpointer = StUPCEventInstance.Get();
             tempRPpointer = StRPEventInstance.Get();
 
             //tests
             //trigger 570704 (zero bias trigger)
-            if(!tempUPCpointer->isTrigger(570704)){
+            if(!(tempUPCpointer->isTrigger(570701)||tempUPCpointer->isTrigger(570705)||tempUPCpointer->isTrigger(570711))){
                 continue;
             }
-            //2 tracks
-            if(tempRPpointer->getNumberOfTracks()!=2){
-                continue;
-            }
-            //1 track east, 1 track west (neat trick - assigning negative to east by
-            //substracting 1.5, and if after multiplying they are <0, they are from opposite sides
-            firstBranch = tempRPpointer->getTrack(0)->branch();
-            secondBranch = tempRPpointer->getTrack(1)->branch();
-            if((firstBranch-1.5)*(secondBranch-1.5)>0){
-                continue;
-            }
-            //at least 3 out of 4 planes on both and both should have both RPs hit
-            //also fiducial
-            for(unsigned int k = 0; k<tempRPpointer->getNumberOfTracks(); ++k){
-                // Get pointer to k-th track in Roman Pot data collection
-                StUPCRpsTrack *trk = tempRPpointer->getTrack(k);
-                trk->setEvent(tempRPpointer);
-                //there were problems with apparently not having track point like, entirely???
-                //so the first is check point if they do have them
-                //and then if points are of good quality
-                if(trk->getTrackPoint(0)==nullptr||trk->getTrackPoint(1)==nullptr){
-                    goodQuality = false;
-                    break;
-                }
-                //check if track has at least 3 of 4 RP planes used
-                if(trk->getTrackPoint(0)->planesUsed()<3||trk->getTrackPoint(1)->planesUsed()<3){
-                    goodQuality = false;
-                    break;
-                }
-
-                //fiducial
-                px = trk->pVec().X();
-                py = trk->pVec().Y();
-                f1 = (0.4<abs(py)&&abs(py)<0.8);
-                f2 = (-0.27<px);
-                f3 = (pow(px+0.6, 2)+pow(py, 2)<1.25);
-                if(!(f1&&f2&&f3)){
-                    goodQuality = false;
-                    break;
-                }
-
-            }
-
-            if(!goodQuality){ continue; }
-
-            //no vertex
-            if(tempUPCpointer->getNPrimVertices()>0){
-                continue;
-            }
-            //no BBCL
-            if(tempUPCpointer->getBEMCMultiplicity()>0){
-                continue;
-            }
-
-            //end of tests
 
             //filling
-            if(goodQuality){
-                mUPCTree->Fill();
-                filtered_entries++;
-            }
+            mUPCTree->Fill();
+            filtered_entries++;
+
         } while(myReader.Next());
 
         //waiting for file opening to check if there were any filtered entries
