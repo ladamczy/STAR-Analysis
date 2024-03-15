@@ -4,7 +4,7 @@
 @ nFile = 0
 eval set filename = '$INPUTFILE'$nFile
 set scriptdir = "/star/u/adamczyk/STAR-Analysis/test/build"
-set libdir = "/star/u/adamczyk/STAR-Analysis/star-upc/build"
+set libdir = "/star/u/adamczyk/STAR-Analysis/star-upc-new/build"
 rm -rf /star/data05/scratch/adamczyk/test/&file;
 source /afs/rhic.bnl.gov/star/ROOT/6.20.08/build/bin/thisroot.csh
 setenv LD_LIBRARY_PATH "${LD_LIBRARY_PATH}:${libdir}/"
@@ -12,6 +12,6 @@ ${scriptdir}/MonteCarloEfficiency ${filename} &file;
         </command>
         <stdout URL="file:/star/data05/scratch/adamczyk/test/$JOBID.out" />
         <stderr URL="file:/star/data05/scratch/adamczyk/test/$JOBID.err" />
-        <input URL="file:/star/data01/pwg_tasks/upc03/pp17/UPC_P20ic/&file;" />
+        <input URL="file:/star/u/adamczyk/pwd/picoUPC/test_upcdst2/&file;" />
 	<output fromScratch="&file;" toURL="file:/star/data05/scratch/adamczyk/test/" />
 </job>
