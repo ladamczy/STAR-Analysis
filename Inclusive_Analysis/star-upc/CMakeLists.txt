@@ -10,8 +10,11 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(SHARED_FOLDER ../../star-upc-new)
 
 #sources for shared library LIB
-file(GLOB_RECURSE SRCS "${SHARED_FOLDER}/src/*.cxx")
-list(TRANSFORM SRCS REPLACE ${CMAKE_CURRENT_SOURCE_DIR}/ "")
+#way for CMake 3.12+ because TRANSFORM is that new and STAR has 3.11.2 CMake
+# file(GLOB_RECURSE SRCS "${SHARED_FOLDER}/src/*.cxx")
+# list(TRANSFORM SRCS REPLACE ${CMAKE_CURRENT_SOURCE_DIR}/ "")
+file(GLOB_RECURSE TEMP_SRCS "${SHARED_FOLDER}/src/*.cxx")
+string(REPLACE ${CMAKE_CURRENT_SOURCE_DIR}/ "" SRCS "${TEMP_SRCS}")
 
 #name of shared library LIB
 set (LIB star-upc)
