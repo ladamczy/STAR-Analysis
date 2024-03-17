@@ -85,7 +85,9 @@ include_directories(include)
 #create executables in BIN
 foreach(IBIN ${BIN})
   #IBIN is full path, TEMP_BIN only the filename
-  get_filename_component(TEMP_BIN ${IBIN} NAME_WLE)
+  #again, CMake 3.11.2
+  # get_filename_component(TEMP_BIN ${IBIN} NAME_WLE)
+  get_filename_component(TEMP_BIN ${IBIN} NAME_WE)
   add_executable(${TEMP_BIN} ${IBIN})
   target_link_libraries(${TEMP_BIN} ${LIB} ${ROOT_DEPS})
 endforeach(IBIN ${BIN})
