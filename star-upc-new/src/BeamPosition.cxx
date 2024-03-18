@@ -11,7 +11,7 @@ using namespace std;
 
 vector <vector<double> > ReadFillPositionData(string file)
 {
-	ifstream FileName(file);
+	ifstream FileName(file.c_str());
 	string line;
 	vector <vector<string> > Data;
 	while (getline(FileName, line))
