@@ -54,9 +54,6 @@
 #include <TLatex.h> 
 #include <TMath.h>
 #include <TLorentzVector.h>
-#include <ROOT/TThreadedObject.hxx>
-#include <TTreeReader.h>
-#include <ROOT/TTreeProcessorMT.hxx>
 
 // picoDst headers
 #include "StRPEvent.h"
@@ -85,7 +82,6 @@ const double particleMass[nParticles] = { 0.13957, 0.497611, 0.93827 }; // pion,
 const double beamMomentum = 254.867;
 
 bool hasEnding(std::string const &, std::string const &);
-bool CheckValue(ROOT::Internal::TTreeReaderValueBase &);
 bool IsInXiElasticSpot(StUPCRpsTrack *, StUPCRpsTrack *);
 bool IsInMomElasticSpot(StUPCRpsTrack *, StUPCRpsTrack *);
 
@@ -107,10 +103,8 @@ int main(int argc, char **argv){
     //Afterburner things
     LoadOffsetFile("STAR-Analysis/share/OffSetsCorrectionsRun17.list", mCorrection);
 
-    //creating a reader and all stuff
-    TTreeReader myReader("mUPCTree", infile);
-    TTreeReaderValue<StUPCEvent> StUPCEventInstance(myReader, "mUPCEvent");
-    TTreeReaderValue<StRPEvent> StRPEventInstance(myReader, "mRPEvent");
+    //creating a TTree and all stuff
+    TTree *inputTree = (TTree *)infile->Get("mUPCTree");
     //setting up a tree & output file
     string outfileName;
     if(hasEnding(outputPath, "/")){
@@ -123,8 +117,8 @@ int main(int argc, char **argv){
     int filtered_entries = 0;
 
     // additional helpful variables
-    StUPCEvent *tempUPCpointer;
-    StRPEvent *tempRPpointerBeforeAfterburner;
+    StUPCEvent *tempUPCpointer = new StUPCEvent();
+    StRPEvent *tempRPpointerBeforeAfterburner = new StRPEvent();
     StRPEvent *tempRPpointer;
     // bool IsCPTAndRun;
     // bool IsCPTnoBBCLAndRun;
@@ -134,35 +128,28 @@ int main(int argc, char **argv){
     // double px, py;
     bool IsFirstLoop = true;
 
+    //setting up branches
+    inputTree->Branch("mUPCEvent", tempUPCpointer);
+    inputTree->Branch("mRPEvent", tempRPpointerBeforeAfterburner);
+    inputTree->SetBranchAddress("mUPCEvent", &tempUPCpointer);
+    inputTree->SetBranchAddress("mRPEvent", &tempRPpointerBeforeAfterburner);
+    mUPCTree->Branch("mUPCEvent", tempUPCpointer);
+    mUPCTree->Branch("mRPEvent", tempRPpointerBeforeAfterburner);
+
     // actual copying
-    while(myReader.Next()){
+    for(Long64_t i = 0; i<inputTree->GetEntries(); i++){
+        inputTree->GetEntry(i);
         if(!IsFirstLoop){
             //final in-loop cleaning after Afterburner has to happen here cause we might not get to it
             //because of multiple "continue;"
             delete tempRPpointer;
         }
         if(IsFirstLoop){
-            // Check that branches exist and their types match our expectation.
-            if(!CheckValue(StUPCEventInstance)) return 1;
-            if(!CheckValue(StRPEventInstance)) return 1;
             IsFirstLoop = false;
-            //setup of iterated variables
-            tempUPCpointer = StUPCEventInstance.Get();
-            tempRPpointerBeforeAfterburner = StRPEventInstance.Get();
-            //setting up branches
-            mUPCTree->Branch("mUPCEvent", tempUPCpointer);
-            mUPCTree->Branch("mRPEvent", tempRPpointerBeforeAfterburner);
         }
         // IsCPTAndRun = false;
         // IsCPTnoBBCLAndRun = false;
         goodQuality = true;
-        // has to be here or it doesnt work
-        // IT IS NOT A BUG
-        // this class (StUPCwhatever) is just weird
-        // this .Get updates proxies, without what TTreeReaderValue are invalidated
-        // https://root.cern.ch/doc/master/classTTreeReader.html#ac972f6a5e4f06456b9fa190f0ac040ad
-        StUPCEventInstance.Get();
-        StRPEventInstance.Get();
         //Afterburner fixes
         tempRPpointer = new StRPEvent(*tempRPpointerBeforeAfterburner);
         tempRPpointer->clearEvent();
@@ -248,7 +235,6 @@ int main(int argc, char **argv){
         int chargeOfGoodTracks = 0;
         for(int i = 0; i<tempUPCpointer->getNumberOfTracks(); i++){
             StUPCTrack *tmptrk = tempUPCpointer->getTrack(i);
-            // if(tmptrk->getFlag(StUPCTrack::kTof)&&abs(tmptrk->getEta())<0.9&&tmptrk->getPt()>0.2&&tmptrk->getNhitsFit()>20){
             if(tmptrk->getFlag(StUPCTrack::kTof)&&abs(tmptrk->getEta())<1.1&&tmptrk->getPt()>0.15&&tmptrk->getNhitsFit()>15&&tmptrk->getFlag(StUPCTrack::kV0)){
                 nOfGoodTracks++;
                 chargeOfGoodTracks += tmptrk->getCharge();
@@ -269,7 +255,7 @@ int main(int argc, char **argv){
 
     //waiting for file opening to check if there were any filtered entries
     if(filtered_entries==0){
-        cout<<"Finished operation on output file "<<outfileName<<" with "<<myReader.GetEntries()<<" entries and 0 filtered entries, the file will be deleted"<<endl;
+        cout<<"Finished operation on output file "<<outfileName<<" with "<<inputTree->GetEntries()<<" entries and 0 filtered entries, the file will be deleted"<<endl;
 
         infile->Close();
         mUPCTree->Delete();
@@ -284,7 +270,7 @@ int main(int argc, char **argv){
     mUPCTree->Write();
     outputFile->Close();
 
-    cout<<"Finished operation on output file "<<outfileName<<" with "<<myReader.GetEntries()<<" entries and "<<filtered_entries<<" filtered entries"<<endl;
+    cout<<"Finished operation on output file "<<outfileName<<" with "<<inputTree->GetEntries()<<" entries and "<<filtered_entries<<" filtered entries"<<endl;
     infile->Close();
 
     return 0;
@@ -299,14 +285,14 @@ bool hasEnding(std::string const &fullString, std::string const &ending){
     }
 }
 
-bool CheckValue(ROOT::Internal::TTreeReaderValueBase &value){
-    if(value.GetSetupStatus()<0){
-        std::cerr<<"Error "<<value.GetSetupStatus()
-            <<"setting up reader for "<<value.GetBranchName()<<'\n';
-        return false;
-    }
-    return true;
-}
+// bool CheckValue(ROOT::Internal::TTreeReaderValueBase &value){
+//     if(value.GetSetupStatus()<0){
+//         std::cerr<<"Error "<<value.GetSetupStatus()
+//             <<"setting up reader for "<<value.GetBranchName()<<'\n';
+//         return false;
+//     }
+//     return true;
+// }
 
 bool IsInXiElasticSpot(StUPCRpsTrack *east, StUPCRpsTrack *west){
     //before Afterburner
