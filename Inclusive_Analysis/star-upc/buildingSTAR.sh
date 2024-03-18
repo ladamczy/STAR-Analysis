@@ -2,7 +2,7 @@
 
 # cd ~/star-upc
 cd $(dirname $0)
-cp ./Different_CMakes/CMakeListsNormal.txt ./CMakeLists.txt
+cp ./Different_CMakes/CMakeListsStar.txt ./CMakeLists.txt
 # rm -r build
 # mkdir build
 cd build
