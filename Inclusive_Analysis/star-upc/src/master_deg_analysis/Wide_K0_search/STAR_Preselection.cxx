@@ -117,8 +117,8 @@ int main(int argc, char **argv){
     int filtered_entries = 0;
 
     // additional helpful variables
-    StUPCEvent *tempUPCpointer = new StUPCEvent();
-    StRPEvent *tempRPpointerBeforeAfterburner = new StRPEvent();
+    StUPCEvent *tempUPCpointer = nullptr;
+    StRPEvent *tempRPpointerBeforeAfterburner = nullptr;
     StRPEvent *tempRPpointer;
     // bool IsCPTAndRun;
     // bool IsCPTnoBBCLAndRun;
