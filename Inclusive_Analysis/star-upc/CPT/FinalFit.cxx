@@ -9,8 +9,11 @@ int FinalFit(){
 
     // delete fileinfo;
     // delete filedialog;
-    TFile *anaoutput1 = TFile::Open("/home/adam/STAR-Analysis/Inclusive_Analysis/star-upc/CPT/AnaOutput_Inclusive_analysis_with_STUPCV0_with_extended_range_noAfterburner.root");
-    TFile *anaoutput2 = TFile::Open("/home/adam/STAR-Analysis/Inclusive_Analysis/star-upc/CPTnoBBCL/AnaOutput_Inclusive_analysis_with_STUPCV0_with_extended_range_noAfterburner.root");
+    // TFile *anaoutput1 = TFile::Open("/home/adam/STAR-Analysis/Inclusive_Analysis/star-upc/CPT/AnaOutput_Inclusive_analysis_with_STUPCV0_with_extended_range_noAfterburner.root");
+    // TFile *anaoutput2 = TFile::Open("/home/adam/STAR-Analysis/Inclusive_Analysis/star-upc/CPTnoBBCL/AnaOutput_Inclusive_analysis_with_STUPCV0_with_extended_range_noAfterburner.root");
+    TFile *anaoutput1 = TFile::Open("/home/adam/STAR-Analysis/Inclusive_Analysis/star-upc/CPT/AnaOutput_Inclusive_analysis_with_STUPCV0_with_extended_range_noAfterburner_new_data.root");
+    TFile *anaoutput2 = TFile::Open("/home/adam/STAR-Analysis/Inclusive_Analysis/star-upc/CPTnoBBCL/AnaOutput_Inclusive_analysis_with_STUPCV0_with_extended_range_noAfterburner_new_data.root");
+
 
     gStyle->SetFrameLineWidth(3);
     gStyle->SetOptFit(111);
@@ -32,7 +35,14 @@ int FinalFit(){
     resultKHist.SetMinimum(0);
     resultKHist.SetMarkerStyle(kFullCircle);
     resultKHist.Fit(GfitK, "0");
-    resultKHist.DrawClone("E");
+    TH1D *tempHist = (TH1D *)resultKHist.DrawClone("E");
+    gPad->Update();
+    TPaveStats *st = (TPaveStats *)tempHist->FindObject("stats");
+    st->SetX1NDC(0.15);
+    st->SetX2NDC(0.35);
+    st->SetY1NDC(0.65);
+    st->SetY2NDC(0.85);
+    st->SetBorderSize(0);
     Double_t paramsK[5];
     GfitK->GetParameters(paramsK);
     cout<<"PARAMETERS:"<<endl;

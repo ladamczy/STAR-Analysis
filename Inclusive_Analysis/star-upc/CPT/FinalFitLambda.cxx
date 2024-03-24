@@ -9,8 +9,10 @@ int FinalFitLambda(){
 
     // delete fileinfo;
     // delete filedialog;
-    TFile *anaoutput1 = TFile::Open("/home/adam/STAR-Analysis/Inclusive_Analysis/star-upc/CPT/AnaOutput_Inclusive_analysis_with_STUPCV0_with_extended_range_noAfterburner.root");
-    TFile *anaoutput2 = TFile::Open("/home/adam/STAR-Analysis/Inclusive_Analysis/star-upc/CPTnoBBCL/AnaOutput_Inclusive_analysis_with_STUPCV0_with_extended_range_noAfterburner.root");
+    // TFile *anaoutput1 = TFile::Open("/home/adam/STAR-Analysis/Inclusive_Analysis/star-upc/CPT/AnaOutput_Inclusive_analysis_with_STUPCV0_with_extended_range_noAfterburner.root");
+    // TFile *anaoutput2 = TFile::Open("/home/adam/STAR-Analysis/Inclusive_Analysis/star-upc/CPTnoBBCL/AnaOutput_Inclusive_analysis_with_STUPCV0_with_extended_range_noAfterburner.root");
+    TFile *anaoutput1 = TFile::Open("/home/adam/STAR-Analysis/Inclusive_Analysis/star-upc/CPT/AnaOutput_Inclusive_analysis_with_STUPCV0_with_extended_range_noAfterburner_new_data.root");
+    TFile *anaoutput2 = TFile::Open("/home/adam/STAR-Analysis/Inclusive_Analysis/star-upc/CPTnoBBCL/AnaOutput_Inclusive_analysis_with_STUPCV0_with_extended_range_noAfterburner_new_data.root");
 
     gStyle->SetFrameLineWidth(3);
     gStyle->SetOptFit(111);
@@ -33,14 +35,21 @@ int FinalFitLambda(){
     TF1 *GfitLambdaBcg = new TF1("GfitLambdaBcg", "pol2", fitmin, fitmax);
     TF1 *GfitLambda1Sig = new TF1("GfitLambda1Sig", "gausn", fitmin, fitmax);
     GfitLambda->SetParNames("Constant", "Mean", "Sigma", "c", "b", "a");
-    GfitLambda->SetParameters(100, 1.115, 5e-3, 2376400, -4360000, 3000000);
+    GfitLambda->SetParameters(100, 1.115, 5e-3, 2400000, -4560000, 1500000);
     GfitLambda->SetParLimits(0, 0, 200);
     GfitLambda->SetParLimits(1, 1.11, 1.12);
     GfitLambda->SetParLimits(2, 0, 0.01);
     resultLambdaHist.SetMinimum(0);
     resultLambdaHist.SetMarkerStyle(kFullCircle);
     resultLambdaHist.Fit(GfitLambda, "0BR");
-    resultLambdaHist.DrawClone("E");
+    TH1D *tempHist = (TH1D *)resultLambdaHist.DrawClone("E");
+    gPad->Update();
+    TPaveStats *st = (TPaveStats *)tempHist->FindObject("stats");
+    st->SetX1NDC(0.15);
+    st->SetX2NDC(0.35);
+    st->SetY1NDC(0.65);
+    st->SetY2NDC(0.85);
+    st->SetBorderSize(0);
     Double_t paramsK[6];
     GfitLambda->GetParameters(paramsK);
     cout<<"PARAMETERS:"<<endl;
