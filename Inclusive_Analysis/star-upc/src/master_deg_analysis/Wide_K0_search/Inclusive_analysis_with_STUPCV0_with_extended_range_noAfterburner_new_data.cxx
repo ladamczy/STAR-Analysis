@@ -251,7 +251,7 @@ int main(int argc, char **argv){
                     bool Lambdatest2 = tempParticle->dcaDaughters()<=2.5;
                     bool Lambdatest3 = tempParticle->DCABeamLine()<=2.5;
                     bool Lambdatest4 = tempParticle->pointingAngleHypo()>0.925;
-                    bool Lambdatest5 = tempParticle->decayLengthHypo()<7.0;
+                    bool Lambdatest5 = tempParticle->decayLengthHypo()<3.0;
                     //tests before filling
                     double mLambdacandidate = tempParticle->m();
                     if(Lambdatest2&&Lambdatest3&&(Lambdatest4||(!Lambdatest5))){
@@ -286,7 +286,7 @@ int main(int argc, char **argv){
                     bool Lambdatest2 = tempParticle->dcaDaughters()<=2.5;
                     bool Lambdatest3 = tempParticle->DCABeamLine()<=2.5;
                     bool Lambdatest4 = tempParticle->pointingAngleHypo()>0.925;
-                    bool Lambdatest5 = tempParticle->decayLengthHypo()<7.0;
+                    bool Lambdatest5 = tempParticle->decayLengthHypo()<3.0;
                     //tests before filling
                     double mLambdacandidate = tempParticle->m();
                     if(Lambdatest2&&Lambdatest3&&(Lambdatest4||(!Lambdatest5))){
