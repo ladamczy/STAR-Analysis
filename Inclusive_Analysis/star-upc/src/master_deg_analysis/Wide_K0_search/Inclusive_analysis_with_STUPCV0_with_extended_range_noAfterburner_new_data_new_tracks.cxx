@@ -161,10 +161,6 @@ int main(int argc, char **argv){
                 if(!tempTrack->getFlag(StUPCTrack::kV0)){
                     continue;
                 }
-                //old data - kV0 false and kCEP false
-                // if(tempTrack->getFlag(StUPCTrack::kV0)||tempTrack->getFlag(StUPCTrack::kCEP)){
-                //     continue;
-                // }
                 //rest of the tests
                 if(!tempTrack->getFlag(StUPCTrack::kTof)){
                     continue;
