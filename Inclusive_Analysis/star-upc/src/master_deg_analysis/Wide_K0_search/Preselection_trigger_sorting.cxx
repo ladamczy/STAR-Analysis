@@ -163,8 +163,11 @@ int main(int argc, char **argv){
                 filtered_entries[2]++;
             }
             if(tempUPCpointer->isTrigger(570704)&&tempUPCpointer->getRunNumber()>18083025){
+                //BBCL veto
+                if(tempUPCpointer->getBBCLargeEast()<52&&tempUPCpointer->getBBCLargeWest()<52&&tempUPCpointer->getBBCSmallEast()<52&&tempUPCpointer->getBBCSmallWest()<52){
                 mUPCTrees[3]->Fill();
                 filtered_entries[3]++;
+                }
             }
 
         } while(myReader.Next());
