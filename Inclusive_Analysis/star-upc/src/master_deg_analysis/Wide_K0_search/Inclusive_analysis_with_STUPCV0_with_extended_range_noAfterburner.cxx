@@ -95,6 +95,15 @@ int main(int argc, char **argv){
     outsideprocessing.AddHistogram(TH1D("MppiNarrowWithPidEcut", "#Lambda^{0} mass in narrow range with dE/dx cuts;m_{p^{#pm}#pi^{#mp}} [GeV];Number of pairs", lambdaMassWindowNarrowBins, lambdaMassWindowNarrowLow, lambdaMassWindowNarrowHigh));
     outsideprocessing.AddHistogram(TH1D("MppiVeryWideWithPidEcut", "Pion pair mass in a very wide range with dE/dx cuts;m_{p^{#pm}#pi^{#mp}} [GeV];Number of pairs", 500, 0, 5));
 
+    outsideprocessing.AddHistogram(TH1D("etaK0", "K^{0}_{S} events density by #eta;#eta;", 300, -1.5, 1.5));
+    outsideprocessing.AddHistogram(TH1D("etapiK0", "#pi from K^{0}_{S} decay density by #eta;#eta;", 300, -1.5, 1.5));
+    outsideprocessing.AddHistogram(TH1D("etaLambda", "#Lambda^{0} events density by #eta;#eta;", 300, -1.5, 1.5));
+    outsideprocessing.AddHistogram(TH1D("etapiLambda", "#pi from #Lambda^{0} decay density by #eta;#eta;", 300, -1.5, 1.5));
+    outsideprocessing.AddHistogram(TH1D("phiK0", "K^{0}_{S} events density by #phi;#phi;", 314, -TMath::Pi(), TMath::Pi()));
+    outsideprocessing.AddHistogram(TH1D("phipiK0", "#pi from K^{0}_{S} decay density by #phi;#phi;", 314, -TMath::Pi(), TMath::Pi()));
+    outsideprocessing.AddHistogram(TH1D("phiLambda", "#Lambda^{0} events density by #phi;#phi;", 314, -TMath::Pi(), TMath::Pi()));
+    outsideprocessing.AddHistogram(TH1D("phipiLambda", "#pi from #Lambda^{0} decay density by #phi;#phi;", 314, -TMath::Pi(), TMath::Pi()));
+
     // int triggers[] = { 570701, 570705, 570711, 590701, 590705, 590708 };
     // outsideprocessing.AddHistogram(TH1D("triggerHist", "Data triggers;Trigger ID;Number of events", 6, 0, 6));
     // for(int i = 0;i<6;i++){
@@ -354,6 +363,12 @@ int main(int argc, char **argv){
                 if(isPi(vector_Track_positive[std::get<1>(vector_K0_pairs[i])])&&isPi(vector_Track_negative[std::get<2>(vector_K0_pairs[i])])){
                     insideprocessing.Fill("MpipiNarrowWithPidEcut", tempParticle->m());
                 }
+                insideprocessing.Fill("etaK0", tempParticle->eta());
+                insideprocessing.Fill("phiK0", tempParticle->phi());
+                insideprocessing.Fill("etapiK0", vector_Track_positive[std::get<1>(vector_K0_pairs[i])]->getEta());
+                insideprocessing.Fill("etapiK0", vector_Track_negative[std::get<2>(vector_K0_pairs[i])]->getEta());
+                insideprocessing.Fill("phipiK0", vector_Track_positive[std::get<1>(vector_K0_pairs[i])]->getPhi());
+                insideprocessing.Fill("phipiK0", vector_Track_negative[std::get<2>(vector_K0_pairs[i])]->getPhi());
                 delete tempParticle;
             }
             insideprocessing.Fill("K0multiplicity", vector_K0_pairs.size());
@@ -387,7 +402,16 @@ int main(int argc, char **argv){
                 } else if((!std::get<3>(vector_Lambda_pairs[i]))&&isPi(vector_Track_positive[std::get<1>(vector_Lambda_pairs[i])])&&isProton(vector_Track_negative[std::get<2>(vector_Lambda_pairs[i])])){
                     insideprocessing.Fill("MppiNarrowWithPidEcut", tempParticle->m());
                 }
+                insideprocessing.Fill("etaLambda", tempParticle->eta());
+                insideprocessing.Fill("phiLambda", tempParticle->phi());
+                if(std::get<3>(vector_Lambda_pairs[i])){
+                    insideprocessing.Fill("etapiLambda", vector_Track_negative[std::get<2>(vector_Lambda_pairs[i])]->getEta());
+                    insideprocessing.Fill("phipiLambda", vector_Track_negative[std::get<2>(vector_Lambda_pairs[i])]->getPhi());
 
+                } else{
+                    insideprocessing.Fill("etapiLambda", vector_Track_positive[std::get<1>(vector_Lambda_pairs[i])]->getEta());
+                    insideprocessing.Fill("phipiLambda", vector_Track_positive[std::get<1>(vector_Lambda_pairs[i])]->getPhi());
+                }
                 delete tempParticle;
             }
         }
