@@ -95,14 +95,16 @@ int main(int argc, char *argv[]){
     double stateMassMax = 40;
 
     //histograms
-    // TH1D K0multiplicity("K0multiplicity", "K0 multiplicity", 10, 0, 10);
-    // TH1D K0AdditionalTracks("K0AdditionalTracks", "At least two additional tracks except K0 daughters;m_{X} [GeV]", 20, 0, 20);
-    TH2D K0multiplicityXmass("K0multiplicityXmass", "K0 multiplicity with respect to mass of a central state;m_{X} [GeV]", stateBins, 0, stateMassMax, 10, 0, 10);
-    TEfficiency K0ratioXmass("K0ratioXmass", "Ratio of detected K0 to all measured events with respect to mass of a central state;m_{X} [GeV]", stateBins, 0, stateMassMax);
-    TH2D K0AdditionalTracksXmass("K0AdditionalTracksXmass", "At least two additional tracks except K0 daughters;m_{X} [GeV]", stateBins, 0, stateMassMax, 20, 0, 20);
-    TH2D LambdamultiplicityXmass("LambdamultiplicityXmass", "Lambda multiplicity with respect to mass of a central state;m_{X} [GeV]", stateBins, 0, stateMassMax, 10, 0, 10);
-    TEfficiency LambdaratioXmass("LambdaratioXmass", "Ratio of detected Lambda to all measured events with respect to mass of a central state;m_{X} [GeV]", stateBins, 0, stateMassMax);
-    TH2D LambdaAdditionalTracksXmass("LambdaAdditionalTracksXmass", "At least two additional tracks except Lambda daughters;m_{X} [GeV]", stateBins, 0, stateMassMax, 20, 0, 20);
+    TH1D K0multiplicity("K0multiplicity", "K^{0}_{S} multiplicity", 10, 0, 10);
+    TH1D K0AdditionalTracks("K0AdditionalTracks", "At least two additional tracks except K^{0}_{S} daughters", 20, 0, 20);
+    TH2D K0multiplicityXmass("K0multiplicityXmass", "K^{0}_{S} multiplicity with respect to mass of a central state;m_{X} [GeV]", stateBins, 0, stateMassMax, 10, 0, 10);
+    TEfficiency K0ratioXmass("K0ratioXmass", "Ratio of detected K^{0}_{S} to all measured events with respect to mass of a central state;m_{X} [GeV]", stateBins, 0, stateMassMax);
+    TH2D K0AdditionalTracksXmass("K0AdditionalTracksXmass", "At least two additional tracks except K^{0}_{S} daughters;m_{X} [GeV]", stateBins, 0, stateMassMax, 20, 0, 20);
+    TH1D Lambdamultiplicity("Lambdamultiplicity", "#Lambda^{0} multiplicity", 10, 0, 10);
+    TH1D LambdaAdditionalTracks("LambdaAdditionalTracks", "At least two additional tracks except #Lambda^{0} daughters", 20, 0, 20);
+    TH2D LambdamultiplicityXmass("LambdamultiplicityXmass", "#Lambda^{0} multiplicity with respect to mass of a central state;m_{X} [GeV]", stateBins, 0, stateMassMax, 10, 0, 10);
+    TEfficiency LambdaratioXmass("LambdaratioXmass", "Ratio of detected #Lambda^{0} to all measured events with respect to mass of a central state;m_{X} [GeV]", stateBins, 0, stateMassMax);
+    TH2D LambdaAdditionalTracksXmass("LambdaAdditionalTracksXmass", "At least two additional tracks except #Lambda^{0} daughters;m_{X} [GeV]", stateBins, 0, stateMassMax, 20, 0, 20);
 
     //Useful IDs
     const int K0sPDGid = 310;
@@ -206,15 +208,23 @@ int main(int argc, char *argv[]){
         double XStateMass = (temp4Vector-p1-p2).M();
 
         //histogram filling
+        // K0multiplicity
+        // K0AdditionalTracks
         // K0multiplicityXmass
         // K0ratioXmass
         // K0AdditionalTracksXmass
+        // Lambdamultiplicity
+        // LambdaAdditionalTracks
         // LambdamultiplicityXmass
         // LambdaratioXmass
         // LambdaAdditionalTracksXmass
+        K0multiplicity.Fill(nK0);
+        K0AdditionalTracks.Fill(nTracksInTPCAcceptance-nK0*2);
         K0multiplicityXmass.Fill(XStateMass, nK0);
         K0ratioXmass.Fill(nK0>0, XStateMass);
         K0AdditionalTracksXmass.Fill(XStateMass, nTracksInTPCAcceptance-nK0*2);
+        Lambdamultiplicity.Fill(nLambda);
+        LambdaAdditionalTracks.Fill(nTracksInTPCAcceptance-nLambda*2);
         LambdamultiplicityXmass.Fill(XStateMass, nLambda);
         LambdaratioXmass.Fill(nLambda>0, XStateMass);
         LambdaAdditionalTracksXmass.Fill(XStateMass, nTracksInTPCAcceptance-nLambda*2);
