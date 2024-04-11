@@ -91,16 +91,18 @@ int main(int argc, char *argv[]){
     pythia.init();
 
     //histogram variables
-    int stateBins = 100;
-    double stateMassMax = 20;
+    int stateBins = 40;
+    double stateMassMax = 40;
 
     //histograms
-    TH2D K0multiplicity("K0multiplicity", "K0 multiplicity with respect to mass of a central state", stateBins, 0, stateMassMax, 10, 0, 10);
-    TEfficiency K0ratio("K0ratio", "Ratio of detected K0 to all measured events with respect to mass of a central state", stateBins, 0, stateMassMax);
-    TH2D K0AdditionalTracks("K0AdditionalTracks", "At least two additional tracks except K0 daughters", stateBins, 0, stateMassMax, 20, 0, 20);
-    TH2D Lambdamultiplicity("Lambdamultiplicity", "Lambda multiplicity with respect to mass of a central state", stateBins, 0, stateMassMax, 10, 0, 10);
-    TEfficiency Lambdaratio("Lambdaratio", "Ratio of detected Lambda to all measured events with respect to mass of a central state", stateBins, 0, stateMassMax);
-    TH2D LambdaAdditionalTracks("LambdaAdditionalTracks", "At least two additional tracks except Lambda daughters", stateBins, 0, stateMassMax, 20, 0, 20);
+    // TH1D K0multiplicity("K0multiplicity", "K0 multiplicity", 10, 0, 10);
+    // TH1D K0AdditionalTracks("K0AdditionalTracks", "At least two additional tracks except K0 daughters;m_{X} [GeV]", 20, 0, 20);
+    TH2D K0multiplicityXmass("K0multiplicityXmass", "K0 multiplicity with respect to mass of a central state;m_{X} [GeV]", stateBins, 0, stateMassMax, 10, 0, 10);
+    TEfficiency K0ratioXmass("K0ratioXmass", "Ratio of detected K0 to all measured events with respect to mass of a central state;m_{X} [GeV]", stateBins, 0, stateMassMax);
+    TH2D K0AdditionalTracksXmass("K0AdditionalTracksXmass", "At least two additional tracks except K0 daughters;m_{X} [GeV]", stateBins, 0, stateMassMax, 20, 0, 20);
+    TH2D LambdamultiplicityXmass("LambdamultiplicityXmass", "Lambda multiplicity with respect to mass of a central state;m_{X} [GeV]", stateBins, 0, stateMassMax, 10, 0, 10);
+    TEfficiency LambdaratioXmass("LambdaratioXmass", "Ratio of detected Lambda to all measured events with respect to mass of a central state;m_{X} [GeV]", stateBins, 0, stateMassMax);
+    TH2D LambdaAdditionalTracksXmass("LambdaAdditionalTracksXmass", "At least two additional tracks except Lambda daughters;m_{X} [GeV]", stateBins, 0, stateMassMax, 20, 0, 20);
 
     //Useful IDs
     const int K0sPDGid = 310;
@@ -116,15 +118,15 @@ int main(int argc, char *argv[]){
     for(int iEvent = 0; iEvent<nEvents; ++iEvent){
         if(!pythia.next()) continue;
         //fishing for diffracted protons
-        int p1index = 0, p2index = 0;
+        int p1index = -1, p2index = -1;
         for(int part_index = 0; part_index<pythia.event.size(); part_index++){
             if(pythia.event[part_index].id()!=2212||pythia.event[pythia.event[part_index].mother1()].id()!=2212){
                 continue;
             }
             //choosing two with highest energies
-            if(p1index==0){
+            if(p1index<0){
                 p1index = part_index;
-            } else if(p2index==0){
+            } else if(p2index<0){
                 p2index = part_index;
                 //switch so 1st proton has pz>0
                 if(pythia.event[p1index].pz()<pythia.event[p2index].pz()){
@@ -147,8 +149,8 @@ int main(int argc, char *argv[]){
         if(!(isInFiducial(p1)&&isInFiducial(p2))){
             continue;
         }
-        //BBCL
-        if(!hasAtLeastNParticlesInBBCLarge(pythia.event, 1)){
+        //no BBCL
+        if(hasAtLeastNParticlesInBBCLarge(pythia.event, 1)){
             continue;
         }
         //non-elastic
@@ -156,7 +158,7 @@ int main(int argc, char *argv[]){
             continue;
         }
         //at least 2 with TOF and opposite signs
-        if(hasAtLeastNParticlesInTPC(pythia.event, 2)){
+        if(!hasAtLeastNParticlesInTPC(pythia.event, 2)){
             continue;
         }
         int charge = 0;
@@ -164,7 +166,8 @@ int main(int argc, char *argv[]){
         for(size_t i = 0; i<pythia.event.size(); i++){
             if(isParticleInTPCAcceptance(pythia.event[i])){
                 TPCParticles++;
-                charge += pythia.event[i].charge()/3;
+                //for some reason carge is in normal units now???
+                charge += pythia.event[i].charge();
             }
         }
         if(TPCParticles==abs(charge)){
@@ -178,10 +181,11 @@ int main(int argc, char *argv[]){
         std::vector<int> K0indices;
         std::vector<int> Lambdaindices;
         int tempDaughter1, tempDaughter2;
+        //gathering info in main loop
         for(int part_index = 0; part_index<pythia.event.size(); part_index++){
             if(isParticleInTPCAcceptance(pythia.event[part_index])){ nTracksInTPCAcceptance++; }
-            if(abs(pythia.event[part_index].id())==310){ K0indices.push_back(part_index); }
-            if(abs(pythia.event[part_index].id())==3122){ Lambdaindices.push_back(part_index); }
+            if(abs(pythia.event[part_index].id())==K0sPDGid){ K0indices.push_back(part_index); }
+            if(abs(pythia.event[part_index].id())==LambdaPDGid){ Lambdaindices.push_back(part_index); }
         }
         for(long unsigned int K0candidate = 0; K0candidate<K0indices.size(); K0candidate++){
             tempDaughter1 = pythia.event[K0indices[K0candidate]].daughter1();
@@ -202,18 +206,18 @@ int main(int argc, char *argv[]){
         double XStateMass = (temp4Vector-p1-p2).M();
 
         //histogram filling
-        // K0multiplicity
-        // K0ratio
-        // K0AdditionalTracks
-        // Lambdamultiplicity
-        // Lambdaratio
-        // LambdaAdditionalTracks
-        K0multiplicity.Fill(XStateMass, nK0);
-        K0ratio.Fill(nK0>0, XStateMass);
-        K0AdditionalTracks.Fill(XStateMass, nTracksInTPCAcceptance-nK0*2);
-        Lambdamultiplicity.Fill(XStateMass, nLambda);
-        Lambdaratio.Fill(nLambda>0, XStateMass);
-        LambdaAdditionalTracks.Fill(XStateMass, nTracksInTPCAcceptance-nLambda*2);
+        // K0multiplicityXmass
+        // K0ratioXmass
+        // K0AdditionalTracksXmass
+        // LambdamultiplicityXmass
+        // LambdaratioXmass
+        // LambdaAdditionalTracksXmass
+        K0multiplicityXmass.Fill(XStateMass, nK0);
+        K0ratioXmass.Fill(nK0>0, XStateMass);
+        K0AdditionalTracksXmass.Fill(XStateMass, nTracksInTPCAcceptance-nK0*2);
+        LambdamultiplicityXmass.Fill(XStateMass, nLambda);
+        LambdaratioXmass.Fill(nLambda>0, XStateMass);
+        LambdaAdditionalTracksXmass.Fill(XStateMass, nTracksInTPCAcceptance-nLambda*2);
     }
 
     outFile->cd();
@@ -232,10 +236,7 @@ bool isInFiducial(TLorentzVector tested_particle){
     bool f1 = (0.4<abs(py)&&abs(py)<0.8);
     bool f2 = (-0.27<px);
     bool f3 = (pow(px+0.6, 2)+pow(py, 2)<1.25);
-    if(!(f1&&f2&&f3)){
-        return false;
-    }
-    return true;
+    return f1&&f2&&f3;
 }
 
 double xi(TLorentzVector fourvec, double s = 510){

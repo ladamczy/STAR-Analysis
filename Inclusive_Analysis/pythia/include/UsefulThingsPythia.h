@@ -12,10 +12,7 @@ bool hasAtLeastNParticlesInTPC(Pythia8::Event event, int nParticles){
         }
     }
 
-    if(n<nParticles){
-        return false;
-    }
-    return true;
+    return n>=nParticles;
 }
 
 bool hasAtLeastNParticlesInBBCLarge(Pythia8::Event event, int nParticles){
@@ -26,10 +23,7 @@ bool hasAtLeastNParticlesInBBCLarge(Pythia8::Event event, int nParticles){
         }
     }
 
-    if(n<nParticles){
-        return false;
-    }
-    return true;
+    return n>=nParticles;
 }
 
 double xi(TLorentzVector *fourvec, double s = 510){
