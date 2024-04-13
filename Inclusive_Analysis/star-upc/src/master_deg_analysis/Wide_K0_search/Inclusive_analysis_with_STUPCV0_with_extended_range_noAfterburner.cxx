@@ -78,6 +78,7 @@ int main(int argc, char **argv){
     outsideprocessing.AddHistogram(TH1D("MpipiWide", "K^{0}_{S} mass in wide range;m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", kaonMassWindowWideBins, kaonMassWindowWideLow, kaonMassWindowWideHigh));
     outsideprocessing.AddHistogram(TH1D("MpipiVeryWide", "Pion pair mass in a very wide range;m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 500, 0, 5));
     outsideprocessing.AddHistogram(TH1D("MpipiNarrowWithPidEcut", "K^{0}_{S} mass in narrow range with dE/dx cuts;m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", kaonMassWindowNarrowBins, kaonMassWindowNarrowLow, kaonMassWindowNarrowHigh));
+    outsideprocessing.AddHistogram(TH1D("MpipiWideWithPidEcut", "K^{0}_{S} mass in a very wide range with dE/dx cuts;m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", kaonMassWindowWideBins, kaonMassWindowWideLow, kaonMassWindowWideHigh));
     outsideprocessing.AddHistogram(TH1D("MpipiVeryWideWithPidEcut", "Pion pair mass in a very wide range with dE/dx cuts;m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 500, 0, 5));
     outsideprocessing.AddHistogram(TH1D("NotherTracks", "Number of tracks excluding K^{0}_{S} daughters", 20, 0, 20));
     outsideprocessing.AddHistogram(TH2D("VertexMultiplicity", "Number of good quality tracks attributed to a vertex;vertex ID;tracks number", 10, 0, 10, 15, 0, 15));
@@ -93,6 +94,7 @@ int main(int argc, char **argv){
     outsideprocessing.AddHistogram(TH1D("MppiWide", "#Lambda^{0} mass in wide range;m_{p^{#pm}#pi^{#mp}} [GeV];Number of pairs", lambdaMassWindowWideBins, lambdaMassWindowWideLow, lambdaMassWindowWideHigh));
     outsideprocessing.AddHistogram(TH1D("MppiVeryWide", "Pion pair mass in a very wide range;m_{p^{#pm}#pi^{#mp}} [GeV];Number of pairs", 500, 0, 5));
     outsideprocessing.AddHistogram(TH1D("MppiNarrowWithPidEcut", "#Lambda^{0} mass in narrow range with dE/dx cuts;m_{p^{#pm}#pi^{#mp}} [GeV];Number of pairs", lambdaMassWindowNarrowBins, lambdaMassWindowNarrowLow, lambdaMassWindowNarrowHigh));
+    outsideprocessing.AddHistogram(TH1D("MppiWideWithPidEcut", "#Lambda^{0} mass in wide range with dE/dx cuts;m_{p^{#pm}#pi^{#mp}} [GeV];Number of pairs", lambdaMassWindowWideBins, lambdaMassWindowWideLow, lambdaMassWindowWideHigh));
     outsideprocessing.AddHistogram(TH1D("MppiVeryWideWithPidEcut", "Pion pair mass in a very wide range with dE/dx cuts;m_{p^{#pm}#pi^{#mp}} [GeV];Number of pairs", 500, 0, 5));
 
     outsideprocessing.AddHistogram(TH1D("etaK0", "K^{0}_{S} events density by #eta;#eta;", 300, -1.5, 1.5));
@@ -230,15 +232,12 @@ int main(int argc, char **argv){
                         continue;
                     }
                     //filling
-                    if(mK0candidate>kaonMassWindowNarrowLow&&mK0candidate<kaonMassWindowNarrowHigh){
+                    if(mK0candidate>kaonMassWindowWideLow&&mK0candidate<kaonMassWindowWideHigh){
                         vector_K0_pairs.push_back(tuple(tempParticle->dcaDaughters(), i, j));
                     }
-                    if(mK0candidate>kaonMassWindowWideLow&&mK0candidate<kaonMassWindowWideHigh){
-                        insideprocessing.Fill("MpipiWide", mK0candidate);
-                    }
-                    insideprocessing.Fill("MpipiVeryWide", mK0candidate);
+                    insideprocessing.Fill("MpipiVeryWide", tempParticle->m());
                     if(isPi(vector_Track_positive[i])&&isPi(vector_Track_negative[j])){
-                        insideprocessing.Fill("MpipiVeryWideWithPidEcut", mK0candidate);
+                        insideprocessing.Fill("MpipiVeryWideWithPidEcut", tempParticle->m());
                     }
                     //finishing
                     delete tempParticle;
@@ -265,11 +264,8 @@ int main(int argc, char **argv){
                         continue;
                     }
                     //filling
-                    if(mLambdacandidate>lambdaMassWindowNarrowLow&&mLambdacandidate<lambdaMassWindowNarrowHigh){
-                        vector_Lambda_pairs.push_back(tuple(tempParticle->dcaDaughters(), i, j, true));
-                    }
                     if(mLambdacandidate>lambdaMassWindowWideLow&&mLambdacandidate<lambdaMassWindowWideHigh){
-                        insideprocessing.Fill("MppiWide", mLambdacandidate);
+                        vector_Lambda_pairs.push_back(tuple(tempParticle->dcaDaughters(), i, j, true));
                     }
                     insideprocessing.Fill("MppiVeryWide", mLambdacandidate);
                     if(isProton(vector_Track_positive[i])&&isPi(vector_Track_negative[j])){
@@ -300,14 +296,11 @@ int main(int argc, char **argv){
                         continue;
                     }
                     //filling
-                    if(mLambdacandidate>lambdaMassWindowNarrowLow&&mLambdacandidate<lambdaMassWindowNarrowHigh){
+                    if(mLambdacandidate>lambdaMassWindowWideLow&&mLambdacandidate<lambdaMassWindowWideHigh){
                         vector_Lambda_pairs.push_back(tuple(tempParticle->dcaDaughters(), i, j, false));
                     }
-                    if(mLambdacandidate>lambdaMassWindowWideLow&&mLambdacandidate<lambdaMassWindowWideHigh){
-                        insideprocessing.Fill("MppiWide", mLambdacandidate);
-                    }
                     insideprocessing.Fill("MppiVeryWide", mLambdacandidate);
-                    if(isPi(vector_Track_positive[i])&&isProton(vector_Track_negative[j])){
+                    if(isProton(vector_Track_positive[i])&&isPi(vector_Track_negative[j])){
                         insideprocessing.Fill("MppiVeryWideWithPidEcut", mLambdacandidate);
                     }
                     //finishing
@@ -357,12 +350,18 @@ int main(int argc, char **argv){
             //loop after all remaining K0
             for(size_t i = 0; i<vector_K0_pairs.size(); i++){
                 tempParticle = new StUPCV0(vector_Track_positive[std::get<1>(vector_K0_pairs[i])], vector_Track_negative[std::get<2>(vector_K0_pairs[i])], particleMass[0], particleMass[0], 1, 1, { 0,0,0 }, beamValues, tempUPCpointer->getMagneticField(), false);
-                insideprocessing.Fill("MpipiNarrow", tempParticle->m());
+                if(tempParticle->m()>kaonMassWindowNarrowLow&&tempParticle->m()<kaonMassWindowNarrowHigh){
+                    insideprocessing.Fill("MpipiNarrow", tempParticle->m());
+                }
+                insideprocessing.Fill("MpipiWide", tempParticle->m());
+                if(isPi(vector_Track_positive[std::get<1>(vector_K0_pairs[i])])&&isPi(vector_Track_negative[std::get<2>(vector_K0_pairs[i])])){
+                    if(tempParticle->m()>kaonMassWindowNarrowLow&&tempParticle->m()<kaonMassWindowNarrowHigh){
+                        insideprocessing.Fill("MpipiNarrowWithPidEcut", tempParticle->m());
+                    }
+                    insideprocessing.Fill("MpipiWideWithPidEcut", tempParticle->m());
+                }
                 insideprocessing.Fill("PVV0K0dist", tempUPCpointer->getVertex(0)->getPosZ()-tempParticle->prodVertexHypo().Z());
                 insideprocessing.Fill("K0PVdistance", tempParticle->DcaToPrimaryVertex());
-                if(isPi(vector_Track_positive[std::get<1>(vector_K0_pairs[i])])&&isPi(vector_Track_negative[std::get<2>(vector_K0_pairs[i])])){
-                    insideprocessing.Fill("MpipiNarrowWithPidEcut", tempParticle->m());
-                }
                 insideprocessing.Fill("etaK0", tempParticle->eta());
                 insideprocessing.Fill("phiK0", tempParticle->phi());
                 insideprocessing.Fill("etapiK0", vector_Track_positive[std::get<1>(vector_K0_pairs[i])]->getEta());
@@ -394,14 +393,23 @@ int main(int argc, char **argv){
                 } else{
                     tempParticle = new StUPCV0(vector_Track_positive[std::get<1>(vector_Lambda_pairs[i])], vector_Track_negative[std::get<2>(vector_Lambda_pairs[i])], particleMass[0], particleMass[2], 1, 1, { 0,0,0 }, beamValues, tempUPCpointer->getMagneticField(), false);
                 }
-                insideprocessing.Fill("MppiNarrow", tempParticle->m());
+                if(tempParticle->m()>lambdaMassWindowNarrowLow&&tempParticle->m()<lambdaMassWindowNarrowHigh){
+                    insideprocessing.Fill("MppiNarrow", tempParticle->m());
+                }
+                insideprocessing.Fill("MppiWide", tempParticle->m());
+                if(std::get<3>(vector_Lambda_pairs[i])&&isProton(vector_Track_positive[std::get<1>(vector_Lambda_pairs[i])])&&isPi(vector_Track_negative[std::get<2>(vector_Lambda_pairs[i])])){
+                    if(tempParticle->m()>lambdaMassWindowNarrowLow&&tempParticle->m()<lambdaMassWindowNarrowHigh){
+                        insideprocessing.Fill("MppiNarrowWithPidEcut", tempParticle->m());
+                    }
+                    insideprocessing.Fill("MppiWideWithPidEcut", tempParticle->m());
+                } else if((!std::get<3>(vector_Lambda_pairs[i]))&&isPi(vector_Track_positive[std::get<1>(vector_Lambda_pairs[i])])&&isProton(vector_Track_negative[std::get<2>(vector_Lambda_pairs[i])])){
+                    if(tempParticle->m()>lambdaMassWindowNarrowLow&&tempParticle->m()<lambdaMassWindowNarrowHigh){
+                        insideprocessing.Fill("MppiNarrowWithPidEcut", tempParticle->m());
+                    }
+                    insideprocessing.Fill("MppiWideWithPidEcut", tempParticle->m());
+                }
                 // insideprocessing.Fill("PVV0Lambdadist", tempUPCpointer->getVertex(0)->getPosZ()-tempParticle->prodVertexHypo().Z());
                 // insideprocessing.Fill("LambdaPVdistance", tempParticle->DcaToPrimaryVertex());
-                if(std::get<3>(vector_Lambda_pairs[i])&&isProton(vector_Track_positive[std::get<1>(vector_Lambda_pairs[i])])&&isPi(vector_Track_negative[std::get<2>(vector_Lambda_pairs[i])])){
-                    insideprocessing.Fill("MppiNarrowWithPidEcut", tempParticle->m());
-                } else if((!std::get<3>(vector_Lambda_pairs[i]))&&isPi(vector_Track_positive[std::get<1>(vector_Lambda_pairs[i])])&&isProton(vector_Track_negative[std::get<2>(vector_Lambda_pairs[i])])){
-                    insideprocessing.Fill("MppiNarrowWithPidEcut", tempParticle->m());
-                }
                 insideprocessing.Fill("etaLambda", tempParticle->eta());
                 insideprocessing.Fill("phiLambda", tempParticle->phi());
                 if(std::get<3>(vector_Lambda_pairs[i])){
