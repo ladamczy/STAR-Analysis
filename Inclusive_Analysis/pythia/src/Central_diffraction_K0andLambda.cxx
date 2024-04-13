@@ -116,6 +116,11 @@ int main(int argc, char *argv[]){
     const int pplusPDGid = 2212;
     const int pminusPDGid = -2212;
 
+    //other things;
+    int n_events = 0;
+    int n_K0 = 0;
+    int n_Lambda = 0;
+
     // Begin event loop. Generate event; skip if generation aborted.
     for(int iEvent = 0; iEvent<nEvents; ++iEvent){
         if(!pythia.next()) continue;
@@ -207,6 +212,11 @@ int main(int argc, char *argv[]){
         temp4Vector.SetE(mEnergy);
         double XStateMass = (temp4Vector-p1-p2).M();
 
+        //total ratio
+        n_events++;
+        n_K0 += nK0;
+        n_Lambda += nLambda;
+
         //histogram filling
         // K0multiplicity
         // K0AdditionalTracks
@@ -236,6 +246,17 @@ int main(int argc, char *argv[]){
 
     // Statistics on event generation.
     pythia.stat();
+
+    //other things
+    cout<<"N_events: "<<n_events<<endl;
+    cout<<"N_K0: "<<n_K0<<endl;
+    cout<<"N_Lambda: "<<n_Lambda<<endl;
+    std::stringstream ratio_output;
+    ratio_output<<std::fixed<<std::setprecision(4)<<double(n_K0)/n_events;
+    cout<<"N_K0/N_events: "<<ratio_output.str()<<endl;
+    ratio_output.str(""); //clearing
+    ratio_output<<std::fixed<<std::setprecision(4)<<double(n_Lambda)/n_events;
+    cout<<"N_Lambda0/N_events: "<<ratio_output.str()<<endl;
 
     return 0;
 }
