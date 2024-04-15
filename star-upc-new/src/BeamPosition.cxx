@@ -174,7 +174,7 @@ vector <double> FindPosition(int nFillNumber, double zPos, vector <double> &vFil
 	sX2 = vX2Slope[indexFill];
 	sY2 = vY2Slope[indexFill];		 
 
-	cout << "sx " << sX << endl;
+	// cout << "sx " << sX << endl;
 	if (std::isnan(posX) or std::isnan(posY))
 	{
 		vFinalPositions.push_back(nan(""));
@@ -202,7 +202,7 @@ vector <double> FindPosition(int nFillNumber, double zPos, vector <double> &vFil
 	}
 			
 	
-	cout << "b: " << beamPositionX << ", x: " << posX << ", z: " << zPos<< endl;
+	// cout << "b: " << beamPositionX << ", x: " << posX << ", z: " << zPos<< endl;
 
 	vFinalPositions.push_back(beamPositionX);
 	vFinalPositions.push_back(beamPositionY);
