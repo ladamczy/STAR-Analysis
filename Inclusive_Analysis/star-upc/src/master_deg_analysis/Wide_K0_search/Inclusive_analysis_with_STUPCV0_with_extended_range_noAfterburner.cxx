@@ -141,6 +141,8 @@ int main(int argc, char **argv){
         std::vector<int> numberOfTracksTiedToVertex(100, 0);
         std::vector<tuple<double, int, int, bool>> vector_Lambda_pairs;
         vector_Lambda_pairs.reserve(100);
+        std::vector<int> vector_all;
+        vector_all.reserve(100);
 
         //actual loop
         while(myReader.Next()){
@@ -156,6 +158,7 @@ int main(int argc, char **argv){
             vector_Track_negative.clear();
             vector_K0_pairs.clear();
             vector_Lambda_pairs.clear();
+            vector_all.clear();
             std::fill(numberOfTracksTiedToVertex.begin(), numberOfTracksTiedToVertex.end(), 0);
 
             //cause I want to see what's going on
@@ -311,38 +314,60 @@ int main(int argc, char **argv){
             //we sort in ascending order of DCAdaugters
             std::sort(vector_K0_pairs.begin(), vector_K0_pairs.end(), tuple_sort);
             std::sort(vector_Lambda_pairs.begin(), vector_Lambda_pairs.end(), tuple_sort_big);
-            //first, we check for repeating pi+ in K0 candidates
-            for(int i = 0; i<int(vector_K0_pairs.size())-1; i++){
-                for(size_t j = i+1; j<vector_K0_pairs.size(); j++){
-                    if(std::get<1>(vector_K0_pairs[i])==std::get<1>(vector_K0_pairs[j])){
-                        vector_K0_pairs.erase(vector_K0_pairs.begin()+j);
-                        j--;
-                    }
+            //removing duplicates from both vectors, even cross-appearing
+            //for vector_all, i for vector_K0_pairs will be i+1, and j for vector_Lambda_pairs will be -(j+1)
+            int counter_K0 = 0;
+            int counter_Lambda = 0;
+            double pos_part_index_i, neg_part_index_i, pos_part_index_j, neg_part_index_j;
+            for(int counter = 0; counter<vector_K0_pairs.size()+vector_Lambda_pairs.size(); counter++){
+                //if counter comes to an end of either vector, just copy the rest of the other one
+                if(counter_K0>=vector_K0_pairs.size()){
+                    vector_all.push_back(-counter_Lambda-1);
+                    counter_Lambda++;
+                    continue;
+                }
+                if(counter_Lambda>=vector_Lambda_pairs.size()){
+                    vector_all.push_back(counter_K0+1);
+                    counter_K0++;
+                    continue;
+                }
+                //if that didn't happen, compare normally 
+                if(std::get<0>(vector_K0_pairs[counter_K0])<std::get<0>(vector_Lambda_pairs[counter_Lambda])){
+                    vector_all.push_back(counter_K0+1);
+                    counter_K0++;
+                } else{
+                    vector_all.push_back(-counter_Lambda-1);
+                    counter_Lambda++;
                 }
             }
-            //then, for repeating pi- in K0 candidates
-            for(int i = 0; i<int(vector_K0_pairs.size())-1; i++){
-                for(size_t j = i+1; j<vector_K0_pairs.size(); j++){
-                    if(std::get<2>(vector_K0_pairs[i])==std::get<2>(vector_K0_pairs[j])){
-                        vector_K0_pairs.erase(vector_K0_pairs.begin()+j);
-                        j--;
+            //now erase repeating particles
+            for(int i = 0; i<int(vector_all.size())-1; i++){
+                for(size_t j = i+1; j<vector_all.size(); j++){
+                    if(vector_all[i]>0){
+                        pos_part_index_i = std::get<1>(vector_K0_pairs[vector_all[i]-1]);
+                        neg_part_index_i = std::get<2>(vector_K0_pairs[vector_all[i]-1]);
+                    } else{
+                        pos_part_index_i = std::get<1>(vector_Lambda_pairs[-vector_all[i]-1]);
+                        neg_part_index_i = std::get<2>(vector_Lambda_pairs[-vector_all[i]-1]);
                     }
-                }
-            }
-            //and then we do this for positive tracks of Lambda daughters
-            for(int i = 0; i<int(vector_Lambda_pairs.size())-1; i++){
-                for(size_t j = i+1; j<vector_Lambda_pairs.size(); j++){
-                    if(std::get<1>(vector_Lambda_pairs[i])==std::get<1>(vector_Lambda_pairs[j])){
-                        vector_Lambda_pairs.erase(vector_Lambda_pairs.begin()+j);
-                        j--;
+                    if(vector_all[j]>0){
+                        pos_part_index_j = std::get<1>(vector_K0_pairs[vector_all[j]-1]);
+                        neg_part_index_j = std::get<2>(vector_K0_pairs[vector_all[j]-1]);
+                    } else{
+                        pos_part_index_j = std::get<1>(vector_Lambda_pairs[-vector_all[j]-1]);
+                        neg_part_index_j = std::get<2>(vector_Lambda_pairs[-vector_all[j]-1]);
                     }
-                }
-            }
-            //and then for negative
-            for(int i = 0; i<int(vector_Lambda_pairs.size())-1; i++){
-                for(size_t j = i+1; j<vector_Lambda_pairs.size(); j++){
-                    if(std::get<2>(vector_Lambda_pairs[i])==std::get<2>(vector_Lambda_pairs[j])){
-                        vector_Lambda_pairs.erase(vector_Lambda_pairs.begin()+j);
+                    //removing the index and value from all vectors, including vector_all
+                    if(pos_part_index_i==pos_part_index_j or neg_part_index_i==neg_part_index_j){
+                        //first erasing from particle-dependent vectors
+                        if(vector_all[j]>0){
+                            vector_K0_pairs.erase(vector_K0_pairs.begin()+vector_all[j]-1);
+                        }
+                        else{
+                            vector_Lambda_pairs.erase(vector_Lambda_pairs.begin()-vector_all[j]-1);
+                        }
+                        //then from allvector
+                        vector_all.erase(vector_all.begin()+j);
                         j--;
                     }
                 }
