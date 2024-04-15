@@ -95,14 +95,14 @@ int main(int argc, char **argv){
     outsideprocessing.AddHistogram(TH1D("MppiWideWithPidEcut", "#Lambda^{0} mass in wide range with dE/dx cuts;m_{p^{#pm}#pi^{#mp}} [GeV];Number of pairs", lambdaMassWindowWideBins, lambdaMassWindowWideLow, lambdaMassWindowWideHigh));
     outsideprocessing.AddHistogram(TH1D("MppiVeryWideWithPidEcut", "Pion pair mass in a very wide range with dE/dx cuts;m_{p^{#pm}#pi^{#mp}} [GeV];Number of pairs", 500, 0, 5));
 
-    outsideprocessing.AddHistogram(TH1D("etaK0", "K^{0}_{S} events density by #eta;#eta;", 300, -1.5, 1.5));
-    outsideprocessing.AddHistogram(TH1D("etapiK0", "#pi from K^{0}_{S} decay density by #eta;#eta;", 300, -1.5, 1.5));
-    outsideprocessing.AddHistogram(TH1D("etaLambda", "#Lambda^{0} events density by #eta;#eta;", 300, -1.5, 1.5));
-    outsideprocessing.AddHistogram(TH1D("etapiLambda", "#pi from #Lambda^{0} decay density by #eta;#eta;", 300, -1.5, 1.5));
-    outsideprocessing.AddHistogram(TH1D("phiK0", "K^{0}_{S} events density by #phi;#phi;", 314, -TMath::Pi(), TMath::Pi()));
-    outsideprocessing.AddHistogram(TH1D("phipiK0", "#pi from K^{0}_{S} decay density by #phi;#phi;", 314, -TMath::Pi(), TMath::Pi()));
-    outsideprocessing.AddHistogram(TH1D("phiLambda", "#Lambda^{0} events density by #phi;#phi;", 314, -TMath::Pi(), TMath::Pi()));
-    outsideprocessing.AddHistogram(TH1D("phipiLambda", "#pi from #Lambda^{0} decay density by #phi;#phi;", 314, -TMath::Pi(), TMath::Pi()));
+    outsideprocessing.AddHistogram(TH1D("etaK0", "K^{0}_{S} events density by #eta;#eta;", 60, -1.5, 1.5));
+    outsideprocessing.AddHistogram(TH1D("etapiK0", "#pi from K^{0}_{S} decay density by #eta;#eta;", 60, -1.5, 1.5));
+    outsideprocessing.AddHistogram(TH1D("etaLambda", "#Lambda^{0} events density by #eta;#eta;", 60, -1.5, 1.5));
+    outsideprocessing.AddHistogram(TH1D("etapiLambda", "#pi from #Lambda^{0} decay density by #eta;#eta;", 60, -1.5, 1.5));
+    outsideprocessing.AddHistogram(TH1D("phiK0", "K^{0}_{S} events density by #phi;#phi;", 63, -TMath::Pi(), TMath::Pi()));
+    outsideprocessing.AddHistogram(TH1D("phipiK0", "#pi from K^{0}_{S} decay density by #phi;#phi;", 63, -TMath::Pi(), TMath::Pi()));
+    outsideprocessing.AddHistogram(TH1D("phiLambda", "#Lambda^{0} events density by #phi;#phi;", 63, -TMath::Pi(), TMath::Pi()));
+    outsideprocessing.AddHistogram(TH1D("phipiLambda", "#pi from #Lambda^{0} decay density by #phi;#phi;", 63, -TMath::Pi(), TMath::Pi()));
 
     // int triggers[] = { 570701, 570705, 570711, 590701, 590705, 590708 };
     // outsideprocessing.AddHistogram(TH1D("triggerHist", "Data triggers;Trigger ID;Number of events", 6, 0, 6));
@@ -229,7 +229,7 @@ int main(int argc, char **argv){
                     bool K0test5 = tempParticle->decayLengthHypo()<3.0;
                     //tests before filling
                     double mK0candidate = tempParticle->m();
-                    if(K0test2&&K0test3&&(K0test4||(!K0test5))){
+                    if(!(K0test2&&K0test3&&(K0test4||(!K0test5)))){
                         insideprocessing.Fill("invdecaylenghthHypocut", mK0candidate);
                     }
                     if(!(K0test2&&K0test3&&(K0test4||K0test5))){
