@@ -106,6 +106,36 @@ int main(int argc, char **argv){
     outsideprocessing.AddHistogram(TH1D("phiLambda", "#Lambda^{0} events density by #phi;#phi;", 63, -TMath::Pi(), TMath::Pi()));
     outsideprocessing.AddHistogram(TH1D("phipiLambda", "#pi from #Lambda^{0} decay density by #phi;#phi;", 63, -TMath::Pi(), TMath::Pi()));
 
+    outsideprocessing.AddHistogram(TH1D("MpipiWideMissing", "K^{0}_{S} mass in wide range which doesn't pass the criteria;m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", kaonMassWindowWideBins, kaonMassWindowWideLow, kaonMassWindowWideHigh));
+    outsideprocessing.AddHistogram(TH1D("MppiWideMissing", "#Lambda^{0} mass in wide range which doesn't pass the criteria;m_{p^{#pm}#pi^{#mp}} [GeV];Number of pairs", lambdaMassWindowWideBins, lambdaMassWindowWideLow, lambdaMassWindowWideHigh));
+    outsideprocessing.AddHistogram(TH1D("MpipiWideCheck", "K^{0}_{S} mass in wide range with additional cuts;m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", kaonMassWindowWideBins, kaonMassWindowWideLow, kaonMassWindowWideHigh));
+    outsideprocessing.AddHistogram(TH1D("MppiWideCheck", "#Lambda^{0} mass in wide range with additional cuts;m_{p^{#pm}#pi^{#mp}} [GeV];Number of pairs", lambdaMassWindowWideBins, lambdaMassWindowWideLow, lambdaMassWindowWideHigh));
+
+    outsideprocessing.AddHistogram(TH1D("K0dcaDaughtersSignal", "K0dcaDaughtersSignal", 50, 0, 2.5));
+    outsideprocessing.AddHistogram(TH1D("K0dcaDaughtersBackground", "K0dcaDaughtersBackground", 50, 0, 2.5));
+    outsideprocessing.AddHistogram(TH1D("LambdadcaDaughtersSignal", "LambdadcaDaughtersSignal", 50, 0, 2.5));
+    outsideprocessing.AddHistogram(TH1D("LambdadcaDaughtersBackground", "LambdadcaDaughtersBackground", 50, 0, 2.5));
+    outsideprocessing.AddHistogram(TH1D("K0dcaBeamlineSignal", "K0dcaBeamlineSignal", 50, 0, 2.5));
+    outsideprocessing.AddHistogram(TH1D("K0dcaBeamlineBackground", "K0dcaBeamlineBackground", 50, 0, 2.5));
+    outsideprocessing.AddHistogram(TH1D("LambdadcaBeamlineSignal", "LambdadcaBeamlineSignal", 50, 0, 2.5));
+    outsideprocessing.AddHistogram(TH1D("LambdadcaBeamlineBackground", "LambdadcaBeamlineBackground", 50, 0, 2.5));
+    outsideprocessing.AddHistogram(TH1D("K0pointingAngleHypoSignal", "K0pointingAngleHypoSignal", 50, 0.8, 1));
+    outsideprocessing.AddHistogram(TH1D("K0pointingAngleHypoBackground", "K0pointingAngleHypoBackground", 50, 0.8, 1));
+    outsideprocessing.AddHistogram(TH1D("LambdapointingAngleHypoSignal", "LambdapointingAngleHypoSignal", 50, 0.8, 1));
+    outsideprocessing.AddHistogram(TH1D("LambdapointingAngleHypoBackground", "LambdapointingAngleHypoBackground", 50, 0.8, 1));
+    outsideprocessing.AddHistogram(TH1D("K0pointingAngleHypoSignalDetailed", "K0pointingAngleHypoSignalDetailed", 50, 0.98, 1));
+    outsideprocessing.AddHistogram(TH1D("K0pointingAngleHypoBackgroundDetailed", "K0pointingAngleHypoBackgroundDetailed", 50, 0.98, 1));
+    outsideprocessing.AddHistogram(TH1D("LambdapointingAngleHypoSignalDetailed", "LambdapointingAngleHypoSignalDetailed", 50, 0.98, 1));
+    outsideprocessing.AddHistogram(TH1D("LambdapointingAngleHypoBackgroundDetailed", "LambdapointingAngleHypoBackgroundDetailed", 50, 0.98, 1));
+    outsideprocessing.AddHistogram(TH1D("K0decayLengthHypoSignal", "K0decayLengthHypoSignal", 50, 0, 10));
+    outsideprocessing.AddHistogram(TH1D("K0decayLengthHypoBackground", "K0decayLengthHypoBackground", 50, 0, 10));
+    outsideprocessing.AddHistogram(TH1D("LambdadecayLengthHypoSignal", "LambdadecayLengthHypoSignal", 50, 0, 10));
+    outsideprocessing.AddHistogram(TH1D("LambdadecayLengthHypoBackground", "LambdadecayLengthHypoBackground", 50, 0, 10));
+    outsideprocessing.AddHistogram(TH1D("K0cosThetaStarSignal", "K0cosThetaStarSignal", 50, -1, 1));
+    outsideprocessing.AddHistogram(TH1D("K0cosThetaStarBackground", "K0cosThetaStarBackground", 50, -1, 1));
+    outsideprocessing.AddHistogram(TH1D("LambdacosThetaStarSignal", "LambdacosThetaStarSignal", 50, -1, 1));
+    outsideprocessing.AddHistogram(TH1D("LambdacosThetaStarBackground", "LambdacosThetaStarBackground", 50, -1, 1));
+
     // int triggers[] = { 570701, 570705, 570711, 590701, 590705, 590708 };
     // outsideprocessing.AddHistogram(TH1D("triggerHist", "Data triggers;Trigger ID;Number of events", 6, 0, 6));
     // for(int i = 0;i<6;i++){
@@ -232,6 +262,7 @@ int main(int argc, char **argv){
                         insideprocessing.Fill("invdecaylenghthHypocut", mK0candidate);
                     }
                     if(!(K0test2&&K0test3&&(K0test4||K0test5))){
+                        insideprocessing.Fill("MpipiWideMissing", mK0candidate);
                         continue;
                     }
                     //filling
@@ -264,6 +295,7 @@ int main(int argc, char **argv){
                         // insideprocessing.Fill("invdecaylenghthHypocut", mLambdacandidate);
                     }
                     if(!(Lambdatest2&&Lambdatest3&&(Lambdatest4||Lambdatest5))){
+                        insideprocessing.Fill("MppiWideMissing", mLambdacandidate);
                         continue;
                     }
                     //filling
@@ -296,6 +328,7 @@ int main(int argc, char **argv){
                         // insideprocessing.Fill("invdecaylenghthHypocut", mLambdacandidate);
                     }
                     if(!(Lambdatest2&&Lambdatest3&&(Lambdatest4||Lambdatest5))){
+                        insideprocessing.Fill("MppiWideMissing", mLambdacandidate);
                         continue;
                     }
                     //filling
@@ -393,6 +426,27 @@ int main(int argc, char **argv){
                 insideprocessing.Fill("etapiK0", vector_Track_negative[std::get<2>(vector_K0_pairs[i])]->getEta());
                 insideprocessing.Fill("phipiK0", vector_Track_positive[std::get<1>(vector_K0_pairs[i])]->getPhi());
                 insideprocessing.Fill("phipiK0", vector_Track_negative[std::get<2>(vector_K0_pairs[i])]->getPhi());
+
+                if(tempParticle->pointingAngleHypo()>0.99){
+                    insideprocessing.Fill("MpipiWideCheck", tempParticle->m());
+                }
+
+                //signal&background
+                if(tempParticle->m()>0.49&&tempParticle->m()<0.51){
+                    insideprocessing.Fill("K0dcaDaughtersSignal", tempParticle->dcaDaughters());
+                    insideprocessing.Fill("K0dcaBeamlineSignal", tempParticle->DCABeamLine());
+                    insideprocessing.Fill("K0pointingAngleHypoSignal", tempParticle->pointingAngleHypo());
+                    insideprocessing.Fill("K0pointingAngleHypoSignalDetailed", tempParticle->pointingAngleHypo());
+                    insideprocessing.Fill("K0decayLengthHypoSignal", tempParticle->decayLengthHypo());
+                    insideprocessing.Fill("K0cosThetaStarSignal", tempParticle->cosThetaStar());
+                } else{
+                    insideprocessing.Fill("K0dcaDaughtersBackground", tempParticle->dcaDaughters());
+                    insideprocessing.Fill("K0dcaBeamlineBackground", tempParticle->DCABeamLine());
+                    insideprocessing.Fill("K0pointingAngleHypoBackground", tempParticle->pointingAngleHypo());
+                    insideprocessing.Fill("K0pointingAngleHypoBackgroundDetailed", tempParticle->pointingAngleHypo());
+                    insideprocessing.Fill("K0decayLengthHypoBackground", tempParticle->decayLengthHypo());
+                    insideprocessing.Fill("K0cosThetaStarBackground", tempParticle->cosThetaStar());
+                }
                 delete tempParticle;
             }
             insideprocessing.Fill("K0multiplicity", vector_K0_pairs.size());
@@ -445,6 +499,30 @@ int main(int argc, char **argv){
                     insideprocessing.Fill("etapiLambda", vector_Track_positive[std::get<1>(vector_Lambda_pairs[i])]->getEta());
                     insideprocessing.Fill("phipiLambda", vector_Track_positive[std::get<1>(vector_Lambda_pairs[i])]->getPhi());
                 }
+
+                //signal & background stuff
+                bool temptest1 = std::get<3>(vector_Lambda_pairs[i])&&isProton(vector_Track_positive[std::get<1>(vector_Lambda_pairs[i])])&&isPi(vector_Track_negative[std::get<2>(vector_Lambda_pairs[i])]);
+                bool temptest2 = (!std::get<3>(vector_Lambda_pairs[i]))&&isPi(vector_Track_positive[std::get<1>(vector_Lambda_pairs[i])])&&isProton(vector_Track_negative[std::get<2>(vector_Lambda_pairs[i])]);
+                if((temptest1 or temptest2)&&(tempParticle->m()>1.11&&tempParticle->m()<1.12)){
+                    insideprocessing.Fill("LambdadcaDaughtersSignal", tempParticle->dcaDaughters());
+                    insideprocessing.Fill("LambdadcaBeamlineSignal", tempParticle->DCABeamLine());
+                    insideprocessing.Fill("LambdapointingAngleHypoSignal", tempParticle->pointingAngleHypo());
+                    insideprocessing.Fill("LambdapointingAngleHypoSignalDetailed", tempParticle->pointingAngleHypo());
+                    insideprocessing.Fill("LambdadecayLengthHypoSignal", tempParticle->decayLengthHypo());
+                    insideprocessing.Fill("LambdacosThetaStarSignal", tempParticle->cosThetaStar());
+                } else{
+                    insideprocessing.Fill("LambdadcaDaughtersBackground", tempParticle->dcaDaughters());
+                    insideprocessing.Fill("LambdadcaBeamlineBackground", tempParticle->DCABeamLine());
+                    insideprocessing.Fill("LambdapointingAngleHypoBackground", tempParticle->pointingAngleHypo());
+                    insideprocessing.Fill("LambdapointingAngleHypoBackgroundDetailed", tempParticle->pointingAngleHypo());
+                    insideprocessing.Fill("LambdadecayLengthHypoBackground", tempParticle->decayLengthHypo());
+                    insideprocessing.Fill("LambdacosThetaStarBackground", tempParticle->cosThetaStar());
+                }
+
+                if(tempParticle->pointingAngleHypo()>0.99&&(temptest1 or temptest2)){
+                    insideprocessing.Fill("MppiWideCheck", tempParticle->m());
+                }
+
                 delete tempParticle;
             }
         }
