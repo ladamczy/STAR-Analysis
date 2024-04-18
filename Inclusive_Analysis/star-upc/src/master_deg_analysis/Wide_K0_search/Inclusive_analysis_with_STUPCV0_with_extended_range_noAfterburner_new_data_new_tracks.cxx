@@ -241,10 +241,14 @@ int main(int argc, char **argv){
             }
             insideprocessing.Fill("VertexPrimvsAll", tempUPCpointer->getNumberOfVertices(), tempUPCpointer->getNPrimVertices());
             // vertexPrimary = { tempUPCpointer->getVertex(0)->getPosX(), tempUPCpointer->getVertex(0)->getPosY(), tempUPCpointer->getVertex(0)->getPosZ() };
-            beamValues[0] = tempUPCpointer->getBeamXPosition();
-            beamValues[1] = tempUPCpointer->getBeamYPosition();
-            beamValues[2] = tempUPCpointer->getBeamXSlope();
-            beamValues[3] = tempUPCpointer->getBeamYSlope();
+            // beamValues[0] = tempUPCpointer->getBeamXPosition();
+            // beamValues[1] = tempUPCpointer->getBeamYPosition();
+            // beamValues[2] = tempUPCpointer->getBeamXSlope();
+            // beamValues[3] = tempUPCpointer->getBeamYSlope();
+            beamValues[0] = 0;
+            beamValues[1] = 0;
+            beamValues[2] = 0;
+            beamValues[3] = 0;
             //actual loop
             for(long unsigned int i = 0; i<vector_Track_positive.size(); i++){
                 for(long unsigned int j = 0; j<vector_Track_negative.size(); j++){
