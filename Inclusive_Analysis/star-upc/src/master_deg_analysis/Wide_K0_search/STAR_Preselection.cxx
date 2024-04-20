@@ -235,7 +235,7 @@ int main(int argc, char **argv){
         int chargeOfGoodTracks = 0;
         for(int i = 0; i<tempUPCpointer->getNumberOfTracks(); i++){
             StUPCTrack *tmptrk = tempUPCpointer->getTrack(i);
-            if(tmptrk->getFlag(StUPCTrack::kTof)&&abs(tmptrk->getEta())<1.1&&tmptrk->getPt()>0.15&&tmptrk->getNhitsFit()>15&&tmptrk->getFlag(StUPCTrack::kV0)){
+            if(tmptrk->getFlag(StUPCTrack::kTof)&&abs(tmptrk->getEta())<1.1&&tmptrk->getPt()>0.15&&tmptrk->getNhitsFit()>15&&(!tmptrk->getFlag(StUPCTrack::kV0))&&(!tmptrk->getFlag(StUPCTrack::kCEP))){
                 nOfGoodTracks++;
                 chargeOfGoodTracks += tmptrk->getCharge();
             }
