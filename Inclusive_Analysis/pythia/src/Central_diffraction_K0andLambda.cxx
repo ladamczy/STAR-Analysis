@@ -96,15 +96,21 @@ int main(int argc, char *argv[]){
 
     //histograms
     TH1D K0multiplicity("K0multiplicity", "K^{0}_{S} multiplicity", 10, 0, 10);
-    TH1D K0AdditionalTracks("K0AdditionalTracks", "At least two additional tracks except K^{0}_{S} daughters", 20, 0, 20);
+    TH1D K0AdditionalTracks("K0AdditionalTracks", "Additional tracks except K^{0}_{S} daughters", 20, 0, 20);
     TH2D K0multiplicityXmass("K0multiplicityXmass", "K^{0}_{S} multiplicity with respect to mass of a central state;m_{X} [GeV]", stateBins, 0, stateMassMax, 10, 0, 10);
     TEfficiency K0ratioXmass("K0ratioXmass", "Ratio of detected K^{0}_{S} to all measured events with respect to mass of a central state;m_{X} [GeV]", stateBins, 0, stateMassMax);
-    TH2D K0AdditionalTracksXmass("K0AdditionalTracksXmass", "At least two additional tracks except K^{0}_{S} daughters;m_{X} [GeV]", stateBins, 0, stateMassMax, 20, 0, 20);
+    TH2D K0AdditionalTracksXmass("K0AdditionalTracksXmass", "Additional tracks except K^{0}_{S} daughters;m_{X} [GeV]", stateBins, 0, stateMassMax, 20, 0, 20);
+    TH1D K0AdditionalTracksWithAcceptance("K0AdditionalTracksWithAcceptance", "Additional tracks except K^{0}_{S} daughters, with TPC acceptance", 20, 0, 20);
+    TH2D K0AdditionalTracksXmassWithAcceptance("K0AdditionalTracksXmassWithAcceptance", "Additional tracks except K^{0}_{S} daughters, with TPC acceptance;m_{X} [GeV]", stateBins, 0, stateMassMax, 20, 0, 20);
+
+
     TH1D Lambdamultiplicity("Lambdamultiplicity", "#Lambda^{0} multiplicity", 10, 0, 10);
-    TH1D LambdaAdditionalTracks("LambdaAdditionalTracks", "At least two additional tracks except #Lambda^{0} daughters", 20, 0, 20);
+    TH1D LambdaAdditionalTracks("LambdaAdditionalTracks", "Additional tracks except #Lambda^{0} daughters", 20, 0, 20);
     TH2D LambdamultiplicityXmass("LambdamultiplicityXmass", "#Lambda^{0} multiplicity with respect to mass of a central state;m_{X} [GeV]", stateBins, 0, stateMassMax, 10, 0, 10);
     TEfficiency LambdaratioXmass("LambdaratioXmass", "Ratio of detected #Lambda^{0} to all measured events with respect to mass of a central state;m_{X} [GeV]", stateBins, 0, stateMassMax);
-    TH2D LambdaAdditionalTracksXmass("LambdaAdditionalTracksXmass", "At least two additional tracks except #Lambda^{0} daughters;m_{X} [GeV]", stateBins, 0, stateMassMax, 20, 0, 20);
+    TH2D LambdaAdditionalTracksXmass("LambdaAdditionalTracksXmass", "Additional tracks except #Lambda^{0} daughters;m_{X} [GeV]", stateBins, 0, stateMassMax, 20, 0, 20);
+    TH1D LambdaAdditionalTracksWithAcceptance("LambdaAdditionalTracksWithAcceptance", "Additional tracks except #Lambda^{0} daughters, with TPC acceptance", 20, 0, 20);
+    TH2D LambdaAdditionalTracksXmassWithAcceptance("LambdaAdditionalTracksXmassWithAcceptance", "Additional tracks except #Lambda^{0} daughters, with TPC acceptance;m_{X} [GeV]", stateBins, 0, stateMassMax, 20, 0, 20);
 
     //Useful IDs
     const int K0sPDGid = 310;
@@ -120,6 +126,7 @@ int main(int argc, char *argv[]){
     int n_events = 0;
     int n_K0 = 0;
     int n_Lambda = 0;
+    Rndm generator(0);
 
     // Begin event loop. Generate event; skip if generation aborted.
     for(int iEvent = 0; iEvent<nEvents; ++iEvent){
@@ -188,6 +195,7 @@ int main(int argc, char *argv[]){
         std::vector<int> K0indices;
         std::vector<int> Lambdaindices;
         int tempDaughter1, tempDaughter2;
+        std::vector<Pythia8::Particle> acceptedParticlesPlusDaughters;
         //gathering info in main loop
         for(int part_index = 0; part_index<pythia.event.size(); part_index++){
             if(isParticleInTPCAcceptance(pythia.event[part_index])){ nTracksInTPCAcceptance++; }
@@ -217,27 +225,40 @@ int main(int argc, char *argv[]){
         n_K0 += nK0;
         n_Lambda += nLambda;
 
+        //for plots requiring simulated TPC acceptance
+        for(int part_index = 0; part_index<pythia.event.size(); part_index++){
+            if(!isParticleInTPCAcceptance(pythia.event[part_index])){
+                continue;
+            }
+            if(abs(pythia.event[pythia.event[part_index].mother1()].id())==K0sPDGid&&nK0>0){
+                acceptedParticlesPlusDaughters.push_back(pythia.event[part_index]);
+            } else if(abs(pythia.event[pythia.event[part_index].mother1()].id())==LambdaPDGid&&nLambda>0){
+                acceptedParticlesPlusDaughters.push_back(pythia.event[part_index]);
+            } else if(generator.flat()<0.6){
+                acceptedParticlesPlusDaughters.push_back(pythia.event[part_index]);
+            }
+        }
+
         //histogram filling
-        // K0multiplicity
-        // K0AdditionalTracks
-        // K0multiplicityXmass
-        // K0ratioXmass
-        // K0AdditionalTracksXmass
-        // Lambdamultiplicity
-        // LambdaAdditionalTracks
-        // LambdamultiplicityXmass
-        // LambdaratioXmass
-        // LambdaAdditionalTracksXmass
         K0multiplicity.Fill(nK0);
-        K0AdditionalTracks.Fill(nTracksInTPCAcceptance-nK0*2);
         K0multiplicityXmass.Fill(XStateMass, nK0);
         K0ratioXmass.Fill(nK0>0, XStateMass);
-        K0AdditionalTracksXmass.Fill(XStateMass, nTracksInTPCAcceptance-nK0*2);
+        if(nK0>0){
+            K0AdditionalTracks.Fill(nTracksInTPCAcceptance-nK0*2);
+            K0AdditionalTracksXmass.Fill(XStateMass, nTracksInTPCAcceptance-nK0*2);
+            K0AdditionalTracksWithAcceptance.Fill(acceptedParticlesPlusDaughters.size()-nK0*2);
+            K0AdditionalTracksXmassWithAcceptance.Fill(XStateMass, acceptedParticlesPlusDaughters.size()-nK0*2);
+        }
+
         Lambdamultiplicity.Fill(nLambda);
-        LambdaAdditionalTracks.Fill(nTracksInTPCAcceptance-nLambda*2);
         LambdamultiplicityXmass.Fill(XStateMass, nLambda);
         LambdaratioXmass.Fill(nLambda>0, XStateMass);
-        LambdaAdditionalTracksXmass.Fill(XStateMass, nTracksInTPCAcceptance-nLambda*2);
+        if(nLambda>0){
+            LambdaAdditionalTracks.Fill(nTracksInTPCAcceptance-nLambda*2);
+            LambdaAdditionalTracksXmass.Fill(XStateMass, nTracksInTPCAcceptance-nLambda*2);
+            LambdaAdditionalTracksWithAcceptance.Fill(acceptedParticlesPlusDaughters.size()-nLambda*2);
+            LambdaAdditionalTracksXmassWithAcceptance.Fill(XStateMass, acceptedParticlesPlusDaughters.size()-nLambda*2);
+        }
     }
 
     outFile->cd();
