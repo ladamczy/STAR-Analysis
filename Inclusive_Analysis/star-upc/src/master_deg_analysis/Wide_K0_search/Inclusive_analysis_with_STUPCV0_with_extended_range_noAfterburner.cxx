@@ -41,10 +41,16 @@ double deltaT(TVector3 decayVertex, StUPCTrack *track1, StUPCTrack *track2, doub
 
 int main(int argc, char **argv){
 
-    int nthreads = 2;
-    if(argc==4){
+    int nthreads = 1;
+    enum dataType{ old_data, new_data_old_tracks, new_data_new_tracks };
+    int inputDataType = -1;
+    if(argc==5){
         nthreads = atoi(argv[3]);
+        inputDataType = atoi(argv[4]);
+    } else if(argc==4){
+        inputDataType = atoi(argv[3]);
     }
+
     cout<<"Program is running on "<<nthreads<<" threads"<<endl;
     ROOT::EnableThreadSafety();
     //actually i'm not sure if it's needed here
@@ -198,7 +204,7 @@ int main(int argc, char **argv){
             std::fill(numberOfTracksTiedToVertex.begin(), numberOfTracksTiedToVertex.end(), 0);
 
             //cause I want to see what's going on
-            if(eventsProcessed%10000<nthreads){
+            if(eventsProcessed%10000==0){
                 cout<<"Processed "<<eventsProcessed<<" events"<<endl;
             }
             eventsProcessed++;
@@ -210,6 +216,17 @@ int main(int argc, char **argv){
             //Nhits
             for(int i = 0; i<tempUPCpointer->getNumberOfTracks(); i++){
                 tempTrack = tempUPCpointer->getTrack(i);
+                if(inputDataType==new_data_old_tracks){
+                    //kV0 false and kCEP false
+                    if(tempTrack->getFlag(StUPCTrack::kV0)||tempTrack->getFlag(StUPCTrack::kCEP)){
+                        continue;
+                    }
+                } else if(inputDataType==new_data_new_tracks){
+                    //kV0 true
+                    if(!tempTrack->getFlag(StUPCTrack::kV0)){
+                        continue;
+                    }
+                }
                 if(!tempTrack->getFlag(StUPCTrack::kTof)){
                     continue;
                 }
@@ -244,12 +261,26 @@ int main(int argc, char **argv){
                 insideprocessing.Fill("VertexIdvsPos", i, tempUPCpointer->getVertex(i)->getId());
             }
             insideprocessing.Fill("VertexPrimvsAll", tempUPCpointer->getNumberOfVertices(), tempUPCpointer->getNPrimVertices());
-            vertexPrimary = { tempUPCpointer->getVertex(0)->getPosX(), tempUPCpointer->getVertex(0)->getPosY(), tempUPCpointer->getVertex(0)->getPosZ() };
-            tempBeamVector = FindPosition(tempUPCpointer->getFillNumber(), vertexPrimary.Z(), beamData[0], beamData[1], beamData[2], beamData[3], beamData[4], beamData[5], beamData[6], beamData[7], beamData[8]);
-            // beamValues[0] = tempBeamVector[0];
-            // beamValues[1] = tempBeamVector[1];
-            // beamValues[2] = tempBeamVector[2];
-            // beamValues[3] = tempBeamVector[3];
+            switch(inputDataType){
+            case old_data:
+                vertexPrimary = { tempUPCpointer->getVertex(0)->getPosX(), tempUPCpointer->getVertex(0)->getPosY(), tempUPCpointer->getVertex(0)->getPosZ() };
+                tempBeamVector = FindPosition(tempUPCpointer->getFillNumber(), vertexPrimary.Z(), beamData[0], beamData[1], beamData[2], beamData[3], beamData[4], beamData[5], beamData[6], beamData[7], beamData[8]);
+                beamValues[0] = tempBeamVector[0];
+                beamValues[1] = tempBeamVector[1];
+                beamValues[2] = tempBeamVector[2];
+                beamValues[3] = tempBeamVector[3];
+                break;
+            case new_data_old_tracks:
+            case new_data_new_tracks:
+                beamValues[0] = tempUPCpointer->getBeamXPosition();
+                beamValues[1] = tempUPCpointer->getBeamYPosition();
+                beamValues[2] = tempUPCpointer->getBeamXSlope();
+                beamValues[3] = tempUPCpointer->getBeamYSlope();
+                break;
+            default:
+                break;
+            }
+            //for tests, the vertex {0,0,0} in there is also for tests
             beamValues[0] = 0;
             beamValues[1] = 0;
             beamValues[2] = 0;
@@ -429,7 +460,9 @@ int main(int argc, char **argv){
                     }
                     insideprocessing.Fill("MpipiWideWithPidEcut", tempParticle->m());
                 }
-                insideprocessing.Fill("PVV0K0dist", tempUPCpointer->getVertex(0)->getPosZ()-tempParticle->prodVertexHypo().Z());
+                if(inputDataType==old_data){
+                    insideprocessing.Fill("PVV0K0dist", tempUPCpointer->getVertex(0)->getPosZ()-tempParticle->prodVertexHypo().Z());
+                }
                 insideprocessing.Fill("K0PVdistance", tempParticle->DcaToPrimaryVertex());
                 insideprocessing.Fill("etaK0", tempParticle->eta());
                 insideprocessing.Fill("phiK0", tempParticle->phi());
@@ -560,7 +593,15 @@ int main(int argc, char **argv){
     if(outputFolder.find(".root")!=std::string::npos){
         outfileName = outputFolder;
     } else{
-        outfileName = outputFolder+"AnaOutput_"+path.substr(path.find_last_of("/\\")+1)+".root";
+        if(inputDataType==old_data){
+            outfileName = outputFolder+"AnaOutput_"+path.substr(path.find_last_of("/\\")+1)+".root";
+        } else if(inputDataType==new_data_old_tracks){
+            outfileName = outputFolder+"AnaOutput_"+path.substr(path.find_last_of("/\\")+1)+"_new_data_old_tracks.root";
+        } else if(inputDataType==new_data_new_tracks){
+            outfileName = outputFolder+"AnaOutput_"+path.substr(path.find_last_of("/\\")+1)+"_new_data_new_tracks.root";
+        } else{
+            outfileName = outputFolder+"AnaOutput_"+path.substr(path.find_last_of("/\\")+1)+"_unspecified.root";
+        }
     }
     cout<<"Created output file "<<outfileName<<endl;
     TFile *outputFileHist = TFile::Open(outfileName.c_str(), "recreate");
