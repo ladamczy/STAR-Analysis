@@ -15,6 +15,7 @@
 #include "StUPCVertex.h"
 #include "StUPCTofHit.h"
 #include "StUPCV0.h"
+#include "StPicoPhysicalHelix.h"
 
 //my headers
 #include "UsefulThings.h"
@@ -35,6 +36,7 @@ bool tuple_sort(tuple<double, int, int>, tuple<double, int, int>);
 bool tuple_sort_big(tuple<double, int, int, bool>, tuple<double, int, int, bool>);
 bool isPi(StUPCTrack *);
 bool isProton(StUPCTrack *);
+double deltaT(TVector3 decayVertex, StUPCTrack *track1, StUPCTrack *track2, double m1, double m2);
 
 int main(int argc, char **argv){
 
@@ -133,6 +135,10 @@ int main(int argc, char **argv){
     outsideprocessing.AddHistogram(TH1D("K0cosThetaStarBackground", "K0cosThetaStarBackground", 50, -1, 1));
     outsideprocessing.AddHistogram(TH1D("LambdacosThetaStarSignal", "LambdacosThetaStarSignal", 50, -1, 1));
     outsideprocessing.AddHistogram(TH1D("LambdacosThetaStarBackground", "LambdacosThetaStarBackground", 50, -1, 1));
+
+    outsideprocessing.AddHistogram(TH1D("K0ToFDecayTime", "K0ToFDecayTime", 40, -2000000, 2000000));
+    outsideprocessing.AddHistogram(TH1D("LambdaToFDecayTimeSignal", "LambdaToFDecayTimeSignal", 40, -2000000, 2000000));
+    outsideprocessing.AddHistogram(TH1D("LambdaToFDecayTimeBackground", "LambdaToFDecayTimeBackground", 40, -2000000, 2000000));
 
     // int triggers[] = { 570701, 570705, 570711, 590701, 590705, 590708 };
     // outsideprocessing.AddHistogram(TH1D("triggerHist", "Data triggers;Trigger ID;Number of events", 6, 0, 6));
@@ -417,6 +423,7 @@ int main(int argc, char **argv){
                     insideprocessing.Fill("MpipiNarrow", tempParticle->m());
                 }
                 insideprocessing.Fill("MpipiWide", tempParticle->m());
+                insideprocessing.Fill("K0ToFDecayTime", deltaT(tempParticle->decayVertex(), vector_Track_positive[std::get<1>(vector_K0_pairs[i])], vector_Track_negative[std::get<2>(vector_K0_pairs[i])], particleMass[0], particleMass[0]));
                 if(isPi(vector_Track_positive[std::get<1>(vector_K0_pairs[i])])&&isPi(vector_Track_negative[std::get<2>(vector_K0_pairs[i])])){
                     if(tempParticle->m()>kaonMassWindowNarrowLow&&tempParticle->m()<kaonMassWindowNarrowHigh){
                         insideprocessing.Fill("MpipiNarrowWithPidEcut", tempParticle->m());
@@ -515,6 +522,11 @@ int main(int argc, char **argv){
                     insideprocessing.Fill("LambdapointingAngleHypoSignalDetailed", tempParticle->pointingAngleHypo());
                     insideprocessing.Fill("LambdadecayLengthHypoSignal", tempParticle->decayLengthHypo());
                     insideprocessing.Fill("LambdacosThetaStarSignal", tempParticle->cosThetaStar());
+                    if(temptest1)
+                        insideprocessing.Fill("LambdaToFDecayTimeSignal", deltaT(tempParticle->decayVertex(), vector_Track_positive[std::get<1>(vector_Lambda_pairs[i])], vector_Track_negative[std::get<2>(vector_Lambda_pairs[i])], particleMass[2], particleMass[0]));
+                    else if(temptest2){
+                        insideprocessing.Fill("LambdaToFDecayTimeSignal", deltaT(tempParticle->decayVertex(), vector_Track_positive[std::get<1>(vector_Lambda_pairs[i])], vector_Track_negative[std::get<2>(vector_Lambda_pairs[i])], particleMass[0], particleMass[2]));
+                    }
                 } else{
                     insideprocessing.Fill("LambdadcaDaughtersBackground", tempParticle->dcaDaughters());
                     insideprocessing.Fill("LambdadcaBeamlineBackground", tempParticle->DCABeamLine());
@@ -522,6 +534,11 @@ int main(int argc, char **argv){
                     insideprocessing.Fill("LambdapointingAngleHypoBackgroundDetailed", tempParticle->pointingAngleHypo());
                     insideprocessing.Fill("LambdadecayLengthHypoBackground", tempParticle->decayLengthHypo());
                     insideprocessing.Fill("LambdacosThetaStarBackground", tempParticle->cosThetaStar());
+                    if(temptest1)
+                        insideprocessing.Fill("LambdaToFDecayTimeBackground", deltaT(tempParticle->decayVertex(), vector_Track_positive[std::get<1>(vector_Lambda_pairs[i])], vector_Track_negative[std::get<2>(vector_Lambda_pairs[i])], particleMass[2], particleMass[0]));
+                    else if(temptest2){
+                        insideprocessing.Fill("LambdaToFDecayTimeBackground", deltaT(tempParticle->decayVertex(), vector_Track_positive[std::get<1>(vector_Lambda_pairs[i])], vector_Track_negative[std::get<2>(vector_Lambda_pairs[i])], particleMass[0], particleMass[2]));
+                    }
                 }
 
                 if(tempParticle->pointingAngleHypo()>0.99&&(temptest1 or temptest2)){
@@ -574,4 +591,57 @@ bool isProton(StUPCTrack *track){
         return false;
     }
     return abs(track->getNSigmasTPCProton())<3;
+}
+
+double deltaT(TVector3 decayVertex, StUPCTrack *track1, StUPCTrack *track2, double m1, double m2){
+    double middleOfToF = 214.4;
+    StPicoPhysicalHelix p1Helix = StPicoPhysicalHelix(track1->getCurvature(),
+        track1->getDipAngle(),
+        track1->getPhase(),
+        track1->getOrigin(),
+        track1->getCharge());
+    StPicoPhysicalHelix p2Helix = StPicoPhysicalHelix(track2->getCurvature(),
+        track2->getDipAngle(),
+        track2->getPhase(),
+        track2->getOrigin(),
+        track2->getCharge());
+
+    //my way
+    p1Helix.moveOrigin(p1Helix.pathLength(decayVertex));
+    p2Helix.moveOrigin(p2Helix.pathLength(decayVertex));
+    std::pair<double, double> stemp = p1Helix.pathLength(middleOfToF);
+    double s1 = (stemp.first<=0) ? stemp.second : min(stemp.first, stemp.second);
+    stemp = p2Helix.pathLength(middleOfToF);
+    double s2 = (stemp.first<=0) ? stemp.second : min(stemp.first, stemp.second);
+    TLorentzVector vectTemp;
+    double t1, t2;
+    //to change BoostVector from v/c to v in cm/ToF time
+    //ToFlst in ps/ToFtime:
+    double ToFlst = 1e-3;//was 24
+    //m/s = 100cm/1e12ps = 100cm/(1e12ps/ToFlst) = 1e-10cm*ToFlst
+    double coeff = 299792458.0*1e-10*ToFlst;
+    track1->getLorentzVector(vectTemp, m1);
+    t1 = track1->getTofTime()-s1/(vectTemp.BoostVector().Mag()*coeff);
+    track2->getLorentzVector(vectTemp, m2);
+    t2 = track2->getTofTime()-s2/(vectTemp.BoostVector().Mag()*coeff);
+
+    //ToF way
+    // TLorentzVector vectTemp;
+    // double t1, t2;
+    // track1->getLorentzVector(vectTemp, m1);
+    // t1 = track1->getTofTime()-track1->getTofPathLength()/vectTemp.BoostVector().Mag();
+    // track2->getLorentzVector(vectTemp, m2);
+    // t2 = track2->getTofTime()-track2->getTofPathLength()/vectTemp.BoostVector().Mag();
+
+    // std::cout<<"AAAAAAAAAAAAAAAAAAAAA"<<std::endl;
+    // std::cout<<track2->getTofTime()<<" "<<s2/(vectTemp.BoostVector().Mag()*coeff)<<" "<<t2<<" "<<t1-t2<<std::endl;
+    return t1-t2;
+
+    // track1->getLorentzVector(vectTemp, m1);
+    // double temp = s1/(vectTemp.BoostVector().Mag()*299792458.0*1e-10);
+    // track2->getLorentzVector(vectTemp, m2);
+    // temp -= s2/(vectTemp.BoostVector().Mag()*299792458.0*1e-10);
+    // if(track1->getTofTime()-track2->getTofTime()==0)
+    //     printf("Same: %f\n", track1->getTofTime());
+    // return (track1->getTofTime()-track2->getTofTime())/temp;
 }
