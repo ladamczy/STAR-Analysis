@@ -38,6 +38,7 @@ bool tuple_sort_big(tuple<double, int, int, bool>, tuple<double, int, int, bool>
 bool isPi(StUPCTrack *);
 bool isProton(StUPCTrack *);
 double deltaT(TVector3 decayVertex, StUPCTrack *track1, StUPCTrack *track2, double m1, double m2);
+double RP_PV_z(StRPEvent *rpevent);
 
 int main(int argc, char **argv){
 
@@ -144,9 +145,27 @@ int main(int argc, char **argv){
     outsideprocessing.AddHistogram(TH1D("LambdacosThetaStarSignal", "LambdacosThetaStarSignal", 50, -1, 1));
     outsideprocessing.AddHistogram(TH1D("LambdacosThetaStarBackground", "LambdacosThetaStarBackground", 50, -1, 1));
 
+    outsideprocessing.AddHistogram(TH1D("K0pionPVDCASignal", "K0pionPVDCASignal", 100, 0, 10));
+    outsideprocessing.AddHistogram(TH1D("K0pionPVDCABackground", "K0pionPVDCABackground", 100, 0, 10));
+    outsideprocessing.AddHistogram(TH1D("LambdapionPVDCASignal", "LambdapionPVDCASignal", 100, 0, 10));
+    outsideprocessing.AddHistogram(TH1D("LambdapionPVDCABackground", "LambdapionPVDCABackground", 100, 0, 10));
+    outsideprocessing.AddHistogram(TH1D("LambdaprotonPVDCASignal", "LambdaprotonPVDCASignal", 100, 0, 10));
+    outsideprocessing.AddHistogram(TH1D("LambdaprotonPVDCABackground", "LambdaprotonPVDCABackground", 100, 0, 10));
+    outsideprocessing.AddHistogram(TH1D("K0decayLengthSignal", "K0decayLengthSignal", 100, 0, 10));
+    outsideprocessing.AddHistogram(TH1D("K0decayLengthBackground", "K0decayLengthBackground", 100, 0, 10));
+    outsideprocessing.AddHistogram(TH1D("LambdadecayLengthSignal", "LambdadecayLengthSignal", 100, 0, 10));
+    outsideprocessing.AddHistogram(TH1D("LambdadecayLengthBackground", "LambdadecayLengthBackground", 100, 0, 10));
+    outsideprocessing.AddHistogram(TH1D("K0DcaToPrimaryVertexSignal", "K0DcaToPrimaryVertexSignal", 100, 0, 10));
+    outsideprocessing.AddHistogram(TH1D("K0DcaToPrimaryVertexBackground", "K0DcaToPrimaryVertexBackground", 100, 0, 10));
+    outsideprocessing.AddHistogram(TH1D("LambdaDcaToPrimaryVertexSignal", "LambdaDcaToPrimaryVertexSignal", 100, 0, 10));
+    outsideprocessing.AddHistogram(TH1D("LambdaDcaToPrimaryVertexBackground", "LambdaDcaToPrimaryVertexBackground", 100, 0, 10));
+
     outsideprocessing.AddHistogram(TH1D("K0ToFDecayTime", "K0ToFDecayTime", 200, -10, 10));
     outsideprocessing.AddHistogram(TH1D("LambdaToFDecayTimeSignal", "LambdaToFDecayTimeSignal", 200, -10, 10));
     outsideprocessing.AddHistogram(TH1D("LambdaToFDecayTimeBackground", "LambdaToFDecayTimeBackground", 200, -10, 10));
+
+    outsideprocessing.AddHistogram(TH2D("PVposition", "PV z position, RP vs TPC;TPC;RP", 400, -200, 200, 400, -200, 200));
+    outsideprocessing.AddHistogram(TH1D("RP_PVposition", "PV z position, RP;RP", 400, -200, 200));
 
     // int triggers[] = { 570701, 570705, 570711, 590701, 590705, 590708 };
     // outsideprocessing.AddHistogram(TH1D("triggerHist", "Data triggers;Trigger ID;Number of events", 6, 0, 6));
@@ -167,7 +186,7 @@ int main(int argc, char **argv){
         TTreeReaderValue<StRPEvent> StRPEventInstance(myReader, "mRPEvent");
         ProcessingInsideLoop insideprocessing;
         StUPCEvent *tempUPCpointer;
-        // StRPEvent *tempRPpointer;
+        StRPEvent *tempRPpointer;
         insideprocessing.GetLocalHistograms(&outsideprocessing);
 
         //helpful variables
@@ -190,7 +209,7 @@ int main(int argc, char **argv){
         while(myReader.Next()){
             //in a TTree, it *would* be constant, in TChain however not necessarily
             tempUPCpointer = StUPCEventInstance.Get();
-            // tempRPpointer = StRPEventInstance.Get();
+            tempRPpointer = StRPEventInstance.Get();
 
             //test
 
@@ -276,15 +295,19 @@ int main(int argc, char **argv){
                 beamValues[1] = tempUPCpointer->getBeamYPosition();
                 beamValues[2] = tempUPCpointer->getBeamXSlope();
                 beamValues[3] = tempUPCpointer->getBeamYSlope();
+                vertexPrimary = { beamValues[0]+RP_PV_z(tempRPpointer)*beamValues[2], beamValues[1]+RP_PV_z(tempRPpointer)*beamValues[3], RP_PV_z(tempRPpointer) };
                 break;
             default:
                 break;
             }
             //for tests, the vertex {0,0,0} in there is also for tests
-            beamValues[0] = 0;
-            beamValues[1] = 0;
-            beamValues[2] = 0;
-            beamValues[3] = 0;
+            // beamValues[0] = 0;
+            // beamValues[1] = 0;
+            // beamValues[2] = 0;
+            // beamValues[3] = 0;
+            if(inputDataType==old_data)
+                insideprocessing.Fill("PVposition", vertexPrimary.Z(), RP_PV_z(tempRPpointer));
+            insideprocessing.Fill("RP_PVposition", RP_PV_z(tempRPpointer));
             //actual loop for K0
             for(long unsigned int i = 0; i<vector_Track_positive.size(); i++){
                 for(long unsigned int j = 0; j<vector_Track_negative.size(); j++){
@@ -483,6 +506,10 @@ int main(int argc, char **argv){
                     insideprocessing.Fill("K0pointingAngleHypoSignalDetailed", tempParticle->pointingAngleHypo());
                     insideprocessing.Fill("K0decayLengthHypoSignal", tempParticle->decayLengthHypo());
                     insideprocessing.Fill("K0cosThetaStarSignal", tempParticle->cosThetaStar());
+                    insideprocessing.Fill("K0pionPVDCASignal", tempParticle->particle1Dca());
+                    insideprocessing.Fill("K0pionPVDCASignal", tempParticle->particle2Dca());
+                    insideprocessing.Fill("K0decayLengthSignal", tempParticle->decayLength());
+                    insideprocessing.Fill("K0DcaToPrimaryVertexSignal", tempParticle->DcaToPrimaryVertex());
                 } else{
                     insideprocessing.Fill("K0dcaDaughtersBackground", tempParticle->dcaDaughters());
                     insideprocessing.Fill("K0dcaBeamlineBackground", tempParticle->DCABeamLine());
@@ -490,6 +517,10 @@ int main(int argc, char **argv){
                     insideprocessing.Fill("K0pointingAngleHypoBackgroundDetailed", tempParticle->pointingAngleHypo());
                     insideprocessing.Fill("K0decayLengthHypoBackground", tempParticle->decayLengthHypo());
                     insideprocessing.Fill("K0cosThetaStarBackground", tempParticle->cosThetaStar());
+                    insideprocessing.Fill("K0pionPVDCABackground", tempParticle->particle1Dca());
+                    insideprocessing.Fill("K0pionPVDCABackground", tempParticle->particle2Dca());
+                    insideprocessing.Fill("K0decayLengthBackground", tempParticle->decayLength());
+                    insideprocessing.Fill("K0DcaToPrimaryVertexBackground", tempParticle->DcaToPrimaryVertex());
                 }
                 delete tempParticle;
             }
@@ -554,10 +585,16 @@ int main(int argc, char **argv){
                     insideprocessing.Fill("LambdapointingAngleHypoSignalDetailed", tempParticle->pointingAngleHypo());
                     insideprocessing.Fill("LambdadecayLengthHypoSignal", tempParticle->decayLengthHypo());
                     insideprocessing.Fill("LambdacosThetaStarSignal", tempParticle->cosThetaStar());
-                    if(temptest1)
+                    insideprocessing.Fill("LambdadecayLengthSignal", tempParticle->decayLength());
+                    insideprocessing.Fill("LambdaDcaToPrimaryVertexSignal", tempParticle->DcaToPrimaryVertex());
+                    if(temptest1){
                         insideprocessing.Fill("LambdaToFDecayTimeSignal", deltaT(tempParticle->decayVertex(), vector_Track_positive[std::get<1>(vector_Lambda_pairs[i])], vector_Track_negative[std::get<2>(vector_Lambda_pairs[i])], particleMass[2], particleMass[0]));
-                    else if(temptest2){
+                        insideprocessing.Fill("LambdaprotonPVDCASignal", tempParticle->particle1Dca());
+                        insideprocessing.Fill("LambdapionPVDCASignal", tempParticle->particle2Dca());
+                    } else if(temptest2){
                         insideprocessing.Fill("LambdaToFDecayTimeSignal", deltaT(tempParticle->decayVertex(), vector_Track_positive[std::get<1>(vector_Lambda_pairs[i])], vector_Track_negative[std::get<2>(vector_Lambda_pairs[i])], particleMass[0], particleMass[2]));
+                        insideprocessing.Fill("LambdapionPVDCASignal", tempParticle->particle1Dca());
+                        insideprocessing.Fill("LambdaprotonPVDCASignal", tempParticle->particle2Dca());
                     }
                 } else{
                     insideprocessing.Fill("LambdadcaDaughtersBackground", tempParticle->dcaDaughters());
@@ -566,10 +603,16 @@ int main(int argc, char **argv){
                     insideprocessing.Fill("LambdapointingAngleHypoBackgroundDetailed", tempParticle->pointingAngleHypo());
                     insideprocessing.Fill("LambdadecayLengthHypoBackground", tempParticle->decayLengthHypo());
                     insideprocessing.Fill("LambdacosThetaStarBackground", tempParticle->cosThetaStar());
-                    if(temptest1)
+                    insideprocessing.Fill("LambdadecayLengthBackground", tempParticle->decayLength());
+                    insideprocessing.Fill("LambdaDcaToPrimaryVertexBackground", tempParticle->DcaToPrimaryVertex());
+                    if(temptest1){
                         insideprocessing.Fill("LambdaToFDecayTimeBackground", deltaT(tempParticle->decayVertex(), vector_Track_positive[std::get<1>(vector_Lambda_pairs[i])], vector_Track_negative[std::get<2>(vector_Lambda_pairs[i])], particleMass[2], particleMass[0]));
-                    else if(temptest2){
+                        insideprocessing.Fill("LambdaprotonPVDCABackground", tempParticle->particle1Dca());
+                        insideprocessing.Fill("LambdapionPVDCABackground", tempParticle->particle2Dca());
+                    } else if(temptest2){
                         insideprocessing.Fill("LambdaToFDecayTimeBackground", deltaT(tempParticle->decayVertex(), vector_Track_positive[std::get<1>(vector_Lambda_pairs[i])], vector_Track_negative[std::get<2>(vector_Lambda_pairs[i])], particleMass[0], particleMass[2]));
+                        insideprocessing.Fill("LambdapionPVDCABackground", tempParticle->particle1Dca());
+                        insideprocessing.Fill("LambdaprotonPVDCABackground", tempParticle->particle2Dca());
                     }
                 }
 
@@ -684,4 +727,34 @@ double deltaT(TVector3 decayVertex, StUPCTrack *track1, StUPCTrack *track2, doub
     // if(track1->getTofTime()-track2->getTofTime()==0)
     //     printf("Same: %f\n", track1->getTofTime());
     // return (track1->getTofTime()-track2->getTofTime())/temp;
+}
+
+double RP_PV_z(StRPEvent *rpevent){
+    StUPCRpsTrack *p_plus = rpevent->getTrack(0);
+    p_plus->setEvent(rpevent);
+    StUPCRpsTrack *p_minus;
+    if(p_plus->getTrackPoint(0)->z()>0){
+        p_plus = rpevent->getTrack(0);
+        p_minus = rpevent->getTrack(1);
+        p_plus->setEvent(rpevent);
+        p_minus->setEvent(rpevent);
+    } else{
+        p_plus = rpevent->getTrack(1);
+        p_minus = rpevent->getTrack(0);
+        p_plus->setEvent(rpevent);
+        p_minus->setEvent(rpevent);
+    }
+    double v1, v2, d1, d2, t1, t2;
+    TLorentzVector temp;
+    t1 = p_plus->time();
+    t2 = p_minus->time();
+    // printf("%lf %lf\n", t1*1e9, t2*1e9);
+    d1 = 0.5*(p_plus->getTrackPoint(0)->z()+p_plus->getTrackPoint(1)->z());
+    d2 = -0.5*(p_minus->getTrackPoint(0)->z()+p_minus->getTrackPoint(1)->z());
+    temp.SetVectM(p_plus->pVec(), particleMass[Proton]);
+    v1 = temp.BoostVector().Z()*299792458.0*100; //na cm/s
+    temp.SetVectM(p_minus->pVec(), particleMass[Proton]);
+    v2 = -temp.BoostVector().Z()*299792458.0*100; //na cm/s
+
+    return (t1-t2-(d1/v1-d2/v2))/(1/v1+1/v2);
 }
