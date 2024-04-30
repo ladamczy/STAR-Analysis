@@ -2,6 +2,7 @@ Inclusive_Analysis/**/build/
 Inclusive_Analysis/**/*.pdf
 Inclusive_Analysis/**/*.root
 Inclusive_Analysis/**/*.png
+Inclusive_Analysis/**/*.fzd
 test/build
 test/run
 star-upc/build
