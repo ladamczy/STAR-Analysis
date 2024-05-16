@@ -167,6 +167,15 @@ int main(int argc, char **argv){
     outsideprocessing.AddHistogram(TH2D("PVposition", "PV z position, RP vs TPC;TPC;RP", 400, -200, 200, 400, -200, 200));
     outsideprocessing.AddHistogram(TH1D("RP_PVposition", "PV z position, RP;RP", 400, -200, 200));
 
+    int n_ptBins = 10;
+    double ptBins[] = { 0,0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8 , 5 };
+    int n_etaBins = 10;
+    double etaBins[] = { -1., -0.8, -0.6, -0.4, -0.2, 0., 0.2, 0.4, 0.6, 0.8, 1.0 };
+    outsideprocessing.AddHistogram(TH2D("K0pt2DHist", "K0pt2DHist", kaonMassWindowWideBins, kaonMassWindowWideLow, kaonMassWindowWideHigh, n_ptBins, ptBins));
+    outsideprocessing.AddHistogram(TH2D("Lambdapt2DHist", "Lambdapt2DHist", lambdaMassWindowWideBins, lambdaMassWindowWideLow, lambdaMassWindowWideHigh, n_ptBins, ptBins));
+    outsideprocessing.AddHistogram(TH2D("K0eta2DHist", "K0eta2DHist", kaonMassWindowWideBins, kaonMassWindowWideLow, kaonMassWindowWideHigh, n_etaBins, etaBins));
+    outsideprocessing.AddHistogram(TH2D("Lambdaeta2DHist", "Lambdaeta2DHist", lambdaMassWindowWideBins, lambdaMassWindowWideLow, lambdaMassWindowWideHigh, n_etaBins, etaBins));
+
     // int triggers[] = { 570701, 570705, 570711, 590701, 590705, 590708 };
     // outsideprocessing.AddHistogram(TH1D("triggerHist", "Data triggers;Trigger ID;Number of events", 6, 0, 6));
     // for(int i = 0;i<6;i++){
@@ -493,6 +502,8 @@ int main(int argc, char **argv){
                 insideprocessing.Fill("etapiK0", vector_Track_negative[std::get<2>(vector_K0_pairs[i])]->getEta());
                 insideprocessing.Fill("phipiK0", vector_Track_positive[std::get<1>(vector_K0_pairs[i])]->getPhi());
                 insideprocessing.Fill("phipiK0", vector_Track_negative[std::get<2>(vector_K0_pairs[i])]->getPhi());
+                insideprocessing.Fill("K0pt2DHist", tempParticle->m(), tempParticle->pt());
+                insideprocessing.Fill("K0eta2DHist", tempParticle->m(), tempParticle->eta());
 
                 if(tempParticle->pointingAngleHypo()>0.99){
                     insideprocessing.Fill("MpipiWideCheck", tempParticle->m());
@@ -574,6 +585,8 @@ int main(int argc, char **argv){
                     insideprocessing.Fill("etapiLambda", vector_Track_positive[std::get<1>(vector_Lambda_pairs[i])]->getEta());
                     insideprocessing.Fill("phipiLambda", vector_Track_positive[std::get<1>(vector_Lambda_pairs[i])]->getPhi());
                 }
+                insideprocessing.Fill("Lambdapt2DHist", tempParticle->m(), tempParticle->pt());
+                insideprocessing.Fill("Lambdaeta2DHist", tempParticle->m(), tempParticle->eta());
 
                 //signal & background stuff
                 bool temptest1 = std::get<3>(vector_Lambda_pairs[i])&&isProton(vector_Track_positive[std::get<1>(vector_Lambda_pairs[i])])&&isPi(vector_Track_negative[std::get<2>(vector_Lambda_pairs[i])]);
