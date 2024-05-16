@@ -31,7 +31,7 @@ int main(){
     TFile *anaoutputnewtracks1 = TFile::Open("/home/adam/STAR-Analysis/Inclusive_Analysis/star-upc/CPT/AnaOutput_Inclusive_analysis_with_STUPCV0_with_extended_range_noAfterburner_new_data_new_tracks.root");
     TFile *anaoutputnewtracks2 = TFile::Open("/home/adam/STAR-Analysis/Inclusive_Analysis/star-upc/CPTnoBBCL/AnaOutput_Inclusive_analysis_with_STUPCV0_with_extended_range_noAfterburner_new_data_new_tracks.root");
 
-    gStyle->SetFrameLineWidth(3);
+    gStyle->SetFrameLineWidth(1);
     // gStyle->SetOptFit(111);
     gStyle->SetOptFit(0);
     gStyle->SetOptStat(0);
