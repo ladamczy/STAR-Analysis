@@ -30,7 +30,10 @@ int main(int argc, char *argv[]){
 
     TH1D olddataK0pt, oldtracksK0pt, newdataK0pt;
     K0_differential_crossection_fit(olddataK0pt, oldtracksK0pt, newdataK0pt, "K0pt2DHist");
-    draw_and_save(olddataK0pt, oldtracksK0pt, newdataK0pt, "Differential crossection for K^{ 0}_{ S} with respect to p_{T};K^{0}_{S} p_{T} [GeV];n_{K^{0}_{S}}", "Differential_crossection_K0_pt.pdf");
+    draw_and_save(olddataK0pt, oldtracksK0pt, newdataK0pt, "Differential crossection for K^{ 0}_{ S} with respect to p_{T};p_{T} [GeV];n_{K^{0}_{S}}", "Differential_crossection_K0_pt.pdf");
+    TH1D olddataK0eta, oldtracksK0eta, newdataK0eta;
+    K0_differential_crossection_fit(olddataK0eta, oldtracksK0eta, newdataK0eta, "K0eta2DHist");
+    draw_and_save(olddataK0eta, oldtracksK0eta, newdataK0eta, "Differential crossection for K^{ 0}_{ S} with respect to #eta;#eta;n_{K^{0}_{S}}", "Differential_crossection_K0_eta.pdf");
 
 
     theApp.Run();
@@ -223,7 +226,7 @@ void draw_and_save(TH1D &olddata, TH1D &oldtracks, TH1D &newdata, string histTit
     newdata.SetMarkerColor(kBlue);
     newdata.SetLineColor(kBlue+2);
     newdata.Draw("ESAME");
-    TLegend *legend = new TLegend(.62, .65, .89, .89);
+    TLegend *legend = new TLegend(.68, .65, .89, .89);
     legend->SetTextSize(0.02);
     legend->AddEntry(olddata.GetName(), "pp old data, #sqrt{s} = 510 GeV");
     legend->AddEntry(oldtracks.GetName(), "pp new data, old tracks, #sqrt{s} = 510 GeV");
@@ -355,11 +358,12 @@ void K0_differential_crossection_fit(TH1D &olddataK01D, TH1D &oldtracksK01D, TH1
         std::cout<<"Enter which data (0,1,2), which parameter (0-4) and how much change"<<std::endl;
         std::cout<<"Writing \"abs\" before just sets the parameter"<<std::endl;
         std::cout<<"Or write \"fit <data_number>\" to fit"<<std::endl;
-        std::cout<<"Or write \"ok\" if everything ok"<<std::endl;
+        std::cout<<"Or press \"Enter\" if everything ok"<<std::endl;
         string response;
         //needed to read whole line, not just until first space
         std::getline(std::cin, response);
-        while(response.find("ok")==string::npos){
+        // while(response.find("ok")==string::npos){
+        while(response.size()!=0){
             //fitting/changing part
             if(response.find("fit")!=string::npos){
                 switch(response[4]-'0'){ //presents response as int by substracting ASCII code for 0
@@ -442,17 +446,17 @@ void K0_differential_crossection_fit(TH1D &olddataK01D, TH1D &oldtracksK01D, TH1
             //interactive part
             std::cout<<"Enter which data (0,1,2), which parameter (0-4) and how much change"<<std::endl;
             std::cout<<"Or write \"fit <data_number>\" to fit"<<std::endl;
-            std::cout<<"Or write \"ok\" if everything ok"<<std::endl;
+            std::cout<<"Or press \"Enter\" if everything ok"<<std::endl;
             //needed to read whole line, not just until first space
             std::getline(std::cin, response);
         }
         //adding to the result histogram
-        olddataK01D.SetBinContent(i+1, oldDataSigFit->GetParameter(0)/olddataK0.GetYaxis()->GetBinWidth(i+1));
-        olddataK01D.SetBinError(i+1, oldDataSigFit->GetParError(0)/olddataK0.GetYaxis()->GetBinWidth(i+1));
-        oldtracksK01D.SetBinContent(i+1, newDataOldTracksSigFit->GetParameter(0)/oldtracksK0.GetYaxis()->GetBinWidth(i+1));
-        oldtracksK01D.SetBinError(i+1, newDataOldTracksSigFit->GetParError(0)/oldtracksK0.GetYaxis()->GetBinWidth(i+1));
-        newdataK01D.SetBinContent(i+1, newDataNewTracksSigFit->GetParameter(0)/newdataK0.GetYaxis()->GetBinWidth(i+1));
-        newdataK01D.SetBinError(i+1, newDataNewTracksSigFit->GetParError(0)/newdataK0.GetYaxis()->GetBinWidth(i+1));
+        olddataK01D.SetBinContent(i+1, oldDataSigFit->GetParameter(0)/olddataK0.GetXaxis()->GetBinWidth(i+1));
+        olddataK01D.SetBinError(i+1, oldDataSigFit->GetParError(0)/olddataK0.GetXaxis()->GetBinWidth(i+1));
+        oldtracksK01D.SetBinContent(i+1, newDataOldTracksSigFit->GetParameter(0)/oldtracksK0.GetXaxis()->GetBinWidth(i+1));
+        oldtracksK01D.SetBinError(i+1, newDataOldTracksSigFit->GetParError(0)/oldtracksK0.GetXaxis()->GetBinWidth(i+1));
+        newdataK01D.SetBinContent(i+1, newDataNewTracksSigFit->GetParameter(0)/newdataK0.GetXaxis()->GetBinWidth(i+1));
+        newdataK01D.SetBinError(i+1, newDataNewTracksSigFit->GetParError(0)/newdataK0.GetXaxis()->GetBinWidth(i+1));
         printf("Accepted current parameters\n");
     }
 }
