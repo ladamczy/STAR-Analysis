@@ -62,7 +62,7 @@ void Pythia8(){
 void doubleDiffractive( Int_t nevents=10, Int_t rngSeed=1234 ){ 
     gROOT->ProcessLine(".L bfc.C");
     {
-    TString simple = "y2012 geant gstar usexgeom agml ";
+        TString simple = "y2017a geant gstar usexgeom agml";
     bfc(0, simple );
     }
 
@@ -85,7 +85,7 @@ void doubleDiffractive( Int_t nevents=10, Int_t rngSeed=1234 ){
     _primary = new StarPrimaryMaker();
     _primary -> SetFileName( "doubleDiffractive.root");
     _primary -> SetVertex( 0.1, -0.1, 0.0 );
-    _primary -> SetSigma ( 0.1,  0.1, 30.0 );
+    _primary->SetSigma(0.015, 0.015, 50.);
     chain -> AddBefore( "geant", _primary );
 
     Pythia8();
@@ -102,14 +102,12 @@ void doubleDiffractive( Int_t nevents=10, Int_t rngSeed=1234 ){
     //   y = 0 gauss width = 1mm
     //   z = 0 gauss width = 30cm
     _primary->SetVertex( 0., 0., 0. );
-    _primary->SetSigma( 0.1, 0.1, 30.0 );
+    _primary->SetSigma(0.015, 0.015, 50.);
 
     _primary -> Init();
 
-    // Setup geometry and set starsim to use agusread for input
-    //geometry("y2012");
-    //* AGUSER/GKINE NTRACK ID [ PTLOW PTHIGH YLOW YHIGH PHILOW PHIHIGH ZLOW ZHIGH option ]
-
+    // Setup geometry
+    geometry("y2017a field=-5.0");
     command("gkine -4 0");
     command("gfile o doubleDiffractive.fzd");
 
