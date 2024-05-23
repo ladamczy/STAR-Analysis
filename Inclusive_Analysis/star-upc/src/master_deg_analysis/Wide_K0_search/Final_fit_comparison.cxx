@@ -247,7 +247,8 @@ int main(){
     resultLambdaHistNewDataOldTracks.SetMarkerStyle(kFullCircle);
     resultLambdaHistNewDataOldTracks.SetMarkerColor(kGreen);
     resultLambdaHistNewDataOldTracks.SetLineColor(kGreen+2);
-    GfitLambda->SetParameters(100, 1.115, 5e-3, 2500000, -4200000, 1000000);
+    // GfitLambda->SetParameters(100, 1.115, 5e-3, 2500000, -4200000, 1000000);
+    GfitLambda->SetParameters(3, 1.115, 5e-3, 900000, -1600000, 780000);
     resultLambdaHistNewDataOldTracks.Fit(GfitLambda, "0BR");
     resultLambdaHistNewDataOldTracks.DrawCopy("E SAME", "NewDataOldTracks");
     gPad->Update();
@@ -948,6 +949,7 @@ int main(){
     resultLambdaPIDHistNewDataOldTracks.SetMarkerStyle(kFullCircle);
     resultLambdaPIDHistNewDataOldTracks.SetMarkerColor(kGreen);
     resultLambdaPIDHistNewDataOldTracks.SetLineColor(kGreen+2);
+    GfitLambdaPID->SetParameters(100, 1.115, 5e-3, -35000, 82000, -48000);
     resultLambdaPIDHistNewDataOldTracks.Fit(GfitLambdaPID, "0BR");
     resultLambdaPIDHistNewDataOldTracks.DrawCopy("E SAME", "NewDataOldTracks");
     gPad->Update();
@@ -965,7 +967,7 @@ int main(){
     GfitLambdaPIDBcg->DrawCopy("CSAME");
     GfitLambdaPID1Sig->DrawCopy("CSAME");
     //new data new tracks
-    GfitLambdaPID->SetParameters(100, 1.115, 5e-3, -53000, 124000, -72000);
+    GfitLambdaPID->SetParameters(100, 1.115, 5e-3, -35000, 82000, -48000);
     resultLambdaPIDHistNewDataNewTracks.SetMinimum(0);
     resultLambdaPIDHistNewDataNewTracks.SetMarkerStyle(kFullCircle);
     resultLambdaPIDHistNewDataNewTracks.SetMarkerColor(kBlue);
