@@ -103,7 +103,12 @@ void draw_and_save(TH1D &olddata, TH1D &oldtracks, TH1D &newdata, string histTit
     legend->AddEntry(newdata.GetName(), "#bf{new data, new tracks}");
     legend->SetBorderSize(0);
     legend->Draw("SAME");
+    gPad->Update();
+    printf("Confirm by pressing \"Enter\"\n");
+    getchar();
     resultCanvas->SaveAs(("/home/adam/STAR-Analysis/Inclusive_Analysis/star-upc/scripts/"+fileTitle).c_str());
+    resultCanvas->Close();
+    delete resultCanvas;
 }
 
 void K0_differential_crossection_fit(TH1D &olddataK01D, TH1D &oldtracksK01D, TH1D &newdataK01D, string histName){
@@ -354,12 +359,21 @@ void K0_differential_crossection_fit(TH1D &olddataK01D, TH1D &oldtracksK01D, TH1
             std::getline(std::cin, response);
         }
         //adding to the result histogram
-        olddataK01D.SetBinContent(i+1, oldDataSigFit->GetParameter(0)/olddataK0.GetXaxis()->GetBinWidth(0)*olddataK0.GetYaxis()->GetBinWidth(i+1));
-        olddataK01D.SetBinError(i+1, oldDataSigFit->GetParError(0)/olddataK0.GetXaxis()->GetBinWidth(0)*olddataK0.GetYaxis()->GetBinWidth(i+1));
-        oldtracksK01D.SetBinContent(i+1, newDataOldTracksSigFit->GetParameter(0)/oldtracksK0.GetXaxis()->GetBinWidth(0)*oldtracksK0.GetYaxis()->GetBinWidth(i+1));
-        oldtracksK01D.SetBinError(i+1, newDataOldTracksSigFit->GetParError(0)/oldtracksK0.GetXaxis()->GetBinWidth(0)*oldtracksK0.GetYaxis()->GetBinWidth(i+1));
-        newdataK01D.SetBinContent(i+1, newDataNewTracksSigFit->GetParameter(0)/newdataK0.GetXaxis()->GetBinWidth(0)*newdataK0.GetYaxis()->GetBinWidth(i+1));
-        newdataK01D.SetBinError(i+1, newDataNewTracksSigFit->GetParError(0)/newdataK0.GetXaxis()->GetBinWidth(0)*newdataK0.GetYaxis()->GetBinWidth(i+1));
+        if(response.find("zero")!=string::npos){
+            olddataK01D.SetBinContent(i+1, 0.);
+            olddataK01D.SetBinError(i+1, 0.);
+            oldtracksK01D.SetBinContent(i+1, 0.);
+            oldtracksK01D.SetBinError(i+1, 0.);
+            newdataK01D.SetBinContent(i+1, 0.);
+            newdataK01D.SetBinError(i+1, 0.);
+        } else{
+            olddataK01D.SetBinContent(i+1, oldDataSigFit->GetParameter(0)/olddataK0.GetXaxis()->GetBinWidth(0)*olddataK0.GetYaxis()->GetBinWidth(i+1));
+            olddataK01D.SetBinError(i+1, oldDataSigFit->GetParError(0)/olddataK0.GetXaxis()->GetBinWidth(0)*olddataK0.GetYaxis()->GetBinWidth(i+1));
+            oldtracksK01D.SetBinContent(i+1, newDataOldTracksSigFit->GetParameter(0)/oldtracksK0.GetXaxis()->GetBinWidth(0)*oldtracksK0.GetYaxis()->GetBinWidth(i+1));
+            oldtracksK01D.SetBinError(i+1, newDataOldTracksSigFit->GetParError(0)/oldtracksK0.GetXaxis()->GetBinWidth(0)*oldtracksK0.GetYaxis()->GetBinWidth(i+1));
+            newdataK01D.SetBinContent(i+1, newDataNewTracksSigFit->GetParameter(0)/newdataK0.GetXaxis()->GetBinWidth(0)*newdataK0.GetYaxis()->GetBinWidth(i+1));
+            newdataK01D.SetBinError(i+1, newDataNewTracksSigFit->GetParError(0)/newdataK0.GetXaxis()->GetBinWidth(0)*newdataK0.GetYaxis()->GetBinWidth(i+1));
+        }
         printf("Accepted current parameters\n");
         //on last loop close the TCanvas
         if(i==olddataK0.GetNbinsY()-1)
@@ -630,12 +644,21 @@ void Lambda_differential_crossection_fit(TH1D &olddataLambda1D, TH1D &oldtracksL
             std::getline(std::cin, response);
         }
         //adding to the result histogram
-        olddataLambda1D.SetBinContent(i+1, oldDataSigFit->GetParameter(0)/olddataLambda.GetXaxis()->GetBinWidth(0)*olddataLambda.GetYaxis()->GetBinWidth(i+1));
-        olddataLambda1D.SetBinError(i+1, oldDataSigFit->GetParError(0)/olddataLambda.GetXaxis()->GetBinWidth(0)*olddataLambda.GetYaxis()->GetBinWidth(i+1));
-        oldtracksLambda1D.SetBinContent(i+1, newDataOldTracksSigFit->GetParameter(0)/oldtracksLambda.GetXaxis()->GetBinWidth(0)*oldtracksLambda.GetYaxis()->GetBinWidth(i+1));
-        oldtracksLambda1D.SetBinError(i+1, newDataOldTracksSigFit->GetParError(0)/oldtracksLambda.GetXaxis()->GetBinWidth(0)*oldtracksLambda.GetYaxis()->GetBinWidth(i+1));
-        newdataLambda1D.SetBinContent(i+1, newDataNewTracksSigFit->GetParameter(0)/newdataLambda.GetXaxis()->GetBinWidth(0)*newdataLambda.GetYaxis()->GetBinWidth(i+1));
-        newdataLambda1D.SetBinError(i+1, newDataNewTracksSigFit->GetParError(0)/newdataLambda.GetXaxis()->GetBinWidth(0)*newdataLambda.GetYaxis()->GetBinWidth(i+1));
+        if(response.find("zero")!=string::npos){
+            olddataLambda1D.SetBinContent(i+1, 0.);
+            olddataLambda1D.SetBinError(i+1, 0.);
+            oldtracksLambda1D.SetBinContent(i+1, 0.);
+            oldtracksLambda1D.SetBinError(i+1, 0.);
+            newdataLambda1D.SetBinContent(i+1, 0.);
+            newdataLambda1D.SetBinError(i+1, 0.);
+        } else{
+            olddataLambda1D.SetBinContent(i+1, oldDataSigFit->GetParameter(0)/olddataLambda.GetXaxis()->GetBinWidth(0)*olddataLambda.GetYaxis()->GetBinWidth(i+1));
+            olddataLambda1D.SetBinError(i+1, oldDataSigFit->GetParError(0)/olddataLambda.GetXaxis()->GetBinWidth(0)*olddataLambda.GetYaxis()->GetBinWidth(i+1));
+            oldtracksLambda1D.SetBinContent(i+1, newDataOldTracksSigFit->GetParameter(0)/oldtracksLambda.GetXaxis()->GetBinWidth(0)*oldtracksLambda.GetYaxis()->GetBinWidth(i+1));
+            oldtracksLambda1D.SetBinError(i+1, newDataOldTracksSigFit->GetParError(0)/oldtracksLambda.GetXaxis()->GetBinWidth(0)*oldtracksLambda.GetYaxis()->GetBinWidth(i+1));
+            newdataLambda1D.SetBinContent(i+1, newDataNewTracksSigFit->GetParameter(0)/newdataLambda.GetXaxis()->GetBinWidth(0)*newdataLambda.GetYaxis()->GetBinWidth(i+1));
+            newdataLambda1D.SetBinError(i+1, newDataNewTracksSigFit->GetParError(0)/newdataLambda.GetXaxis()->GetBinWidth(0)*newdataLambda.GetYaxis()->GetBinWidth(i+1));
+        }
         printf("Accepted current parameters\n");
         if(i==olddataLambda.GetNbinsY()-1)
             resultLambda->Close();
