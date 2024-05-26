@@ -32,29 +32,29 @@ int main(int argc, char *argv[]){
     //K0
     TH1D newdataK0pt;
     K0_differential_crossection_fit(newdataK0pt, "K0pt2DHist");
-    draw_and_save(newdataK0pt, "Uncorrected K^{ 0}_{ S} yelds vs. p_{T};p_{T} [GeV];n_{K^{0}_{S}}", "Differential_crossection_K0_pt_new_data.pdf");
+    draw_and_save(newdataK0pt, "Uncorrected K^{ 0}_{ S} yields vs. p_{T};p_{T} [GeV];n_{K^{0}_{S}}", "Differential_crossection_K0_pt_new_data.pdf");
     TH1D newdataK0eta;
     K0_differential_crossection_fit(newdataK0eta, "K0eta2DHist");
-    draw_and_save(newdataK0eta, "Uncorrected K^{ 0}_{ S} yelds vs.  #eta;#eta;n_{K^{0}_{S}}", "Differential_crossection_K0_eta_new_data.pdf", 0.37, 0.2, 0.63, 0.3);
+    draw_and_save(newdataK0eta, "Uncorrected K^{ 0}_{ S} yields vs.  #eta;#eta;n_{K^{0}_{S}}", "Differential_crossection_K0_eta_new_data.pdf", 0.37, 0.2, 0.63, 0.3);
     TH1D newdataK0XiMulti;
     K0_differential_crossection_fit(newdataK0XiMulti, "K0XiMulti2DHist");
-    draw_and_save(newdataK0XiMulti, "Uncorrected K^{ 0}_{ S} yelds vs. log(#xi_{E}#cdot#xi_{W});log(#xi_{E}#cdot#xi_{W});n_{K^{0}_{S}}", "Differential_crossection_K0_XiMulti_new_data.pdf");
+    draw_and_save(newdataK0XiMulti, "Uncorrected K^{ 0}_{ S} yields vs. log(#xi_{E}#cdot#xi_{W});log(#xi_{E}#cdot#xi_{W});n_{K^{0}_{S}}", "Differential_crossection_K0_XiMulti_new_data.pdf");
     TH1D newdataK0XiSum;
     K0_differential_crossection_fit(newdataK0XiSum, "K0XiSum2DHist");
-    draw_and_save(newdataK0XiSum, "Uncorrected K^{ 0}_{ S} yelds vs. #xi_{E}+#xi_{W};#xi_{E}+#xi_{W};n_{K^{0}_{S}}", "Differential_crossection_K0_XiSum_new_data.pdf");
+    draw_and_save(newdataK0XiSum, "Uncorrected K^{ 0}_{ S} yields vs. #xi_{E}+#xi_{W};#xi_{E}+#xi_{W};n_{K^{0}_{S}}", "Differential_crossection_K0_XiSum_new_data.pdf");
     //Lambda
     TH1D newdataLambdapt;
     Lambda_differential_crossection_fit(newdataLambdapt, "Lambdapt2DHist");
-    draw_and_save(newdataLambdapt, "Uncorrected #Lambda^{ 0} yelds vs. p_{T};p_{T} [GeV];n_{#Lambda^{0}}", "Differential_crossection_Lambda_pt_new_data.pdf");
+    draw_and_save(newdataLambdapt, "Uncorrected #Lambda^{ 0} yields vs. p_{T};p_{T} [GeV];n_{#Lambda^{0}}", "Differential_crossection_Lambda_pt_new_data.pdf");
     TH1D newdataLambdaeta;
     Lambda_differential_crossection_fit(newdataLambdaeta, "Lambdaeta2DHist");
-    draw_and_save(newdataLambdaeta, "Uncorrected #Lambda^{ 0} yelds vs.  #eta;#eta;n_{#Lambda^{0}}", "Differential_crossection_Lambda_eta_new_data.pdf", 0.37, 0.2, 0.63, 0.3);
+    draw_and_save(newdataLambdaeta, "Uncorrected #Lambda^{ 0} yields vs.  #eta;#eta;n_{#Lambda^{0}}", "Differential_crossection_Lambda_eta_new_data.pdf", 0.37, 0.2, 0.63, 0.3);
     TH1D newdataLambdaXiMulti;
     Lambda_differential_crossection_fit(newdataLambdaXiMulti, "LambdaXiMulti2DHist");
-    draw_and_save(newdataLambdaXiMulti, "Uncorrected #Lambda^{ 0} yelds vs. log(#xi_{E}#cdot#xi_{W});log(#xi_{E}#cdot#xi_{W});n_{#Lambda^{0}}", "Differential_crossection_Lambda_XiMulti_new_data.pdf");
+    draw_and_save(newdataLambdaXiMulti, "Uncorrected #Lambda^{ 0} yields vs. log(#xi_{E}#cdot#xi_{W});log(#xi_{E}#cdot#xi_{W});n_{#Lambda^{0}}", "Differential_crossection_Lambda_XiMulti_new_data.pdf");
     TH1D newdataLambdaXiSum;
     Lambda_differential_crossection_fit(newdataLambdaXiSum, "LambdaXiSum2DHist");
-    draw_and_save(newdataLambdaXiSum, "Uncorrected #Lambda^{ 0} yelds vs. #xi_{E}+#xi_{W};#xi_{E}+#xi_{W};n_{#Lambda^{0}}", "Differential_crossection_Lambda_XiSum_new_data.pdf");
+    draw_and_save(newdataLambdaXiSum, "Uncorrected #Lambda^{ 0} yields vs. #xi_{E}+#xi_{W};#xi_{E}+#xi_{W};n_{#Lambda^{0}}", "Differential_crossection_Lambda_XiSum_new_data.pdf");
 
     theApp.Run();
     return 0;
