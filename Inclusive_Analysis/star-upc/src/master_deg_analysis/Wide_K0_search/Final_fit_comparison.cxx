@@ -139,11 +139,12 @@ int main(){
     GfitKBcg->DrawCopy("CSAME");
     GfitK1Sig->DrawCopy("CSAME");
 
-    TLegend *legendK = new TLegend(.18, .65, .45, .89);
+    TLegend *legendK = new TLegend(.18, .70, .45, .89);
     legendK->SetTextSize(0.02);
-    legendK->AddEntry("MpipiWideOldData", "pp old data, #sqrt{s} = 510 GeV");
-    legendK->AddEntry("MpipiWideNewDataOldTracks", "pp new data, old tracks, #sqrt{s} = 510 GeV");
-    legendK->AddEntry("MpipiWideNewDataNewTracks", "pp new data, new tracks, #sqrt{s} = 510 GeV");
+    legendK->SetHeader("#bf{pp, #sqrt{s} = 510 GeV}", "C");
+    legendK->AddEntry("MpipiWideOldData", "#bf{old data}");
+    legendK->AddEntry("MpipiWideNewDataOldTracks", "#bf{new data, old tracks}");
+    legendK->AddEntry("MpipiWideNewDataNewTracks", "#bf{new data, new tracks}");
     legendK->SetBorderSize(0);
     legendK->Draw("SAME");
 
@@ -288,14 +289,12 @@ int main(){
     GfitLambdaBcg->DrawCopy("CSAME");
     GfitLambda1Sig->DrawCopy("CSAME");
 
-    TLegend *legendLambda = new TLegend(.18, .65, .45, .89);
+    TLegend *legendLambda = new TLegend(.18, .70, .45, .89);
     legendLambda->SetTextSize(0.02);
-    legendLambda->AddEntry("MppiWideOldData", "pp old data, #sqrt{s} = 510 GeV");
-    legendLambda->AddEntry("MppiWideNewDataOldTracks", "pp new data, old tracks, #sqrt{s} = 510 GeV");
-    legendLambda->AddEntry("MppiWideNewDataNewTracks", "pp new data, new tracks, #sqrt{s} = 510 GeV");
-    // legendLambda->AddEntry("GfitLambda", "Data fit", "l");
-    // legendLambda->AddEntry("GfitLambdaBcg", "Background", "l");
-    // legendLambda->AddEntry("GfitLambda1Sig", "K^{0} fit", "l");
+    legendLambda->SetHeader("#bf{pp, #sqrt{s} = 510 GeV}", "C");
+    legendLambda->AddEntry("MppiWideOldData", "#bf{old data}");
+    legendLambda->AddEntry("MppiWideNewDataOldTracks", "#bf{new data, old tracks}");
+    legendLambda->AddEntry("MppiWideNewDataNewTracks", "#bf{new data, new tracks}");
     legendLambda->SetBorderSize(0);
     legendLambda->Draw("SAME");
 
@@ -306,7 +305,7 @@ int main(){
     nLambda0OldDataStream<<std::fixed<<std::setprecision(2)<<nLambda0OldData;
     nLambda0NewDataOldTracksStream<<std::fixed<<std::setprecision(2)<<nLambda0NewDataOldTracks;
     nLambda0NewDataNewTracksStream<<std::fixed<<std::setprecision(2)<<nLambda0NewDataNewTracks;
-    pt = new TPaveStats(.18, .45, .45, .65, "NB NDC");
+    pt = new TPaveStats(.18, .50, .45, .70, "NB NDC");
     pt->SetFillColor(kWhite);
     tempText = pt->AddText(0, 0, "Number of #Lambda^{0} detected in:");
     tempText->SetTextSize(3);
