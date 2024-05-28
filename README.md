@@ -33,6 +33,8 @@ Nota techniczna na temat analizy starych danych STAR (https://drupal.star.bnl.go
 
 O rekonstrukcji V0 [FengZhao_thesis.pdf](https://github.com/ladamczy/STAR-Analysis/files/13540392/FengZhao_thesis.pdf)
 
+Praca magisterska Tomasa Truhlara https://drupal.star.bnl.gov/STAR/system/files/dp_ejcf_20_truhlar.pdf
+
 
 # BeamPosition
 
