@@ -247,6 +247,7 @@ int main(int argc, char *argv[]){
                 }
             }
             //Xi test
+            //can do that because of the preselection
             if(tempUPCpointer->isTrigger(570701)&&tempUPCpointer->getRunNumber()<=18083025){
                 xiLowerLimit = 0.005;
                 xiUpperLimit = 0.2;
