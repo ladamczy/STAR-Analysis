@@ -175,6 +175,7 @@ int main(int argc, char *argv[]){
         double firstBranch, secondBranch;
         bool f1, f2, f3;
         double px, py;
+        double xiLowerLimit, xiUpperLimit;
         std::vector<StUPCTrack *> vector_Track_positive;
         std::vector<StUPCTrack *> vector_Track_negative;
         StUPCTrack *tempTrack;
@@ -245,12 +246,19 @@ int main(int argc, char *argv[]){
                     break;
                 }
             }
-            //Xi test (no BBCL veto)
+            //Xi test
+            if(tempUPCpointer->isTrigger(570701)&&tempUPCpointer->getRunNumber()<=18083025){
+                xiLowerLimit = 0.005;
+                xiUpperLimit = 0.2;
+            } else if(tempUPCpointer->isTrigger(570705)&&tempUPCpointer->getRunNumber()>18083025){
+                xiLowerLimit = 0.005;
+                xiUpperLimit = 0.08;
+            }
             for(unsigned int k = 0; k<tempRPpointer->getNumberOfTracks(); ++k){
                 // Get pointer to k-th track in Roman Pot data collection
                 StUPCRpsTrack *trk = tempRPpointer->getTrack(k);
                 trk->setEvent(tempRPpointer);
-                if(trk->xi(beamMomentum)<=0.005 or trk->xi(beamMomentum)>=0.2){
+                if(trk->xi(beamMomentum)<=xiLowerLimit or trk->xi(beamMomentum)>=xiUpperLimit){
                     if(badCut!=OK){
                         goto EndLoop;
                     }
