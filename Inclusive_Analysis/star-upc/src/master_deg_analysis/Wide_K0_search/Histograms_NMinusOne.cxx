@@ -34,6 +34,7 @@
 #include "TChain.h"
 #include "TH1D.h"
 #include <TH2.h> 
+#include <TEfficiency.h>
 #include <TF1.h> 
 #include <TF2.h> 
 #include <THStack.h> 
@@ -151,8 +152,37 @@ int main(int argc, char *argv[]){
 
     //histograms
     ProcessingOutsideLoop outsideprocessing;
-    outsideprocessing.AddHistogram(TH2D("RP_planes_3", "Transverse momentum of reconstructed protons by 3 planes", 400, -2, 2, 400, -2, 2));
-    outsideprocessing.AddHistogram(TH2D("RP_planes_4", "Transverse momentum of reconstructed protons by 4 planes", 400, -2, 2, 400, -2, 2));
+    //RP_PLANES
+    outsideprocessing.AddHistogram(TH2D("RP_PLANES_east", "RP_PLANES_east", 400, -2, 2, 400, -2, 2));
+    outsideprocessing.AddHistogram(TH2D("RP_PLANES_west", "RP_PLANES_west", 400, -2, 2, 400, -2, 2));
+    //RP_FIDUCIAL
+    outsideprocessing.AddHistogram(TH2D("RP_FIDUCIAL_east", "RP_FIDUCIAL_east", 300, -1.5, 1.5, 300, -1.5, 1.5));
+    outsideprocessing.AddHistogram(TH2D("RP_FIDUCIAL_west", "RP_FIDUCIAL_west", 300, -1.5, 1.5, 300, -1.5, 1.5));
+    //RP_XI
+    outsideprocessing.AddHistogram(TH1D("RP_XI_east", "RP_XI_east", 600, -0.05, 0.25));
+    outsideprocessing.AddHistogram(TH1D("RP_XI_west", "RP_XI_west", 600, -0.05, 0.25));
+    //RP_ELASTIC
+    outsideprocessing.AddHistogram(TH2D("RP_ELASTIC_xi", "RP_ELASTIC_xi", 60, -0.01, 0.05, 60, -0.01, 0.05));
+    outsideprocessing.AddHistogram(TH2D("RP_ELASTIC_theta", "RP_ELASTIC_theta", 100, -3e-3, 3e-3, 100, -2e-3, 2e-3));
+    outsideprocessing.AddHistogram(TH2D("RP_ELASTIC_p", "RP_ELASTIC_p", 80, -0.6, 1., 50, -0.5, 0.5));
+    //TRACKS_TOF
+    outsideprocessing.AddHistogram(TH1D("TRACKS_TOF", "TRACKS_TOF", 40, 0, 40));
+    outsideprocessing.AddHistogram(TH1D("TRACKS_TOF_OK", "TRACKS_TOF_OK", 40, 0, 40));
+    //TRACKS_PT
+    outsideprocessing.AddHistogram(TH1D("TRACKS_PT", "TRACKS_PT", 100, 0, 10));
+    //TRACKS_ETA
+    outsideprocessing.AddHistogram(TH1D("TRACKS_ETA", "TRACKS_ETA", 240, -1.2, 1.2));
+    //TRACKS_NHITS
+    outsideprocessing.AddHistogram(TH1D("TRACKS_NHITS", "TRACKS_NHITS", 60, 0, 60));
+    //PAIRS_DCADAUGHTERS
+    outsideprocessing.AddHistogram(TH1D("PAIRS_DCADAUGHTERS_K0", "PAIRS_DCADAUGHTERS_K0", 120, 0, 6));
+    outsideprocessing.AddHistogram(TH1D("PAIRS_DCADAUGHTERS_Lambda0", "PAIRS_DCADAUGHTERS_Lambda0", 120, 0, 6));
+    //PAIRS_DCABEAMLINE
+    outsideprocessing.AddHistogram(TH1D("PAIRS_DCABEAMLINE_K0", "PAIRS_DCABEAMLINE_K0", 120, 0, 6));
+    outsideprocessing.AddHistogram(TH1D("PAIRS_DCABEAMLINE_Lambda0", "PAIRS_DCABEAMLINE_Lambda0", 120, 0, 6));
+    //PAIRS_DECAYLENGTH
+    outsideprocessing.AddHistogram(TH1D("PAIRS_DECAYLENGTH_K0", "PAIRS_DECAYLENGTH_K0", 240, 0, 12));
+    outsideprocessing.AddHistogram(TH1D("PAIRS_DECAYLENGTH_Lambda0", "PAIRS_DECAYLENGTH_Lambda0", 240, 0, 12));
 
     //processing
     //defining TreeProcessor
@@ -196,6 +226,9 @@ int main(int argc, char *argv[]){
         int centralTracksCutsTabLen = 4;
         bool (*centralV0sCutsTab[])(StUPCV0 *) = { dcaDaughters, dcaBeamline, decayLengthPointingAngle };
         int centralV0sCutsTabLen = 3;
+
+        StUPCRpsTrack *eastTrack;
+        StUPCRpsTrack *westTrack;
 
         //actual loop
         while(myReader.Next()){
@@ -479,23 +512,170 @@ int main(int argc, char *argv[]){
                         }
                     }
                 }
+                //now fill the histograms (only if there are actually any particles)
+                if(vector_K0_pairs.size()==0&&vector_Lambda_pairs.size()==0)
+                    continue;
+                // //PAIRS_DCABEAMLINE
+                // outsideprocessing.AddHistogram(TH1D("PAIRS_DCABEAMLINE_K0", "PAIRS_DCABEAMLINE_K0", 120, 0, 6));
+                // outsideprocessing.AddHistogram(TH1D("PAIRS_DCABEAMLINE_Lambda0", "PAIRS_DCABEAMLINE_Lambda0", 120, 0, 6));
+                // //PAIRS_DECAYLENGTH
+                // outsideprocessing.AddHistogram(TH1D("PAIRS_DECAYLENGTH_K0", "PAIRS_DECAYLENGTH_K0", 240, 0, 12));
+                // outsideprocessing.AddHistogram(TH1D("PAIRS_DECAYLENGTH_Lambda0", "PAIRS_DECAYLENGTH_Lambda0", 240, 0, 12));
+                switch(badCut){
+                case TRACKS_TOF:
+                    insideprocessing.Fill("TRACKS_TOF", vector_Track_negative.size()+vector_Track_positive.size());
+                    break;
+                case TRACKS_PT:
+                    for(size_t i = 0; i<vector_Track_negative.size(); i++){
+                        insideprocessing.Fill("TRACKS_PT", vector_Track_negative[i]->getPt());
+                    }
+                    for(size_t i = 0; i<vector_Track_positive.size(); i++){
+                        insideprocessing.Fill("TRACKS_PT", vector_Track_positive[i]->getPt());
+                    }
+                    break;
+                case TRACKS_ETA:
+                    for(size_t i = 0; i<vector_Track_negative.size(); i++){
+                        insideprocessing.Fill("TRACKS_ETA", vector_Track_negative[i]->getEta());
+                    }
+                    for(size_t i = 0; i<vector_Track_positive.size(); i++){
+                        insideprocessing.Fill("TRACKS_ETA", vector_Track_positive[i]->getEta());
+                    }
+                    break;
+                case TRACKS_NHITS:
+                    for(size_t i = 0; i<vector_Track_negative.size(); i++){
+                        insideprocessing.Fill("TRACKS_NHITS", vector_Track_negative[i]->getNhits());
+                    }
+                    for(size_t i = 0; i<vector_Track_positive.size(); i++){
+                        insideprocessing.Fill("TRACKS_NHITS", vector_Track_positive[i]->getNhits());
+                    }
+                    break;
+                case PAIRS_DCADAUGHTERS:
+                    for(size_t i = 0; i<vector_K0_pairs.size(); i++){
+                        tempParticle = new StUPCV0(vector_Track_positive[std::get<1>(vector_K0_pairs[i])], vector_Track_negative[std::get<2>(vector_K0_pairs[i])], particleMass[0], particleMass[0], 1, 1, { 0,0,0 }, beamValues, tempUPCpointer->getMagneticField(), false);
+                        insideprocessing.Fill("PAIRS_DCADAUGHTERS_K0", tempParticle->dcaDaughters());
+                        delete tempParticle;
+                    }
+                    for(size_t i = 0; i<vector_Lambda_pairs.size(); i++){
+                        if(std::get<3>(vector_Lambda_pairs[i])){
+                            tempParticle = new StUPCV0(vector_Track_positive[std::get<1>(vector_Lambda_pairs[i])], vector_Track_negative[std::get<2>(vector_Lambda_pairs[i])], particleMass[2], particleMass[0], 1, 1, { 0,0,0 }, beamValues, tempUPCpointer->getMagneticField(), false);
+                        } else{
+                            tempParticle = new StUPCV0(vector_Track_positive[std::get<1>(vector_Lambda_pairs[i])], vector_Track_negative[std::get<2>(vector_Lambda_pairs[i])], particleMass[0], particleMass[2], 1, 1, { 0,0,0 }, beamValues, tempUPCpointer->getMagneticField(), false);
+                        }
+                        insideprocessing.Fill("PAIRS_DCADAUGHTERS_Lambda0", tempParticle->dcaDaughters());
+                        delete tempParticle;
+                    }
+                    break;
+                case PAIRS_DCABEAMLINE:
+                    for(size_t i = 0; i<vector_K0_pairs.size(); i++){
+                        tempParticle = new StUPCV0(vector_Track_positive[std::get<1>(vector_K0_pairs[i])], vector_Track_negative[std::get<2>(vector_K0_pairs[i])], particleMass[0], particleMass[0], 1, 1, { 0,0,0 }, beamValues, tempUPCpointer->getMagneticField(), false);
+                        insideprocessing.Fill("PAIRS_DCABEAMLINE_K0", tempParticle->DCABeamLine());
+                        delete tempParticle;
+                    }
+                    for(size_t i = 0; i<vector_Lambda_pairs.size(); i++){
+                        if(std::get<3>(vector_Lambda_pairs[i])){
+                            tempParticle = new StUPCV0(vector_Track_positive[std::get<1>(vector_Lambda_pairs[i])], vector_Track_negative[std::get<2>(vector_Lambda_pairs[i])], particleMass[2], particleMass[0], 1, 1, { 0,0,0 }, beamValues, tempUPCpointer->getMagneticField(), false);
+                        } else{
+                            tempParticle = new StUPCV0(vector_Track_positive[std::get<1>(vector_Lambda_pairs[i])], vector_Track_negative[std::get<2>(vector_Lambda_pairs[i])], particleMass[0], particleMass[2], 1, 1, { 0,0,0 }, beamValues, tempUPCpointer->getMagneticField(), false);
+                        }
+                        insideprocessing.Fill("PAIRS_DCABEAMLINE_Lambda0", tempParticle->DCABeamLine());
+                        delete tempParticle;
+                    }
+                    break;
+                case PAIRS_DECAYLENGTH:
+                    for(size_t i = 0; i<vector_K0_pairs.size(); i++){
+                        tempParticle = new StUPCV0(vector_Track_positive[std::get<1>(vector_K0_pairs[i])], vector_Track_negative[std::get<2>(vector_K0_pairs[i])], particleMass[0], particleMass[0], 1, 1, { 0,0,0 }, beamValues, tempUPCpointer->getMagneticField(), false);
+                        insideprocessing.Fill("PAIRS_DECAYLENGTH_K0", tempParticle->decayLengthHypo());
+                        delete tempParticle;
+                    }
+                    for(size_t i = 0; i<vector_Lambda_pairs.size(); i++){
+                        if(std::get<3>(vector_Lambda_pairs[i])){
+                            tempParticle = new StUPCV0(vector_Track_positive[std::get<1>(vector_Lambda_pairs[i])], vector_Track_negative[std::get<2>(vector_Lambda_pairs[i])], particleMass[2], particleMass[0], 1, 1, { 0,0,0 }, beamValues, tempUPCpointer->getMagneticField(), false);
+                        } else{
+                            tempParticle = new StUPCV0(vector_Track_positive[std::get<1>(vector_Lambda_pairs[i])], vector_Track_negative[std::get<2>(vector_Lambda_pairs[i])], particleMass[0], particleMass[2], 1, 1, { 0,0,0 }, beamValues, tempUPCpointer->getMagneticField(), false);
+                        }
+                        insideprocessing.Fill("PAIRS_DECAYLENGTH_Lambda0", tempParticle->decayLengthHypo());
+                        delete tempParticle;
+                    }
+                    break;
+                case OK:
+                    insideprocessing.Fill("TRACKS_TOF", vector_Track_negative.size()+vector_Track_positive.size());
+                    insideprocessing.Fill("TRACKS_TOF_OK", vector_Track_negative.size()+vector_Track_positive.size());
+                    for(size_t i = 0; i<vector_Track_negative.size(); i++){
+                        insideprocessing.Fill("TRACKS_PT", vector_Track_negative[i]->getPt());
+                        insideprocessing.Fill("TRACKS_ETA", vector_Track_negative[i]->getEta());
+                        insideprocessing.Fill("TRACKS_NHITS", vector_Track_negative[i]->getNhits());
+                    }
+                    for(size_t i = 0; i<vector_Track_positive.size(); i++){
+                        insideprocessing.Fill("TRACKS_PT", vector_Track_positive[i]->getPt());
+                        insideprocessing.Fill("TRACKS_ETA", vector_Track_positive[i]->getEta());
+                        insideprocessing.Fill("TRACKS_NHITS", vector_Track_positive[i]->getNhits());
+                    }
+                    for(size_t i = 0; i<vector_K0_pairs.size(); i++){
+                        tempParticle = new StUPCV0(vector_Track_positive[std::get<1>(vector_K0_pairs[i])], vector_Track_negative[std::get<2>(vector_K0_pairs[i])], particleMass[0], particleMass[0], 1, 1, { 0,0,0 }, beamValues, tempUPCpointer->getMagneticField(), false);
+                        insideprocessing.Fill("PAIRS_DCADAUGHTERS_K0", tempParticle->dcaDaughters());
+                        insideprocessing.Fill("PAIRS_DCABEAMLINE_K0", tempParticle->DCABeamLine());
+                        insideprocessing.Fill("PAIRS_DECAYLENGTH_K0", tempParticle->decayLengthHypo());
+                        delete tempParticle;
+                    }
+                    for(size_t i = 0; i<vector_Lambda_pairs.size(); i++){
+                        if(std::get<3>(vector_Lambda_pairs[i])){
+                            tempParticle = new StUPCV0(vector_Track_positive[std::get<1>(vector_Lambda_pairs[i])], vector_Track_negative[std::get<2>(vector_Lambda_pairs[i])], particleMass[2], particleMass[0], 1, 1, { 0,0,0 }, beamValues, tempUPCpointer->getMagneticField(), false);
+                        } else{
+                            tempParticle = new StUPCV0(vector_Track_positive[std::get<1>(vector_Lambda_pairs[i])], vector_Track_negative[std::get<2>(vector_Lambda_pairs[i])], particleMass[0], particleMass[2], 1, 1, { 0,0,0 }, beamValues, tempUPCpointer->getMagneticField(), false);
+                        }
+                        insideprocessing.Fill("PAIRS_DCADAUGHTERS_Lambda0", tempParticle->dcaDaughters());
+                        insideprocessing.Fill("PAIRS_DCABEAMLINE_Lambda0", tempParticle->DCABeamLine());
+                        insideprocessing.Fill("PAIRS_DECAYLENGTH_Lambda0", tempParticle->decayLengthHypo());
+                        delete tempParticle;
+                    }
+                    break;
+                default:
+                    //means there's RP cut, do not interfere then
+                    break;
+                }
             }
-
+            if(vector_K0_pairs.size()==0&&vector_Lambda_pairs.size()==0)
+                goto EndLoop;
             //filling the histograms based on which cut was violated 
+            if(tempRPpointer->getTrack(0)->pVec().Z()<0){
+                eastTrack = tempRPpointer->getTrack(0);
+                westTrack = tempRPpointer->getTrack(1);
+            } else{
+                eastTrack = tempRPpointer->getTrack(1);
+                westTrack = tempRPpointer->getTrack(0);
+            }
             switch(badCut){
             case RP_PLANES:
+                insideprocessing.Fill("RP_PLANES_east", eastTrack->pVec().X(), eastTrack->pVec().Y());
+                insideprocessing.Fill("RP_PLANES_west", westTrack->pVec().X(), westTrack->pVec().Y());
                 break;
             case RP_FIDUCIAL:
+                insideprocessing.Fill("RP_FIDUCIAL_east", eastTrack->pVec().X(), eastTrack->pVec().Y());
+                insideprocessing.Fill("RP_FIDUCIAL_west", westTrack->pVec().X(), westTrack->pVec().Y());
                 break;
             case RP_XI:
+                insideprocessing.Fill("RP_XI_east", eastTrack->xi(beamMomentum));
+                insideprocessing.Fill("RP_XI_west", westTrack->xi(beamMomentum));
                 break;
             case RP_ELASTIC:
+                insideprocessing.Fill("RP_ELASTIC_xi", eastTrack->xi(beamMomentum), westTrack->xi(beamMomentum));
+                insideprocessing.Fill("RP_ELASTIC_theta", eastTrack->theta(StUPCRpsTrack::rpsAngleThetaX)+westTrack->theta(StUPCRpsTrack::rpsAngleThetaX), eastTrack->theta(StUPCRpsTrack::rpsAngleThetaY)+westTrack->theta(StUPCRpsTrack::rpsAngleThetaY));
+                insideprocessing.Fill("RP_ELASTIC_p", eastTrack->pVec().X()+westTrack->pVec().X(), eastTrack->pVec().Y()+westTrack->pVec().Y());
                 break;
             case OK:
+                insideprocessing.Fill("RP_PLANES_east", eastTrack->pVec().X(), eastTrack->pVec().Y());
+                insideprocessing.Fill("RP_PLANES_west", westTrack->pVec().X(), westTrack->pVec().Y());
+                insideprocessing.Fill("RP_FIDUCIAL_east", eastTrack->pVec().X(), eastTrack->pVec().Y());
+                insideprocessing.Fill("RP_FIDUCIAL_west", westTrack->pVec().X(), westTrack->pVec().Y());
+                insideprocessing.Fill("RP_XI_east", eastTrack->xi(beamMomentum));
+                insideprocessing.Fill("RP_XI_west", westTrack->xi(beamMomentum));
+                insideprocessing.Fill("RP_ELASTIC_xi", eastTrack->xi(beamMomentum), westTrack->xi(beamMomentum));
+                insideprocessing.Fill("RP_ELASTIC_theta", eastTrack->theta(StUPCRpsTrack::rpsAngleThetaX)+westTrack->theta(StUPCRpsTrack::rpsAngleThetaX), eastTrack->theta(StUPCRpsTrack::rpsAngleThetaY)+westTrack->theta(StUPCRpsTrack::rpsAngleThetaY));
+                insideprocessing.Fill("RP_ELASTIC_p", eastTrack->pVec().X()+westTrack->pVec().X(), eastTrack->pVec().Y()+westTrack->pVec().Y());
                 break;
+            default:
                 //used when cuts are those on central state
                 //so no histograms get filled
-            default:
                 break;
             }
 
