@@ -87,6 +87,7 @@ enum{
 enum PARTICLES{ Pion = 0, Kaon = 1, Proton = 2, nParticles };
 // enum BRANCH_ID{ EU, ED, WU, WD, nBranches };
 // enum RP_ID{ E1U, E1D, E2U, E2D, W1U, W1D, W2U, W2D, nRomanPots };
+// enum ERRORS{ OK, RP_PLANES, RP_FIDUCIAL, RP_XI, RP_ELASTIC, TRACKS_TOF, TRACKS_PT, TRACKS_ETA, TRACKS_NHITS, PAIRS_DCADAUGHTERS, PAIRS_DCABEAMLINE, PAIRS_DECAYLENGTH };
 enum ERRORS{ OK, RP_PLANES, RP_FIDUCIAL, RP_XI, RP_ELASTIC, TRACKS_TOF, TRACKS_PT, TRACKS_ETA, TRACKS_NHITS, PAIRS_DCADAUGHTERS, PAIRS_DCABEAMLINE, PAIRS_DECAYLENGTH };
 
 const double particleMass[nParticles] = { 0.13957, 0.497611, 0.93827 }; // pion, kaon, proton in GeV /c^2 
@@ -153,23 +154,25 @@ int main(int argc, char *argv[]){
     //histograms
     ProcessingOutsideLoop outsideprocessing;
     //RP_PLANES
-    outsideprocessing.AddHistogram(TH2D("RP_PLANES_east", "RP_PLANES_east", 400, -2, 2, 400, -2, 2));
-    outsideprocessing.AddHistogram(TH2D("RP_PLANES_west", "RP_PLANES_west", 400, -2, 2, 400, -2, 2));
+    outsideprocessing.AddHistogram(TH2D("RP_PLANES_east", "RP_PLANES_east", 100, -0.5, 0.5, 200, -1, 1));
+    outsideprocessing.AddHistogram(TH2D("RP_PLANES_west", "RP_PLANES_west", 100, -0.5, 0.5, 200, -1, 1));
     //RP_FIDUCIAL
-    outsideprocessing.AddHistogram(TH2D("RP_FIDUCIAL_east", "RP_FIDUCIAL_east", 300, -1.5, 1.5, 300, -1.5, 1.5));
-    outsideprocessing.AddHistogram(TH2D("RP_FIDUCIAL_west", "RP_FIDUCIAL_west", 300, -1.5, 1.5, 300, -1.5, 1.5));
+    outsideprocessing.AddHistogram(TH2D("RP_FIDUCIAL_east", "RP_FIDUCIAL_east", 200, -1., 1., 300, -1.5, 1.5));
+    outsideprocessing.AddHistogram(TH2D("RP_FIDUCIAL_west", "RP_FIDUCIAL_west", 200, -1., 1., 300, -1.5, 1.5));
     //RP_XI
-    outsideprocessing.AddHistogram(TH1D("RP_XI_east", "RP_XI_east", 600, -0.05, 0.25));
-    outsideprocessing.AddHistogram(TH1D("RP_XI_west", "RP_XI_west", 600, -0.05, 0.25));
+    outsideprocessing.AddHistogram(TH1D("RP_XI_east_CPT2", "RP_XI_east_CPT2", 600, -0.05, 0.25));
+    outsideprocessing.AddHistogram(TH1D("RP_XI_west_CPT2", "RP_XI_west_CPT2", 600, -0.05, 0.25));
+    outsideprocessing.AddHistogram(TH1D("RP_XI_east_CPT2noBBCL", "RP_XI_east_CPT2noBBCL", 600, -0.05, 0.25));
+    outsideprocessing.AddHistogram(TH1D("RP_XI_west_CPT2noBBCL", "RP_XI_west_CPT2noBBCL", 600, -0.05, 0.25));
     //RP_ELASTIC
     outsideprocessing.AddHistogram(TH2D("RP_ELASTIC_xi", "RP_ELASTIC_xi", 60, -0.01, 0.05, 60, -0.01, 0.05));
-    outsideprocessing.AddHistogram(TH2D("RP_ELASTIC_theta", "RP_ELASTIC_theta", 100, -3e-3, 3e-3, 100, -2e-3, 2e-3));
+    outsideprocessing.AddHistogram(TH2D("RP_ELASTIC_theta", "RP_ELASTIC_theta", 60, -3e-3, 3e-3, 60, -2e-3, 2e-3));
     outsideprocessing.AddHistogram(TH2D("RP_ELASTIC_p", "RP_ELASTIC_p", 80, -0.6, 1., 50, -0.5, 0.5));
     //TRACKS_TOF
     outsideprocessing.AddHistogram(TH1D("TRACKS_TOF", "TRACKS_TOF", 40, 0, 40));
     outsideprocessing.AddHistogram(TH1D("TRACKS_TOF_OK", "TRACKS_TOF_OK", 40, 0, 40));
     //TRACKS_PT
-    outsideprocessing.AddHistogram(TH1D("TRACKS_PT", "TRACKS_PT", 100, 0, 10));
+    outsideprocessing.AddHistogram(TH1D("TRACKS_PT", "TRACKS_PT", 300, 0, 3));
     //TRACKS_ETA
     outsideprocessing.AddHistogram(TH1D("TRACKS_ETA", "TRACKS_ETA", 240, -1.2, 1.2));
     //TRACKS_NHITS
@@ -181,8 +184,12 @@ int main(int argc, char *argv[]){
     outsideprocessing.AddHistogram(TH1D("PAIRS_DCABEAMLINE_K0", "PAIRS_DCABEAMLINE_K0", 120, 0, 6));
     outsideprocessing.AddHistogram(TH1D("PAIRS_DCABEAMLINE_Lambda0", "PAIRS_DCABEAMLINE_Lambda0", 120, 0, 6));
     //PAIRS_DECAYLENGTH
-    outsideprocessing.AddHistogram(TH1D("PAIRS_DECAYLENGTH_K0", "PAIRS_DECAYLENGTH_K0", 240, 0, 12));
-    outsideprocessing.AddHistogram(TH1D("PAIRS_DECAYLENGTH_Lambda0", "PAIRS_DECAYLENGTH_Lambda0", 240, 0, 12));
+    outsideprocessing.AddHistogram(TH1D("PAIRS_DECAYLENGTH_K0_LEN", "PAIRS_DECAYLENGTH_K0_LEN", 240, 0, 12));
+    outsideprocessing.AddHistogram(TH1D("PAIRS_DECAYLENGTH_Lambda0_LEN", "PAIRS_DECAYLENGTH_Lambda0_LEN", 240, 0, 12));
+    outsideprocessing.AddHistogram(TH1D("PAIRS_DECAYLENGTH_K0_ANGLE", "PAIRS_DECAYLENGTH_K0_ANGLE", 100, 0.9, 1.));
+    outsideprocessing.AddHistogram(TH1D("PAIRS_DECAYLENGTH_Lambda0_ANGLE", "PAIRS_DECAYLENGTH_Lambda0_ANGLE", 100, 0.9, 1.));
+    outsideprocessing.AddHistogram(TH2D("PAIRS_DECAYLENGTH_K0", "PAIRS_DECAYLENGTH_K0", 240, 0, 12, 100, 0.9, 1));
+    outsideprocessing.AddHistogram(TH2D("PAIRS_DECAYLENGTH_Lambda0", "PAIRS_DECAYLENGTH_Lambda0", 240, 0, 12, 100, 0.9, 1));
 
     //processing
     //defining TreeProcessor
@@ -219,6 +226,7 @@ int main(int argc, char *argv[]){
         vector_Lambda_pairs.reserve(100);
         std::vector<int> vector_all;
         vector_all.reserve(100);
+        bool didItStartWithOK = true;
         bool isTrackOkay = true;
         bool isParticleOkay = true;
 
@@ -308,6 +316,7 @@ int main(int argc, char *argv[]){
                 badCut = RP_ELASTIC;
             }
             //central detector stuff
+            didItStartWithOK = (badCut==OK);
             for(int cut = 0; cut<centralTracksCutsTabLen+centralV0sCutsTabLen+1; cut++){
                 //cleaning the loop
                 vector_Track_positive.clear();
@@ -316,13 +325,18 @@ int main(int argc, char *argv[]){
                 vector_Lambda_pairs.clear();
                 vector_all.clear();
                 //piece to omit all cuts if one was already "used" earlier
-                if(badCut!=OK){
+                if(!didItStartWithOK){
                     cut = centralTracksCutsTabLen+centralV0sCutsTabLen;
-                } else if(cut!=centralTracksCutsTabLen+centralV0sCutsTabLen){
+                }
+                //piece to go through all cuts, including the "okay" one
+                if(didItStartWithOK&&cut!=centralTracksCutsTabLen+centralV0sCutsTabLen){
                     //setting badCut to the cut used
                     //RP_ELASTIC is the last before central cuts
                     //change if necessary
-                    badCut = RP_ELASTIC+cut;
+                    badCut = RP_ELASTIC+1+cut;
+                }
+                if(didItStartWithOK&&cut==centralTracksCutsTabLen+centralV0sCutsTabLen){
+                    badCut = OK;
                 }
                 //cuts
                 for(int track = 0; track<tempUPCpointer->getNumberOfTracks(); track++){
@@ -515,12 +529,7 @@ int main(int argc, char *argv[]){
                 //now fill the histograms (only if there are actually any particles)
                 if(vector_K0_pairs.size()==0&&vector_Lambda_pairs.size()==0)
                     continue;
-                // //PAIRS_DCABEAMLINE
-                // outsideprocessing.AddHistogram(TH1D("PAIRS_DCABEAMLINE_K0", "PAIRS_DCABEAMLINE_K0", 120, 0, 6));
-                // outsideprocessing.AddHistogram(TH1D("PAIRS_DCABEAMLINE_Lambda0", "PAIRS_DCABEAMLINE_Lambda0", 120, 0, 6));
-                // //PAIRS_DECAYLENGTH
-                // outsideprocessing.AddHistogram(TH1D("PAIRS_DECAYLENGTH_K0", "PAIRS_DECAYLENGTH_K0", 240, 0, 12));
-                // outsideprocessing.AddHistogram(TH1D("PAIRS_DECAYLENGTH_Lambda0", "PAIRS_DECAYLENGTH_Lambda0", 240, 0, 12));
+                //check which oneto fill
                 switch(badCut){
                 case TRACKS_TOF:
                     insideprocessing.Fill("TRACKS_TOF", vector_Track_negative.size()+vector_Track_positive.size());
@@ -584,7 +593,9 @@ int main(int argc, char *argv[]){
                 case PAIRS_DECAYLENGTH:
                     for(size_t i = 0; i<vector_K0_pairs.size(); i++){
                         tempParticle = new StUPCV0(vector_Track_positive[std::get<1>(vector_K0_pairs[i])], vector_Track_negative[std::get<2>(vector_K0_pairs[i])], particleMass[0], particleMass[0], 1, 1, { 0,0,0 }, beamValues, tempUPCpointer->getMagneticField(), false);
-                        insideprocessing.Fill("PAIRS_DECAYLENGTH_K0", tempParticle->decayLengthHypo());
+                        insideprocessing.Fill("PAIRS_DECAYLENGTH_K0_LEN", tempParticle->decayLengthHypo());
+                        insideprocessing.Fill("PAIRS_DECAYLENGTH_K0_ANGLE", tempParticle->pointingAngleHypo());
+                        insideprocessing.Fill("PAIRS_DECAYLENGTH_K0", tempParticle->decayLengthHypo(), tempParticle->pointingAngleHypo());
                         delete tempParticle;
                     }
                     for(size_t i = 0; i<vector_Lambda_pairs.size(); i++){
@@ -593,7 +604,9 @@ int main(int argc, char *argv[]){
                         } else{
                             tempParticle = new StUPCV0(vector_Track_positive[std::get<1>(vector_Lambda_pairs[i])], vector_Track_negative[std::get<2>(vector_Lambda_pairs[i])], particleMass[0], particleMass[2], 1, 1, { 0,0,0 }, beamValues, tempUPCpointer->getMagneticField(), false);
                         }
-                        insideprocessing.Fill("PAIRS_DECAYLENGTH_Lambda0", tempParticle->decayLengthHypo());
+                        insideprocessing.Fill("PAIRS_DECAYLENGTH_Lambda0_LEN", tempParticle->decayLengthHypo());
+                        insideprocessing.Fill("PAIRS_DECAYLENGTH_Lambda0_ANGLE", tempParticle->pointingAngleHypo());
+                        insideprocessing.Fill("PAIRS_DECAYLENGTH_Lambda0", tempParticle->decayLengthHypo(), tempParticle->pointingAngleHypo());
                         delete tempParticle;
                     }
                     break;
@@ -614,7 +627,9 @@ int main(int argc, char *argv[]){
                         tempParticle = new StUPCV0(vector_Track_positive[std::get<1>(vector_K0_pairs[i])], vector_Track_negative[std::get<2>(vector_K0_pairs[i])], particleMass[0], particleMass[0], 1, 1, { 0,0,0 }, beamValues, tempUPCpointer->getMagneticField(), false);
                         insideprocessing.Fill("PAIRS_DCADAUGHTERS_K0", tempParticle->dcaDaughters());
                         insideprocessing.Fill("PAIRS_DCABEAMLINE_K0", tempParticle->DCABeamLine());
-                        insideprocessing.Fill("PAIRS_DECAYLENGTH_K0", tempParticle->decayLengthHypo());
+                        insideprocessing.Fill("PAIRS_DECAYLENGTH_K0_LEN", tempParticle->decayLengthHypo());
+                        insideprocessing.Fill("PAIRS_DECAYLENGTH_K0_ANGLE", tempParticle->pointingAngleHypo());
+                        insideprocessing.Fill("PAIRS_DECAYLENGTH_K0", tempParticle->decayLengthHypo(), tempParticle->pointingAngleHypo());
                         delete tempParticle;
                     }
                     for(size_t i = 0; i<vector_Lambda_pairs.size(); i++){
@@ -625,7 +640,9 @@ int main(int argc, char *argv[]){
                         }
                         insideprocessing.Fill("PAIRS_DCADAUGHTERS_Lambda0", tempParticle->dcaDaughters());
                         insideprocessing.Fill("PAIRS_DCABEAMLINE_Lambda0", tempParticle->DCABeamLine());
-                        insideprocessing.Fill("PAIRS_DECAYLENGTH_Lambda0", tempParticle->decayLengthHypo());
+                        insideprocessing.Fill("PAIRS_DECAYLENGTH_Lambda0_LEN", tempParticle->decayLengthHypo());
+                        insideprocessing.Fill("PAIRS_DECAYLENGTH_Lambda0_ANGLE", tempParticle->pointingAngleHypo());
+                        insideprocessing.Fill("PAIRS_DECAYLENGTH_Lambda0", tempParticle->decayLengthHypo(), tempParticle->pointingAngleHypo());
                         delete tempParticle;
                     }
                     break;
@@ -654,8 +671,13 @@ int main(int argc, char *argv[]){
                 insideprocessing.Fill("RP_FIDUCIAL_west", westTrack->pVec().X(), westTrack->pVec().Y());
                 break;
             case RP_XI:
-                insideprocessing.Fill("RP_XI_east", eastTrack->xi(beamMomentum));
-                insideprocessing.Fill("RP_XI_west", westTrack->xi(beamMomentum));
+                if(tempUPCpointer->isTrigger(570701)&&tempUPCpointer->getRunNumber()<=18083025){
+                    insideprocessing.Fill("RP_XI_east_CPT2", eastTrack->xi(beamMomentum));
+                    insideprocessing.Fill("RP_XI_west_CPT2", westTrack->xi(beamMomentum));
+                } else if(tempUPCpointer->isTrigger(570705)&&tempUPCpointer->getRunNumber()>18083025){
+                    insideprocessing.Fill("RP_XI_east_CPT2noBBCL", eastTrack->xi(beamMomentum));
+                    insideprocessing.Fill("RP_XI_west_CPT2noBBCL", westTrack->xi(beamMomentum));
+                }
                 break;
             case RP_ELASTIC:
                 insideprocessing.Fill("RP_ELASTIC_xi", eastTrack->xi(beamMomentum), westTrack->xi(beamMomentum));
@@ -667,8 +689,13 @@ int main(int argc, char *argv[]){
                 insideprocessing.Fill("RP_PLANES_west", westTrack->pVec().X(), westTrack->pVec().Y());
                 insideprocessing.Fill("RP_FIDUCIAL_east", eastTrack->pVec().X(), eastTrack->pVec().Y());
                 insideprocessing.Fill("RP_FIDUCIAL_west", westTrack->pVec().X(), westTrack->pVec().Y());
-                insideprocessing.Fill("RP_XI_east", eastTrack->xi(beamMomentum));
-                insideprocessing.Fill("RP_XI_west", westTrack->xi(beamMomentum));
+                if(tempUPCpointer->isTrigger(570701)&&tempUPCpointer->getRunNumber()<=18083025){
+                    insideprocessing.Fill("RP_XI_east_CPT2", eastTrack->xi(beamMomentum));
+                    insideprocessing.Fill("RP_XI_west_CPT2", westTrack->xi(beamMomentum));
+                } else if(tempUPCpointer->isTrigger(570705)&&tempUPCpointer->getRunNumber()>18083025){
+                    insideprocessing.Fill("RP_XI_east_CPT2noBBCL", eastTrack->xi(beamMomentum));
+                    insideprocessing.Fill("RP_XI_west_CPT2noBBCL", westTrack->xi(beamMomentum));
+                }
                 insideprocessing.Fill("RP_ELASTIC_xi", eastTrack->xi(beamMomentum), westTrack->xi(beamMomentum));
                 insideprocessing.Fill("RP_ELASTIC_theta", eastTrack->theta(StUPCRpsTrack::rpsAngleThetaX)+westTrack->theta(StUPCRpsTrack::rpsAngleThetaX), eastTrack->theta(StUPCRpsTrack::rpsAngleThetaY)+westTrack->theta(StUPCRpsTrack::rpsAngleThetaY));
                 insideprocessing.Fill("RP_ELASTIC_p", eastTrack->pVec().X()+westTrack->pVec().X(), eastTrack->pVec().Y()+westTrack->pVec().Y());
