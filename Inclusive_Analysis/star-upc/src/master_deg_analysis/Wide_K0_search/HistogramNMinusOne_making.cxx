@@ -10,9 +10,12 @@
 #include "TPaveText.h"
 #include "TLine.h"
 #include "TEllipse.h"
+#include "TLatex.h"
 
 #include <iomanip>
 #include <sstream>
+#include <fstream>
+#include <numeric>
 
 using namespace std;
 
@@ -333,6 +336,92 @@ int main(){
     lineHorizontal->Draw("same");
     lineVertical->Draw("same");
     c1->SaveAs(string("/home/adam/STAR-Analysis/Inclusive_Analysis/star-upc/scripts/master_thesis/PAIRS_DECAYLENGTH_Lambda0.pdf").c_str());
+    delete c1;
+
+
+
+    //Other things
+    //luminosity of RP_CPT2 trigger
+    ifstream inputFile("/home/adam/STAR-Analysis/share/lum_perrun_RP_CPT2.txt");
+    std::string line, col2, col3, col4, col5;
+    int col1;
+    double col6;
+    std::vector<int> runNumber;
+    std::vector<double> prescale;
+    while(getline(inputFile, line)){
+        std::istringstream ss(line);
+        ss>>col1>>col2>>col3>>col4>>col5>>col6;
+        runNumber.push_back(col1);
+        prescale.push_back(col6);
+    }
+    inputFile.close();
+    std::vector<int> numberOfRuns;
+    numberOfRuns.push_back(0);
+    std::vector<std::string> etiquette;
+    etiquette.push_back("18057---");
+    int tempRunNumber = 18057;
+    for(size_t i = 0; i<runNumber.size(); i++){
+        // if(runNumber[i]/1000==tempRunNumber){
+        if(runNumber[i]/1000==tempRunNumber){
+            numberOfRuns[numberOfRuns.size()-1]++;
+        } else{
+            numberOfRuns.push_back(1);
+            etiquette.push_back(to_string(runNumber[i]/1000)+"---");
+            tempRunNumber = runNumber[i]/1000;
+        }
+    }
+
+    //filling hitogram and dealing with the axis
+    TH1D prescaleHist("prescaleHist", "RP_CPT2 trigger prescaling;fill number;prescale", runNumber.size(), 0, runNumber.size());
+    for(size_t i = 0; i<runNumber.size(); i++){
+        prescaleHist.SetBinContent(i+1, prescale[i]);
+    }
+    double prescaleAxisBinLimits[numberOfRuns.size()+1];
+    prescaleAxisBinLimits[0] = 0;
+    for(size_t i = 0; i<numberOfRuns.size(); i++){
+        prescaleAxisBinLimits[i+1] = accumulate(numberOfRuns.begin(), numberOfRuns.begin()+i, 0);
+    }
+    TH1D prescaleAxisHist("prescaleAxisHist", "RP_CPT2 trigger prescaling;fill number;prescale", numberOfRuns.size(), prescaleAxisBinLimits);
+    //0.9 to get rid of the last label covering up axis description
+    for(size_t i = 0; i<numberOfRuns.size()*0.9; i++){
+        if(i%10==0){
+            prescaleAxisHist.GetXaxis()->ChangeLabel(i+1, 60, -1, -1, -1, -1, etiquette[i].c_str());
+
+        } else{
+            prescaleAxisHist.GetXaxis()->SetBinLabel(i+1, "");
+        }
+    }
+
+    //drawing
+    c1 = new TCanvas("c1", "c1", 1600, 1000);
+    c1->SetRightMargin(0.05);
+    c1->SetLogy();
+    prescaleAxisHist.SetMaximum(100);
+    prescaleAxisHist.SetMinimum(0.5);
+    prescaleAxisHist.Draw("axis");
+    prescaleHist.Draw("ah same");
+    c1->Update();
+    TLine *lineOne = new TLine(c1->GetUxmin(), 1, c1->GetUxmax(), 1);
+    lineOne->SetLineStyle(kDashed);
+    lineOne->SetLineColor(kRed);
+    lineOne->SetLineWidth(1);
+    lineOne->Draw("same");
+    TLine *lineVert = new TLine(603, c1->GetUymin(), 603, 100);
+    lineVert->SetLineStyle(kDashed);
+    lineVert->SetLineColor(kRed);
+    lineVert->SetLineWidth(1);
+    lineVert->Draw("same");
+    TLatex *textOne = new TLatex(590, 2.6, "up to 18083025");
+    textOne->SetTextAngle(90);
+    textOne->SetTextColor(kRed);
+    textOne->SetTextSize(0.03);
+    textOne->Draw("same");
+    TLatex *textTwo = new TLatex(650, 2.6, "over 18083025");
+    textTwo->SetTextAngle(90);
+    textTwo->SetTextColor(kRed);
+    textTwo->SetTextSize(0.03);
+    textTwo->Draw("same");
+    c1->SaveAs(string("/home/adam/STAR-Analysis/Inclusive_Analysis/star-upc/scripts/master_thesis/prescaleHist.pdf").c_str());
     delete c1;
 
     return 0;
