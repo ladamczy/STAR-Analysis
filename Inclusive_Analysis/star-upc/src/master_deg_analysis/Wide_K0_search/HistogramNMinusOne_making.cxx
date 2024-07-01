@@ -208,7 +208,7 @@ int main(){
     TRACKS_TOF_OK->SetLineColor(kRed);
     TRACKS_TOF_OK->Draw("same");
     TLegend *legendToF = new TLegend(0.6, 0.7, 0.89, 0.79);
-    legendToF->AddEntry("TRACKS_TOF", "Tracks without TOF flag", "l");
+    legendToF->AddEntry("TRACKS_TOF", "All tracks", "l");
     legendToF->AddEntry("TRACKS_TOF_OK", "Tracks with TOF flag", "l");
     legendToF->SetBorderSize(0);
     legendToF->Draw("SAME");
@@ -255,7 +255,8 @@ int main(){
     c1->SetRightMargin(0.05);
     TRACKS_NHITS->Draw();
     c1->Update();
-    TLine *lineNhits = new TLine(20, 0, 20, c1->GetUymax());
+    // TLine *lineNhits = new TLine(20, c1->GetUymin(), 20, c1->GetUymax());
+    TLine *lineNhits = new TLine(20, 3, 20, 4.5e5);
     lineNhits->SetLineStyle(kDashed);
     lineNhits->SetLineColor(kRed);
     lineNhits->SetLineWidth(1);

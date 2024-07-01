@@ -87,8 +87,8 @@ enum{
 enum PARTICLES{ Pion = 0, Kaon = 1, Proton = 2, nParticles };
 // enum BRANCH_ID{ EU, ED, WU, WD, nBranches };
 // enum RP_ID{ E1U, E1D, E2U, E2D, W1U, W1D, W2U, W2D, nRomanPots };
-// enum ERRORS{ OK, RP_PLANES, RP_FIDUCIAL, RP_XI, RP_ELASTIC, TRACKS_TOF, TRACKS_PT, TRACKS_ETA, TRACKS_NHITS, PAIRS_DCADAUGHTERS, PAIRS_DCABEAMLINE, PAIRS_DECAYLENGTH };
-enum ERRORS{ OK, RP_PLANES, RP_FIDUCIAL, RP_XI, RP_ELASTIC, TRACKS_TOF, TRACKS_PT, TRACKS_ETA, TRACKS_NHITS, PAIRS_DCADAUGHTERS, PAIRS_DCABEAMLINE, PAIRS_DECAYLENGTH };
+// enum ERRORS{ OK, RP_PLANES, RP_FIDUCIAL, RP_XI, RP_ELASTIC, TRACKS_TOF, TRACKS_PT, TRACKS_ETA, TRACKS_NHITS, PAIRS_DCADAUGHTERS, PAIRS_DCABEAMLINE, PAIRS_DECAYLENGTH, REMOVING_DUPLICATES };
+enum ERRORS{ OK, RP_PLANES, RP_FIDUCIAL, RP_XI, RP_ELASTIC, TRACKS_TOF, TRACKS_PT, TRACKS_ETA, TRACKS_NHITS, PAIRS_DCADAUGHTERS, PAIRS_DCABEAMLINE, PAIRS_DECAYLENGTH, REMOVING_DUPLICATES };
 
 const double particleMass[nParticles] = { 0.13957, 0.497611, 0.93827 }; // pion, kaon, proton in GeV /c^2 
 bool IsInXiElasticSpot(StUPCRpsTrack *, StUPCRpsTrack *);
@@ -109,6 +109,7 @@ bool emptyTest(StUPCTrack *tempTrack);
 bool dcaDaughters(StUPCV0 *tempParticle);
 bool dcaBeamline(StUPCV0 *tempParticle);
 bool decayLengthPointingAngle(StUPCV0 *tempParticle);
+void removeDuplicates(std::vector<tuple<double, int, int>> vector_K0_pairs, std::vector<tuple<double, int, int, bool>> vector_Lambda_pairs, std::vector<int> vector_all);
 bool emptyParticleTest(StUPCV0 *tempParticle);
 
 int main(int argc, char *argv[]){
@@ -610,8 +611,11 @@ int main(int argc, char *argv[]){
                         delete tempParticle;
                     }
                     break;
+                case REMOVING_DUPLICATES:
+
+                    break;
                 case OK:
-                    insideprocessing.Fill("TRACKS_TOF", vector_Track_negative.size()+vector_Track_positive.size());
+                    // insideprocessing.Fill("TRACKS_TOF", vector_Track_negative.size()+vector_Track_positive.size());
                     insideprocessing.Fill("TRACKS_TOF_OK", vector_Track_negative.size()+vector_Track_positive.size());
                     for(size_t i = 0; i<vector_Track_negative.size(); i++){
                         insideprocessing.Fill("TRACKS_PT", vector_Track_negative[i]->getPt());
@@ -913,6 +917,10 @@ bool dcaBeamline(StUPCV0 *tempParticle){
 
 bool decayLengthPointingAngle(StUPCV0 *tempParticle){
     return tempParticle->pointingAngleHypo()>0.925 or tempParticle->decayLengthHypo()<3.0;
+}
+
+void removeDuplicates(std::vector<tuple<double, int, int>> vector_K0_pairs, std::vector<tuple<double, int, int, bool>> vector_Lambda_pairs, std::vector<int> vector_all){
+
 }
 
 bool emptyParticleTest(StUPCV0 *tempParticle){
