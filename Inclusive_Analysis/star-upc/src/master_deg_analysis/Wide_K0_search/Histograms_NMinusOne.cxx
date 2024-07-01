@@ -87,8 +87,8 @@ enum{
 enum PARTICLES{ Pion = 0, Kaon = 1, Proton = 2, nParticles };
 // enum BRANCH_ID{ EU, ED, WU, WD, nBranches };
 // enum RP_ID{ E1U, E1D, E2U, E2D, W1U, W1D, W2U, W2D, nRomanPots };
-// enum ERRORS{ OK, RP_PLANES, RP_FIDUCIAL, RP_XI, RP_ELASTIC, TRACKS_TOF, TRACKS_PT, TRACKS_ETA, TRACKS_NHITS, PAIRS_DCADAUGHTERS, PAIRS_DCABEAMLINE, PAIRS_DECAYLENGTH, REMOVING_DUPLICATES };
-enum ERRORS{ OK, RP_PLANES, RP_FIDUCIAL, RP_XI, RP_ELASTIC, TRACKS_TOF, TRACKS_PT, TRACKS_ETA, TRACKS_NHITS, PAIRS_DCADAUGHTERS, PAIRS_DCABEAMLINE, PAIRS_DECAYLENGTH, REMOVING_DUPLICATES };
+// enum ERRORS{ OK, RP_PLANES, RP_FIDUCIAL, RP_XI, RP_ELASTIC, TRACKS_TOF, TRACKS_PT, TRACKS_ETA, TRACKS_NHITS, PAIRS_DCADAUGHTERS, PAIRS_DCABEAMLINE, PAIRS_DECAYLENGTH };
+enum ERRORS{ OK, RP_PLANES, RP_FIDUCIAL, RP_XI, RP_ELASTIC, TRACKS_TOF, TRACKS_PT, TRACKS_ETA, TRACKS_NHITS, PAIRS_DCADAUGHTERS, PAIRS_DCABEAMLINE, PAIRS_DECAYLENGTH };
 
 const double particleMass[nParticles] = { 0.13957, 0.497611, 0.93827 }; // pion, kaon, proton in GeV /c^2 
 bool IsInXiElasticSpot(StUPCRpsTrack *, StUPCRpsTrack *);
@@ -109,7 +109,6 @@ bool emptyTest(StUPCTrack *tempTrack);
 bool dcaDaughters(StUPCV0 *tempParticle);
 bool dcaBeamline(StUPCV0 *tempParticle);
 bool decayLengthPointingAngle(StUPCV0 *tempParticle);
-void removeDuplicates(std::vector<tuple<double, int, int>> vector_K0_pairs, std::vector<tuple<double, int, int, bool>> vector_Lambda_pairs, std::vector<int> vector_all);
 bool emptyParticleTest(StUPCV0 *tempParticle);
 
 int main(int argc, char *argv[]){
@@ -191,6 +190,11 @@ int main(int argc, char *argv[]){
     outsideprocessing.AddHistogram(TH1D("PAIRS_DECAYLENGTH_Lambda0_ANGLE", "PAIRS_DECAYLENGTH_Lambda0_ANGLE", 100, 0.9, 1.));
     outsideprocessing.AddHistogram(TH2D("PAIRS_DECAYLENGTH_K0", "PAIRS_DECAYLENGTH_K0", 240, 0, 12, 100, 0.9, 1));
     outsideprocessing.AddHistogram(TH2D("PAIRS_DECAYLENGTH_Lambda0", "PAIRS_DECAYLENGTH_Lambda0", 240, 0, 12, 100, 0.9, 1));
+    //REMOVING_DUPLICATES
+    outsideprocessing.AddHistogram(TH1D("REMOVING_DUPLICATES_K0_BEFORE", "REMOVING_DUPLICATES_K0_BEFORE", kaonMassWindowWideBins, kaonMassWindowWideLow, kaonMassWindowWideHigh));
+    outsideprocessing.AddHistogram(TH1D("REMOVING_DUPLICATES_K0_AFTER", "REMOVING_DUPLICATES_K0_AFTER", kaonMassWindowWideBins, kaonMassWindowWideLow, kaonMassWindowWideHigh));
+    outsideprocessing.AddHistogram(TH1D("REMOVING_DUPLICATES_Lambda0_BEFORE", "REMOVING_DUPLICATES_Lambda0_BEFORE", lambdaMassWindowWideBins, lambdaMassWindowWideLow, lambdaMassWindowWideHigh));
+    outsideprocessing.AddHistogram(TH1D("REMOVING_DUPLICATES_Lambda0_AFTER", "REMOVING_DUPLICATES_Lambda0_AFTER", lambdaMassWindowWideBins, lambdaMassWindowWideLow, lambdaMassWindowWideHigh));
 
     //processing
     //defining TreeProcessor
@@ -466,6 +470,23 @@ int main(int argc, char *argv[]){
                         delete tempParticle;
                     }
                 }
+                //check particle deduplication results
+                if(badCut==OK){
+                    for(size_t i = 0; i<vector_K0_pairs.size(); i++){
+                        tempParticle = new StUPCV0(vector_Track_positive[std::get<1>(vector_K0_pairs[i])], vector_Track_negative[std::get<2>(vector_K0_pairs[i])], particleMass[0], particleMass[0], 1, 1, { 0,0,0 }, beamValues, tempUPCpointer->getMagneticField(), false);
+                        insideprocessing.Fill("REMOVING_DUPLICATES_K0_BEFORE", tempParticle->m());
+                        delete tempParticle;
+                    }
+                    for(size_t i = 0; i<vector_Lambda_pairs.size(); i++){
+                        if(std::get<3>(vector_Lambda_pairs[i])){
+                            tempParticle = new StUPCV0(vector_Track_positive[std::get<1>(vector_Lambda_pairs[i])], vector_Track_negative[std::get<2>(vector_Lambda_pairs[i])], particleMass[2], particleMass[0], 1, 1, { 0,0,0 }, beamValues, tempUPCpointer->getMagneticField(), false);
+                        } else{
+                            tempParticle = new StUPCV0(vector_Track_positive[std::get<1>(vector_Lambda_pairs[i])], vector_Track_negative[std::get<2>(vector_Lambda_pairs[i])], particleMass[0], particleMass[2], 1, 1, { 0,0,0 }, beamValues, tempUPCpointer->getMagneticField(), false);
+                        }
+                        insideprocessing.Fill("REMOVING_DUPLICATES_Lambda0_BEFORE", tempParticle->m());
+                        delete tempParticle;
+                    }
+                }
                 //get rid of pairs with shared particles
                 //we sort in ascending order of DCAdaugters
                 std::sort(vector_K0_pairs.begin(), vector_K0_pairs.end(), tuple_sort);
@@ -530,7 +551,7 @@ int main(int argc, char *argv[]){
                 //now fill the histograms (only if there are actually any particles)
                 if(vector_K0_pairs.size()==0&&vector_Lambda_pairs.size()==0)
                     continue;
-                //check which oneto fill
+                //check which one to fill
                 switch(badCut){
                 case TRACKS_TOF:
                     insideprocessing.Fill("TRACKS_TOF", vector_Track_negative.size()+vector_Track_positive.size());
@@ -611,9 +632,6 @@ int main(int argc, char *argv[]){
                         delete tempParticle;
                     }
                     break;
-                case REMOVING_DUPLICATES:
-
-                    break;
                 case OK:
                     // insideprocessing.Fill("TRACKS_TOF", vector_Track_negative.size()+vector_Track_positive.size());
                     insideprocessing.Fill("TRACKS_TOF_OK", vector_Track_negative.size()+vector_Track_positive.size());
@@ -634,6 +652,7 @@ int main(int argc, char *argv[]){
                         insideprocessing.Fill("PAIRS_DECAYLENGTH_K0_LEN", tempParticle->decayLengthHypo());
                         insideprocessing.Fill("PAIRS_DECAYLENGTH_K0_ANGLE", tempParticle->pointingAngleHypo());
                         insideprocessing.Fill("PAIRS_DECAYLENGTH_K0", tempParticle->decayLengthHypo(), tempParticle->pointingAngleHypo());
+                        insideprocessing.Fill("REMOVING_DUPLICATES_K0_AFTER", tempParticle->m());
                         delete tempParticle;
                     }
                     for(size_t i = 0; i<vector_Lambda_pairs.size(); i++){
@@ -647,6 +666,7 @@ int main(int argc, char *argv[]){
                         insideprocessing.Fill("PAIRS_DECAYLENGTH_Lambda0_LEN", tempParticle->decayLengthHypo());
                         insideprocessing.Fill("PAIRS_DECAYLENGTH_Lambda0_ANGLE", tempParticle->pointingAngleHypo());
                         insideprocessing.Fill("PAIRS_DECAYLENGTH_Lambda0", tempParticle->decayLengthHypo(), tempParticle->pointingAngleHypo());
+                        insideprocessing.Fill("REMOVING_DUPLICATES_Lambda0_AFTER", tempParticle->m());
                         delete tempParticle;
                     }
                     break;
@@ -917,10 +937,6 @@ bool dcaBeamline(StUPCV0 *tempParticle){
 
 bool decayLengthPointingAngle(StUPCV0 *tempParticle){
     return tempParticle->pointingAngleHypo()>0.925 or tempParticle->decayLengthHypo()<3.0;
-}
-
-void removeDuplicates(std::vector<tuple<double, int, int>> vector_K0_pairs, std::vector<tuple<double, int, int, bool>> vector_Lambda_pairs, std::vector<int> vector_all){
-
 }
 
 bool emptyParticleTest(StUPCV0 *tempParticle){
