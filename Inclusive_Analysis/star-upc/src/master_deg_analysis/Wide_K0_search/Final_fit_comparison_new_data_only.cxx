@@ -1,5 +1,6 @@
 #include "TFile.h"
 #include "TH1D.h"
+#include "TH2D.h"
 #include "TCanvas.h"
 #include "TStyle.h"
 #include "TF1.h"
@@ -7,6 +8,7 @@
 #include "TLegend.h"
 #include "TLatex.h"
 #include "TPaveText.h"
+#include "TEllipse.h"
 
 #include <iomanip>
 #include <sstream>
@@ -717,6 +719,99 @@ int main(){
     // gPad->RedrawAxis();
     resultLambdaFinalCut->SaveAs(string("/home/adam/STAR-Analysis/Inclusive_Analysis/star-upc/scripts/Lambda0afterV0finderAfterCuts_new_data.pdf").c_str());
 
+
+
+    //dEdx
+    TH2D *dEdx1 = (TH2D *)anaoutputnewtracks1->Get("dEdxMomentumEnergyLoss");
+    TH2D *dEdx2 = (TH2D *)anaoutputnewtracks2->Get("dEdxMomentumEnergyLoss");
+    TH2D dEdx = *dEdx1;
+    dEdx.Add(dEdx2);
+    dEdx.SetTitle(";pq [GeV/c];dE/dx [keV/cm]");
+    c1 = new TCanvas("c1", "c1", 1600, 1200);
+    c1->SetLogz();
+    c1->SetMargin(0.10, 0.13, 0.1, 0.05);
+    dEdx.Draw("colz");
+    c1->Update();
+    TLatex text1(-0.1, 2.5, "#bf{#pi^{#pm}}");
+    text1.DrawClone("same");
+    TLatex text2(-0.15, 11, "K^{#pm}");
+    text2.DrawClone("same");
+    TLatex text3(-0.1, 22, "p^{#pm}");
+    text3.DrawClone("same");
+    TLatex text4(0.9, 18, "deuterons");
+    text4.DrawClone("same");
+    c1->SaveAs(string("/home/adam/STAR-Analysis/Inclusive_Analysis/star-upc/scripts/master_thesis/dEdxData.pdf").c_str());
+    delete c1;
+
+    //2d plot
+    TH2D *Lambdapt2DHist1 = (TH2D *)anaoutputnewtracks1->Get("Lambdapt2DHist");
+    TH2D *Lambdapt2DHist2 = (TH2D *)anaoutputnewtracks2->Get("Lambdapt2DHist");
+    TH2D Lambdapt2DHist = *Lambdapt2DHist1;
+    Lambdapt2DHist.Add(Lambdapt2DHist2);
+    Lambdapt2DHist.SetTitle(";m_{p#pi} [GeV];p_T [GeV/c]");
+    c1 = new TCanvas("c1", "c1", 1600, 1000);
+    c1->SetMargin(0.10, 0.13, 0.1, 0.05);
+    Lambdapt2DHist.Draw("colz");
+    c1->Update();
+    TEllipse newEllipse(1.115, 1.1, 0.005, 0.6);
+    newEllipse.SetLineWidth(2);
+    newEllipse.SetLineStyle(kDashed);
+    newEllipse.SetLineColor(kRed);
+    newEllipse.SetFillColorAlpha(0, 0);
+    newEllipse.Draw("same");
+    c1->SaveAs(string("/home/adam/STAR-Analysis/Inclusive_Analysis/star-upc/scripts/master_thesis/Lambdapt2DHist.pdf").c_str());
+    delete c1;
+
+    //1d example plot
+    gStyle->SetOptFit(1);
+    int n = 5;
+    TH1D *Lambdapt1DHist = Lambdapt2DHist.ProjectionX("Lambdapt1DHist", n, n);
+    c1 = new TCanvas("c1", "c1", 1600, 1200);
+    c1->SetMargin(0.05, 0.05, 0.1, 0.05);
+    //Lambda
+    GfitLambda->SetParNames("Constant", "Mean", "Sigma", "c", "b", "a");
+    GfitLambda->SetParameters(3, 1.115, 5e-3, 0, 0., -10000000);
+    GfitLambda->SetParLimits(0, 0, 200);
+    GfitLambda->SetParLimits(1, 1.11, 1.12);
+    GfitLambda->SetParLimits(2, 5e-5, 0.01);
+    //old data, the base of drawing
+    Lambdapt1DHist->SetMinimum(0);
+    Lambdapt1DHist->SetMarkerStyle(kFullCircle);
+    Lambdapt1DHist->SetMarkerColor(kBlue);
+    Lambdapt1DHist->SetLineColor(kBlue+2);
+    Lambdapt1DHist->Fit(GfitLambda, "0BR");
+    Lambdapt1DHist->Fit(GfitLambda, "0BR");
+    Lambdapt1DHist->Fit(GfitLambda, "0BR");
+    Lambdapt1DHist->Fit(GfitLambda, "0BR");
+    Lambdapt1DHist->Fit(GfitLambda, "0BR");
+    Lambdapt1DHist->DrawCopy("E", "NewDataNewTracks");
+    gPad->Update();
+    GfitLambda->GetParameters(paramsLambda);
+    GfitLambdaBcg->SetParameters(paramsLambda+3);
+    GfitLambda1Sig->SetParameters(paramsLambda);
+    GfitLambdaBcg->SetLineStyle(3);
+    GfitLambdaBcg->SetLineWidth(3);
+    GfitLambda1Sig->SetLineColor(kBlue);
+    GfitLambda->SetNpx(1000);
+    GfitLambda->Draw("CSAME");
+    GfitLambdaBcg->Draw("CSAME");
+    GfitLambda1Sig->Draw("CSAME");
+
+    TPaveStats *ps = (TPaveStats *)c1->GetPrimitive("stats");
+    ps->SetX1(1.065);
+    ps->SetX2(1.1);
+    ps->SetY1(600);
+    ps->SetY2(900);
+    ps->SetBorderSize(0);
+
+    legendLambda = new TLegend(.1, .35, .45, .59);
+    legendLambda->SetTextSize(0.035);
+    legendLambda->AddEntry("Lambdapt1DHistNewDataNewTracks", "#Lambda^{0}, 0.8 GeV/c < p_{T} < 1.0 GeV/c");
+    legendLambda->SetBorderSize(0);
+    legendLambda->Draw("SAME");
+    gPad->Update();
+    c1->SaveAs(string("/home/adam/STAR-Analysis/Inclusive_Analysis/star-upc/scripts/master_thesis/Lambdapt1DHist.pdf").c_str());
+    delete c1;
 
     return 0;
 }

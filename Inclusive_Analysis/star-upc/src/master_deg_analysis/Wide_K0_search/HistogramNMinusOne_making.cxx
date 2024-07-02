@@ -471,5 +471,60 @@ int main(){
     c1->SaveAs(string("/home/adam/STAR-Analysis/Inclusive_Analysis/star-upc/scripts/master_thesis/prescaleHist.pdf").c_str());
     delete c1;
 
+
+    TH1D *REMOVING_DUPLICATES_K0_BEFORE = (TH1D *)histograms->Get("REMOVING_DUPLICATES_K0_BEFORE");
+    TH1D *REMOVING_DUPLICATES_K0_AFTER = (TH1D *)histograms->Get("REMOVING_DUPLICATES_K0_AFTER");
+    TH1D *REMOVING_DUPLICATES_K0_DIFFERENCE = new TH1D();
+    REMOVING_DUPLICATES_K0_BEFORE->Copy(*REMOVING_DUPLICATES_K0_DIFFERENCE);
+    REMOVING_DUPLICATES_K0_DIFFERENCE->Add(REMOVING_DUPLICATES_K0_AFTER, -1.);
+    REMOVING_DUPLICATES_K0_DIFFERENCE->SetName("REMOVING_DUPLICATES_K0_DIFFERENCE");
+    c1 = new TCanvas("c1", "c1", 1600, 1000);
+    c1->SetRightMargin(0.05);
+    REMOVING_DUPLICATES_K0_BEFORE->SetMinimum(0);
+    REMOVING_DUPLICATES_K0_BEFORE->SetTitle(";m_{#pi^{+}#pi^{-}} [GeV];reconstructed K^{0}_{S}");
+    REMOVING_DUPLICATES_K0_BEFORE->SetLineColor(kBlack);
+    REMOVING_DUPLICATES_K0_BEFORE->Draw();
+    REMOVING_DUPLICATES_K0_AFTER->SetTitle(";m_{#pi^{+}#pi^{-}} [GeV];reconstructed K^{0}_{S}");
+    REMOVING_DUPLICATES_K0_AFTER->SetLineColor(kBlue);
+    REMOVING_DUPLICATES_K0_AFTER->Draw("same");
+    REMOVING_DUPLICATES_K0_DIFFERENCE->SetTitle(";m_{#pi^{+}#pi^{-}} [GeV];reconstructed K^{0}_{S}");
+    REMOVING_DUPLICATES_K0_DIFFERENCE->SetLineColor(kRed);
+    REMOVING_DUPLICATES_K0_DIFFERENCE->Draw("same");
+    TLegend *legendRemovingDuplicateK0 = new TLegend(0.2, 0.65, 0.4, 0.85);
+    legendRemovingDuplicateK0->AddEntry("REMOVING_DUPLICATES_K0_BEFORE", "Before removal", "l");
+    legendRemovingDuplicateK0->AddEntry("REMOVING_DUPLICATES_K0_AFTER", "After removal", "l");
+    legendRemovingDuplicateK0->AddEntry("REMOVING_DUPLICATES_K0_DIFFERENCE", "Difference", "l");
+    legendRemovingDuplicateK0->SetBorderSize(0);
+    legendRemovingDuplicateK0->Draw("SAME");
+    c1->SaveAs(string("/home/adam/STAR-Analysis/Inclusive_Analysis/star-upc/scripts/master_thesis/REMOVING_DUPLICATES_K0.pdf").c_str());
+    delete c1;
+
+    TH1D *REMOVING_DUPLICATES_Lambda0_BEFORE = (TH1D *)histograms->Get("REMOVING_DUPLICATES_Lambda0_BEFORE");
+    TH1D *REMOVING_DUPLICATES_Lambda0_AFTER = (TH1D *)histograms->Get("REMOVING_DUPLICATES_Lambda0_AFTER");
+    TH1D *REMOVING_DUPLICATES_Lambda0_DIFFERENCE = new TH1D();
+    REMOVING_DUPLICATES_Lambda0_BEFORE->Copy(*REMOVING_DUPLICATES_Lambda0_DIFFERENCE);
+    REMOVING_DUPLICATES_Lambda0_DIFFERENCE->Add(REMOVING_DUPLICATES_Lambda0_AFTER, -1.);
+    REMOVING_DUPLICATES_Lambda0_DIFFERENCE->SetName("REMOVING_DUPLICATES_Lambda0_DIFFERENCE");
+    c1 = new TCanvas("c1", "c1", 1600, 1000);
+    c1->SetRightMargin(0.05);
+    REMOVING_DUPLICATES_Lambda0_BEFORE->SetMinimum(0);
+    REMOVING_DUPLICATES_Lambda0_BEFORE->SetTitle(";m_{#pi^{+}#pi^{-}} [GeV];reconstructed K^{0}_{S}");
+    REMOVING_DUPLICATES_Lambda0_BEFORE->SetLineColor(kBlack);
+    REMOVING_DUPLICATES_Lambda0_BEFORE->Draw();
+    REMOVING_DUPLICATES_Lambda0_AFTER->SetTitle(";m_{#pi^{+}#pi^{-}} [GeV];reconstructed K^{0}_{S}");
+    REMOVING_DUPLICATES_Lambda0_AFTER->SetLineColor(kBlue);
+    REMOVING_DUPLICATES_Lambda0_AFTER->Draw("same");
+    REMOVING_DUPLICATES_Lambda0_DIFFERENCE->SetTitle(";m_{#pi^{+}#pi^{-}} [GeV];reconstructed K^{0}_{S}");
+    REMOVING_DUPLICATES_Lambda0_DIFFERENCE->SetLineColor(kRed);
+    REMOVING_DUPLICATES_Lambda0_DIFFERENCE->Draw("same");
+    TLegend *legendRemovingDuplicateLambda0 = new TLegend(0.2, 0.65, 0.4, 0.85);
+    legendRemovingDuplicateLambda0->AddEntry("REMOVING_DUPLICATES_Lambda0_BEFORE", "Before removal", "l");
+    legendRemovingDuplicateLambda0->AddEntry("REMOVING_DUPLICATES_Lambda0_AFTER", "After removal", "l");
+    legendRemovingDuplicateLambda0->AddEntry("REMOVING_DUPLICATES_Lambda0_DIFFERENCE", "Difference", "l");
+    legendRemovingDuplicateLambda0->SetBorderSize(0);
+    legendRemovingDuplicateLambda0->Draw("SAME");
+    c1->SaveAs(string("/home/adam/STAR-Analysis/Inclusive_Analysis/star-upc/scripts/master_thesis/REMOVING_DUPLICATES_Lambda0.pdf").c_str());
+    delete c1;
+
     return 0;
 }

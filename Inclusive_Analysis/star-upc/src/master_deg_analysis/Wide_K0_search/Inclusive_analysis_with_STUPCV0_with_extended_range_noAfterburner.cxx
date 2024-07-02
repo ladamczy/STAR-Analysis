@@ -184,6 +184,8 @@ int main(int argc, char **argv){
     outsideprocessing.AddHistogram(TH2D("K0XiSum2DHist", "K0XiSum2DHist", kaonMassWindowWideBins, kaonMassWindowWideLow, kaonMassWindowWideHigh, n_XiSumBins, XiSumBins));
     outsideprocessing.AddHistogram(TH2D("LambdaXiSum2DHist", "LambdaXiSum2DHist", lambdaMassWindowWideBins, lambdaMassWindowWideLow, lambdaMassWindowWideHigh, n_XiSumBins, XiSumBins));
 
+    outsideprocessing.AddHistogram(TH2D("dEdxMomentumEnergyLoss", "dEdxMomentumEnergyLoss", 300, -3, 3, 100, 0, 40));
+
     // int triggers[] = { 570701, 570705, 570711, 590701, 590705, 590708 };
     // outsideprocessing.AddHistogram(TH1D("triggerHist", "Data triggers;Trigger ID;Number of events", 6, 0, 6));
     // for(int i = 0;i<6;i++){
@@ -221,6 +223,7 @@ int main(int argc, char **argv){
         vector_Lambda_pairs.reserve(100);
         std::vector<int> vector_all;
         vector_all.reserve(100);
+        TVector3 tempVector;
 
         //actual loop
         while(myReader.Next()){
@@ -548,6 +551,12 @@ int main(int argc, char **argv){
                     insideprocessing.Fill("K0decayLengthBackground", tempParticle->decayLength());
                     insideprocessing.Fill("K0DcaToPrimaryVertexBackground", tempParticle->DcaToPrimaryVertex());
                 }
+
+                vector_Track_positive[std::get<1>(vector_K0_pairs[i])]->getMomentum(tempVector);
+                insideprocessing.Fill("dEdxMomentumEnergyLoss", tempVector.Mag(), vector_Track_positive[std::get<1>(vector_K0_pairs[i])]->getDEdxSignal());
+                vector_Track_negative[std::get<2>(vector_K0_pairs[i])]->getMomentum(tempVector);
+                insideprocessing.Fill("dEdxMomentumEnergyLoss", -tempVector.Mag(), vector_Track_negative[std::get<2>(vector_K0_pairs[i])]->getDEdxSignal());
+
                 delete tempParticle;
             }
             insideprocessing.Fill("K0multiplicity", vector_K0_pairs.size());
@@ -649,6 +658,11 @@ int main(int argc, char **argv){
                 if(tempParticle->pointingAngleHypo()>0.99&&(temptest1 or temptest2)){
                     insideprocessing.Fill("MppiWideCheck", tempParticle->m());
                 }
+
+                vector_Track_positive[std::get<1>(vector_Lambda_pairs[i])]->getMomentum(tempVector);
+                insideprocessing.Fill("dEdxMomentumEnergyLoss", tempVector.Mag(), vector_Track_positive[std::get<1>(vector_Lambda_pairs[i])]->getDEdxSignal());
+                vector_Track_negative[std::get<2>(vector_Lambda_pairs[i])]->getMomentum(tempVector);
+                insideprocessing.Fill("dEdxMomentumEnergyLoss", -tempVector.Mag(), vector_Track_negative[std::get<2>(vector_Lambda_pairs[i])]->getDEdxSignal());
 
                 delete tempParticle;
             }
