@@ -49,6 +49,12 @@ int main(int argc, char *argv[]){
     TH1D newdataLambdaeta;
     Lambda_differential_crossection_fit(newdataLambdaeta, "Lambdaeta2DHist");
     draw_and_save(newdataLambdaeta, "Uncorrected #Lambda^{ 0} yields vs.  #eta;#eta;n_{#Lambda^{0}}", "Differential_crossection_Lambda_eta_new_data.pdf", 0.37, 0.2, 0.63, 0.3);
+    TH1D newdataLambdaBarpt;
+    Lambda_differential_crossection_fit(newdataLambdaBarpt, "LambdaBarpt2DHist");
+    draw_and_save(newdataLambdaBarpt, "Uncorrected #bar{#Lambda}^{ 0} yields vs. p_{T};p_{T} [GeV];n_{#bar{#Lambda}^{0}}", "Differential_crossection_LambdaBar_pt_new_data.pdf");
+    TH1D newdataLambdaBareta;
+    Lambda_differential_crossection_fit(newdataLambdaBareta, "LambdaBareta2DHist");
+    draw_and_save(newdataLambdaBareta, "Uncorrected #bar{#Lambda}^{ 0} yields vs.  #eta;#eta;n_{#bar{#Lambda}^{0}}", "Differential_crossection_LambdaBar_eta_new_data.pdf", 0.37, 0.2, 0.63, 0.3);
     TH1D newdataLambdaXiMulti;
     Lambda_differential_crossection_fit(newdataLambdaXiMulti, "LambdaXiMulti2DHist");
     draw_and_save(newdataLambdaXiMulti, "Uncorrected #Lambda^{ 0} yields vs. log(#xi_{E}#cdot#xi_{W});log(#xi_{E}#cdot#xi_{W});n_{#Lambda^{0}}", "Differential_crossection_Lambda_XiMulti_new_data.pdf");

@@ -177,8 +177,10 @@ int main(int argc, char **argv){
     double XiSumBins[] = { 0, 0.03, 0.06, 0.09, 0.12, 0.15, 0.18, 0.21, 0.24, 0.27, 0.3 };
     outsideprocessing.AddHistogram(TH2D("K0pt2DHist", "K0pt2DHist", kaonMassWindowWideBins, kaonMassWindowWideLow, kaonMassWindowWideHigh, n_ptBins, ptBins));
     outsideprocessing.AddHistogram(TH2D("Lambdapt2DHist", "Lambdapt2DHist", lambdaMassWindowWideBins, lambdaMassWindowWideLow, lambdaMassWindowWideHigh, n_ptBins, ptBins));
+    outsideprocessing.AddHistogram(TH2D("LambdaBarpt2DHist", "LambdaBarpt2DHist", lambdaMassWindowWideBins, lambdaMassWindowWideLow, lambdaMassWindowWideHigh, n_ptBins, ptBins));
     outsideprocessing.AddHistogram(TH2D("K0eta2DHist", "K0eta2DHist", kaonMassWindowWideBins, kaonMassWindowWideLow, kaonMassWindowWideHigh, n_etaBins, etaBins));
     outsideprocessing.AddHistogram(TH2D("Lambdaeta2DHist", "Lambdaeta2DHist", lambdaMassWindowWideBins, lambdaMassWindowWideLow, lambdaMassWindowWideHigh, n_etaBins, etaBins));
+    outsideprocessing.AddHistogram(TH2D("LambdaBareta2DHist", "LambdaBareta2DHist", lambdaMassWindowWideBins, lambdaMassWindowWideLow, lambdaMassWindowWideHigh, n_etaBins, etaBins));
     outsideprocessing.AddHistogram(TH2D("K0XiMulti2DHist", "K0XiMulti2DHist", kaonMassWindowWideBins, kaonMassWindowWideLow, kaonMassWindowWideHigh, n_XiMultiBins, XiMultiBins));
     outsideprocessing.AddHistogram(TH2D("LambdaXiMulti2DHist", "LambdaXiMulti2DHist", lambdaMassWindowWideBins, lambdaMassWindowWideLow, lambdaMassWindowWideHigh, n_XiMultiBins, XiMultiBins));
     outsideprocessing.AddHistogram(TH2D("K0XiSum2DHist", "K0XiSum2DHist", kaonMassWindowWideBins, kaonMassWindowWideLow, kaonMassWindowWideHigh, n_XiSumBins, XiSumBins));
@@ -604,13 +606,14 @@ int main(int argc, char **argv){
                 if(std::get<3>(vector_Lambda_pairs[i])){
                     insideprocessing.Fill("etapiLambda", vector_Track_negative[std::get<2>(vector_Lambda_pairs[i])]->getEta());
                     insideprocessing.Fill("phipiLambda", vector_Track_negative[std::get<2>(vector_Lambda_pairs[i])]->getPhi());
-
+                    insideprocessing.Fill("Lambdapt2DHist", tempParticle->m(), tempParticle->pt());
+                    insideprocessing.Fill("Lambdaeta2DHist", tempParticle->m(), tempParticle->eta());
                 } else{
                     insideprocessing.Fill("etapiLambda", vector_Track_positive[std::get<1>(vector_Lambda_pairs[i])]->getEta());
                     insideprocessing.Fill("phipiLambda", vector_Track_positive[std::get<1>(vector_Lambda_pairs[i])]->getPhi());
+                    insideprocessing.Fill("LambdaBarpt2DHist", tempParticle->m(), tempParticle->pt());
+                    insideprocessing.Fill("LambdaBareta2DHist", tempParticle->m(), tempParticle->eta());
                 }
-                insideprocessing.Fill("Lambdapt2DHist", tempParticle->m(), tempParticle->pt());
-                insideprocessing.Fill("Lambdaeta2DHist", tempParticle->m(), tempParticle->eta());
                 insideprocessing.Fill("LambdaXiMulti2DHist", tempParticle->m(), log(xi1 *xi2));
                 insideprocessing.Fill("LambdaXiSum2DHist", tempParticle->m(), xi1+xi2);
 
