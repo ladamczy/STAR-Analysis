@@ -35,6 +35,8 @@ O rekonstrukcji V0 [FengZhao_thesis.pdf](https://github.com/ladamczy/STAR-Analys
 
 Praca magisterska Tomasa Truhlara https://drupal.star.bnl.gov/STAR/system/files/dp_ejcf_20_truhlar.pdf
 
+Praca inzynierska Pana Rysia (https://github.com/ladamczy/STAR-Analysis/blob/main/share/Extention-of-the-ROOT-data-structure-describing-proton-proton-collisions-at-STAR-experiment-with-secondary-vertices-4.pdf )
+
 
 # BeamPosition
 
