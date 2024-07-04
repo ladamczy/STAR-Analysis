@@ -748,7 +748,7 @@ int main(){
     TH2D *Lambdapt2DHist2 = (TH2D *)anaoutputnewtracks2->Get("Lambdapt2DHist");
     TH2D Lambdapt2DHist = *Lambdapt2DHist1;
     Lambdapt2DHist.Add(Lambdapt2DHist2);
-    Lambdapt2DHist.SetTitle(";m_{p#pi} [GeV];p_T [GeV/c]");
+    Lambdapt2DHist.SetTitle(";m_{p#pi} [GeV];p_{T} [GeV/c]");
     c1 = new TCanvas("c1", "c1", 1600, 1000);
     c1->SetMargin(0.10, 0.13, 0.1, 0.05);
     Lambdapt2DHist.Draw("colz");
@@ -766,11 +766,12 @@ int main(){
     gStyle->SetOptFit(1);
     int n = 5;
     TH1D *Lambdapt1DHist = Lambdapt2DHist.ProjectionX("Lambdapt1DHist", n, n);
+    Lambdapt1DHist->SetTitle(";m_{p#pi} [GeV];number of #Lambda^{0}");
     c1 = new TCanvas("c1", "c1", 1600, 1200);
-    c1->SetMargin(0.05, 0.05, 0.1, 0.05);
+    c1->SetMargin(0.1, 0.05, 0.1, 0.05);
     //Lambda
     GfitLambda->SetParNames("Constant", "Mean", "Sigma", "c", "b", "a");
-    GfitLambda->SetParameters(3, 1.115, 5e-3, 0, 0., -10000000);
+    GfitLambda->SetParameters(3, 1.117, 5e-3, 0, 0., -10000000);
     GfitLambda->SetParLimits(0, 0, 200);
     GfitLambda->SetParLimits(1, 1.11, 1.12);
     GfitLambda->SetParLimits(2, 5e-5, 0.01);
@@ -799,12 +800,10 @@ int main(){
 
     TPaveStats *ps = (TPaveStats *)c1->GetPrimitive("stats");
     ps->SetX1(1.065);
-    ps->SetX2(1.1);
-    ps->SetY1(600);
-    ps->SetY2(900);
+    ps->SetX2(1.105);
     ps->SetBorderSize(0);
 
-    legendLambda = new TLegend(.1, .35, .45, .59);
+    legendLambda = new TLegend(.13, .45, .45, .59);
     legendLambda->SetTextSize(0.035);
     legendLambda->AddEntry("Lambdapt1DHistNewDataNewTracks", "#Lambda^{0}, 0.8 GeV/c < p_{T} < 1.0 GeV/c");
     legendLambda->SetBorderSize(0);
