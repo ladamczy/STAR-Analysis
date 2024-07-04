@@ -1,5 +1,7 @@
 #include "Pythia8/Pythia.h"
 
+double beamMomentum = 254.867;
+
 bool isParticleInTPCAcceptance(Pythia8::Particle particle){
     return abs(particle.eta())<0.9 && particle.pT()>0.2 && particle.isCharged() && particle.isFinal();
 }
