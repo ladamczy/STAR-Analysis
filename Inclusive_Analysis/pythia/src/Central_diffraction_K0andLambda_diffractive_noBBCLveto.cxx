@@ -33,14 +33,14 @@ int main(int argc, char *argv[]){
     istringstream nEventsStream(argv[1]);
     int nEvents;
     if(!(nEventsStream>>nEvents)){
-        cout<<"Invalid first argument!"<<endl;
+        std::cout<<"Invalid first argument!"<<endl;
         return 0;
     }
 
     istringstream mEnergyStream(argv[2]);
     int mEnergy;
     if(!(mEnergyStream>>mEnergy)){
-        cout<<"Invalid second argument!"<<endl;
+        std::cout<<"Invalid second argument!"<<endl;
         return 0;
     }
 
@@ -49,26 +49,26 @@ int main(int argc, char *argv[]){
         istringstream mFolderStream(argv[3]);
 
         if(!(mFolderStream>>folder)){
-            cout<<"Invalid third argument!"<<endl;
+            std::cout<<"Invalid third argument!"<<endl;
             return 0;
         }
     }
 
-    cout<<"Number of events: "<<nEvents<<endl;
-    cout<<"Energy: "<<mEnergy<<endl;
+    std::cout<<"Number of events: "<<nEvents<<endl;
+    std::cout<<"Energy: "<<mEnergy<<endl;
     string filename = to_string(nEvents)+"_"+to_string(mEnergy)+"GeV_"+string(argv[0]).substr(string(argv[0]).find_last_of("/\\")+1)+".root";
     // Create file on which histogram(s) can be saved.
     if(folder.length()!=0){
         filename = folder+"/"+filename;
     }
     TFile *outFile = new TFile(filename.c_str(), "RECREATE");
-    cout<<"Output file: "<<filename<<endl;
+    std::cout<<"Output file: "<<filename<<endl;
 
     Pythia pythia;
     if(mEnergy==510){
         pythia.readString("Beams:eCM = 510"); //beam energy in GeV
     } else{
-        cout<<"Input energy not equal to 510 GeV, if you wish to continue write \"yes\", otherwise write anything else"<<endl;
+        std::cout<<"Input energy not equal to 510 GeV, if you wish to continue write \"yes\", otherwise write anything else"<<endl;
         string test;
         cin>>test;
         if(!strcmp(test.c_str(), ("yes"))){
@@ -250,19 +250,19 @@ int main(int argc, char *argv[]){
     pythia.stat();
 
     //other things
-    cout<<"N_events: "<<n_events<<endl;
-    cout<<"N_K0: "<<n_K0<<endl;
-    cout<<"N_Lambda: "<<n_Lambda<<endl;
-    cout<<"N_LambdaBar: "<<n_LambdaBar<<endl;
+    std::cout<<"N_events: "<<n_events<<endl;
+    std::cout<<"N_K0: "<<n_K0<<endl;
+    std::cout<<"N_Lambda: "<<n_Lambda<<endl;
+    std::cout<<"N_LambdaBar: "<<n_LambdaBar<<endl;
     std::stringstream ratio_output;
     ratio_output<<std::fixed<<std::setprecision(4)<<double(n_K0)/n_events;
-    cout<<"N_K0/N_events: "<<ratio_output.str()<<endl;
+    std::cout<<"N_K0/N_events: "<<ratio_output.str()<<endl;
     ratio_output.str(""); //clearing
     ratio_output<<std::fixed<<std::setprecision(4)<<double(n_Lambda)/n_events;
-    cout<<"N_Lambda0/N_events: "<<ratio_output.str()<<endl;
+    std::cout<<"N_Lambda0/N_events: "<<ratio_output.str()<<endl;
     ratio_output.str(""); //clearing
     ratio_output<<std::fixed<<std::setprecision(4)<<double(n_LambdaBar)/n_events;
-    cout<<"N_LambdaBar0/N_events: "<<ratio_output.str()<<endl;
+    std::cout<<"N_LambdaBar0/N_events: "<<ratio_output.str()<<endl;
 
     return 0;
 }
