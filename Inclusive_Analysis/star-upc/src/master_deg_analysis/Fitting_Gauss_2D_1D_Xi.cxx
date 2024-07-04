@@ -66,7 +66,8 @@ int main(int argc, char *argv[]){
     XiEZerobiasHist->SetLineColor(2);
     XiEZerobiasHist->SetLineWidth(2);
     XiEZerobiasHist->Draw("same");
-    TLegend legend1 = TLegend(0.65, 0.7, 0.89, 0.89);
+    TLegend legend1 = TLegend(0.5, 0.7, 0.89, 0.89);
+    legend1.SetTextSize(0.04);
     legend1.AddEntry(XiEDataHist, "pp collision data", "l");
     legend1.AddEntry(XiEZerobiasHist, "Normalised zerobias trigger", "l");
     legend1.SetBorderSize(0);
@@ -82,7 +83,8 @@ int main(int argc, char *argv[]){
     XiWZerobiasHist->SetLineColor(2);
     XiWZerobiasHist->SetLineWidth(2);
     XiWZerobiasHist->Draw("same");
-    TLegend legend2 = TLegend(0.65, 0.7, 0.89, 0.89);
+    TLegend legend2 = TLegend(0.5, 0.7, 0.89, 0.89);
+    legend2.SetTextSize(0.04);
     legend2.AddEntry(XiWDataHist, "pp collision data", "l");
     legend2.AddEntry(XiWZerobiasHist, "Normalised zerobias trigger", "l");
     legend2.SetBorderSize(0);
