@@ -633,25 +633,9 @@ int main(int argc, char *argv[]){
                     }
                     break;
                 case OK:
-                    // insideprocessing.Fill("TRACKS_TOF", vector_Track_negative.size()+vector_Track_positive.size());
                     insideprocessing.Fill("TRACKS_TOF_OK", vector_Track_negative.size()+vector_Track_positive.size());
-                    for(size_t i = 0; i<vector_Track_negative.size(); i++){
-                        insideprocessing.Fill("TRACKS_PT", vector_Track_negative[i]->getPt());
-                        insideprocessing.Fill("TRACKS_ETA", vector_Track_negative[i]->getEta());
-                        insideprocessing.Fill("TRACKS_NHITS", vector_Track_negative[i]->getNhits());
-                    }
-                    for(size_t i = 0; i<vector_Track_positive.size(); i++){
-                        insideprocessing.Fill("TRACKS_PT", vector_Track_positive[i]->getPt());
-                        insideprocessing.Fill("TRACKS_ETA", vector_Track_positive[i]->getEta());
-                        insideprocessing.Fill("TRACKS_NHITS", vector_Track_positive[i]->getNhits());
-                    }
                     for(size_t i = 0; i<vector_K0_pairs.size(); i++){
                         tempParticle = new StUPCV0(vector_Track_positive[std::get<1>(vector_K0_pairs[i])], vector_Track_negative[std::get<2>(vector_K0_pairs[i])], particleMass[0], particleMass[0], 1, 1, { 0,0,0 }, beamValues, tempUPCpointer->getMagneticField(), false);
-                        insideprocessing.Fill("PAIRS_DCADAUGHTERS_K0", tempParticle->dcaDaughters());
-                        insideprocessing.Fill("PAIRS_DCABEAMLINE_K0", tempParticle->DCABeamLine());
-                        insideprocessing.Fill("PAIRS_DECAYLENGTH_K0_LEN", tempParticle->decayLengthHypo());
-                        insideprocessing.Fill("PAIRS_DECAYLENGTH_K0_ANGLE", tempParticle->pointingAngleHypo());
-                        insideprocessing.Fill("PAIRS_DECAYLENGTH_K0", tempParticle->decayLengthHypo(), tempParticle->pointingAngleHypo());
                         insideprocessing.Fill("REMOVING_DUPLICATES_K0_AFTER", tempParticle->m());
                         delete tempParticle;
                     }
@@ -661,11 +645,6 @@ int main(int argc, char *argv[]){
                         } else{
                             tempParticle = new StUPCV0(vector_Track_positive[std::get<1>(vector_Lambda_pairs[i])], vector_Track_negative[std::get<2>(vector_Lambda_pairs[i])], particleMass[0], particleMass[2], 1, 1, { 0,0,0 }, beamValues, tempUPCpointer->getMagneticField(), false);
                         }
-                        insideprocessing.Fill("PAIRS_DCADAUGHTERS_Lambda0", tempParticle->dcaDaughters());
-                        insideprocessing.Fill("PAIRS_DCABEAMLINE_Lambda0", tempParticle->DCABeamLine());
-                        insideprocessing.Fill("PAIRS_DECAYLENGTH_Lambda0_LEN", tempParticle->decayLengthHypo());
-                        insideprocessing.Fill("PAIRS_DECAYLENGTH_Lambda0_ANGLE", tempParticle->pointingAngleHypo());
-                        insideprocessing.Fill("PAIRS_DECAYLENGTH_Lambda0", tempParticle->decayLengthHypo(), tempParticle->pointingAngleHypo());
                         insideprocessing.Fill("REMOVING_DUPLICATES_Lambda0_AFTER", tempParticle->m());
                         delete tempParticle;
                     }
