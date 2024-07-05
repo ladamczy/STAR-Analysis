@@ -29,6 +29,7 @@ int main(int argc, char *argv[]){
     gStyle->SetOptFit(0);
     gStyle->SetOptStat(0);
 
+    //data for master thesis
     //K0
     TH1D newdataK0pt;
     K0_differential_crossection_fit(newdataK0pt, "K0pt2DHist");
@@ -36,12 +37,6 @@ int main(int argc, char *argv[]){
     TH1D newdataK0eta;
     K0_differential_crossection_fit(newdataK0eta, "K0eta2DHist");
     draw_and_save(newdataK0eta, "Uncorrected K^{ 0}_{ S} yields vs.  #eta;#eta;n_{K^{0}_{S}}", "Differential_crossection_K0_eta_new_data.pdf", 0.37, 0.2, 0.63, 0.3);
-    TH1D newdataK0XiMulti;
-    K0_differential_crossection_fit(newdataK0XiMulti, "K0XiMulti2DHist");
-    draw_and_save(newdataK0XiMulti, "Uncorrected K^{ 0}_{ S} yields vs. log(#xi_{E}#cdot#xi_{W});log(#xi_{E}#cdot#xi_{W});n_{K^{0}_{S}}", "Differential_crossection_K0_XiMulti_new_data.pdf");
-    TH1D newdataK0XiSum;
-    K0_differential_crossection_fit(newdataK0XiSum, "K0XiSum2DHist");
-    draw_and_save(newdataK0XiSum, "Uncorrected K^{ 0}_{ S} yields vs. #xi_{E}+#xi_{W};#xi_{E}+#xi_{W};n_{K^{0}_{S}}", "Differential_crossection_K0_XiSum_new_data.pdf");
     //Lambda
     TH1D newdataLambdapt;
     Lambda_differential_crossection_fit(newdataLambdapt, "Lambdapt2DHist");
@@ -55,12 +50,22 @@ int main(int argc, char *argv[]){
     TH1D newdataLambdaBareta;
     Lambda_differential_crossection_fit(newdataLambdaBareta, "LambdaBareta2DHist");
     draw_and_save(newdataLambdaBareta, "Uncorrected #bar{#Lambda}^{ 0} yields vs.  #eta;#eta;n_{#bar{#Lambda}^{0}}", "Differential_crossection_LambdaBar_eta_new_data.pdf", 0.37, 0.2, 0.63, 0.3);
-    TH1D newdataLambdaXiMulti;
-    Lambda_differential_crossection_fit(newdataLambdaXiMulti, "LambdaXiMulti2DHist");
-    draw_and_save(newdataLambdaXiMulti, "Uncorrected #Lambda^{ 0} yields vs. log(#xi_{E}#cdot#xi_{W});log(#xi_{E}#cdot#xi_{W});n_{#Lambda^{0}}", "Differential_crossection_Lambda_XiMulti_new_data.pdf");
-    TH1D newdataLambdaXiSum;
-    Lambda_differential_crossection_fit(newdataLambdaXiSum, "LambdaXiSum2DHist");
-    draw_and_save(newdataLambdaXiSum, "Uncorrected #Lambda^{ 0} yields vs. #xi_{E}+#xi_{W};#xi_{E}+#xi_{W};n_{#Lambda^{0}}", "Differential_crossection_Lambda_XiSum_new_data.pdf");
+
+    //additional things, just in case
+    //K0
+    // TH1D newdataK0XiMulti;
+    // K0_differential_crossection_fit(newdataK0XiMulti, "K0XiMulti2DHist");
+    // draw_and_save(newdataK0XiMulti, "Uncorrected K^{ 0}_{ S} yields vs. log(#xi_{E}#cdot#xi_{W});log(#xi_{E}#cdot#xi_{W});n_{K^{0}_{S}}", "Differential_crossection_K0_XiMulti_new_data.pdf");
+    // TH1D newdataK0XiSum;
+    // K0_differential_crossection_fit(newdataK0XiSum, "K0XiSum2DHist");
+    // draw_and_save(newdataK0XiSum, "Uncorrected K^{ 0}_{ S} yields vs. #xi_{E}+#xi_{W};#xi_{E}+#xi_{W};n_{K^{0}_{S}}", "Differential_crossection_K0_XiSum_new_data.pdf");
+    //Lambda
+    // TH1D newdataLambdaXiMulti;
+    // Lambda_differential_crossection_fit(newdataLambdaXiMulti, "LambdaXiMulti2DHist");
+    // draw_and_save(newdataLambdaXiMulti, "Uncorrected #Lambda^{ 0} yields vs. log(#xi_{E}#cdot#xi_{W});log(#xi_{E}#cdot#xi_{W});n_{#Lambda^{0}}", "Differential_crossection_Lambda_XiMulti_new_data.pdf");
+    // TH1D newdataLambdaXiSum;
+    // Lambda_differential_crossection_fit(newdataLambdaXiSum, "LambdaXiSum2DHist");
+    // draw_and_save(newdataLambdaXiSum, "Uncorrected #Lambda^{ 0} yields vs. #xi_{E}+#xi_{W};#xi_{E}+#xi_{W};n_{#Lambda^{0}}", "Differential_crossection_Lambda_XiSum_new_data.pdf");
 
     theApp.Run();
     return 0;
@@ -174,6 +179,7 @@ void K0_differential_crossection_fit(TH1D &newdataK01D, string histName){
             if(response.find("fit")!=string::npos){
                 GfitK->SetParameters(newDataNewTracksFit->GetParameters());
                 resultKHistNewDataNewTracks.Fit(GfitK, "0BR");
+                printf("Chi2 = %f, ndof = %d\n", GfitK->GetChisquare(), GfitK->GetNDF());
                 newDataNewTracksFit->SetParameters(GfitK->GetParameters());
                 newDataNewTracksBcgFit->SetParameters(GfitK->GetParameters()+3);
                 newDataNewTracksSigFit->SetParameters(GfitK->GetParameters());
@@ -310,6 +316,7 @@ void Lambda_differential_crossection_fit(TH1D &newdataLambda1D, string histName)
             if(response.find("fit")!=string::npos){
                 GfitLambda->SetParameters(newDataNewTracksFit->GetParameters());
                 resultLambdaHistNewDataNewTracks.Fit(GfitLambda, "0BR");
+                printf("Chi2 = %f, ndof = %d\n", GfitLambda->GetChisquare(), GfitLambda->GetNDF());
                 newDataNewTracksFit->SetParameters(GfitLambda->GetParameters());
                 newDataNewTracksBcgFit->SetParameters(GfitLambda->GetParameters()+3);
                 newDataNewTracksSigFit->SetParameters(GfitLambda->GetParameters());
