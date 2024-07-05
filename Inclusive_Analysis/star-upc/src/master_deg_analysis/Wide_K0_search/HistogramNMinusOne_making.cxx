@@ -337,8 +337,8 @@ int main(){
 
     TH1D *PAIRS_DECAYLENGTH_K0_ANGLE = (TH1D *)histograms->Get("PAIRS_DECAYLENGTH_K0_ANGLE");
     TH1D *PAIRS_DECAYLENGTH_Lambda0_ANGLE = (TH1D *)histograms->Get("PAIRS_DECAYLENGTH_Lambda0_ANGLE");
-    PAIRS_DECAYLENGTH_K0_ANGLE->SetTitle(";Decay length of reconstructed particles [cm];particles");
-    PAIRS_DECAYLENGTH_Lambda0_ANGLE->SetTitle(";Decay length of reconstructed particles [cm];particles");
+    PAIRS_DECAYLENGTH_K0_ANGLE->SetTitle(";Cosine of angle between momentum and flight path;particles");
+    PAIRS_DECAYLENGTH_Lambda0_ANGLE->SetTitle(";Cosine of angle between momentum and flight path;particles");
     c1 = new TCanvas("c1", "c1", 1600, 1000);
     c1->SetRightMargin(0.05);
     PAIRS_DECAYLENGTH_K0_ANGLE->Draw();
@@ -360,8 +360,8 @@ int main(){
 
     TH2D *PAIRS_DECAYLENGTH_K0 = (TH2D *)histograms->Get("PAIRS_DECAYLENGTH_K0");
     TH2D *PAIRS_DECAYLENGTH_Lambda0 = (TH2D *)histograms->Get("PAIRS_DECAYLENGTH_Lambda0");
-    PAIRS_DECAYLENGTH_K0->SetTitle(";p_{x} [GeV/c];p_{y} [GeV/c]");
-    PAIRS_DECAYLENGTH_Lambda0->SetTitle(";p_{x} [GeV/c];p_{y} [GeV/c]");
+    PAIRS_DECAYLENGTH_K0->SetTitle(";Decay length of reconstructed particles [cm];Cosine of angle between momentum and flight path");
+    PAIRS_DECAYLENGTH_Lambda0->SetTitle(";Decay length of reconstructed particles [cm];Cosine of angle between momentum and flight path");
     c1 = new TCanvas("c1", "c1", 1600, 1200);
     c1->SetMargin(0.15, 0.15, 0.1, 0.05);
     PAIRS_DECAYLENGTH_K0->Draw("colz");
@@ -423,12 +423,12 @@ int main(){
     for(size_t i = 0; i<runNumber.size(); i++){
         prescaleHist.SetBinContent(i+1, prescale[i]);
     }
-    double prescaleAxisBinLimits[numberOfRuns.size()+1];
+    std::vector<double> prescaleAxisBinLimits(numberOfRuns.size()+1);
     prescaleAxisBinLimits[0] = 0;
     for(size_t i = 0; i<numberOfRuns.size(); i++){
         prescaleAxisBinLimits[i+1] = accumulate(numberOfRuns.begin(), numberOfRuns.begin()+i, 0);
     }
-    TH1D prescaleAxisHist("prescaleAxisHist", "RP_CPT2 trigger prescaling;fill number;prescale", numberOfRuns.size(), prescaleAxisBinLimits);
+    TH1D prescaleAxisHist("prescaleAxisHist", "RP_CPT2 trigger prescaling;fill number;prescale", numberOfRuns.size(), prescaleAxisBinLimits.data());
     //0.9 to get rid of the last label covering up axis description
     for(size_t i = 0; i<numberOfRuns.size()*0.9; i++){
         if(i%10==0){
