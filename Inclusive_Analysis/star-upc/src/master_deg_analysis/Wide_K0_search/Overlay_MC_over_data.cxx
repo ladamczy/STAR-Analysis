@@ -74,7 +74,7 @@ void draw_and_save(TH1D *data, TH1D *sim, std::string fileTitle, double x1, doub
     legend->SetTextSize(0.025);
     legend->SetHeader("#bf{pp, #sqrt{s} = 510 GeV}", "C");
     legend->AddEntry(data->GetName(), "#bf{extended upcDST}");
-    legend->AddEntry(sim->GetName(), "#bf{PYTHIA simuation}");
+    legend->AddEntry(sim->GetName(), "#bf{PYTHIA8 true level}");
     legend->SetBorderSize(0);
     legend->Draw("SAME");
     resultCanvas->SetLeftMargin(0.15);
