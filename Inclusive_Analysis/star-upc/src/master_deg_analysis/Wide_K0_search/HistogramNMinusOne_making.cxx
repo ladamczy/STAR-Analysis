@@ -256,7 +256,7 @@ int main(){
     TRACKS_NHITS->Draw();
     c1->Update();
     // TLine *lineNhits = new TLine(20, c1->GetUymin(), 20, c1->GetUymax());
-    TLine *lineNhits = new TLine(20, 3, 20, 4.5e5);
+    TLine *lineNhits = new TLine(20, 1.5, 20, 2.25e5);
     lineNhits->SetLineStyle(kDashed);
     lineNhits->SetLineColor(kRed);
     lineNhits->SetLineWidth(1);
@@ -272,6 +272,7 @@ int main(){
     PAIRS_DCADAUGHTERS_Lambda0->SetTitle(";DCA of decay products [cm];particles");
     c1 = new TCanvas("c1", "c1", 1600, 1000);
     c1->SetRightMargin(0.05);
+    c1->SetLogy();
     PAIRS_DCADAUGHTERS_K0->Draw();
     PAIRS_DCADAUGHTERS_Lambda0->SetLineColor(kBlack);
     PAIRS_DCADAUGHTERS_Lambda0->Draw("same");
@@ -281,7 +282,7 @@ int main(){
     legendDcaDaughters->SetBorderSize(0);
     legendDcaDaughters->Draw("SAME");
     c1->Update();
-    TLine *lineDcaDaughters = new TLine(2.5, 0, 2.5, c1->GetUymax());
+    TLine *lineDcaDaughters = new TLine(2.5, 66, 2.5, 4.2e4);
     lineDcaDaughters->SetLineStyle(kDashed);
     lineDcaDaughters->SetLineColor(kRed);
     lineDcaDaughters->SetLineWidth(1);
@@ -295,6 +296,7 @@ int main(){
     PAIRS_DCABEAMLINE_Lambda0->SetTitle(";DCA of reconstructions to the beamline [cm];particles");
     c1 = new TCanvas("c1", "c1", 1600, 1000);
     c1->SetRightMargin(0.05);
+    c1->SetLogy();
     PAIRS_DCABEAMLINE_K0->Draw();
     PAIRS_DCABEAMLINE_Lambda0->SetLineColor(kBlack);
     PAIRS_DCABEAMLINE_Lambda0->Draw("same");
@@ -304,7 +306,7 @@ int main(){
     legendDcaBeamline->SetBorderSize(0);
     legendDcaBeamline->Draw("SAME");
     c1->Update();
-    TLine *lineDcaBeamline = new TLine(2.5, 0, 2.5, c1->GetUymax());
+    TLine *lineDcaBeamline = new TLine(2.5, 0, 2.5, 4.2e4);
     lineDcaBeamline->SetLineStyle(kDashed);
     lineDcaBeamline->SetLineColor(kRed);
     lineDcaBeamline->SetLineWidth(1);
@@ -318,6 +320,7 @@ int main(){
     PAIRS_DECAYLENGTH_Lambda0_LEN->SetTitle(";Decay length of reconstructed particles [cm];particles");
     c1 = new TCanvas("c1", "c1", 1600, 1000);
     c1->SetRightMargin(0.05);
+    c1->SetLogy();
     PAIRS_DECAYLENGTH_K0_LEN->Draw();
     PAIRS_DECAYLENGTH_Lambda0_LEN->SetLineColor(kBlack);
     PAIRS_DECAYLENGTH_Lambda0_LEN->Draw("same");
@@ -341,6 +344,7 @@ int main(){
     PAIRS_DECAYLENGTH_Lambda0_ANGLE->SetTitle(";Cosine of angle between momentum and flight path;particles");
     c1 = new TCanvas("c1", "c1", 1600, 1000);
     c1->SetRightMargin(0.05);
+    c1->SetLogy();
     PAIRS_DECAYLENGTH_K0_ANGLE->Draw();
     PAIRS_DECAYLENGTH_Lambda0_ANGLE->SetLineColor(kBlack);
     PAIRS_DECAYLENGTH_Lambda0_ANGLE->Draw("same");
@@ -357,6 +361,9 @@ int main(){
     lineDecayAngle->Draw("same");
     c1->SaveAs(string("/home/adam/STAR-Analysis/Inclusive_Analysis/star-upc/scripts/master_thesis/PAIRS_DECAYLENGTH_ANGLE.pdf").c_str());
     delete c1;
+
+
+
 
     TH2D *PAIRS_DECAYLENGTH_K0 = (TH2D *)histograms->Get("PAIRS_DECAYLENGTH_K0");
     TH2D *PAIRS_DECAYLENGTH_Lambda0 = (TH2D *)histograms->Get("PAIRS_DECAYLENGTH_Lambda0");
@@ -383,6 +390,28 @@ int main(){
     lineHorizontal->Draw("same");
     lineVertical->Draw("same");
     c1->SaveAs(string("/home/adam/STAR-Analysis/Inclusive_Analysis/star-upc/scripts/master_thesis/PAIRS_DECAYLENGTH_Lambda0.pdf").c_str());
+    delete c1;
+
+    TH2D *PAIRS_DECAYLENGTH_K0_BIGGER_RANGE = (TH2D *)histograms->Get("PAIRS_DECAYLENGTH_K0_BIGGER_RANGE");
+    TH2D *PAIRS_DECAYLENGTH_Lambda0_BIGGER_RANGE = (TH2D *)histograms->Get("PAIRS_DECAYLENGTH_Lambda0_BIGGER_RANGE");
+    PAIRS_DECAYLENGTH_K0_BIGGER_RANGE->SetTitle(";Decay length of reconstructed particles [cm];Cosine of angle between momentum and flight path");
+    PAIRS_DECAYLENGTH_Lambda0_BIGGER_RANGE->SetTitle(";Decay length of reconstructed particles [cm];Cosine of angle between momentum and flight path");
+    PAIRS_DECAYLENGTH_K0_BIGGER_RANGE->RebinY(10);
+    PAIRS_DECAYLENGTH_Lambda0_BIGGER_RANGE->RebinY(10);
+    c1 = new TCanvas("c1", "c1", 1600, 1200);
+    c1->SetMargin(0.15, 0.15, 0.1, 0.05);
+    PAIRS_DECAYLENGTH_K0_BIGGER_RANGE->Draw("colz");
+    c1->Update();
+    lineHorizontal->Draw("same");
+    lineVertical->SetY1(c1->GetUymin());
+    lineVertical->Draw("same");
+    c1->SaveAs(string("/home/adam/STAR-Analysis/Inclusive_Analysis/star-upc/scripts/master_thesis/PAIRS_DECAYLENGTH_K0_BIGGER_RANGE.pdf").c_str());
+    c1->Clear();
+    PAIRS_DECAYLENGTH_Lambda0_BIGGER_RANGE->Draw("colz");
+    c1->Update();
+    lineHorizontal->Draw("same");
+    lineVertical->Draw("same");
+    c1->SaveAs(string("/home/adam/STAR-Analysis/Inclusive_Analysis/star-upc/scripts/master_thesis/PAIRS_DECAYLENGTH_Lambda0_BIGGER_RANGE.pdf").c_str());
     delete c1;
 
 

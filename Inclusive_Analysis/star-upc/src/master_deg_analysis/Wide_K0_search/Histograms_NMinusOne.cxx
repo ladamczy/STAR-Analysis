@@ -190,6 +190,8 @@ int main(int argc, char *argv[]){
     outsideprocessing.AddHistogram(TH1D("PAIRS_DECAYLENGTH_Lambda0_ANGLE", "PAIRS_DECAYLENGTH_Lambda0_ANGLE", 100, 0.9, 1.));
     outsideprocessing.AddHistogram(TH2D("PAIRS_DECAYLENGTH_K0", "PAIRS_DECAYLENGTH_K0", 240, 0, 12, 100, 0.9, 1));
     outsideprocessing.AddHistogram(TH2D("PAIRS_DECAYLENGTH_Lambda0", "PAIRS_DECAYLENGTH_Lambda0", 240, 0, 12, 100, 0.9, 1));
+    outsideprocessing.AddHistogram(TH2D("PAIRS_DECAYLENGTH_K0_BIGGER_RANGE", "PAIRS_DECAYLENGTH_K0_BIGGER_RANGE", 240, 0, 12, 1000, 0., 1));
+    outsideprocessing.AddHistogram(TH2D("PAIRS_DECAYLENGTH_Lambda0_BIGGER_RANGE", "PAIRS_DECAYLENGTH_Lambda0_BIGGER_RANGE", 240, 0, 12, 1000, 0., 1));
     //REMOVING_DUPLICATES
     outsideprocessing.AddHistogram(TH1D("REMOVING_DUPLICATES_K0_BEFORE", "REMOVING_DUPLICATES_K0_BEFORE", kaonMassWindowWideBins, kaonMassWindowWideLow, kaonMassWindowWideHigh));
     outsideprocessing.AddHistogram(TH1D("REMOVING_DUPLICATES_K0_AFTER", "REMOVING_DUPLICATES_K0_AFTER", kaonMassWindowWideBins, kaonMassWindowWideLow, kaonMassWindowWideHigh));
@@ -618,6 +620,7 @@ int main(int argc, char *argv[]){
                         insideprocessing.Fill("PAIRS_DECAYLENGTH_K0_LEN", tempParticle->decayLengthHypo());
                         insideprocessing.Fill("PAIRS_DECAYLENGTH_K0_ANGLE", tempParticle->pointingAngleHypo());
                         insideprocessing.Fill("PAIRS_DECAYLENGTH_K0", tempParticle->decayLengthHypo(), tempParticle->pointingAngleHypo());
+                        insideprocessing.Fill("PAIRS_DECAYLENGTH_K0_BIGGER_RANGE", tempParticle->decayLengthHypo(), tempParticle->pointingAngleHypo());
                         delete tempParticle;
                     }
                     for(size_t i = 0; i<vector_Lambda_pairs.size(); i++){
@@ -629,6 +632,7 @@ int main(int argc, char *argv[]){
                         insideprocessing.Fill("PAIRS_DECAYLENGTH_Lambda0_LEN", tempParticle->decayLengthHypo());
                         insideprocessing.Fill("PAIRS_DECAYLENGTH_Lambda0_ANGLE", tempParticle->pointingAngleHypo());
                         insideprocessing.Fill("PAIRS_DECAYLENGTH_Lambda0", tempParticle->decayLengthHypo(), tempParticle->pointingAngleHypo());
+                        insideprocessing.Fill("PAIRS_DECAYLENGTH_Lambda0_BIGGER_RANGE", tempParticle->decayLengthHypo(), tempParticle->pointingAngleHypo());
                         delete tempParticle;
                     }
                     break;

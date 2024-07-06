@@ -101,6 +101,8 @@ void draw_and_save(TH1D &newdata, string histTitle, string fileTitle, double x1,
     printf("Confirm by pressing \"Enter\"\n");
     getchar();
     resultCanvas->SaveAs(("/home/adam/STAR-Analysis/Inclusive_Analysis/star-upc/scripts/"+fileTitle).c_str());
+    fileTitle.replace(fileTitle.find(".pdf"), 4, ".root");
+    newdata.SaveAs(("/home/adam/STAR-Analysis/Inclusive_Analysis/star-upc/scripts/"+fileTitle).c_str());
     resultCanvas->Close();
     delete resultCanvas;
 }

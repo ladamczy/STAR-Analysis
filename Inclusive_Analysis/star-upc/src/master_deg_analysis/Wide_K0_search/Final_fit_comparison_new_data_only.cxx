@@ -59,7 +59,7 @@ int main(){
     resultKHistNewDataNewTracks.SetLineColor(kBlue+2);
     resultKHistNewDataNewTracks.Fit(GfitK, "0");
     // TH1D *tempHist = (TH1D *)resultKHistNewDataNewTracks.DrawCopy("E", "OldData");
-    resultKHistNewDataNewTracks.DrawCopy("E", "OldData");
+    resultKHistNewDataNewTracks.DrawCopy("E", "NewDataNewTracks");
     gPad->Update();
     // TPaveStats *st = (TPaveStats *)tempHist->FindObject("stats");
     // st->SetX1NDC(0.15);
@@ -86,9 +86,10 @@ int main(){
     GfitKBcg->DrawCopy("CSAME");
     GfitK1Sig->DrawCopy("CSAME");
 
-    TLegend *legendK = new TLegend(.18, .65, .45, .89);
-    legendK->SetTextSize(0.02);
-    legendK->AddEntry("MpipiWideNewDataNewTracks", "pp new data, new tracks, #sqrt{s} = 510 GeV");
+    TLegend *legendK = new TLegend(.18, .74, .45, .84);
+    legendK->SetTextSize(0.027);
+    legendK->SetHeader("#bf{pp, #sqrt{s} = 510 GeV}", "C");
+    legendK->AddEntry("MpipiWideNewDataNewTracks", "#bf{extended upcDST data}");
     legendK->SetBorderSize(0);
     legendK->Draw("SAME");
 
@@ -145,7 +146,7 @@ int main(){
     resultLambdaHistNewDataNewTracks.SetLineColor(kBlue+2);
     resultLambdaHistNewDataNewTracks.Fit(GfitLambda, "0BR");
     // TH1D *tempHist = (TH1D *)resultLambdaHistNewDataNewTracks.DrawCopy("E", "OldData");
-    resultLambdaHistNewDataNewTracks.DrawCopy("E", "OldData");
+    resultLambdaHistNewDataNewTracks.DrawCopy("E", "NewDataNewTracks");
     gPad->Update();
     // TPaveStats *st = (TPaveStats *)tempHist->FindObject("stats");
     // st->SetX1NDC(0.15);
@@ -172,12 +173,10 @@ int main(){
     GfitLambdaBcg->DrawCopy("CSAME");
     GfitLambda1Sig->DrawCopy("CSAME");
 
-    TLegend *legendLambda = new TLegend(.18, .65, .45, .89);
-    legendLambda->SetTextSize(0.02);
-    legendLambda->AddEntry("MppiWideNewDataNewTracks", "pp new data, new tracks, #sqrt{s} = 510 GeV");
-    // legendLambda->AddEntry("GfitLambda", "Data fit", "l");
-    // legendLambda->AddEntry("GfitLambdaBcg", "Background", "l");
-    // legendLambda->AddEntry("GfitLambda1Sig", "K^{0} fit", "l");
+    TLegend *legendLambda = new TLegend(.18, .74, .45, .84);
+    legendLambda->SetTextSize(0.027);
+    legendLambda->SetHeader("#bf{pp, #sqrt{s} = 510 GeV}", "C");
+    legendLambda->AddEntry("MppiWideNewDataNewTracks", "#bf{extended upcDST data}");
     legendLambda->SetBorderSize(0);
     legendLambda->Draw("SAME");
 
@@ -346,9 +345,9 @@ int main(){
     GfitKPID1Sig->DrawCopy("CSAME");
 
     TLegend *legendKPID = new TLegend(.18, .74, .45, .84);
-    legendKPID->SetTextSize(0.02);
+    legendKPID->SetTextSize(0.027);
     legendKPID->SetHeader("#bf{pp, #sqrt{s} = 510 GeV}", "C");
-    legendKPID->AddEntry("MpipiWideWithPidEcutNewDataNewTracks", "#bf{new data, new tracks}");
+    legendKPID->AddEntry("MpipiWideWithPidEcutNewDataNewTracks", "#bf{extended upcDST data}");
     legendKPID->SetBorderSize(0);
     legendKPID->Draw("SAME");
 
@@ -578,9 +577,9 @@ int main(){
     GfitLambdaPID1Sig->DrawCopy("CSAME");
 
     TLegend *legendLambdaPID = new TLegend(.18, .74, .45, .84);
-    legendLambdaPID->SetTextSize(0.02);
+    legendLambdaPID->SetTextSize(0.027);
     legendLambdaPID->SetHeader("#bf{pp, #sqrt{s} = 510 GeV}", "C");
-    legendLambdaPID->AddEntry("MppiWideWithPidEcutNewDataNewTracks", "#bf{new data,  new tracks}");
+    legendLambdaPID->AddEntry("MppiWideWithPidEcutNewDataNewTracks", "#bf{extended upcDST data}");
     legendLambdaPID->SetBorderSize(0);
     legendLambdaPID->Draw("SAME");
 

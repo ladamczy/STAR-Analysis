@@ -167,6 +167,8 @@ int main(int argc, char **argv){
     outsideprocessing.AddHistogram(TH2D("PVposition", "PV z position, RP vs TPC;TPC;RP", 400, -200, 200, 400, -200, 200));
     outsideprocessing.AddHistogram(TH1D("RP_PVposition", "PV z position, RP;RP", 400, -200, 200));
 
+    int kaonMassBinsForDiffractiveCrossection = 65;
+    int lambdaMassBinsForDiffractiveCrossection = 65;
     int n_ptBins = 9;
     double ptBins[] = { 0,0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8 };
     int n_etaBins = 10;
@@ -175,16 +177,16 @@ int main(int argc, char **argv){
     double XiMultiBins[] = { -9.5, -9, -8.5, -8, -7.5, -7, -6.5, -6, -5.5, -5, -4.5, -4 };
     int n_XiSumBins = 10;
     double XiSumBins[] = { 0, 0.03, 0.06, 0.09, 0.12, 0.15, 0.18, 0.21, 0.24, 0.27, 0.3 };
-    outsideprocessing.AddHistogram(TH2D("K0pt2DHist", "K0pt2DHist", kaonMassWindowWideBins, kaonMassWindowWideLow, kaonMassWindowWideHigh, n_ptBins, ptBins));
-    outsideprocessing.AddHistogram(TH2D("Lambdapt2DHist", "Lambdapt2DHist", lambdaMassWindowWideBins, lambdaMassWindowWideLow, lambdaMassWindowWideHigh, n_ptBins, ptBins));
-    outsideprocessing.AddHistogram(TH2D("LambdaBarpt2DHist", "LambdaBarpt2DHist", lambdaMassWindowWideBins, lambdaMassWindowWideLow, lambdaMassWindowWideHigh, n_ptBins, ptBins));
-    outsideprocessing.AddHistogram(TH2D("K0eta2DHist", "K0eta2DHist", kaonMassWindowWideBins, kaonMassWindowWideLow, kaonMassWindowWideHigh, n_etaBins, etaBins));
-    outsideprocessing.AddHistogram(TH2D("Lambdaeta2DHist", "Lambdaeta2DHist", lambdaMassWindowWideBins, lambdaMassWindowWideLow, lambdaMassWindowWideHigh, n_etaBins, etaBins));
-    outsideprocessing.AddHistogram(TH2D("LambdaBareta2DHist", "LambdaBareta2DHist", lambdaMassWindowWideBins, lambdaMassWindowWideLow, lambdaMassWindowWideHigh, n_etaBins, etaBins));
-    outsideprocessing.AddHistogram(TH2D("K0XiMulti2DHist", "K0XiMulti2DHist", kaonMassWindowWideBins, kaonMassWindowWideLow, kaonMassWindowWideHigh, n_XiMultiBins, XiMultiBins));
-    outsideprocessing.AddHistogram(TH2D("LambdaXiMulti2DHist", "LambdaXiMulti2DHist", lambdaMassWindowWideBins, lambdaMassWindowWideLow, lambdaMassWindowWideHigh, n_XiMultiBins, XiMultiBins));
-    outsideprocessing.AddHistogram(TH2D("K0XiSum2DHist", "K0XiSum2DHist", kaonMassWindowWideBins, kaonMassWindowWideLow, kaonMassWindowWideHigh, n_XiSumBins, XiSumBins));
-    outsideprocessing.AddHistogram(TH2D("LambdaXiSum2DHist", "LambdaXiSum2DHist", lambdaMassWindowWideBins, lambdaMassWindowWideLow, lambdaMassWindowWideHigh, n_XiSumBins, XiSumBins));
+    outsideprocessing.AddHistogram(TH2D("K0pt2DHist", "K0pt2DHist", kaonMassBinsForDiffractiveCrossection, kaonMassWindowWideLow, kaonMassWindowWideHigh, n_ptBins, ptBins));
+    outsideprocessing.AddHistogram(TH2D("Lambdapt2DHist", "Lambdapt2DHist", lambdaMassBinsForDiffractiveCrossection, lambdaMassWindowWideLow, lambdaMassWindowWideHigh, n_ptBins, ptBins));
+    outsideprocessing.AddHistogram(TH2D("LambdaBarpt2DHist", "LambdaBarpt2DHist", lambdaMassBinsForDiffractiveCrossection, lambdaMassWindowWideLow, lambdaMassWindowWideHigh, n_ptBins, ptBins));
+    outsideprocessing.AddHistogram(TH2D("K0eta2DHist", "K0eta2DHist", kaonMassBinsForDiffractiveCrossection, kaonMassWindowWideLow, kaonMassWindowWideHigh, n_etaBins, etaBins));
+    outsideprocessing.AddHistogram(TH2D("Lambdaeta2DHist", "Lambdaeta2DHist", lambdaMassBinsForDiffractiveCrossection, lambdaMassWindowWideLow, lambdaMassWindowWideHigh, n_etaBins, etaBins));
+    outsideprocessing.AddHistogram(TH2D("LambdaBareta2DHist", "LambdaBareta2DHist", lambdaMassBinsForDiffractiveCrossection, lambdaMassWindowWideLow, lambdaMassWindowWideHigh, n_etaBins, etaBins));
+    outsideprocessing.AddHistogram(TH2D("K0XiMulti2DHist", "K0XiMulti2DHist", kaonMassBinsForDiffractiveCrossection, kaonMassWindowWideLow, kaonMassWindowWideHigh, n_XiMultiBins, XiMultiBins));
+    outsideprocessing.AddHistogram(TH2D("LambdaXiMulti2DHist", "LambdaXiMulti2DHist", lambdaMassBinsForDiffractiveCrossection, lambdaMassWindowWideLow, lambdaMassWindowWideHigh, n_XiMultiBins, XiMultiBins));
+    outsideprocessing.AddHistogram(TH2D("K0XiSum2DHist", "K0XiSum2DHist", kaonMassBinsForDiffractiveCrossection, kaonMassWindowWideLow, kaonMassWindowWideHigh, n_XiSumBins, XiSumBins));
+    outsideprocessing.AddHistogram(TH2D("LambdaXiSum2DHist", "LambdaXiSum2DHist", lambdaMassBinsForDiffractiveCrossection, lambdaMassWindowWideLow, lambdaMassWindowWideHigh, n_XiSumBins, XiSumBins));
 
     outsideprocessing.AddHistogram(TH2D("dEdxMomentumEnergyLoss", "dEdxMomentumEnergyLoss", 300, -3, 3, 100, 0, 40));
 
