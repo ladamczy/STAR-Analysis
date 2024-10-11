@@ -109,6 +109,30 @@ int main(int argc, char *argv[]){
     //general
     TH1D ParticlesDetected("ParticlesDetected", "ParticlesDetected", 20000, -10000, 10000);
     TH1D ParticlesReconstructed("ParticlesReconstructed", "ParticlesReconstructed", 20000, -10000, 10000);
+    //for weird particles, like quarks and stuff:
+    TH2D gDaughters("gDaughters", "gDaughters", 1, 0, 1, 1, 0, 1);
+    TH2D dDaughters("dDaughters", "dDaughters", 1, 0, 1, 1, 0, 1);
+    TH2D dbarDaughters("dbarDaughters", "dbarDaughters", 1, 0, 1, 1, 0, 1);
+    TH2D uDaughters("uDaughters", "uDaughters", 1, 0, 1, 1, 0, 1);
+    TH2D ubarDaughters("ubarDaughters", "ubarDaughters", 1, 0, 1, 1, 0, 1);
+    TH2D sDaughters("sDaughters", "sDaughters", 1, 0, 1, 1, 0, 1);
+    TH2D sbarDaughters("sbarDaughters", "sbarDaughters", 1, 0, 1, 1, 0, 1);
+    TH2D gMothers("gMothers", "gMothers", 1, 0, 1, 1, 0, 1);
+    TH2D dMothers("dMothers", "dMothers", 1, 0, 1, 1, 0, 1);
+    TH2D dbarMothers("dbarMothers", "dbarMothers", 1, 0, 1, 1, 0, 1);
+    TH2D uMothers("uMothers", "uMothers", 1, 0, 1, 1, 0, 1);
+    TH2D ubarMothers("ubarMothers", "ubarMothers", 1, 0, 1, 1, 0, 1);
+    TH2D sMothers("sMothers", "sMothers", 1, 0, 1, 1, 0, 1);
+    TH2D sbarMothers("sbarMothers", "sbarMothers", 1, 0, 1, 1, 0, 1);
+    //Deltas
+    TH2D DeltappDaughters("DeltappDaughters", "DeltappDaughters", 1, 0, 1, 1, 0, 1);
+    TH2D Delta0Daughters("Delta0Daughters", "Delta0Daughters", 1, 0, 1, 1, 0, 1);
+    TH2D Deltabar0Daughters("Deltabar0Daughters", "Deltabar0Daughters", 1, 0, 1, 1, 0, 1);
+    TH2D DeltabarmmDaughters("DeltabarmmDaughters", "DeltabarmmDaughters", 1, 0, 1, 1, 0, 1);
+    TH2D DeltappMothers("DeltappMothers", "DeltappMothers", 1, 0, 1, 1, 0, 1);
+    TH2D Delta0Mothers("Delta0Mothers", "Delta0Mothers", 1, 0, 1, 1, 0, 1);
+    TH2D Deltabar0Mothers("Deltabar0Mothers", "Deltabar0Mothers", 1, 0, 1, 1, 0, 1);
+    TH2D DeltabarmmMothers("DeltabarmmMothers", "DeltabarmmMothers", 1, 0, 1, 1, 0, 1);
     //K0s
     TH1D K0ptHist("K0ptHist", "K0ptHist", n_ptBins, ptBins);
     TH1D K0etaHist("K0etaHist", "K0etaHist", n_etaBins, etaBins);
@@ -242,11 +266,41 @@ int main(int argc, char *argv[]){
                 }
             }
             if(DaughtersDetected>0){
-                // printf("Particle %s with daughters:\n", pythia.event[part_index].name().c_str());
-                // for(int daughter = 0; daughter<pythia.event[part_index].daughterList().size();daughter++){
-                //     printf("%s\n", pythia.event[pythia.event[part_index].daughterList()[daughter]].name().c_str());
-                // }
                 ParticlesReconstructed.Fill(pythia.event[part_index].name().c_str(), 1.);
+                if(strcmp(pythia.event[part_index].name().c_str(), "g")==0){
+                    gDaughters.Fill(pythia.event[pythia.event[part_index].daughter1()].name().c_str(), pythia.event[pythia.event[part_index].daughter2()].name().c_str(), 1.);
+                    gMothers.Fill(pythia.event[pythia.event[part_index].mother1()].name().c_str(), pythia.event[pythia.event[part_index].mother2()].name().c_str(), 1.);
+                } else if(strcmp(pythia.event[part_index].name().c_str(), "d")==0){
+                    dDaughters.Fill(pythia.event[pythia.event[part_index].daughter1()].name().c_str(), pythia.event[pythia.event[part_index].daughter2()].name().c_str(), 1.);
+                    dMothers.Fill(pythia.event[pythia.event[part_index].mother1()].name().c_str(), pythia.event[pythia.event[part_index].mother2()].name().c_str(), 1.);
+                } else if(strcmp(pythia.event[part_index].name().c_str(), "dbar")==0){
+                    dbarDaughters.Fill(pythia.event[pythia.event[part_index].daughter1()].name().c_str(), pythia.event[pythia.event[part_index].daughter2()].name().c_str(), 1.);
+                    dbarMothers.Fill(pythia.event[pythia.event[part_index].mother1()].name().c_str(), pythia.event[pythia.event[part_index].mother2()].name().c_str(), 1.);
+                } else if(strcmp(pythia.event[part_index].name().c_str(), "u")==0){
+                    uDaughters.Fill(pythia.event[pythia.event[part_index].daughter1()].name().c_str(), pythia.event[pythia.event[part_index].daughter2()].name().c_str(), 1.);
+                    uMothers.Fill(pythia.event[pythia.event[part_index].mother1()].name().c_str(), pythia.event[pythia.event[part_index].mother2()].name().c_str(), 1.);
+                } else if(strcmp(pythia.event[part_index].name().c_str(), "ubar")==0){
+                    ubarDaughters.Fill(pythia.event[pythia.event[part_index].daughter1()].name().c_str(), pythia.event[pythia.event[part_index].daughter2()].name().c_str(), 1.);
+                    ubarMothers.Fill(pythia.event[pythia.event[part_index].mother1()].name().c_str(), pythia.event[pythia.event[part_index].mother2()].name().c_str(), 1.);
+                } else if(strcmp(pythia.event[part_index].name().c_str(), "s")==0){
+                    sDaughters.Fill(pythia.event[pythia.event[part_index].daughter1()].name().c_str(), pythia.event[pythia.event[part_index].daughter2()].name().c_str(), 1.);
+                    sMothers.Fill(pythia.event[pythia.event[part_index].mother1()].name().c_str(), pythia.event[pythia.event[part_index].mother2()].name().c_str(), 1.);
+                } else if(strcmp(pythia.event[part_index].name().c_str(), "sbar")==0){
+                    sbarDaughters.Fill(pythia.event[pythia.event[part_index].daughter1()].name().c_str(), pythia.event[pythia.event[part_index].daughter2()].name().c_str(), 1.);
+                    sbarMothers.Fill(pythia.event[pythia.event[part_index].mother1()].name().c_str(), pythia.event[pythia.event[part_index].mother2()].name().c_str(), 1.);
+                } else if(strcmp(pythia.event[part_index].name().c_str(), "Delta++")==0){
+                    DeltappDaughters.Fill(pythia.event[pythia.event[part_index].daughter1()].name().c_str(), pythia.event[pythia.event[part_index].daughter2()].name().c_str(), 1.);
+                    DeltappMothers.Fill(pythia.event[pythia.event[part_index].mother1()].name().c_str(), pythia.event[pythia.event[part_index].mother2()].name().c_str(), 1.);
+                } else if(strcmp(pythia.event[part_index].name().c_str(), "Delta0")==0){
+                    Delta0Daughters.Fill(pythia.event[pythia.event[part_index].daughter1()].name().c_str(), pythia.event[pythia.event[part_index].daughter2()].name().c_str(), 1.);
+                    Delta0Mothers.Fill(pythia.event[pythia.event[part_index].mother1()].name().c_str(), pythia.event[pythia.event[part_index].mother2()].name().c_str(), 1.);
+                } else if(strcmp(pythia.event[part_index].name().c_str(), "Deltabar0")==0){
+                    Deltabar0Daughters.Fill(pythia.event[pythia.event[part_index].daughter1()].name().c_str(), pythia.event[pythia.event[part_index].daughter2()].name().c_str(), 1.);
+                    Deltabar0Mothers.Fill(pythia.event[pythia.event[part_index].mother1()].name().c_str(), pythia.event[pythia.event[part_index].mother2()].name().c_str(), 1.);
+                } else if(strcmp(pythia.event[part_index].name().c_str(), "Deltabar--")==0){
+                    DeltabarmmDaughters.Fill(pythia.event[pythia.event[part_index].daughter1()].name().c_str(), pythia.event[pythia.event[part_index].daughter2()].name().c_str(), 1.);
+                    DeltabarmmMothers.Fill(pythia.event[pythia.event[part_index].mother1()].name().c_str(), pythia.event[pythia.event[part_index].mother2()].name().c_str(), 1.);
+                }
             }
         }
         //gathering info in detection loop
@@ -324,6 +378,28 @@ int main(int argc, char *argv[]){
     ParticlesReconstructed.LabelsDeflate();
     ParticlesReconstructed.SetMinimum(0);
     ParticlesReconstructed.LabelsOption("a", "X");
+    gDaughters.LabelsDeflate();
+    dDaughters.LabelsDeflate();
+    dbarDaughters.LabelsDeflate();
+    uDaughters.LabelsDeflate();
+    ubarDaughters.LabelsDeflate();
+    sDaughters.LabelsDeflate();
+    sbarDaughters.LabelsDeflate();
+    gMothers.LabelsDeflate();
+    dMothers.LabelsDeflate();
+    dbarMothers.LabelsDeflate();
+    uMothers.LabelsDeflate();
+    ubarMothers.LabelsDeflate();
+    sMothers.LabelsDeflate();
+    sbarMothers.LabelsDeflate();
+    DeltappDaughters.LabelsDeflate();
+    Delta0Daughters.LabelsDeflate();
+    Deltabar0Daughters.LabelsDeflate();
+    DeltabarmmDaughters.LabelsDeflate();
+    DeltappMothers.LabelsDeflate();
+    Delta0Mothers.LabelsDeflate();
+    Deltabar0Mothers.LabelsDeflate();
+    DeltabarmmMothers.LabelsDeflate();
 
     //writing to file
     outFile->cd();
