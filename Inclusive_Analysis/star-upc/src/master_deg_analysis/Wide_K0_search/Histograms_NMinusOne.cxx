@@ -90,7 +90,7 @@ enum PARTICLES{ Pion = 0, Kaon = 1, Proton = 2, nParticles };
 // enum ERRORS{ OK, RP_PLANES, RP_FIDUCIAL, RP_XI, RP_ELASTIC, TRACKS_TOF, TRACKS_PT, TRACKS_ETA, TRACKS_NHITS, PAIRS_DCADAUGHTERS, PAIRS_DCABEAMLINE, PAIRS_DECAYLENGTH };
 enum ERRORS{ OK, RP_PLANES, RP_FIDUCIAL, RP_XI, RP_ELASTIC, TRACKS_TOF, TRACKS_PT, TRACKS_ETA, TRACKS_NHITS, PAIRS_DCADAUGHTERS, PAIRS_DCABEAMLINE, PAIRS_DECAYLENGTH };
 
-const double particleMass[nParticles] = { 0.13957, 0.497611, 0.93827 }; // pion, kaon, proton in GeV /c^2 
+const double particleMass[nParticles] = { 0.13957, 0.493677, 0.93827 }; // pion, kaon, proton in GeV /c^2 
 bool IsInXiElasticSpot(StUPCRpsTrack *, StUPCRpsTrack *);
 bool IsInMomElasticSpot(StUPCRpsTrack *, StUPCRpsTrack *);
 bool tuple_sort(tuple<double, int, int>, tuple<double, int, int>);

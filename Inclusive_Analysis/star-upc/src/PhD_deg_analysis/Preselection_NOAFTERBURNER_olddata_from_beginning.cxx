@@ -100,7 +100,7 @@ enum PARTICLES{ Pion = 0, Kaon = 1, Proton = 2, nParticles };
 // 570229 JPsi*HTTP
 
 
-const double particleMass[nParticles] = { 0.13957, 0.497611, 0.93827 }; // pion, kaon, proton in GeV /c^2 
+const double particleMass[nParticles] = { 0.13957, 0.493677, 0.93827 }; // pion, kaon, proton in GeV /c^2 
 bool IsInXiElasticSpot(StUPCRpsTrack *, StUPCRpsTrack *);
 bool IsInMomElasticSpot(StUPCRpsTrack *, StUPCRpsTrack *);
 

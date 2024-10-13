@@ -79,7 +79,7 @@ enum RP_ID {E1U, E1D, E2U, E2D, W1U, W1D, W2U, W2D, nRomanPots};
 
 const double beamMomentum = 255;
 const double c = 299792458.0;
-const double particleMass[nParticles] = { 0.13957, 0.497611, 0.93827}; // pion, kaon, proton in GeV /c^2 
+const double particleMass[nParticles] = { 0.13957, 0.493677, 0.93827 }; // pion, kaon, proton in GeV /c^2 
 const int nTriggers = 17;
 const int triggerID[] = { 570209, 570219, 570229, 570701, 570702, 570703, 570704, 570705, 
                   570709, 570711, 570712, 570719, 590701, 590703, 590705, 590708, 590709};

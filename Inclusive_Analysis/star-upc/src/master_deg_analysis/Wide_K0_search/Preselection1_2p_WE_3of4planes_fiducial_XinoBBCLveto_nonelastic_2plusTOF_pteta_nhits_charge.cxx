@@ -83,7 +83,7 @@ enum{
 // enum BRANCH_ID{ EU, ED, WU, WD, nBranches };
 // enum RP_ID{ E1U, E1D, E2U, E2D, W1U, W1D, W2U, W2D, nRomanPots };
 
-const double particleMass[nParticles] = { 0.13957, 0.497611, 0.93827 }; // pion, kaon, proton in GeV /c^2 
+const double particleMass[nParticles] = { 0.13957, 0.493677, 0.93827 }; // pion, kaon, proton in GeV /c^2 
 bool IsInXiElasticSpot(StUPCRpsTrack *, StUPCRpsTrack *);
 bool IsInMomElasticSpot(StUPCRpsTrack *, StUPCRpsTrack *);
 

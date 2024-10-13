@@ -29,7 +29,7 @@ enum{
 };
 enum SIDE{ E = 0, East = 0, W = 1, West = 1, nSides };
 enum PARTICLES{ Pion = 0, Kaon = 1, Proton = 2, nParticles };
-const double particleMass[nParticles] = { 0.13957, 0.497611, 0.93827 }; // pion, kaon, proton in GeV /c^2 
+const double particleMass[nParticles] = { 0.13957, 0.493677, 0.93827 }; // pion, kaon, proton in GeV /c^2 
 enum BRANCH_ID{ EU, ED, WU, WD, nBranches };
 enum RP_ID{ E1U, E1D, E2U, E2D, W1U, W1D, W2U, W2D, nRomanPots };
 
