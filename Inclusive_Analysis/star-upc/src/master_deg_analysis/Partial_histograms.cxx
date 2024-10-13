@@ -282,14 +282,13 @@ bool OppositeCharges(StRPEvent *RPEvent, StUPCEvent *UPCEvent, TH1 *hist, std::v
 bool enoughClusters(StRPEvent *RPEvent, StUPCEvent *UPCEvent, TH1 *hist, std::vector<int> *RPTrackIDs, std::vector<int> *UPCTrackIDs){
     //TODO selekcja Patrycji
     // SELECTION: number of cluster 
-    int isNumberOfTofClusterSmall = 0;
     Int_t nTofHits = UPCEvent->getNumberOfHits();
     vector <Int_t> vTray;
     vector <Int_t> vTrayUniqueVector;
     vector <Int_t> vMmodule;
 
     //filling with trays and modules (a pair for every hit)
-    for(long unsigned int i = 0; i<nTofHits; i++){
+    for(int i = 0; i<nTofHits; i++){
         vTray.push_back(Int_t(UPCEvent->getHit(i)->getTray()));
         vTrayUniqueVector.push_back(Int_t(UPCEvent->getHit(i)->getTray()));
         vMmodule.push_back(Int_t(UPCEvent->getHit(i)->getModule()));
@@ -303,9 +302,9 @@ bool enoughClusters(StRPEvent *RPEvent, StUPCEvent *UPCEvent, TH1 *hist, std::ve
 
     vector <vector <Int_t>> vModuleUniqueTray;
     //for every unique tray we add modules from hits with this unique tray
-    for(long unsigned int i = 0; i<vTrayUniqueVector.size(); i++){
+    for(size_t i = 0; i<vTrayUniqueVector.size(); i++){
         vector <Int_t> vModuleUnique;
-        for(long unsigned int j = 0; j<nTofHits; j++){
+        for(int j = 0; j<nTofHits; j++){
             if(vTrayUniqueVector[i]==vTray[j]){
                 vModuleUnique.push_back(vMmodule[j]);
             }

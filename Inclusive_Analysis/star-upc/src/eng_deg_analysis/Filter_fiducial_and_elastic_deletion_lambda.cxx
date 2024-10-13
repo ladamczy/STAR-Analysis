@@ -620,7 +620,7 @@ int main(int argc, char** argv)
             }
 
             //Vertex position
-            StUPCVertex* primVertex;
+            StUPCVertex *primVertex = nullptr;
             for (int veri = 0; veri < tempUPCpointer->getNumberOfTracks(); veri++)
             {
                 if(tempUPCpointer->getTrack(veri)->getFlag(StUPCTrack::kPrimary)){

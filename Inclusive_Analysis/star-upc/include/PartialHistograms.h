@@ -50,7 +50,7 @@ void PartialHistograms::SetEventPointers(StRPEvent *RPEventPointer, StUPCEvent *
     for(long unsigned int i = 0; i<privateRPEventPointer->getNumberOfTracks(); i++){
         privateAllowedRPTracks->push_back(i);
     }
-    for(long unsigned int i = 0; i<privateUPCEventPointer->getNumberOfTracks(); i++){
+    for(int i = 0; i<privateUPCEventPointer->getNumberOfTracks(); i++){
         privateAllowedUPCTracks->push_back(i);
     }
 
@@ -74,7 +74,7 @@ void PartialHistograms::ProcessEvent(){
         //reset for identical starting conditions
         privateAllowedRPTracks->clear();
         privateAllowedUPCTracks->clear();
-        for(int i = 0; i<privateRPEventPointer->getNumberOfTracks(); i++){
+        for(unsigned int i = 0; i<privateRPEventPointer->getNumberOfTracks(); i++){
             privateAllowedRPTracks->push_back(i);
         }
         for(int i = 0; i<privateUPCEventPointer->getNumberOfTracks(); i++){

@@ -243,7 +243,7 @@ int main(int argc, char **argv){
             //at least 2 good tracks of opposite signs
             int nOfGoodTracks = 0;
             int chargeOfGoodTracks = 0;
-            for(size_t i = 0; i<tempUPCpointer->getNumberOfTracks(); i++){
+            for(int i = 0; i<tempUPCpointer->getNumberOfTracks(); i++){
                 StUPCTrack *tmptrk = tempUPCpointer->getTrack(i);
                 if(tmptrk->getFlag(StUPCTrack::kTof)&&abs(tmptrk->getEta())<0.7&&tmptrk->getPt()>0.2){
                     nOfGoodTracks++;

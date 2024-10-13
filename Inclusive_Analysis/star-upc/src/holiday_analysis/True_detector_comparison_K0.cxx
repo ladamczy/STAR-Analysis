@@ -260,7 +260,7 @@ int main(int argc, char** argv)
             bool hasdetectedvertexposition = false;
             TVector3 detectedvertexposition;
             //test of pairing
-            for (int i = 0; i < metric_difference.size(); i++){
+            for(size_t i = 0; i<metric_difference.size(); i++){
                 if(!hasdetectedvertexposition && detected_particles[i]->getFlag(StUPCTrack::kPrimary)){
                     hasdetectedvertexposition = true;
                     detectedvertexposition = {detected_particles[i]->getVertex()->getPosX(), detected_particles[i]->getVertex()->getPosY(), detected_particles[i]->getVertex()->getPosZ()};
@@ -288,9 +288,9 @@ int main(int argc, char** argv)
             //loop to get pions from K0Ss
             TLorentzVector pion1;
             TLorentzVector pion2;
-            for (int i = 0; i < metric_difference.size(); i++){
+            for(size_t i = 0; i<metric_difference.size(); i++){
                 if(true_particles[i]->GetPdgCode()==211){
-                    for (int j = 0; j < metric_difference.size(); j++){
+                    for(size_t j = 0; j<metric_difference.size(); j++){
                         if(true_particles[j]->GetPdgCode()==-211 && true_particles[i]->GetMother(0) == true_particles[j]->GetMother(0)){
                             detected_particles[i]->getLorentzVector(pion1, particleMass[Pion]);
                             detected_particles[j]->getLorentzVector(pion2, particleMass[Pion]);
