@@ -70,8 +70,6 @@
 
 //my headers
 #include "UsefulThings.h"
-#include "ProcessingInsideLoop.h"
-#include "ProcessingOutsideLoop.h"
 
 using namespace std;
 
@@ -129,11 +127,6 @@ int main(int argc, char **argv){
     //Afterburner things
     LoadOffsetFile("STAR-Analysis/share/OffSetsCorrectionsRun17.list", mCorrection);
 
-    //histograms
-    ProcessingOutsideLoop outsideprocessing;
-    outsideprocessing.AddHistogram(TH1D("Figure3_4a", ";Number of vertices;Number of events", 10, 0., 10));
-    outsideprocessing.AddHistogram(TH1D("Figure3_4b", ";Vertex z coordinate [cm];Number of events", 400, -200, 200));
-
     auto myFunction = [&](TFile *myFile){
         //test if tree is not empty
         TFile *tempFile = TFile::Open(myFile->GetTitle());
@@ -144,10 +137,6 @@ int main(int argc, char **argv){
             std::cout<<"Input file "<<fileName<<" has 0 entries"<<endl;
             return 0;
         }
-
-        //for histograms
-        ProcessingInsideLoop insideprocessing;
-        insideprocessing.GetLocalHistograms(&outsideprocessing);
 
         //creating a reader and all stuff
         TTreeReader myReader(tempTree);
@@ -251,12 +240,6 @@ int main(int argc, char **argv){
             }
             //end of tests
 
-            //histograms
-            insideprocessing.Fill("Figure3_4a", tempUPCpointer->getNumberOfVertices());
-            if(tempUPCpointer->getNumberOfVertices()==1){
-                insideprocessing.Fill("Figure3_4b", tempUPCpointer->getVertex(0)->getPosZ());
-            }
-
             //filling
             if(goodQuality){
                 mUPCTree->Fill();
@@ -304,16 +287,6 @@ int main(int argc, char **argv){
     ROOT::TThreadExecutor TreeProcessor(nthreads);
     // Launch the parallel processing of the tree
     filtered_entries = TreeProcessor.MapReduce(myFunction, listOfFiles, redFunction);
-
-    //after all that processing, finish thehistograms
-    outsideprocessing.Merge();
-    //setting up a tree & output file
-    string path = string(argv[0]);
-    string outfileName = outputFolder+"AnaOutput_"+path.substr(path.find_last_of("/\\")+1)+".root";
-    std::cout<<"Created output file "<<outfileName<<endl;
-    TFile *outputFileHist = TFile::Open(outfileName.c_str(), "recreate");
-    outsideprocessing.SaveToFile(outputFileHist);
-    outputFileHist->Close();
 
     std::cout<<"Finished processing "<<endl;
     std::cout<<"Analyzed total "<<upcChain->GetEntries()<<" entries"<<endl;
