@@ -57,18 +57,25 @@ int main(int argc, char **argv){
 
     //histograms
     ProcessingOutsideLoop outsideprocessing;
-    outsideprocessing.AddHistogram(TH1D("Figure3_4a", ";Number of vertices;Number of events", 10, 0., 10));
-    outsideprocessing.AddHistogram(TH1D("Figure3_4b", ";Vertex z coordinate [cm];Number of events", 80, -200, 200));
-    outsideprocessing.AddHistogram(TH1D("Figure3_5a", ";N^{fit}_{hits};number of tracks", 50, 0, 50));
-    outsideprocessing.AddHistogram(TH1D("Figure3_5b", ";N^{fit}_{dE/dx};number of tracks", 50, 0, 50));
-    outsideprocessing.AddHistogram(TH1D("Figure3_5c", ";DCA_{xy} [cm];number of tracks", 50, 0, 5));
-    outsideprocessing.AddHistogram(TH1D("Figure3_5d", ";DCA_{z} [cm];number of tracks", 100, -5, 5));
-    outsideprocessing.AddHistogram(TH1D("Figure3_5e", ";d_{0} [cm];number of tracks", 50, 0, 5));
-    outsideprocessing.AddHistogram(TH1D("Figure3_6ab", ";#eta;number of tracks", 100, -2, 2));
-    outsideprocessing.AddHistogram(TH1D("Figure3_6c", ";p_{T} [GeV/c];number of tracks", 50, 0, 5));
-    outsideprocessing.AddHistogram(TH1D("Figure3_6d", ";#Phi [rad];number of tracks", 100, -TMath::Pi(), TMath::Pi()));
-    outsideprocessing.AddHistogram(TH1D("Figure3_18g", ";#xi_{1}#xi_{2};#frac{1}{N}#frac{dN}{d(#xi_{1}#xi_{2})}", 100, 0, 0.1));
-    outsideprocessing.AddHistogram(TH1D("Figure3_19a", ";#xi_{1}#xi_{2};#frac{1}{N}#frac{dN}{d(#xi_{1}#xi_{2})}", 100, 0, 0.1));
+    outsideprocessing.AddHistogram(TH1D("DataFigure3_4a", ";Number of vertices;Number of events", 10, 0., 10));
+    outsideprocessing.AddHistogram(TH1D("DataFigure3_4b", ";Vertex z coordinate [cm];Number of events", 80, -200, 200));
+    outsideprocessing.AddHistogram(TH1D("DataFigure3_5a", ";N^{fit}_{hits};number of tracks", 50, 0, 50));
+    outsideprocessing.AddHistogram(TH1D("DataFigure3_5b", ";N^{fit}_{dE/dx};number of tracks", 50, 0, 50));
+    outsideprocessing.AddHistogram(TH1D("DataFigure3_5c", ";DCA_{xy} [cm];number of tracks", 50, 0, 5));
+    outsideprocessing.AddHistogram(TH1D("DataFigure3_5d", ";DCA_{z} [cm];number of tracks", 100, -5, 5));
+    // outsideprocessing.AddHistogram(TH1D("DataFigure3_5e", ";d_{0} [cm];number of tracks", 50, 0, 5));
+    outsideprocessing.AddHistogram(TH1D("DataFigure3_6ab", ";#eta;number of tracks", 100, -2, 2));
+    outsideprocessing.AddHistogram(TH1D("DataFigure3_6c", ";p_{T} [GeV/c];number of tracks", 50, 0, 5));
+    outsideprocessing.AddHistogram(TH1D("DataFigure3_6d", ";#Phi [rad];number of tracks", 100, -TMath::Pi(), TMath::Pi()));
+    outsideprocessing.AddHistogram(TH1D("DataFigure3_18g", ";#xi_{1}#xi_{2};#frac{1}{N}#frac{dN}{d(#xi_{1}#xi_{2})}", 1000, 0, 0.04));
+    outsideprocessing.AddHistogram(TH1D("DataFigure3_19a", ";n_{sel};#frac{1}{N}#frac{dN}{dn_{sel}}", 10, 2, 12));
+    outsideprocessing.AddHistogram(TH1D("DataFigure3_20", ";p_{T} [GeV/c];#frac{1}{N}#frac{dN}{dp_{T}}", 50, 0, 5));
+    outsideprocessing.AddHistogram(TH1D("DataFigure3_21", ";#eta;#frac{1}{N}#frac{dN}{d#eta}", 100, -2, 2));
+    outsideprocessing.AddHistogram(TH2D("DataFigure3_60", ";q #times p [GeV/c];dE/dx [GeV/cm]", 500, -5, 5, 500, 0, 1e-4));
+    outsideprocessing.AddHistogram(TH1D("DataFigure3_62a", ";n#sigma^{#pi};#frac{1}{N}#frac{1}{p_{T}}#frac{dN}{d(n#sigma^{#pi})}", 100, -50, 50));
+    outsideprocessing.AddHistogram(TH1D("DataFigure3_62b", ";n#sigma^{K};#frac{1}{N}#frac{1}{p_{T}}#frac{dN}{d(n#sigma^{K})}", 100, -50, 50));
+    outsideprocessing.AddHistogram(TH1D("DataFigure3_62c", ";n#sigma^{p};#frac{1}{N}#frac{1}{p_{T}}#frac{dN}{d(n#sigma^{p})}", 100, -50, 50));
+    outsideprocessing.AddHistogram(TH1D("DataFigure3_62d", ";n#sigma^{e};#frac{1}{N}#frac{1}{p_{T}}#frac{dN}{d(n#sigma^{e})}", 100, -50, 50));
 
     //processing
     //defining TreeProcessor
@@ -80,26 +87,27 @@ int main(int argc, char **argv){
     auto myFunction = [&](TTreeReader &myReader){
         //getting values from TChain, in-loop histogram initialization
         TTreeReaderValue<StUPCEvent> StUPCEventInstance(myReader, "mUPCEvent");
-        // TTreeReaderValue<StRPEvent> StRPEventInstance(myReader, "mRPEvent");
+        TTreeReaderValue<StRPEvent> StRPEventInstance(myReader, "mRPEvent");
         ProcessingInsideLoop insideprocessing;
         StUPCEvent *tempUPCpointer;
-        // StRPEvent *tempRPpointer;
+        StRPEvent *tempRPpointer;
         insideprocessing.GetLocalHistograms(&outsideprocessing);
 
         //helpful variables
-        TVector3 vertexPrimary;
-        TVector3 beamParallel;
-        std::vector<double> tempBeamVector;
-        double beamValues[4];
+        // TVector3 vertexPrimary;
+        // std::vector<double> tempBeamVector;
+        // double beamValues[4];
         StUPCTrack *tempTrack;
-        StPicoPhysicalHelix *beamLine;
-        StPicoPhysicalHelix *trackLine;
+        // StPicoPhysicalHelix *beamLine;
+        // StPicoPhysicalHelix *trackLine;
+        int numberOfSelectedTracks = 0;
+        TVector3 tempVector;
 
         //actual loop
         while(myReader.Next()){
             //in a TTree, it *would* be constant, in TChain however not necessarily
             tempUPCpointer = StUPCEventInstance.Get();
-            // tempRPpointer = StRPEventInstance.Get();
+            tempRPpointer = StRPEventInstance.Get();
 
             //cause I want to see what's going on
             if(eventsProcessed%10000==0){
@@ -107,21 +115,22 @@ int main(int argc, char **argv){
             }
             eventsProcessed++;
 
-            //histogram filling
-
-            vertexPrimary = { tempUPCpointer->getVertex(0)->getPosX(), tempUPCpointer->getVertex(0)->getPosY(), tempUPCpointer->getVertex(0)->getPosZ() };
-            tempBeamVector = FindPosition(tempUPCpointer->getFillNumber(), vertexPrimary.Z(), beamData[0], beamData[1], beamData[2], beamData[3], beamData[4], beamData[5], beamData[6], beamData[7], beamData[8]);
-            beamValues[0] = tempBeamVector[0];
-            beamValues[1] = tempBeamVector[1];
-            beamValues[2] = tempBeamVector[2];
-            beamValues[3] = tempBeamVector[3];
+            // vertexPrimary = { tempUPCpointer->getVertex(0)->getPosX(), tempUPCpointer->getVertex(0)->getPosY(), tempUPCpointer->getVertex(0)->getPosZ() };
+            // tempBeamVector = FindPosition(tempUPCpointer->getFillNumber(), vertexPrimary.Z(), beamData[0], beamData[1], beamData[2], beamData[3], beamData[4], beamData[5], beamData[6], beamData[7], beamData[8]);
+            // beamValues[0] = tempBeamVector[0];
+            // beamValues[1] = tempBeamVector[1];
+            // beamValues[2] = tempBeamVector[2];
+            // beamValues[3] = tempBeamVector[3];
 
             //histogram filling
             //possibly make it better with StPicoPhysicslHelix? TODO
-            insideprocessing.Fill("Figure3_4a", tempUPCpointer->getNumberOfVertices());
+            insideprocessing.Fill("DataFigure3_4a", tempUPCpointer->getNumberOfVertices());
             if(tempUPCpointer->getNumberOfVertices()==1){
-                insideprocessing.Fill("Figure3_4b", tempUPCpointer->getVertex(0)->getPosZ());
+                insideprocessing.Fill("DataFigure3_4b", tempUPCpointer->getVertex(0)->getPosZ());
+            } else{
+                continue;
             }
+            numberOfSelectedTracks = 0;
             for(int i = 0; i<tempUPCpointer->getNumberOfTracks(); i++){
                 //used ToF, should I? TODO
                 tempTrack = tempUPCpointer->getTrack(i);
@@ -129,21 +138,47 @@ int main(int argc, char **argv){
                     continue;
                 }
                 //3.5
-                insideprocessing.Fill("Figure3_5a", tempTrack->getNhitsFit());
-                insideprocessing.Fill("Figure3_5b", tempTrack->getNhitsDEdx());
+                insideprocessing.Fill("DataFigure3_5a", tempTrack->getNhitsFit());
+                insideprocessing.Fill("DataFigure3_5b", tempTrack->getNhitsDEdx());
                 //dca to the vertex
-                insideprocessing.Fill("Figure3_5c", tempTrack->getDcaXY());
-                insideprocessing.Fill("Figure3_5d", tempTrack->getDcaZ());
+                insideprocessing.Fill("DataFigure3_5c", tempTrack->getDcaXY());
+                insideprocessing.Fill("DataFigure3_5d", tempTrack->getDcaZ());
                 //dca to the beamline - TODO
-                insideprocessing.Fill("Figure3_5e", 0);
+                // insideprocessing.Fill("DataFigure3_5e", 0);
                 //3.6
-                insideprocessing.Fill("Figure3_6ab", tempTrack->getEta());
-                insideprocessing.Fill("Figure3_6c", tempTrack->getPt());
-                insideprocessing.Fill("Figure3_6d", tempTrack->getPhi());
+                insideprocessing.Fill("DataFigure3_6ab", tempTrack->getEta());
+                insideprocessing.Fill("DataFigure3_6c", tempTrack->getPt());
+                insideprocessing.Fill("DataFigure3_6d", tempTrack->getPhi());
+                if(tempTrack->getPt()>0.2&&abs(tempTrack->getEta())<0.7&&tempTrack->getNhitsFit()>20){
+                    numberOfSelectedTracks++;
+                }
+            }
+            //histograms of normalised events
+            if(numberOfSelectedTracks>=2){
                 //3.18g
-                // if(tempTrack->getPt()>0.2&&abs(tempTrack->getEta())<0.7){
-                //     insideprocessing.Fill("Figure3_18g", tempTrack->getPhi());
-                // }
+                insideprocessing.Fill("DataFigure3_18g", tempRPpointer->getTrack(0)->xi(beamMomentum)*tempRPpointer->getTrack(1)->xi(beamMomentum));
+                //3.19a
+                insideprocessing.Fill("DataFigure3_19a", numberOfSelectedTracks);
+                //tracks
+                for(int i = 0; i<tempUPCpointer->getNumberOfTracks(); i++){
+                    //used ToF, should I? TODO
+                    tempTrack = tempUPCpointer->getTrack(i);
+                    if(!tempTrack->getFlag(StUPCTrack::kTof)){
+                        continue;
+                    }
+                    //3.20
+                    insideprocessing.Fill("DataFigure3_20", tempTrack->getPt());
+                    //3.21
+                    insideprocessing.Fill("DataFigure3_21", tempTrack->getEta());
+                    //3.60
+                    tempTrack->getMomentum(tempVector);
+                    insideprocessing.Fill("DataFigure3_60", tempVector.Mag()*tempTrack->getCharge(), tempTrack->getDEdxSignal());
+                    //3.62
+                    insideprocessing.Fill("DataFigure3_62a", tempTrack->getNSigmasTPCPion(), 1/tempTrack->getPt());
+                    insideprocessing.Fill("DataFigure3_62b", tempTrack->getNSigmasTPCKaon(), 1/tempTrack->getPt());
+                    insideprocessing.Fill("DataFigure3_62c", tempTrack->getNSigmasTPCProton(), 1/tempTrack->getPt());
+                    insideprocessing.Fill("DataFigure3_62d", tempTrack->getNSigmasTPCElectron(), 1/tempTrack->getPt());
+                }
             }
         }
         return 0;

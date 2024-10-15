@@ -69,7 +69,10 @@ int main(int argc, char **argv){
     //defining TreeProcessor
     ROOT::TTreeProcessorMT TreeProc(*upcChain, nthreads);
 
+    //other things
     int eventsProcessed = 0;
+    double K0WindowLow = 0.44;
+    double K0WindowHigh = 0.54;
 
     //defining processing function
     auto myFunction = [&](TTreeReader &myReader){
@@ -89,6 +92,7 @@ int main(int argc, char **argv){
         std::vector<double> tempBeamVector;
         double beamValues[4];
         StUPCV0 *tempParticle;
+        StUPCV0 *tempParticleForK0SVeto;
 
         //actual loop
         while(myReader.Next()){
@@ -199,6 +203,13 @@ int main(int argc, char **argv){
                         delete tempParticle;
                         continue;
                     }
+                    //test if its in K0S window
+                    tempParticleForK0SVeto = new StUPCV0(vector_Track_positive[i], vector_Track_negative[j], particleMass[0], particleMass[0], 1, 1, vertexPrimary, beamValues, tempUPCpointer->getMagneticField(), false);
+                    if(K0WindowLow<tempParticleForK0SVeto->m()&&K0WindowHigh>tempParticleForK0SVeto->m()){
+                        delete tempParticle;
+                        delete tempParticleForK0SVeto;
+                        continue;
+                    }
                     //filling
                     insideprocessing.Fill("MKpiWide", tempParticle->m());
                     if(abs(vector_Track_positive[i]->getNSigmasTPCKaon())<3&&abs(vector_Track_negative[j]->getNSigmasTPCPion())<3){
@@ -206,6 +217,7 @@ int main(int argc, char **argv){
                     }
                     //finishing
                     delete tempParticle;
+                    delete tempParticleForK0SVeto;
                 }
             }
             //loop for Kstar (K-pi+)
