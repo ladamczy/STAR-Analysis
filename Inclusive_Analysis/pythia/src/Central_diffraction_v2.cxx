@@ -144,9 +144,9 @@ int main(int argc, char const *argv[]){
         //BBCL cut
         bool BBCLCut = !hasAtLeastNParticlesInBBCLarge(pythia.event, 1);
         //xi1>0.007 && xi2>0.007
-        bool xi1Andxi2 = xi(&p1)>0.005&&xi(&p2)>0.005&&xi(&p1)<0.08&&xi(&p2)<0.08;
+        bool xi1Andxi2 = xi(p1)>0.005&&xi(p2)>0.005&&xi(p1)<0.08&&xi(p2)<0.08;
         //log cut
-        bool LogCut = abs(log(xi(&p1)/xi(&p2)))<4;
+        bool LogCut = abs(log(xi(p1)/xi(p2)))<4;
         //2xK0 decaying into pi+- cut
         int nK0 = 0;
         int tempDaughter1, tempDaughter2;
@@ -171,21 +171,21 @@ int main(int argc, char const *argv[]){
         //HISTOGRAMS
         //point 3
         //before
-        if(LogCut){ LogCutEventsBefore.Fill(log10(xi(&p1)*xi(&p2))); }
-        if(xi1Andxi2){ MultiCutEventsBefore.Fill(log(xi(&p1)/xi(&p2))); }
-        if(LogCut){ Log2DCutEventsBefore.Fill(log10(xi(&p1)), log10(xi(&p2))); }
+        if(LogCut){ LogCutEventsBefore.Fill(log10(xi(p1)*xi(p2))); }
+        if(xi1Andxi2){ MultiCutEventsBefore.Fill(log(xi(p1)/xi(p2))); }
+        if(LogCut){ Log2DCutEventsBefore.Fill(log10(xi(p1)), log10(xi(p2))); }
         //TPC
-        if(TPCCut&&LogCut){ LogTPCCutEventsAfter.Fill(log10(xi(&p1)*xi(&p2))); }
-        if(TPCCut&&xi1Andxi2){ MultiTPCCutEventsAfter.Fill(log(xi(&p1)/xi(&p2))); }
-        if(TPCCut&&LogCut){ Log2DTPCCutEventsAfter.Fill(log10(xi(&p1)), log10(xi(&p2))); }
+        if(TPCCut&&LogCut){ LogTPCCutEventsAfter.Fill(log10(xi(p1)*xi(p2))); }
+        if(TPCCut&&xi1Andxi2){ MultiTPCCutEventsAfter.Fill(log(xi(p1)/xi(p2))); }
+        if(TPCCut&&LogCut){ Log2DTPCCutEventsAfter.Fill(log10(xi(p1)), log10(xi(p2))); }
         //BBCL
-        if(BBCLCut&&LogCut){ LogBBCLCutEventsAfter.Fill(log10(xi(&p1)*xi(&p2))); }
-        if(BBCLCut&&xi1Andxi2){ MultiBBCLCutEventsAfter.Fill(log(xi(&p1)/xi(&p2))); }
-        if(BBCLCut&&LogCut){ Log2DBBCLCutEventsAfter.Fill(log10(xi(&p1)), log10(xi(&p2))); }
+        if(BBCLCut&&LogCut){ LogBBCLCutEventsAfter.Fill(log10(xi(p1)*xi(p2))); }
+        if(BBCLCut&&xi1Andxi2){ MultiBBCLCutEventsAfter.Fill(log(xi(p1)/xi(p2))); }
+        if(BBCLCut&&LogCut){ Log2DBBCLCutEventsAfter.Fill(log10(xi(p1)), log10(xi(p2))); }
         //TOC & BBCL
-        if(TPCCut&&BBCLCut&&LogCut){ LogTPCBBCLCutEventsAfter.Fill(log10(xi(&p1)*xi(&p2))); }
-        if(TPCCut&&BBCLCut&&xi1Andxi2){ MultiTPCBBCLCutEventsAfter.Fill(log(xi(&p1)/xi(&p2))); }
-        if(TPCCut&&BBCLCut&&LogCut){ Log2DTPCBBCLCutEventsAfter.Fill(log10(xi(&p1)), log10(xi(&p2))); }
+        if(TPCCut&&BBCLCut&&LogCut){ LogTPCBBCLCutEventsAfter.Fill(log10(xi(p1)*xi(p2))); }
+        if(TPCCut&&BBCLCut&&xi1Andxi2){ MultiTPCBBCLCutEventsAfter.Fill(log(xi(p1)/xi(p2))); }
+        if(TPCCut&&BBCLCut&&LogCut){ Log2DTPCBBCLCutEventsAfter.Fill(log10(xi(p1)), log10(xi(p2))); }
         //point6
         int nPart = 0;
         if(xi1Andxi2&&LogCut){
@@ -200,7 +200,7 @@ int main(int argc, char const *argv[]){
             }
         }
         //even more
-        K0detectionProbability.Fill(nK0>0&&xi1Andxi2&&LogCut&&TPCCut&&BBCLCut, log10(xi(&p1)*xi(&p2)));
+        K0detectionProbability.Fill(nK0>0&&xi1Andxi2&&LogCut&&TPCCut&&BBCLCut, log10(xi(p1)*xi(p2)));
     }
 
     // Statistics on event generation.

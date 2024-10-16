@@ -22,7 +22,6 @@ using namespace Pythia8;
 using namespace std;
 
 bool isInFiducial(TLorentzVector);
-double xi(TLorentzVector, double);
 bool IsInXiElasticSpot(TLorentzVector, TLorentzVector);
 bool IsInMomElasticSpot(TLorentzVector, TLorentzVector);
 
@@ -289,10 +288,6 @@ bool isInFiducial(TLorentzVector tested_particle){
     bool f2 = (-0.27<px);
     bool f3 = (pow(px+0.6, 2)+pow(py, 2)<1.25);
     return f1&&f2&&f3;
-}
-
-double xi(TLorentzVector fourvec, double s = 510){
-    return (s/2-fourvec.E())/s*2;
 }
 
 bool IsInXiElasticSpot(TLorentzVector east, TLorentzVector west){
