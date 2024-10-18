@@ -67,15 +67,17 @@ int main(int argc, char **argv){
     outsideprocessing.AddHistogram(TH1D("DataFigure3_6ab", ";#eta;number of tracks", 100, -2, 2));
     outsideprocessing.AddHistogram(TH1D("DataFigure3_6c", ";p_{T} [GeV/c];number of tracks", 50, 0, 5));
     outsideprocessing.AddHistogram(TH1D("DataFigure3_6d", ";#Phi [rad];number of tracks", 100, -TMath::Pi(), TMath::Pi()));
-    outsideprocessing.AddHistogram(TH1D("DataFigure3_18g", ";#xi_{1}#xi_{2};#frac{1}{N}#frac{dN}{d(#xi_{1}#xi_{2})}", 1000, 0, 0.04));
-    outsideprocessing.AddHistogram(TH1D("DataFigure3_19a", ";n_{sel};#frac{1}{N}#frac{dN}{dn_{sel}}", 10, 2, 12));
-    outsideprocessing.AddHistogram(TH1D("DataFigure3_20", ";p_{T} [GeV/c];#frac{1}{N}#frac{dN}{dp_{T}}", 50, 0, 5));
-    outsideprocessing.AddHistogram(TH1D("DataFigure3_21", ";#eta;#frac{1}{N}#frac{dN}{d#eta}", 100, -2, 2));
-    outsideprocessing.AddHistogram(TH2D("DataFigure3_60", ";q #times p [GeV/c];dE/dx [GeV/cm]", 500, -5, 5, 500, 0, 1e-4));
-    outsideprocessing.AddHistogram(TH1D("DataFigure3_62a", ";n#sigma^{#pi};#frac{1}{N}#frac{1}{p_{T}}#frac{dN}{d(n#sigma^{#pi})}", 100, -50, 50));
-    outsideprocessing.AddHistogram(TH1D("DataFigure3_62b", ";n#sigma^{K};#frac{1}{N}#frac{1}{p_{T}}#frac{dN}{d(n#sigma^{K})}", 100, -50, 50));
-    outsideprocessing.AddHistogram(TH1D("DataFigure3_62c", ";n#sigma^{p};#frac{1}{N}#frac{1}{p_{T}}#frac{dN}{d(n#sigma^{p})}", 100, -50, 50));
-    outsideprocessing.AddHistogram(TH1D("DataFigure3_62d", ";n#sigma^{e};#frac{1}{N}#frac{1}{p_{T}}#frac{dN}{d(n#sigma^{e})}", 100, -50, 50));
+    outsideprocessing.AddHistogram(TH1D("DataFigure3_18g", ";#xi_{1}#xi_{2};#frac{1}{N_{ev}} #frac{dN_{ev}}{d(#xi_{1}#xi_{2})}", 1000, 0, 0.04));
+    outsideprocessing.AddHistogram(TH1D("DataFigure3_18gcloser", ";#xi_{1}#xi_{2};#frac{1}{N_{ev}} #frac{dN_{ev}}{d(#xi_{1}#xi_{2})}", 200, 0, 2e-4));
+    outsideprocessing.AddHistogram(TH1D("DataFigure3_19a", ";n_{sel};#frac{1}{N_{ev}} #frac{dN_{ev}}{dn_{sel}}", 10, 2, 12));
+    outsideprocessing.AddHistogram(TH1D("DataFigure3_20", ";p_{T} [GeV/c];#frac{1}{N_{ev}} #frac{dN_{tr}}{dp_{T}}", 50, 0, 5));
+    outsideprocessing.AddHistogram(TH1D("DataFigure3_21", ";#eta;#frac{1}{N_{ev}} #frac{dN_{tr}}{d#eta}", 100, -2, 2));
+    outsideprocessing.AddHistogram(TH2D("DataFigure3_60", ";q #times p [GeV/c];dE/dx [GeV/cm]", 400, -2, 2, 500, 0, 5e-5));
+    outsideprocessing.AddHistogram(TH1D("DataFigure3_62a", ";n#sigma^{#pi};#frac{1}{N_{ev}} #frac{1}{p_{T}} #frac{dN_{tr}}{d(n#sigma^{#pi})}", 100, -50, 50));
+    outsideprocessing.AddHistogram(TH1D("DataFigure3_62b", ";n#sigma^{K};#frac{1}{N_{ev}} #frac{1}{p_{T}} #frac{dN_{tr}}{d(n#sigma^{K})}", 100, -50, 50));
+    outsideprocessing.AddHistogram(TH1D("DataFigure3_62c", ";n#sigma^{p};#frac{1}{N_{ev}} #frac{1}{p_{T}} #frac{dN_{tr}}{d(n#sigma^{p})}", 100, -50, 50));
+    outsideprocessing.AddHistogram(TH1D("DataFigure3_62d", ";n#sigma^{e};#frac{1}{N_{ev}} #frac{1}{p_{T}} #frac{dN_{tr}}{d(n#sigma^{e})}", 100, -50, 50));
+    outsideprocessing.AddHistogram(TH1D("DataControl", ";cathegories;events", 2, 0, 2));
 
     //processing
     //defining TreeProcessor
@@ -130,9 +132,9 @@ int main(int argc, char **argv){
             } else{
                 continue;
             }
+            insideprocessing.Fill("DataControl", 0);
             numberOfSelectedTracks = 0;
             for(int i = 0; i<tempUPCpointer->getNumberOfTracks(); i++){
-                //used ToF, should I? TODO
                 tempTrack = tempUPCpointer->getTrack(i);
                 if(!tempTrack->getFlag(StUPCTrack::kTof)){
                     continue;
@@ -143,8 +145,6 @@ int main(int argc, char **argv){
                 //dca to the vertex
                 insideprocessing.Fill("DataFigure3_5c", tempTrack->getDcaXY());
                 insideprocessing.Fill("DataFigure3_5d", tempTrack->getDcaZ());
-                //dca to the beamline - TODO
-                // insideprocessing.Fill("DataFigure3_5e", 0);
                 //3.6
                 insideprocessing.Fill("DataFigure3_6ab", tempTrack->getEta());
                 insideprocessing.Fill("DataFigure3_6c", tempTrack->getPt());
@@ -155,8 +155,10 @@ int main(int argc, char **argv){
             }
             //histograms of normalised events
             if(numberOfSelectedTracks>=2){
+                insideprocessing.Fill("DataControl", 1);
                 //3.18g
                 insideprocessing.Fill("DataFigure3_18g", tempRPpointer->getTrack(0)->xi(beamMomentum)*tempRPpointer->getTrack(1)->xi(beamMomentum));
+                insideprocessing.Fill("DataFigure3_18gcloser", tempRPpointer->getTrack(0)->xi(beamMomentum)*tempRPpointer->getTrack(1)->xi(beamMomentum));
                 //3.19a
                 insideprocessing.Fill("DataFigure3_19a", numberOfSelectedTracks);
                 //tracks

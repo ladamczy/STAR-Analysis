@@ -54,7 +54,8 @@ int main(int argc, char *argv[]){
 
     std::cout<<"Number of events: "<<nEvents<<endl;
     std::cout<<"Energy: "<<mEnergy<<endl;
-    string filename = to_string(nEvents)+"_"+to_string(mEnergy)+"GeV_"+string(argv[0]).substr(string(argv[0]).find_last_of("/\\")+1)+".root";
+    string filename;
+    filename = "Pythia_presentation_simulation.root";
     // Create file on which histogram(s) can be saved.
     if(folder.length()!=0){
         filename = folder+"/"+filename;
@@ -108,10 +109,11 @@ int main(int argc, char *argv[]){
     TH1D PythiaFigure3_6c = TH1D("PythiaFigure3_6c", ";p_{T} [GeV/c];number of tracks", 50, 0, 5);
     TH1D PythiaFigure3_6d = TH1D("PythiaFigure3_6d", ";#Phi [rad];number of tracks", 100, -TMath::Pi(), TMath::Pi());
     TEfficiency PythiaFigure3_7 = TEfficiency("PythiaFigure3_7", ";log_{10}(#xi_{1}#xi_{2});#varepsilon_{n_{sel}>=2}", 100, -3, 0);
-    TH1D PythiaFigure3_18g = TH1D("PythiaFigure3_18g", ";#xi_{1}#xi_{2};#frac{1}{N}#frac{dN}{d(#xi_{1}#xi_{2})}", 1000, 0, 0.04);
-    TH1D PythiaFigure3_19a = TH1D("PythiaFigure3_19a", ";n_{sel};#frac{1}{N}#frac{dN}{dn_{sel}}", 10, 2, 12);
-    TH1D PythiaFigure3_20 = TH1D("PythiaFigure3_20", ";p_{T} [GeV/c];#frac{1}{N}#frac{dN}{dp_{T}}", 50, 0, 5);
-    TH1D PythiaFigure3_21 = TH1D("PythiaFigure3_21", ";#eta;#frac{1}{N}#frac{dN}{d#eta}", 100, -2, 2);
+    TH1D PythiaFigure3_18g = TH1D("PythiaFigure3_18g", ";#xi_{1}#xi_{2};#frac{1}{N} #frac{dN}{d(#xi_{1}#xi_{2})}", 1000, 0, 0.04);
+    TH1D PythiaFigure3_18gcloser = TH1D("PythiaFigure3_18gcloser", ";#xi_{1}#xi_{2};#frac{1}{N_{ev}} #frac{dN_{ev}}{d(#xi_{1}#xi_{2})}", 200, 0, 2e-4);
+    TH1D PythiaFigure3_19a = TH1D("PythiaFigure3_19a", ";n_{sel};#frac{1}{N} #frac{dN}{dn_{sel}}", 10, 2, 12);
+    TH1D PythiaFigure3_20 = TH1D("PythiaFigure3_20", ";p_{T} [GeV/c];#frac{1}{N} #frac{dN}{dp_{T}}", 50, 0, 5);
+    TH1D PythiaFigure3_21 = TH1D("PythiaFigure3_21", ";#eta;#frac{1}{N} #frac{dN}{d#eta}", 100, -2, 2);
 
     //control histogram
     TH1D PythiaControl = TH1D("PythiaControl", ";cathegories;events", 1, 0, 1);
@@ -181,19 +183,19 @@ int main(int argc, char *argv[]){
         //making a list of detected particles
         //with TPC acceptance of 60%
         int charge = 0;
-        int chargeWithoutAcceptance = 0;
+        int chargeForNsel = 0;
         int TPCParticles = 0;
-        int TPCParticlesWithoutAcceptance = 0;
+        int TPCParticlesForNsel = 0;
         for(size_t i = 0; i<pythia.event.size(); i++){
-            if(isParticleInTPCAcceptance(pythia.event[i])&&generator.flat()<0.6&&abs(pythia.event[i].eta())<0.7){
+            if(isParticleInTPCAcceptance(pythia.event[i])&&generator.flat()<0.6){
                 TPCParticles++;
                 //for some reason charge is in normal units now???
                 charge += pythia.event[i].charge();
                 detected_particles_number.push_back(i);
-            }
-            if(isParticleInTPCAcceptance(pythia.event[i])&&abs(pythia.event[i].eta())<0.7){
-                TPCParticlesWithoutAcceptance++;
-                chargeWithoutAcceptance += pythia.event[i].charge();
+                if(abs(pythia.event[i].eta())<0.7){
+                    chargeForNsel += pythia.event[i].charge();
+                    TPCParticlesForNsel++;
+                }
             }
         }
 
@@ -205,20 +207,20 @@ int main(int argc, char *argv[]){
             PythiaFigure3_6d.Fill(tempParticle.phi());
         }
         //histogram 3.7; a special case
-        bool n_selTest = !(TPCParticles==abs(charge)||TPCParticles<2);
-        bool n_selTestWithoutAcceptance = !(TPCParticlesWithoutAcceptance==abs(chargeWithoutAcceptance)||TPCParticlesWithoutAcceptance<2);
-        PythiaFigure3_7.Fill(n_selTest==n_selTestWithoutAcceptance, log10(xi(p1)*xi(p2)));
+        bool n_selTest = !(TPCParticlesForNsel==abs(chargeForNsel)||TPCParticlesForNsel<2);
+        PythiaFigure3_7.Fill(n_selTest, log10(xi(p1)*xi(p2)));
 
         //n_sel filter
         PythiaControl.Fill("before n_sel", 1);
-        if(TPCParticles==abs(charge)||TPCParticles<2){
+        if(!n_selTest){
             continue;
         }
         PythiaControl.Fill("after n_sel", 1);
 
         //histograms after the n_sel>=2 filter
         PythiaFigure3_18g.Fill(xi(p1)*xi(p2));
-        PythiaFigure3_19a.Fill(TPCParticles);
+        PythiaFigure3_18gcloser.Fill(xi(p1)*xi(p2));
+        PythiaFigure3_19a.Fill(TPCParticlesForNsel);
         for(size_t i = 0; i<detected_particles_number.size(); i++){
             tempParticle = pythia.event[detected_particles_number[i]];
             PythiaFigure3_20.Fill(tempParticle.pT());
