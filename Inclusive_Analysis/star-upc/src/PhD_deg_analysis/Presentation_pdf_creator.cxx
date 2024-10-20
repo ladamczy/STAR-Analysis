@@ -63,6 +63,9 @@ int main(int argc, char const *argv[]){
     DataFigure3_62c->Scale(1/DataFigure3_62c->GetBinWidth(1)/Data_N_events_after_nsel);
     DataFigure3_62d->Scale(1/DataFigure3_62d->GetBinWidth(1)/Data_N_events_after_nsel);
     //Pythia
+    PythiaFigure3_6ab->Scale(DataFigure3_6ab->Integral()/PythiaFigure3_6ab->Integral());
+    PythiaFigure3_6c->Scale(DataFigure3_6c->Integral()/PythiaFigure3_6c->Integral());
+    PythiaFigure3_6d->Scale(DataFigure3_6d->Integral()/PythiaFigure3_6d->Integral());
     PythiaFigure3_18g->Scale(1/PythiaFigure3_18g->GetBinWidth(1)/Pythia_N_events_after_nsel);
     PythiaFigure3_18gcloser->Scale(1/PythiaFigure3_18gcloser->GetBinWidth(1)/Pythia_N_events_after_nsel);
     PythiaFigure3_20->Scale(1/PythiaFigure3_20->GetBinWidth(1)/Pythia_N_events_after_nsel);
@@ -75,15 +78,15 @@ int main(int argc, char const *argv[]){
     simpler_draw_and_save(DataFigure3_5b, "Figure3_5b");
     simpler_draw_and_save(DataFigure3_5c, "Figure3_5c");
     simpler_draw_and_save(DataFigure3_5d, "Figure3_5d");
-    draw_and_save(DataFigure3_6ab, PythiaFigure3_6ab, "Figure3_6ab", 0, 0, 0, 0);
-    draw_and_save(DataFigure3_6c, PythiaFigure3_6c, "Figure3_6c", 0, 0, 0, 0);
-    draw_and_save(DataFigure3_6d, PythiaFigure3_6d, "Figure3_6d", 0, 0, 0, 0);
+    draw_and_save(DataFigure3_6ab, PythiaFigure3_6ab, "Figure3_6ab", 0.4, 0.2, 0.6, 0.4);
+    draw_and_save(DataFigure3_6c, PythiaFigure3_6c, "Figure3_6c", 0.64, 0.69, 0.84, 0.89);
+    draw_and_save(DataFigure3_6d, PythiaFigure3_6d, "Figure3_6d", 0.4, 0.2, 0.6, 0.4);
     simpler_draw_and_save(PythiaFigure3_7, "Figure3_7");
-    draw_and_save(DataFigure3_18g, PythiaFigure3_18g, "Figure3_18g", 0, 0, 0, 0);
-    draw_and_save(DataFigure3_18gcloser, PythiaFigure3_18gcloser, "Figure3_18gcloser", 0, 0, 0, 0);
-    draw_and_save(DataFigure3_19a, PythiaFigure3_19a, "Figure3_19a", 0, 0, 0, 0);
-    draw_and_save(DataFigure3_20, PythiaFigure3_20, "Figure3_20", 0, 0, 0, 0);
-    draw_and_save(DataFigure3_21, PythiaFigure3_21, "Figure3_21", 0, 0, 0, 0);
+    draw_and_save(DataFigure3_18g, PythiaFigure3_18g, "Figure3_18g", 0.64, 0.69, 0.84, 0.89);
+    draw_and_save(DataFigure3_18gcloser, PythiaFigure3_18gcloser, "Figure3_18gcloser", 0.5, 0.2, 0.7, 0.4);
+    draw_and_save(DataFigure3_19a, PythiaFigure3_19a, "Figure3_19a", 0.64, 0.69, 0.84, 0.89);
+    draw_and_save(DataFigure3_20, PythiaFigure3_20, "Figure3_20", 0.64, 0.69, 0.84, 0.89);
+    draw_and_save(DataFigure3_21, PythiaFigure3_21, "Figure3_21", 0.42, 0.2, 0.62, 0.4);
     simpler_draw_and_save(DataFigure3_60, "Figure3_60", true);
     simpler_draw_and_save(DataFigure3_62a, "Figure3_62a", false, true);
     simpler_draw_and_save(DataFigure3_62b, "Figure3_62b", false, true);
@@ -95,7 +98,6 @@ int main(int argc, char const *argv[]){
 
 void draw_and_save(TH1D *data, TH1D *sim, std::string fileTitle, double x1, double y1, double x2, double y2){
     TCanvas *resultCanvas = new TCanvas("resultCanvas", "resultCanvas", 1800, 1600);
-    sim->Scale(data->Integral()/sim->GetEntries());
     data->SetMinimum(0);
     data->SetMaximum(std::max(data->GetMaximum(), sim->GetMaximum())*1.1);
     data->SetMarkerStyle(kFullCircle);
@@ -111,8 +113,8 @@ void draw_and_save(TH1D *data, TH1D *sim, std::string fileTitle, double x1, doub
         TLegend *legend = new TLegend(x1, y1, x2, y2);
         legend->SetTextSize(0.025);
         legend->SetHeader("#bf{pp, #sqrt{s} = 510 GeV}", "C");
-        legend->AddEntry(data->GetName(), "#bf{extended upcDST}");
-        legend->AddEntry(sim->GetName(), "#bf{PYTHIA8 true level}");
+        legend->AddEntry(data->GetName(), "#bf{upcDST data}");
+        legend->AddEntry(sim->GetName(), "#bf{PYTHIA8 simulation}");
         legend->SetBorderSize(0);
         legend->Draw("SAME");
     }
