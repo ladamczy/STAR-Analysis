@@ -190,10 +190,12 @@ int main(int argc, char **argv){
                     tempTrack->getMomentum(tempVector);
                     insideprocessing.Fill("DataFigure3_60", tempVector.Mag()*tempTrack->getCharge(), tempTrack->getDEdxSignal());
                     //3.62
-                    insideprocessing.Fill("DataFigure3_62a", tempTrack->getNSigmasTPCPion(), 1/tempTrack->getPt());
-                    insideprocessing.Fill("DataFigure3_62b", tempTrack->getNSigmasTPCKaon(), 1/tempTrack->getPt());
-                    insideprocessing.Fill("DataFigure3_62c", tempTrack->getNSigmasTPCProton(), 1/tempTrack->getPt());
-                    insideprocessing.Fill("DataFigure3_62d", tempTrack->getNSigmasTPCElectron(), 1/tempTrack->getPt());
+                    if(tempTrack->getPt()>0.6&&tempTrack->getPt()<0.65){
+                        insideprocessing.Fill("DataFigure3_62a", tempTrack->getNSigmasTPCPion(), 1/tempTrack->getPt());
+                        insideprocessing.Fill("DataFigure3_62b", tempTrack->getNSigmasTPCKaon(), 1/tempTrack->getPt());
+                        insideprocessing.Fill("DataFigure3_62c", tempTrack->getNSigmasTPCProton(), 1/tempTrack->getPt());
+                        insideprocessing.Fill("DataFigure3_62d", tempTrack->getNSigmasTPCElectron(), 1/tempTrack->getPt());
+                    }
                 }
             }
         }

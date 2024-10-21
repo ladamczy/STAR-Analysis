@@ -108,18 +108,113 @@ int main(int argc, char const *argv[]){
     draw_and_save(DataFigure3_20, PythiaFigure3_20, "Figure3_20", true, 0.64, 0.69, 0.84, 0.89);
     draw_and_save(DataFigure3_21, PythiaFigure3_21, "Figure3_21", false, 0.42, 0.2, 0.62, 0.4);
     simpler_draw_and_save(DataFigure3_60, "Figure3_60", true);
-    simpler_draw_and_save(DataFigure3_62a, "Figure3_62a", false, true, -3., 3.);
-    simpler_draw_and_save(DataFigure3_62b, "Figure3_62b", false, true, -3., 3.);
-    simpler_draw_and_save(DataFigure3_62c, "Figure3_62c", false, true, -3., 3.);
-    simpler_draw_and_save(DataFigure3_62d, "Figure3_62d", false, true, -3., 3.);
 
-    //pairs drawing
-    //setting
+    //nsigma drawing
+    //Figure3_62a
     TCanvas *resultCanvas = new TCanvas("resultCanvas", "resultCanvas", 1800, 1600);
     gStyle->SetFrameLineWidth(1);
     gStyle->SetOptFit(0);
     gStyle->SetOptStat(0);
+    resultCanvas->SetLogy();
     resultCanvas->SetLeftMargin(0.15);
+    DataFigure3_62a->SetLineColor(kBlue+2);
+    DataFigure3_62a->Draw("hist");
+    resultCanvas->Draw();
+    double min = pow(10, resultCanvas->GetUymin());
+    double max = pow(10, resultCanvas->GetUymax());
+    TLine *lineDraw1 = new TLine(-3, min, -3, max);
+    lineDraw1->SetLineColor(kRed);
+    lineDraw1->SetLineStyle(kDashed);
+    lineDraw1->SetLineWidth(2.);
+    lineDraw1->Draw("same");
+    TLine *lineDraw2 = new TLine(3, min, 3, max);
+    lineDraw2->SetLineColor(kRed);
+    lineDraw2->SetLineStyle(kDashed);
+    lineDraw2->SetLineWidth(2.);
+    lineDraw2->Draw("same");
+    TLegend *nsigmaLegend = new TLegend(0.64, 0.69, 0.84, 0.89);
+    nsigmaLegend->SetTextSize(0.025);
+    nsigmaLegend->SetHeader("#bf{pp, #sqrt{s} = 510 GeV}", "C");
+    nsigmaLegend->AddEntry(DataFigure3_62a->GetName(), "#bf{upcDST data}");
+    nsigmaLegend->AddEntry(lineDraw1, "#bf{3#sigma tolerance}", "l");
+    nsigmaLegend->AddEntry((TObject *)0, "#bf{0.6<p_{T}<0.65}", "");
+    nsigmaLegend->SetBorderSize(0);
+    nsigmaLegend->Draw("same");
+    resultCanvas->SaveAs("/home/adam/STAR-Analysis/Inclusive_Analysis/star-upc/scripts/presentation_pdfs/Figure3_62a.pdf");
+    resultCanvas->Clear();
+    delete nsigmaLegend;
+    //Figure3_62b
+    DataFigure3_62b->SetLineColor(kBlue+2);
+    DataFigure3_62b->Draw("hist");
+    resultCanvas->Draw();
+    min = pow(10, resultCanvas->GetUymin());
+    max = pow(10, resultCanvas->GetUymax());
+    lineDraw1->SetY1(min);
+    lineDraw1->SetY2(max);
+    lineDraw2->SetY1(min);
+    lineDraw2->SetY2(max);
+    lineDraw1->Draw("same");
+    lineDraw2->Draw("same");
+    nsigmaLegend = new TLegend(0.64, 0.69, 0.84, 0.89);
+    nsigmaLegend->SetTextSize(0.025);
+    nsigmaLegend->SetHeader("#bf{pp, #sqrt{s} = 510 GeV}", "C");
+    nsigmaLegend->AddEntry(DataFigure3_62b->GetName(), "#bf{upcDST data}");
+    nsigmaLegend->AddEntry(lineDraw1, "#bf{3#sigma tolerance}", "l");
+    nsigmaLegend->AddEntry((TObject *)0, "#bf{0.6<p_{T}<0.65}", "");
+    nsigmaLegend->SetBorderSize(0);
+    nsigmaLegend->Draw("same");
+    resultCanvas->SaveAs("/home/adam/STAR-Analysis/Inclusive_Analysis/star-upc/scripts/presentation_pdfs/Figure3_62b.pdf");
+    resultCanvas->Clear();
+    delete nsigmaLegend;
+    //Figure3_62c
+    DataFigure3_62c->SetLineColor(kBlue+2);
+    DataFigure3_62c->Draw("hist");
+    resultCanvas->Draw();
+    min = pow(10, resultCanvas->GetUymin());
+    max = pow(10, resultCanvas->GetUymax());
+    lineDraw1->SetY1(min);
+    lineDraw1->SetY2(max);
+    lineDraw2->SetY1(min);
+    lineDraw2->SetY2(max);
+    lineDraw1->Draw("same");
+    lineDraw2->Draw("same");
+    nsigmaLegend = new TLegend(0.64, 0.69, 0.84, 0.89);
+    nsigmaLegend->SetTextSize(0.025);
+    nsigmaLegend->SetHeader("#bf{pp, #sqrt{s} = 510 GeV}", "C");
+    nsigmaLegend->AddEntry(DataFigure3_62c->GetName(), "#bf{upcDST data}");
+    nsigmaLegend->AddEntry(lineDraw1, "#bf{3#sigma tolerance}", "l");
+    nsigmaLegend->AddEntry((TObject *)0, "#bf{0.6<p_{T}<0.65}", "");
+    nsigmaLegend->SetBorderSize(0);
+    nsigmaLegend->Draw("same");
+    resultCanvas->SaveAs("/home/adam/STAR-Analysis/Inclusive_Analysis/star-upc/scripts/presentation_pdfs/Figure3_62c.pdf");
+    resultCanvas->Clear();
+    delete nsigmaLegend;
+    //Figure3_62d
+    DataFigure3_62d->SetLineColor(kBlue+2);
+    DataFigure3_62d->Draw("hist");
+    resultCanvas->Draw();
+    min = pow(10, resultCanvas->GetUymin());
+    max = pow(10, resultCanvas->GetUymax());
+    lineDraw1->SetY1(min);
+    lineDraw1->SetY2(max);
+    lineDraw2->SetY1(min);
+    lineDraw2->SetY2(max);
+    lineDraw1->Draw("same");
+    lineDraw2->Draw("same");
+    nsigmaLegend = new TLegend(0.64, 0.69, 0.84, 0.89);
+    nsigmaLegend->SetTextSize(0.025);
+    nsigmaLegend->SetHeader("#bf{pp, #sqrt{s} = 510 GeV}", "C");
+    nsigmaLegend->AddEntry(DataFigure3_62d->GetName(), "#bf{upcDST data}");
+    nsigmaLegend->AddEntry(lineDraw1, "#bf{3#sigma tolerance}", "l");
+    nsigmaLegend->AddEntry((TObject *)0, "#bf{0.6<p_{T}<0.65}", "");
+    nsigmaLegend->SetBorderSize(0);
+    nsigmaLegend->Draw("same");
+    resultCanvas->SaveAs("/home/adam/STAR-Analysis/Inclusive_Analysis/star-upc/scripts/presentation_pdfs/Figure3_62d.pdf");
+    resultCanvas->SetLogy(0);
+    resultCanvas->Clear();
+    delete nsigmaLegend;
+
+    //pairs drawing
     //KK without PID
     MKKWide->SetTitle("");
     MKKWide->SetMinimum(0);
