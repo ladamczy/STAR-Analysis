@@ -78,6 +78,8 @@ int main(int argc, char **argv){
     outsideprocessing.AddHistogram(TH1D("DataFigure3_62c", ";n#sigma^{p};#frac{1}{N_{ev}} #frac{1}{p_{T}} #frac{dN_{tr}}{d(n#sigma^{p})}", 100, -50, 50));
     outsideprocessing.AddHistogram(TH1D("DataFigure3_62d", ";n#sigma^{e};#frac{1}{N_{ev}} #frac{1}{p_{T}} #frac{dN_{tr}}{d(n#sigma^{e})}", 100, -50, 50));
     outsideprocessing.AddHistogram(TH1D("DataControl", ";cathegories;events", 2, 0, 2));
+    //new histograms
+    outsideprocessing.AddHistogram(TH1D("tVsXi1Xi2", ";t [GeV/c];events", 400, 0, 0.001));
 
     //processing
     //defining TreeProcessor
@@ -104,6 +106,9 @@ int main(int argc, char **argv){
         // StPicoPhysicalHelix *trackLine;
         int numberOfSelectedTracks = 0;
         TVector3 tempVector;
+        TLorentzVector initProtonVector;
+        TLorentzVector afterProtonVector;
+        double tMandel;
 
         //actual loop
         while(myReader.Next()){
@@ -127,6 +132,15 @@ int main(int argc, char **argv){
             //histogram filling
             //possibly make it better with StPicoPhysicslHelix? TODO
             insideprocessing.Fill("DataFigure3_4a", tempUPCpointer->getNumberOfVertices());
+            initProtonVector.SetXYZM(0, 0, beamMomentum, particleMass[Proton]);
+            if(tempRPpointer->getTrack(0)->pVec().Z()>0){
+                afterProtonVector.SetVectM(tempRPpointer->getTrack(0)->pVec(), particleMass[Proton]);
+                tMandel = -(initProtonVector-afterProtonVector).Mag2();
+            } else{
+                afterProtonVector.SetVectM(tempRPpointer->getTrack(1)->pVec(), particleMass[Proton]);
+                tMandel = -(initProtonVector-afterProtonVector).Mag2();
+            }
+            insideprocessing.Fill("tVsXi1Xi2", tMandel);
             if(tempUPCpointer->getNumberOfVertices()==1){
                 insideprocessing.Fill("DataFigure3_4b", tempUPCpointer->getVertex(0)->getPosZ());
             } else{
