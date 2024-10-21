@@ -65,9 +65,7 @@ int main(int argc, char const *argv[]){
     int Data_N_events_after_nsel = DataControl->GetBinContent(2);
     int Pythia_N_events_after_nsel = PythiaControl->GetBinContent(2);
     //Data
-    DataFigure3_18g = (TH1D *)DataFigure3_18g->Rebin(10);
     DataFigure3_18g->Scale(1/DataFigure3_18g->GetBinWidth(1)/Data_N_events_after_nsel);
-    DataFigure3_18gcloser = (TH1D *)DataFigure3_18gcloser->Rebin(2);
     DataFigure3_18gcloser->Scale(1/DataFigure3_18gcloser->GetBinWidth(1)/Data_N_events_after_nsel);
     DataFigure3_19a->Scale(1/DataFigure3_19a->GetBinWidth(1)/Data_N_events_after_nsel);
     DataFigure3_20->Scale(1/DataFigure3_20->GetBinWidth(1)/Data_N_events_after_nsel);
@@ -80,9 +78,7 @@ int main(int argc, char const *argv[]){
     PythiaFigure3_6ab->Scale(DataFigure3_6ab->Integral()/PythiaFigure3_6ab->Integral());
     PythiaFigure3_6c->Scale(DataFigure3_6c->Integral()/PythiaFigure3_6c->Integral());
     PythiaFigure3_6d->Scale(DataFigure3_6d->Integral()/PythiaFigure3_6d->Integral());
-    PythiaFigure3_18g = (TH1D *)PythiaFigure3_18g->Rebin(10);
     PythiaFigure3_18g->Scale(1/PythiaFigure3_18g->GetBinWidth(1)/Pythia_N_events_after_nsel);
-    PythiaFigure3_18gcloser = (TH1D *)PythiaFigure3_18gcloser->Rebin(2);
     PythiaFigure3_18gcloser->Scale(1/PythiaFigure3_18gcloser->GetBinWidth(1)/Pythia_N_events_after_nsel);
     PythiaFigure3_19a->Scale(1/PythiaFigure3_19a->GetBinWidth(1)/Pythia_N_events_after_nsel);
     PythiaFigure3_20->Scale(1/PythiaFigure3_20->GetBinWidth(1)/Pythia_N_events_after_nsel);

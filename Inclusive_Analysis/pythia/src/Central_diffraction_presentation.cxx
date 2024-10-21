@@ -110,8 +110,8 @@ int main(int argc, char *argv[]){
     TH1D PythiaFigure3_6d = TH1D("PythiaFigure3_6d", ";#Phi [rad];number of tracks", 100, -TMath::Pi(), TMath::Pi());
     TEfficiency PythiaFigure3_7 = TEfficiency("PythiaFigure3_7", ";log_{10}(#xi_{1}#xi_{2});#varepsilon_{n_{sel}>=2}", 100, -3, 0);
     TEfficiency PythiaFigure3_7noAcceptance = TEfficiency("PythiaFigure3_7noAcceptance", ";log_{10}(#xi_{1}#xi_{2});#varepsilon_{n_{sel}>=2}", 100, -3, 0);
-    TH1D PythiaFigure3_18g = TH1D("PythiaFigure3_18g", ";#xi_{1}#xi_{2};#frac{1}{N} #frac{dN}{d(#xi_{1}#xi_{2})}", 1000, 0, 0.04);
-    TH1D PythiaFigure3_18gcloser = TH1D("PythiaFigure3_18gcloser", ";#xi_{1}#xi_{2};#frac{1}{N_{ev}} #frac{dN_{ev}}{d(#xi_{1}#xi_{2})}", 200, 0, 2e-4);
+    TH1D PythiaFigure3_18g = TH1D("PythiaFigure3_18g", ";#xi_{1}#xi_{2};#frac{1}{N} #frac{dN}{d(#xi_{1}#xi_{2})}", 100, 0, 0.04);
+    TH1D PythiaFigure3_18gcloser = TH1D("PythiaFigure3_18gcloser", ";#xi_{1}#xi_{2};#frac{1}{N_{ev}} #frac{dN_{ev}}{d(#xi_{1}#xi_{2})}", 100, 0, 2e-4);
     TH1D PythiaFigure3_19a = TH1D("PythiaFigure3_19a", ";n_{sel};#frac{1}{N} #frac{dN}{dn_{sel}}", 10, 2, 12);
     TH1D PythiaFigure3_20 = TH1D("PythiaFigure3_20", ";p_{T} [GeV/c];#frac{1}{N} #frac{dN}{dp_{T}}", 50, 0, 5);
     TH1D PythiaFigure3_21 = TH1D("PythiaFigure3_21", ";#eta;#frac{1}{N} #frac{dN}{d#eta}", 100, -2, 2);

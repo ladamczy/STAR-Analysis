@@ -67,8 +67,8 @@ int main(int argc, char **argv){
     outsideprocessing.AddHistogram(TH1D("DataFigure3_6ab", ";#eta;number of tracks", 100, -2, 2));
     outsideprocessing.AddHistogram(TH1D("DataFigure3_6c", ";p_{T} [GeV/c];number of tracks", 50, 0, 5));
     outsideprocessing.AddHistogram(TH1D("DataFigure3_6d", ";#Phi [rad];number of tracks", 100, -TMath::Pi(), TMath::Pi()));
-    outsideprocessing.AddHistogram(TH1D("DataFigure3_18g", ";#xi_{1}#xi_{2};#frac{1}{N_{ev}} #frac{dN_{ev}}{d(#xi_{1}#xi_{2})}", 1000, 0, 0.04));
-    outsideprocessing.AddHistogram(TH1D("DataFigure3_18gcloser", ";#xi_{1}#xi_{2};#frac{1}{N_{ev}} #frac{dN_{ev}}{d(#xi_{1}#xi_{2})}", 200, 0, 2e-4));
+    outsideprocessing.AddHistogram(TH1D("DataFigure3_18g", ";#xi_{1}#xi_{2};#frac{1}{N_{ev}} #frac{dN_{ev}}{d(#xi_{1}#xi_{2})}", 100, 0, 0.04));
+    outsideprocessing.AddHistogram(TH1D("DataFigure3_18gcloser", ";#xi_{1}#xi_{2};#frac{1}{N_{ev}} #frac{dN_{ev}}{d(#xi_{1}#xi_{2})}", 100, 0, 2e-4));
     outsideprocessing.AddHistogram(TH1D("DataFigure3_19a", ";n_{sel};#frac{1}{N_{ev}} #frac{dN_{ev}}{dn_{sel}}", 10, 2, 12));
     outsideprocessing.AddHistogram(TH1D("DataFigure3_20", ";p_{T} [GeV/c];#frac{1}{N_{ev}} #frac{dN_{tr}}{dp_{T}}", 50, 0, 5));
     outsideprocessing.AddHistogram(TH1D("DataFigure3_21", ";#eta;#frac{1}{N_{ev}} #frac{dN_{tr}}{d#eta}", 100, -2, 2));
