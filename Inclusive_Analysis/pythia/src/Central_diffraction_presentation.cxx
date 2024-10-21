@@ -109,6 +109,7 @@ int main(int argc, char *argv[]){
     TH1D PythiaFigure3_6c = TH1D("PythiaFigure3_6c", ";p_{T} [GeV/c];number of tracks", 50, 0, 5);
     TH1D PythiaFigure3_6d = TH1D("PythiaFigure3_6d", ";#Phi [rad];number of tracks", 100, -TMath::Pi(), TMath::Pi());
     TEfficiency PythiaFigure3_7 = TEfficiency("PythiaFigure3_7", ";log_{10}(#xi_{1}#xi_{2});#varepsilon_{n_{sel}>=2}", 100, -3, 0);
+    TEfficiency PythiaFigure3_7noAcceptance = TEfficiency("PythiaFigure3_7noAcceptance", ";log_{10}(#xi_{1}#xi_{2});#varepsilon_{n_{sel}>=2}", 100, -3, 0);
     TH1D PythiaFigure3_18g = TH1D("PythiaFigure3_18g", ";#xi_{1}#xi_{2};#frac{1}{N} #frac{dN}{d(#xi_{1}#xi_{2})}", 1000, 0, 0.04);
     TH1D PythiaFigure3_18gcloser = TH1D("PythiaFigure3_18gcloser", ";#xi_{1}#xi_{2};#frac{1}{N_{ev}} #frac{dN_{ev}}{d(#xi_{1}#xi_{2})}", 200, 0, 2e-4);
     TH1D PythiaFigure3_19a = TH1D("PythiaFigure3_19a", ";n_{sel};#frac{1}{N} #frac{dN}{dn_{sel}}", 10, 2, 12);
@@ -182,20 +183,24 @@ int main(int argc, char *argv[]){
         }
         //making a list of detected particles
         //with TPC acceptance of 60%
-        int charge = 0;
-        int chargeForNsel = 0;
-        int TPCParticles = 0;
         int TPCParticlesForNsel = 0;
+        //and without
+        int TPCParticlesForNch = 0;
+        //loop itself
         for(size_t i = 0; i<pythia.event.size(); i++){
-            if(isParticleInTPCAcceptance(pythia.event[i])&&generator.flat()<0.6){
-                TPCParticles++;
-                //for some reason charge is in normal units now???
-                charge += pythia.event[i].charge();
+            if(!isParticleInTPCAcceptance(pythia.event[i])){
+                continue;
+            }
+            //simulated acceptance
+            if(generator.flat()<0.6){
                 detected_particles_number.push_back(i);
                 if(abs(pythia.event[i].eta())<0.7){
-                    chargeForNsel += pythia.event[i].charge();
                     TPCParticlesForNsel++;
                 }
+            }
+            //without simulated acceptance
+            if(abs(pythia.event[i].eta())<0.7){
+                TPCParticlesForNch++;
             }
         }
 
@@ -207,12 +212,12 @@ int main(int argc, char *argv[]){
             PythiaFigure3_6d.Fill(tempParticle.phi());
         }
         //histogram 3.7; a special case
-        bool n_selTest = !(TPCParticlesForNsel==abs(chargeForNsel)||TPCParticlesForNsel<2);
-        PythiaFigure3_7.Fill(n_selTest, log10(xi(p1)*xi(p2)));
+        PythiaFigure3_7.Fill(TPCParticlesForNsel>=2, log10(xi(p1)*xi(p2)));
+        PythiaFigure3_7noAcceptance.Fill(TPCParticlesForNsel>=2, log10(xi(p1)*xi(p2)));
 
         //n_sel filter
         PythiaControl.Fill("before n_sel", 1);
-        if(!n_selTest){
+        if(TPCParticlesForNsel<2){
             continue;
         }
         PythiaControl.Fill("after n_sel", 1);
