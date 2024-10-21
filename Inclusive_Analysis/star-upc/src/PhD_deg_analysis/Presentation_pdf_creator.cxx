@@ -11,7 +11,7 @@
 
 #include "string.h"
 
-void draw_and_save(TH1D *data, TH1D *sim, std::string fileTitle, double x1, double y1, double x2, double y2, double line1 = 0, double line2 = 0);
+void draw_and_save(TH1D *data, TH1D *sim, std::string fileTitle, bool isYlogarithmic = false, double x1 = 0, double y1 = 0, double x2 = 0, double y2 = 0, double line1 = 0, double line2 = 0);
 void simpler_draw_and_save(TH1 *hist, std::string filename = "", bool is3D = false, bool isYlogarithmic = false, double line1 = 0, double line2 = 0);
 void simpler_draw_and_save(TEfficiency *hist, std::string filename = "");
 
@@ -46,6 +46,7 @@ int main(int argc, char const *argv[]){
     TH1D *PythiaFigure3_6c = (TH1D *)pythia->Get("PythiaFigure3_6c");
     TH1D *PythiaFigure3_6d = (TH1D *)pythia->Get("PythiaFigure3_6d");
     TEfficiency *PythiaFigure3_7 = (TEfficiency *)pythia->Get("PythiaFigure3_7");
+    TEfficiency *PythiaFigure3_7noAcceptance = (TEfficiency *)pythia->Get("PythiaFigure3_7noAcceptance");
     TH1D *PythiaFigure3_18g = (TH1D *)pythia->Get("PythiaFigure3_18g");
     TH1D *PythiaFigure3_18gcloser = (TH1D *)pythia->Get("PythiaFigure3_18gcloser");
     TH1D *PythiaFigure3_19a = (TH1D *)pythia->Get("PythiaFigure3_19a");
@@ -64,8 +65,11 @@ int main(int argc, char const *argv[]){
     int Data_N_events_after_nsel = DataControl->GetBinContent(2);
     int Pythia_N_events_after_nsel = PythiaControl->GetBinContent(2);
     //Data
+    DataFigure3_18g = (TH1D *)DataFigure3_18g->Rebin(10);
     DataFigure3_18g->Scale(1/DataFigure3_18g->GetBinWidth(1)/Data_N_events_after_nsel);
+    DataFigure3_18gcloser = (TH1D *)DataFigure3_18gcloser->Rebin(2);
     DataFigure3_18gcloser->Scale(1/DataFigure3_18gcloser->GetBinWidth(1)/Data_N_events_after_nsel);
+    DataFigure3_19a->Scale(1/DataFigure3_19a->GetBinWidth(1)/Data_N_events_after_nsel);
     DataFigure3_20->Scale(1/DataFigure3_20->GetBinWidth(1)/Data_N_events_after_nsel);
     DataFigure3_21->Scale(1/DataFigure3_21->GetBinWidth(1)/Data_N_events_after_nsel);
     DataFigure3_62a->Scale(1/DataFigure3_62a->GetBinWidth(1)/Data_N_events_after_nsel);
@@ -76,8 +80,11 @@ int main(int argc, char const *argv[]){
     PythiaFigure3_6ab->Scale(DataFigure3_6ab->Integral()/PythiaFigure3_6ab->Integral());
     PythiaFigure3_6c->Scale(DataFigure3_6c->Integral()/PythiaFigure3_6c->Integral());
     PythiaFigure3_6d->Scale(DataFigure3_6d->Integral()/PythiaFigure3_6d->Integral());
+    PythiaFigure3_18g = (TH1D *)PythiaFigure3_18g->Rebin(10);
     PythiaFigure3_18g->Scale(1/PythiaFigure3_18g->GetBinWidth(1)/Pythia_N_events_after_nsel);
+    PythiaFigure3_18gcloser = (TH1D *)PythiaFigure3_18gcloser->Rebin(2);
     PythiaFigure3_18gcloser->Scale(1/PythiaFigure3_18gcloser->GetBinWidth(1)/Pythia_N_events_after_nsel);
+    PythiaFigure3_19a->Scale(1/PythiaFigure3_19a->GetBinWidth(1)/Pythia_N_events_after_nsel);
     PythiaFigure3_20->Scale(1/PythiaFigure3_20->GetBinWidth(1)/Pythia_N_events_after_nsel);
     PythiaFigure3_21->Scale(1/PythiaFigure3_21->GetBinWidth(1)/Pythia_N_events_after_nsel);
 
@@ -90,15 +97,16 @@ int main(int argc, char const *argv[]){
     simpler_draw_and_save(DataFigure3_5b, "Figure3_5b");
     simpler_draw_and_save(DataFigure3_5c, "Figure3_5c");
     simpler_draw_and_save(DataFigure3_5d, "Figure3_5d");
-    draw_and_save(DataFigure3_6ab, PythiaFigure3_6ab, "Figure3_6ab", 0.4, 0.2, 0.6, 0.4);
-    draw_and_save(DataFigure3_6c, PythiaFigure3_6c, "Figure3_6c", 0.64, 0.69, 0.84, 0.89);
-    draw_and_save(DataFigure3_6d, PythiaFigure3_6d, "Figure3_6d", 0.4, 0.2, 0.6, 0.4);
+    draw_and_save(DataFigure3_6ab, PythiaFigure3_6ab, "Figure3_6ab", false, 0.4, 0.2, 0.6, 0.4);
+    draw_and_save(DataFigure3_6c, PythiaFigure3_6c, "Figure3_6c", true, 0.64, 0.69, 0.84, 0.89);
+    draw_and_save(DataFigure3_6d, PythiaFigure3_6d, "Figure3_6d", false, 0.4, 0.2, 0.6, 0.4);
     simpler_draw_and_save(PythiaFigure3_7, "Figure3_7");
-    draw_and_save(DataFigure3_18g, PythiaFigure3_18g, "Figure3_18g", 0.64, 0.69, 0.84, 0.89);
-    draw_and_save(DataFigure3_18gcloser, PythiaFigure3_18gcloser, "Figure3_18gcloser", 0.5, 0.2, 0.7, 0.4);
-    draw_and_save(DataFigure3_19a, PythiaFigure3_19a, "Figure3_19a", 0.64, 0.69, 0.84, 0.89);
-    draw_and_save(DataFigure3_20, PythiaFigure3_20, "Figure3_20", 0.64, 0.69, 0.84, 0.89);
-    draw_and_save(DataFigure3_21, PythiaFigure3_21, "Figure3_21", 0.42, 0.2, 0.62, 0.4);
+    simpler_draw_and_save(PythiaFigure3_7noAcceptance, "Figure3_7noAcceptance");
+    draw_and_save(DataFigure3_18g, PythiaFigure3_18g, "Figure3_18g", true, 0.64, 0.69, 0.84, 0.89);
+    draw_and_save(DataFigure3_18gcloser, PythiaFigure3_18gcloser, "Figure3_18gcloser", false, 0.5, 0.15, 0.7, 0.35);
+    draw_and_save(DataFigure3_19a, PythiaFigure3_19a, "Figure3_19a", false, 0.64, 0.69, 0.84, 0.89);
+    draw_and_save(DataFigure3_20, PythiaFigure3_20, "Figure3_20", true, 0.64, 0.69, 0.84, 0.89);
+    draw_and_save(DataFigure3_21, PythiaFigure3_21, "Figure3_21", false, 0.42, 0.2, 0.62, 0.4);
     simpler_draw_and_save(DataFigure3_60, "Figure3_60", true);
     simpler_draw_and_save(DataFigure3_62a, "Figure3_62a", false, true, -3., 3.);
     simpler_draw_and_save(DataFigure3_62b, "Figure3_62b", false, true, -3., 3.);
@@ -223,10 +231,16 @@ int main(int argc, char const *argv[]){
     return 0;
 }
 
-void draw_and_save(TH1D *data, TH1D *sim, std::string fileTitle, double x1, double y1, double x2, double y2, double line1, double line2){
+void draw_and_save(TH1D *data, TH1D *sim, std::string fileTitle, bool isYlogarithmic, double x1, double y1, double x2, double y2, double line1, double line2){
     TCanvas *resultCanvas = new TCanvas("resultCanvas", "resultCanvas", 1800, 1600);
-    data->SetMinimum(0);
-    data->SetMaximum(std::max(data->GetMaximum(), sim->GetMaximum())*1.1);
+    //it'll work
+    resultCanvas->SetLogy(isYlogarithmic);
+    if(!isYlogarithmic){
+        data->SetMinimum(0);
+        data->SetMaximum(std::max(data->GetMaximum(), sim->GetMaximum())*1.1);
+    } else{
+        data->SetMaximum(std::max(data->GetMaximum(), sim->GetMaximum())*2.1);
+    }
     data->SetMarkerStyle(kFullCircle);
     data->SetMarkerSize(2);
     data->SetMarkerColor(kBlue);
@@ -312,12 +326,13 @@ void simpler_draw_and_save(TEfficiency *hist, std::string filename){
     gStyle->SetFrameLineWidth(1);
     gStyle->SetOptFit(0);
     gStyle->SetOptStat(0);
-    resultCanvas->SetLeftMargin(0.15);
+    // resultCanvas->SetLeftMargin(0.15);
+    resultCanvas->SetRightMargin(0.05);
     hist->SetLineColor(kBlue+2);
     hist->SetMarkerStyle(kFullCircle);
     hist->SetMarkerSize(2);
     hist->SetMarkerColor(kBlue);
-    hist->Draw("e");
+    hist->Draw("ap");
     if(filename.length()==0){
         fileTitle = hist->GetName();
     } else{
