@@ -213,7 +213,7 @@ int main(int argc, char *argv[]){
         }
         //histogram 3.7; a special case
         PythiaFigure3_7.Fill(TPCParticlesForNsel>=2, log10(xi(p1)*xi(p2)));
-        PythiaFigure3_7noAcceptance.Fill(TPCParticlesForNsel>=2, log10(xi(p1)*xi(p2)));
+        PythiaFigure3_7noAcceptance.Fill(TPCParticlesForNch>=2, log10(xi(p1)*xi(p2)));
 
         //n_sel filter
         PythiaControl.Fill("before n_sel", 1);
