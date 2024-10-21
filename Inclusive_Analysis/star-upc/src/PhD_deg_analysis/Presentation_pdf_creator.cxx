@@ -6,12 +6,13 @@
 #include "TH2D.h"
 #include "TEfficiency.h"
 #include "TLatex.h"
+#include "TLine.h"
 #include "TStyle.h"
 
 #include "string.h"
 
-void draw_and_save(TH1D *data, TH1D *sim, std::string fileTitle, double x1, double y1, double x2, double y2);
-void simpler_draw_and_save(TH1 *hist, std::string filename = "", bool is3D = false, bool isYlogarithmic = false);
+void draw_and_save(TH1D *data, TH1D *sim, std::string fileTitle, double x1, double y1, double x2, double y2, double line1 = 0, double line2 = 0);
+void simpler_draw_and_save(TH1 *hist, std::string filename = "", bool is3D = false, bool isYlogarithmic = false, double line1 = 0, double line2 = 0);
 void simpler_draw_and_save(TEfficiency *hist, std::string filename = "");
 
 int main(int argc, char const *argv[]){
@@ -83,7 +84,7 @@ int main(int argc, char const *argv[]){
     //pairs drawing and labeling
 
     //drawing and saving - data &PYTHIA
-    simpler_draw_and_save(DataFigure3_4a, "Figure3_4a");
+    simpler_draw_and_save(DataFigure3_4a, "Figure3_4a", false, false, 1., 2.);
     simpler_draw_and_save(DataFigure3_4b, "Figure3_4b");
     simpler_draw_and_save(DataFigure3_5a, "Figure3_5a");
     simpler_draw_and_save(DataFigure3_5b, "Figure3_5b");
@@ -99,10 +100,10 @@ int main(int argc, char const *argv[]){
     draw_and_save(DataFigure3_20, PythiaFigure3_20, "Figure3_20", 0.64, 0.69, 0.84, 0.89);
     draw_and_save(DataFigure3_21, PythiaFigure3_21, "Figure3_21", 0.42, 0.2, 0.62, 0.4);
     simpler_draw_and_save(DataFigure3_60, "Figure3_60", true);
-    simpler_draw_and_save(DataFigure3_62a, "Figure3_62a", false, true);
-    simpler_draw_and_save(DataFigure3_62b, "Figure3_62b", false, true);
-    simpler_draw_and_save(DataFigure3_62c, "Figure3_62c", false, true);
-    simpler_draw_and_save(DataFigure3_62d, "Figure3_62d", false, true);
+    simpler_draw_and_save(DataFigure3_62a, "Figure3_62a", false, true, -3., 3.);
+    simpler_draw_and_save(DataFigure3_62b, "Figure3_62b", false, true, -3., 3.);
+    simpler_draw_and_save(DataFigure3_62c, "Figure3_62c", false, true, -3., 3.);
+    simpler_draw_and_save(DataFigure3_62d, "Figure3_62d", false, true, -3., 3.);
 
     //pairs drawing
     //setting
@@ -222,7 +223,7 @@ int main(int argc, char const *argv[]){
     return 0;
 }
 
-void draw_and_save(TH1D *data, TH1D *sim, std::string fileTitle, double x1, double y1, double x2, double y2){
+void draw_and_save(TH1D *data, TH1D *sim, std::string fileTitle, double x1, double y1, double x2, double y2, double line1, double line2){
     TCanvas *resultCanvas = new TCanvas("resultCanvas", "resultCanvas", 1800, 1600);
     data->SetMinimum(0);
     data->SetMaximum(std::max(data->GetMaximum(), sim->GetMaximum())*1.1);
@@ -250,7 +251,7 @@ void draw_and_save(TH1D *data, TH1D *sim, std::string fileTitle, double x1, doub
     resultCanvas->SaveAs(("/home/adam/STAR-Analysis/Inclusive_Analysis/star-upc/scripts/presentation_pdfs/"+fileTitle+".pdf").c_str());
 }
 
-void simpler_draw_and_save(TH1 *hist, std::string filename, bool is3D, bool isYlogarithmic){
+void simpler_draw_and_save(TH1 *hist, std::string filename, bool is3D, bool isYlogarithmic, double line1, double line2){
     TCanvas *resultCanvas = new TCanvas("resultCanvas", "resultCanvas", 1800, 1600);
     std::string fileTitle;
     gStyle->SetFrameLineWidth(1);
@@ -269,6 +270,33 @@ void simpler_draw_and_save(TH1 *hist, std::string filename, bool is3D, bool isYl
         hist->Draw("colz");
     } else{
         hist->Draw("hist");
+    }
+    resultCanvas->Draw();
+    if(line1!=0){
+        double min = resultCanvas->GetUymin();
+        double max = resultCanvas->GetUymax();
+        if(isYlogarithmic){
+            min = pow(10, resultCanvas->GetUymin());
+            max = pow(10, resultCanvas->GetUymax());
+        }
+        TLine *lineDraw1 = new TLine(line1, min, line1, max);
+        lineDraw1->SetLineColor(kRed);
+        lineDraw1->SetLineStyle(kDashed);
+        lineDraw1->SetLineWidth(2.);
+        lineDraw1->Draw("same");
+    }
+    if(line2!=0){
+        double min = resultCanvas->GetUymin();
+        double max = resultCanvas->GetUymax();
+        if(isYlogarithmic){
+            min = pow(10, resultCanvas->GetUymin());
+            max = pow(10, resultCanvas->GetUymax());
+        }
+        TLine *lineDraw2 = new TLine(line2, min, line2, max);
+        lineDraw2->SetLineColor(kRed);
+        lineDraw2->SetLineStyle(kDashed);
+        lineDraw2->SetLineWidth(2.);
+        lineDraw2->Draw("same");
     }
     if(filename.length()==0){
         fileTitle = hist->GetName();
