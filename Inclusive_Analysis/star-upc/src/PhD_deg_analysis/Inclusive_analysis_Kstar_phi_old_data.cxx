@@ -14,9 +14,6 @@
 #include "StUPCBemcCluster.h"
 #include "StUPCVertex.h"
 #include "StUPCTofHit.h"
-#include "StUPCV0.h"
-#include "BeamPosition.h"
-#include "StPicoPhysicalHelix.h"
 
 //my headers
 #include "UsefulThings.h"
@@ -32,6 +29,7 @@ enum PARTICLES{ Pion = 0, Kaon = 1, Proton = 2, nParticles };
 const double particleMass[nParticles] = { 0.13957, 0.493677, 0.93827 }; // pion, kaon, proton in GeV /c^2 
 enum BRANCH_ID{ EU, ED, WU, WD, nBranches };
 enum RP_ID{ E1U, E1D, E2U, E2D, W1U, W1D, W2U, W2D, nRomanPots };
+enum SUSPECTED_PARTICLES{ K0S, Lambda, Kstar, Phi };
 
 int main(int argc, char **argv){
 
@@ -52,19 +50,24 @@ int main(int argc, char **argv){
     }
     const string &outputFolder = argv[2];
 
-    //useful constants
-    vector<vector<double>> beamData = ReadFillPositionData("STAR-Analysis/share/Run7PolarizationWithPosition.csv");
-
     //histograms
     ProcessingOutsideLoop outsideprocessing;
+    int n_ptBins = 9;
+    double ptBins[] = { 0,0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8 };
+    int n_etaBins = 10;
+    double etaBins[] = { -1., -0.8, -0.6, -0.4, -0.2, 0., 0.2, 0.4, 0.6, 0.8, 1.0 };
     //phi, Kstar
-    outsideprocessing.AddHistogram(TH1D("MKKWide", "#varphi(1020) mass in wide range;m_{K^{+}K^{-}} [GeV];Number of pairs", 500, 0.0, 5.0));
-    outsideprocessing.AddHistogram(TH1D("MKpiWide", "K^{*} mass in wide range;m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 500, 0.0, 5.0));
-    outsideprocessing.AddHistogram(TH1D("MpipiWide", "K^{0}_{S} mass in wide range;m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 500, 0.0, 5.0));
-    outsideprocessing.AddHistogram(TH1D("MKKWidedEdx", "#Phi mass in wide range;m_{K^{+}K^{-}} [GeV];Number of pairs", 500, 0.0, 5.0));
-    outsideprocessing.AddHistogram(TH1D("MKpiWidedEdx", "K^{*} mass in wide range;m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 500, 0.0, 5.0));
-    outsideprocessing.AddHistogram(TH1D("MpipiWidedEdx", "K^{0}_{S} mass in wide range;m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 500, 0.0, 5.0));
-
+    outsideprocessing.AddHistogram(TH1D("MKKWide", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 500, 0.0, 5.0));
+    outsideprocessing.AddHistogram(TH1D("MKKNarrow", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 100, 0.9, 1.2));
+    outsideprocessing.AddHistogram(TH1D("MKpiWide", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 500, 0.0, 5.0));
+    outsideprocessing.AddHistogram(TH1D("MKpiNarrow", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 100, 0.8, 1.0));
+    outsideprocessing.AddHistogram(TH1D("MKKWidedEdx", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 500, 0.0, 5.0));
+    outsideprocessing.AddHistogram(TH1D("MKpiWidedEdx", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 500, 0.0, 5.0));
+    outsideprocessing.AddHistogram(TH1D("MKpiNarrowdEdx", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 100, 0.8, 1.0));
+    outsideprocessing.AddHistogram(TH1D("MKpiNarrowdEdx", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 100, 0.8, 1.0));
+    outsideprocessing.AddHistogram(TH1D("MKpiNarrowdEdx", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 100, 0.8, 1.0));
+    outsideprocessing.AddHistogram(TH2D("Mphipt2DHist", "Mphipt2DHist", 50, 0.9, 1.1, n_ptBins, ptBins));
+    outsideprocessing.AddHistogram(TH2D("Mphieta2DHist", "Mphieta2DHist", 50, 0.9, 1.1, n_etaBins, etaBins));
     //processing
     //defining TreeProcessor
     ROOT::TTreeProcessorMT TreeProc(*upcChain, nthreads);
@@ -73,6 +76,8 @@ int main(int argc, char **argv){
     int eventsProcessed = 0;
     double K0WindowLow = 0.44;
     double K0WindowHigh = 0.54;
+    double Lambda0WindowLow = 1.05;
+    double Lambda0WindowHigh = 1.15;
 
     //defining processing function
     auto myFunction = [&](TTreeReader &myReader){
@@ -88,11 +93,9 @@ int main(int argc, char **argv){
         std::vector<StUPCTrack *> vector_Track_positive;
         std::vector<StUPCTrack *> vector_Track_negative;
         StUPCTrack *tempTrack;
-        TVector3 vertexPrimary;
-        std::vector<double> tempBeamVector;
-        double beamValues[4];
-        StUPCV0 *tempParticle;
-        StUPCV0 *tempParticleForK0SVeto;
+        TLorentzVector positive_track;
+        TLorentzVector negative_track;
+        double mass;
 
         //actual loop
         while(myReader.Next()){
@@ -120,6 +123,9 @@ int main(int argc, char **argv){
                 if(!tempTrack->getFlag(StUPCTrack::kTof)){
                     continue;
                 }
+                if(!tempTrack->getFlag(StUPCTrack::kPrimary)){
+                    continue;
+                }
                 if(tempTrack->getPt()<=0.2 or abs(tempTrack->getEta())>=0.7){
                     continue;
                 }
@@ -132,115 +138,78 @@ int main(int argc, char **argv){
                     vector_Track_negative.push_back(tempTrack);
                 }
             }
-            //selecting all track matching criteria:
-            // DCAdaugter<=2.5cm
-            // DCAbeamline<=2.5cm
-            // decayLenghth<3cm or cos(pointing angle)>0.925
-            vertexPrimary = { tempUPCpointer->getVertex(0)->getPosX(), tempUPCpointer->getVertex(0)->getPosY(), tempUPCpointer->getVertex(0)->getPosZ() };
-            tempBeamVector = FindPosition(tempUPCpointer->getFillNumber(), vertexPrimary.Z(), beamData[0], beamData[1], beamData[2], beamData[3], beamData[4], beamData[5], beamData[6], beamData[7], beamData[8]);
-            beamValues[0] = tempBeamVector[0];
-            beamValues[1] = tempBeamVector[1];
-            beamValues[2] = tempBeamVector[2];
-            beamValues[3] = tempBeamVector[3];
 
-            //loop for phi
+            //loop through particles
             for(long unsigned int i = 0; i<vector_Track_positive.size(); i++){
                 for(long unsigned int j = 0; j<vector_Track_negative.size(); j++){
-                    tempParticle = new StUPCV0(vector_Track_positive[i], vector_Track_negative[j], particleMass[1], particleMass[1], 1, 1, vertexPrimary, beamValues, tempUPCpointer->getMagneticField(), false);
-                    //tests if accept the particle
-                    bool TrackTest2 = tempParticle->dcaDaughters()<=2.5;
-                    bool TrackTest3 = tempParticle->DCABeamLine()<=2.5;
-                    bool TrackTest4 = tempParticle->pointingAngleHypo()>0.925;
-                    bool TrackTest5 = tempParticle->decayLengthHypo()<3.0;
-                    //tests before filling
-                    if(!(TrackTest2&&TrackTest3&&(TrackTest4||TrackTest5))){
-                        delete tempParticle;
+                    //normal
+                    //K0S (for vetoing)
+                    vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
+                    vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
+                    mass = (positive_track+negative_track).M();
+                    if(K0WindowLow<mass&&mass<K0WindowHigh){
                         continue;
                     }
-                    //filling
-                    insideprocessing.Fill("MKKWide", tempParticle->m());
-                    if(abs(vector_Track_positive[i]->getNSigmasTPCKaon())<3&&abs(vector_Track_negative[j]->getNSigmasTPCKaon())<3){
-                        insideprocessing.Fill("MKKWidedEdx", tempParticle->m());
-                    }
-                    //finishing
-                    delete tempParticle;
-                }
-            }
-            //loop for K0S
-            for(long unsigned int i = 0; i<vector_Track_positive.size(); i++){
-                for(long unsigned int j = 0; j<vector_Track_negative.size(); j++){
-                    tempParticle = new StUPCV0(vector_Track_positive[i], vector_Track_negative[j], particleMass[0], particleMass[0], 1, 1, vertexPrimary, beamValues, tempUPCpointer->getMagneticField(), false);
-                    //tests if accept the particle
-                    bool TrackTest2 = tempParticle->dcaDaughters()<=2.5;
-                    bool TrackTest3 = tempParticle->DCABeamLine()<=2.5;
-                    bool TrackTest4 = tempParticle->pointingAngleHypo()>0.925;
-                    bool TrackTest5 = tempParticle->decayLengthHypo()<3.0;
-                    //tests before filling
-                    if(!(TrackTest2&&TrackTest3&&(TrackTest4||TrackTest5))){
-                        delete tempParticle;
+                    //Lambda0 (for vetoing)
+                    vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Proton]);
+                    vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
+                    mass = (positive_track+negative_track).M();
+                    if(Lambda0WindowLow<mass&&mass<Lambda0WindowHigh){
                         continue;
                     }
-                    //filling
-                    insideprocessing.Fill("MpipiWide", tempParticle->m());
-                    if(abs(vector_Track_positive[i]->getNSigmasTPCPion())<3&&abs(vector_Track_negative[j]->getNSigmasTPCPion())<3){
-                        insideprocessing.Fill("MpipiWidedEdx", tempParticle->m());
-                    }
-                    //finishing
-                    delete tempParticle;
-                }
-            }
-            //loop for Kstar (K+pi-)
-            for(long unsigned int i = 0; i<vector_Track_positive.size(); i++){
-                for(long unsigned int j = 0; j<vector_Track_negative.size(); j++){
-                    tempParticle = new StUPCV0(vector_Track_positive[i], vector_Track_negative[j], particleMass[1], particleMass[0], 1, 1, vertexPrimary, beamValues, tempUPCpointer->getMagneticField(), false);
-                    //tests if accept the particle
-                    bool TrackTest2 = tempParticle->dcaDaughters()<=2.5;
-                    bool TrackTest3 = tempParticle->DCABeamLine()<=2.5;
-                    bool TrackTest4 = tempParticle->pointingAngleHypo()>0.925;
-                    bool TrackTest5 = tempParticle->decayLengthHypo()<3.0;
-                    //tests before filling
-                    if(!(TrackTest2&&TrackTest3&&(TrackTest4||TrackTest5))){
-                        delete tempParticle;
+                    vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
+                    vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Proton]);
+                    mass = (positive_track+negative_track).M();
+                    if(Lambda0WindowLow<mass&&mass<Lambda0WindowHigh){
                         continue;
                     }
-                    //test if its in K0S window
-                    tempParticleForK0SVeto = new StUPCV0(vector_Track_positive[i], vector_Track_negative[j], particleMass[0], particleMass[0], 1, 1, vertexPrimary, beamValues, tempUPCpointer->getMagneticField(), false);
-                    if(K0WindowLow<tempParticleForK0SVeto->m()&&K0WindowHigh>tempParticleForK0SVeto->m()){
-                        delete tempParticle;
-                        delete tempParticleForK0SVeto;
+                    //Kstar
+                    vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Kaon]);
+                    vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
+                    mass = (positive_track+negative_track).M();
+                    insideprocessing.Fill("MKpiWide", mass);
+                    insideprocessing.Fill("MKpiNarrow", mass);
+                    vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
+                    vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Kaon]);
+                    mass = (positive_track+negative_track).M();
+                    insideprocessing.Fill("MKpiWide", mass);
+                    insideprocessing.Fill("MKpiNarrow", mass);
+                    //phi
+                    vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Kaon]);
+                    vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Kaon]);
+                    mass = (positive_track+negative_track).M();
+                    insideprocessing.Fill("MKKWide", mass);
+                    insideprocessing.Fill("MKKNarrow", mass);
+                    if(mass<1.080){
+                        insideprocessing.Fill("Mphipt2DHist", mass, (positive_track+negative_track).Pt());
+                        insideprocessing.Fill("Mphieta2DHist", mass, (positive_track+negative_track).Eta());
+                    }
+                    //with PID
+                    if(vector_Track_positive[i]->getNhitsDEdx()<15 or vector_Track_negative[j]->getNhitsDEdx()<15){
                         continue;
                     }
-                    //filling
-                    insideprocessing.Fill("MKpiWide", tempParticle->m());
+                    //Kstar
+                    vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Kaon]);
+                    vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
+                    mass = (positive_track+negative_track).M();
                     if(abs(vector_Track_positive[i]->getNSigmasTPCKaon())<3&&abs(vector_Track_negative[j]->getNSigmasTPCPion())<3){
-                        insideprocessing.Fill("MKpiWidedEdx", tempParticle->m());
+                        insideprocessing.Fill("MKpiWidedEdx", mass);
+                        insideprocessing.Fill("MKpiNarrowdEdx", mass);
                     }
-                    //finishing
-                    delete tempParticle;
-                    delete tempParticleForK0SVeto;
-                }
-            }
-            //loop for Kstar (K-pi+)
-            for(long unsigned int i = 0; i<vector_Track_positive.size(); i++){
-                for(long unsigned int j = 0; j<vector_Track_negative.size(); j++){
-                    tempParticle = new StUPCV0(vector_Track_positive[i], vector_Track_negative[j], particleMass[0], particleMass[1], 1, 1, vertexPrimary, beamValues, tempUPCpointer->getMagneticField(), false);
-                    //tests if accept the particle
-                    bool TrackTest2 = tempParticle->dcaDaughters()<=2.5;
-                    bool TrackTest3 = tempParticle->DCABeamLine()<=2.5;
-                    bool TrackTest4 = tempParticle->pointingAngleHypo()>0.925;
-                    bool TrackTest5 = tempParticle->decayLengthHypo()<3.0;
-                    //tests before filling
-                    if(!(TrackTest2&&TrackTest3&&(TrackTest4||TrackTest5))){
-                        delete tempParticle;
-                        continue;
-                    }
-                    //filling
-                    insideprocessing.Fill("MKpiWide", tempParticle->m());
+                    vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
+                    vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Kaon]);
+                    mass = (positive_track+negative_track).M();
                     if(abs(vector_Track_positive[i]->getNSigmasTPCPion())<3&&abs(vector_Track_negative[j]->getNSigmasTPCKaon())<3){
-                        insideprocessing.Fill("MKpiWidedEdx", tempParticle->m());
+                        insideprocessing.Fill("MKpiWidedEdx", mass);
+                        insideprocessing.Fill("MKpiNarrowdEdx", mass);
                     }
-                    //finishing
-                    delete tempParticle;
+                    //phi
+                    vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Kaon]);
+                    vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Kaon]);
+                    mass = (positive_track+negative_track).M();
+                    if(abs(vector_Track_positive[i]->getNSigmasTPCKaon())<3&&abs(vector_Track_negative[j]->getNSigmasTPCKaon())<3){
+                        insideprocessing.Fill("MKKWidedEdx", mass);
+                    }
                 }
             }
         }

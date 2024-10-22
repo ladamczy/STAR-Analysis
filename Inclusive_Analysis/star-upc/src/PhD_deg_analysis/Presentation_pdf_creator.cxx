@@ -55,11 +55,12 @@ int main(int argc, char const *argv[]){
     TH1D *PythiaControl = (TH1D *)pythia->Get("PythiaControl");
     //pairs
     TH1D *MKKWide = (TH1D *)pairs->Get("MKKWide");
+    TH1D *MKKNarrow = (TH1D *)pairs->Get("MKKNarrow");
     TH1D *MKpiWide = (TH1D *)pairs->Get("MKpiWide");
-    TH1D *MpipiWide = (TH1D *)pairs->Get("MpipiWide");
+    TH1D *MKpiNarrow = (TH1D *)pairs->Get("MKpiNarrow");
     TH1D *MKKWidedEdx = (TH1D *)pairs->Get("MKKWidedEdx");
     TH1D *MKpiWidedEdx = (TH1D *)pairs->Get("MKpiWidedEdx");
-    TH1D *MpipiWidedEdx = (TH1D *)pairs->Get("MpipiWidedEdx");
+    TH1D *MKpiNarrowdEdx = (TH1D *)pairs->Get("MKpiNarrowdEdx");
 
     //preprocessing of some histograms
     int Data_N_events_after_nsel = DataControl->GetBinContent(2);
@@ -286,37 +287,51 @@ int main(int argc, char const *argv[]){
     legend->DrawClone("SAME");
     resultCanvas->SaveAs("/home/adam/STAR-Analysis/Inclusive_Analysis/star-upc/scripts/presentation_pdfs/MKpiWidedEdx.pdf");
     resultCanvas->Clear();
-    //pipi without PID
-    MpipiWide->SetTitle("");
-    MpipiWide->SetMinimum(0);
-    MpipiWide->SetLineColor(kBlue+2);
-    MpipiWide->Draw("hist");
-    newText.SetText(0.6, 14000, "K^{0}_{S}");
+    //Kpi narrow without PID
+    MKpiNarrow->SetTitle("");
+    MKpiNarrow->SetMinimum(0);
+    MKpiNarrow->SetLineColor(kBlue+2);
+    MKpiNarrow->Draw("hist");
+    newText.SetText(1., 29000, "Supposedly K^{*}(892)");
     newText.DrawClone("same");
     delete legend;
     legend = new TLegend(0.64, 0.69, 0.84, 0.89);
     legend->SetTextSize(0.025);
     legend->SetHeader("#bf{pp, #sqrt{s} = 510 GeV}", "C");
-    legend->AddEntry(MpipiWide->GetName(), "#bf{upcDST data}");
+    legend->AddEntry(MKpiNarrow->GetName(), "#bf{upcDST data}");
     legend->SetBorderSize(0);
     legend->DrawClone("SAME");
-    resultCanvas->SaveAs("/home/adam/STAR-Analysis/Inclusive_Analysis/star-upc/scripts/presentation_pdfs/MpipiWide.pdf");
+    resultCanvas->SaveAs("/home/adam/STAR-Analysis/Inclusive_Analysis/star-upc/scripts/presentation_pdfs/MKpiNarrow.pdf");
     resultCanvas->Clear();
-    //pipi with PID
-    MpipiWidedEdx->SetTitle("");
-    MpipiWidedEdx->SetMinimum(0);
-    MpipiWidedEdx->SetLineColor(kBlue+2);
-    MpipiWidedEdx->Draw("hist");
-    newText.SetText(0.6, 13000, "K^{0}_{S}");
+    //Kpi narrow with PID
+    MKpiNarrowdEdx->SetTitle("");
+    MKpiNarrowdEdx->SetMinimum(0);
+    MKpiNarrowdEdx->SetLineColor(kBlue+2);
+    MKpiNarrowdEdx->Draw("hist");
+    newText.SetText(1., 5600, "Supposedly K^{*}(892)");
     newText.DrawClone("same");
     delete legend;
     legend = new TLegend(0.64, 0.69, 0.84, 0.89);
     legend->SetTextSize(0.025);
     legend->SetHeader("#bf{pp, #sqrt{s} = 510 GeV}", "C");
-    legend->AddEntry(MpipiWidedEdx->GetName(), "#bf{upcDST data}");
+    legend->AddEntry(MKpiNarrowdEdx->GetName(), "#bf{upcDST data}");
     legend->SetBorderSize(0);
     legend->DrawClone("SAME");
-    resultCanvas->SaveAs("/home/adam/STAR-Analysis/Inclusive_Analysis/star-upc/scripts/presentation_pdfs/MpipiWidedEdx.pdf");
+    resultCanvas->SaveAs("/home/adam/STAR-Analysis/Inclusive_Analysis/star-upc/scripts/presentation_pdfs/MKpiNarrowdEdx.pdf");
+    resultCanvas->Clear();
+    //KK narrow without PID
+    MKKNarrow->SetTitle("");
+    MKKNarrow->SetMinimum(0);
+    MKKNarrow->SetLineColor(kBlue+2);
+    MKKNarrow->Draw("hist");
+    delete legend;
+    legend = new TLegend(0.69, 0.29, 0.89, 0.49);
+    legend->SetTextSize(0.025);
+    legend->SetHeader("#bf{pp, #sqrt{s} = 510 GeV}", "C");
+    legend->AddEntry(MKKNarrow->GetName(), "#bf{upcDST data}");
+    legend->SetBorderSize(0);
+    legend->DrawClone("SAME");
+    resultCanvas->SaveAs("/home/adam/STAR-Analysis/Inclusive_Analysis/star-upc/scripts/presentation_pdfs/MKKNarrow.pdf");
     resultCanvas->Clear();
 
     return 0;
@@ -417,7 +432,7 @@ void simpler_draw_and_save(TEfficiency *hist, std::string filename){
     gStyle->SetFrameLineWidth(1);
     gStyle->SetOptFit(0);
     gStyle->SetOptStat(0);
-    // resultCanvas->SetLeftMargin(0.15);
+    resultCanvas->SetLeftMargin(0.15);
     resultCanvas->SetRightMargin(0.05);
     hist->SetLineColor(kBlue+2);
     hist->SetMarkerStyle(kFullCircle);
