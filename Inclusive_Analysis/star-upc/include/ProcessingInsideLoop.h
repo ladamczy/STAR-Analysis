@@ -48,9 +48,10 @@ void ProcessingInsideLoop::Fill(const char *hist_name, double x){
     for(long unsigned int i = 0; i<hist1dtabLocal.size(); i++){
         if(hist1dtabLocal[i]!=nullptr&&strcmp(hist_name, hist1dtabLocal[i]->GetName())==0){
             ProcessingInsideLoop::Fill(i, x);
-            break;
+            return;
         }
     }
+    throw std::invalid_argument("Histogram with name \""+std::string(hist_name)+"\" could not be found.");
 }
 
 void ProcessingInsideLoop::Fill(int hist_number, double x, double y_or_w){
@@ -67,16 +68,17 @@ void ProcessingInsideLoop::Fill(const char *hist_name, double x, double y_or_w){
     for(long unsigned int i = 0; i<hist1dtabLocal.size(); i++){
         if(hist1dtabLocal[i]!=nullptr&&strcmp(hist_name, hist1dtabLocal[i]->GetName())==0){
             ProcessingInsideLoop::Fill(i, x, y_or_w);
-            break;
+            return;
         }
     }
     //looking through 2d histograms
     for(long unsigned int i = 0; i<hist2dtabLocal.size(); i++){
         if(hist2dtabLocal[i]!=nullptr&&strcmp(hist_name, hist2dtabLocal[i]->GetName())==0){
             ProcessingInsideLoop::Fill(i, x, y_or_w);
-            break;
+            return;
         }
     }
+    throw std::invalid_argument("Histogram with name \""+std::string(hist_name)+"\" could not be found.");
 }
 
 #endif
