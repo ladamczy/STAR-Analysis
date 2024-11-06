@@ -258,25 +258,25 @@ int main(int argc, char *argv[]){
                 mother_particles_number.clear();
                 if(strcmp(pythia.event[part_index].name().c_str(), "g")==0){
                     printf("\nMother is a gluon\n");
-                    FindGoodMothers(&pythia.event, part_index, mother_particles_number);
+                    FindGoodMothers(&pythia.event, pythia.event[part_index].daughter1(), mother_particles_number);
                 } else if(strcmp(pythia.event[part_index].name().c_str(), "d")==0){
                     printf("\nMother is a d quark\n");
-                    FindGoodMothers(&pythia.event, part_index, mother_particles_number);
+                    FindGoodMothers(&pythia.event, pythia.event[part_index].daughter1(), mother_particles_number);
                 } else if(strcmp(pythia.event[part_index].name().c_str(), "dbar")==0){
                     printf("\nMother is a dbar quark\n");
-                    FindGoodMothers(&pythia.event, part_index, mother_particles_number);
+                    FindGoodMothers(&pythia.event, pythia.event[part_index].daughter1(), mother_particles_number);
                 } else if(strcmp(pythia.event[part_index].name().c_str(), "u")==0){
                     printf("\nMother is a u quark\n");
-                    FindGoodMothers(&pythia.event, part_index, mother_particles_number);
+                    FindGoodMothers(&pythia.event, pythia.event[part_index].daughter1(), mother_particles_number);
                 } else if(strcmp(pythia.event[part_index].name().c_str(), "ubar")==0){
                     printf("\nMother is a ubar quark\n");
-                    FindGoodMothers(&pythia.event, part_index, mother_particles_number);
+                    FindGoodMothers(&pythia.event, pythia.event[part_index].daughter1(), mother_particles_number);
                 } else if(strcmp(pythia.event[part_index].name().c_str(), "s")==0){
                     printf("\nMother is a s quark\n");
-                    FindGoodMothers(&pythia.event, part_index, mother_particles_number);
+                    FindGoodMothers(&pythia.event, pythia.event[part_index].daughter1(), mother_particles_number);
                 } else if(strcmp(pythia.event[part_index].name().c_str(), "sbar")==0){
                     printf("\nMother is a sbar quark\n");
-                    FindGoodMothers(&pythia.event, part_index, mother_particles_number);
+                    FindGoodMothers(&pythia.event, pythia.event[part_index].daughter1(), mother_particles_number);
                 } else if(strcmp(pythia.event[part_index].name().c_str(), "Delta++")==0){
                     DeltappDaughters.Fill(pythia.event[pythia.event[part_index].daughter1()].name().c_str(), pythia.event[pythia.event[part_index].daughter2()].name().c_str(), 1.);
                     DeltappMothers.Fill(pythia.event[pythia.event[part_index].mother1()].name().c_str(), pythia.event[pythia.event[part_index].mother2()].name().c_str(), 1.);
