@@ -26,6 +26,8 @@ bool IsInXiElasticSpot(TLorentzVector, TLorentzVector);
 bool IsInMomElasticSpot(TLorentzVector, TLorentzVector);
 bool IsInXiFiducialNoBBCL(TLorentzVector, TLorentzVector, double);
 bool IsInXiFiducialBBCL(TLorentzVector, TLorentzVector, double);
+bool IsParticleQuarkOrGluon(Particle);
+void FindGoodMothers(Event *, int, std::vector<int> &);
 
 int main(int argc, char *argv[]){
 
@@ -93,6 +95,8 @@ int main(int argc, char *argv[]){
     // pythia.readString("-3122:onMode=0");
     // pythia.readString("-3122:OnIfMatch=-2212 211");
 
+    //setting counting to sparser
+    pythia.readString("Next:numberCount=50000");
     //after the settings and all that
     pythia.init();
 
@@ -108,21 +112,6 @@ int main(int argc, char *argv[]){
     //general
     TH1D ParticlesDetected("ParticlesDetected", "ParticlesDetected", 20000, -10000, 10000);
     TH1D ParticlesReconstructed("ParticlesReconstructed", "ParticlesReconstructed", 20000, -10000, 10000);
-    //for weird particles, like quarks and stuff:
-    TH2D gDaughters("gDaughters", "gDaughters", 1, 0, 1, 1, 0, 1);
-    TH2D dDaughters("dDaughters", "dDaughters", 1, 0, 1, 1, 0, 1);
-    TH2D dbarDaughters("dbarDaughters", "dbarDaughters", 1, 0, 1, 1, 0, 1);
-    TH2D uDaughters("uDaughters", "uDaughters", 1, 0, 1, 1, 0, 1);
-    TH2D ubarDaughters("ubarDaughters", "ubarDaughters", 1, 0, 1, 1, 0, 1);
-    TH2D sDaughters("sDaughters", "sDaughters", 1, 0, 1, 1, 0, 1);
-    TH2D sbarDaughters("sbarDaughters", "sbarDaughters", 1, 0, 1, 1, 0, 1);
-    TH2D gMothers("gMothers", "gMothers", 1, 0, 1, 1, 0, 1);
-    TH2D dMothers("dMothers", "dMothers", 1, 0, 1, 1, 0, 1);
-    TH2D dbarMothers("dbarMothers", "dbarMothers", 1, 0, 1, 1, 0, 1);
-    TH2D uMothers("uMothers", "uMothers", 1, 0, 1, 1, 0, 1);
-    TH2D ubarMothers("ubarMothers", "ubarMothers", 1, 0, 1, 1, 0, 1);
-    TH2D sMothers("sMothers", "sMothers", 1, 0, 1, 1, 0, 1);
-    TH2D sbarMothers("sbarMothers", "sbarMothers", 1, 0, 1, 1, 0, 1);
     //Deltas
     TH2D DeltappDaughters("DeltappDaughters", "DeltappDaughters", 1, 0, 1, 1, 0, 1);
     TH2D Delta0Daughters("Delta0Daughters", "Delta0Daughters", 1, 0, 1, 1, 0, 1);
@@ -176,6 +165,7 @@ int main(int argc, char *argv[]){
     Rndm generator(0);
     TLorentzVector temp4Vector = { 0,0,0,0 };
     int DaughtersDetected;
+    std::vector<int> mother_particles_number;
 
     // Begin event loop. Generate event; skip if generation aborted.
     for(int iEvent = 0; iEvent<nEvents; ++iEvent){
@@ -265,42 +255,28 @@ int main(int argc, char *argv[]){
                 }
             }
             if(DaughtersDetected>0){
-                ParticlesReconstructed.Fill(pythia.event[part_index].name().c_str(), 1.);
+                mother_particles_number.clear();
                 if(strcmp(pythia.event[part_index].name().c_str(), "g")==0){
-                    gDaughters.Fill(pythia.event[pythia.event[part_index].daughter1()].name().c_str(), pythia.event[pythia.event[part_index].daughter2()].name().c_str(), 1.);
-                    gMothers.Fill(pythia.event[pythia.event[part_index].mother1()].name().c_str(), pythia.event[pythia.event[part_index].mother2()].name().c_str(), 1.);
                     printf("\nMother is a gluon\n");
-                    pythia.event.list(true, true);
+                    FindGoodMothers(&pythia.event, part_index, mother_particles_number);
                 } else if(strcmp(pythia.event[part_index].name().c_str(), "d")==0){
-                    dDaughters.Fill(pythia.event[pythia.event[part_index].daughter1()].name().c_str(), pythia.event[pythia.event[part_index].daughter2()].name().c_str(), 1.);
-                    dMothers.Fill(pythia.event[pythia.event[part_index].mother1()].name().c_str(), pythia.event[pythia.event[part_index].mother2()].name().c_str(), 1.);
                     printf("\nMother is a d quark\n");
-                    pythia.event.list(true, true);
+                    FindGoodMothers(&pythia.event, part_index, mother_particles_number);
                 } else if(strcmp(pythia.event[part_index].name().c_str(), "dbar")==0){
-                    dbarDaughters.Fill(pythia.event[pythia.event[part_index].daughter1()].name().c_str(), pythia.event[pythia.event[part_index].daughter2()].name().c_str(), 1.);
-                    dbarMothers.Fill(pythia.event[pythia.event[part_index].mother1()].name().c_str(), pythia.event[pythia.event[part_index].mother2()].name().c_str(), 1.);
                     printf("\nMother is a dbar quark\n");
-                    pythia.event.list(true, true);
+                    FindGoodMothers(&pythia.event, part_index, mother_particles_number);
                 } else if(strcmp(pythia.event[part_index].name().c_str(), "u")==0){
-                    uDaughters.Fill(pythia.event[pythia.event[part_index].daughter1()].name().c_str(), pythia.event[pythia.event[part_index].daughter2()].name().c_str(), 1.);
-                    uMothers.Fill(pythia.event[pythia.event[part_index].mother1()].name().c_str(), pythia.event[pythia.event[part_index].mother2()].name().c_str(), 1.);
                     printf("\nMother is a u quark\n");
-                    pythia.event.list(true, true);
+                    FindGoodMothers(&pythia.event, part_index, mother_particles_number);
                 } else if(strcmp(pythia.event[part_index].name().c_str(), "ubar")==0){
-                    ubarDaughters.Fill(pythia.event[pythia.event[part_index].daughter1()].name().c_str(), pythia.event[pythia.event[part_index].daughter2()].name().c_str(), 1.);
-                    ubarMothers.Fill(pythia.event[pythia.event[part_index].mother1()].name().c_str(), pythia.event[pythia.event[part_index].mother2()].name().c_str(), 1.);
                     printf("\nMother is a ubar quark\n");
-                    pythia.event.list(true, true);
+                    FindGoodMothers(&pythia.event, part_index, mother_particles_number);
                 } else if(strcmp(pythia.event[part_index].name().c_str(), "s")==0){
-                    sDaughters.Fill(pythia.event[pythia.event[part_index].daughter1()].name().c_str(), pythia.event[pythia.event[part_index].daughter2()].name().c_str(), 1.);
-                    sMothers.Fill(pythia.event[pythia.event[part_index].mother1()].name().c_str(), pythia.event[pythia.event[part_index].mother2()].name().c_str(), 1.);
                     printf("\nMother is a s quark\n");
-                    pythia.event.list(true, true);
+                    FindGoodMothers(&pythia.event, part_index, mother_particles_number);
                 } else if(strcmp(pythia.event[part_index].name().c_str(), "sbar")==0){
-                    sbarDaughters.Fill(pythia.event[pythia.event[part_index].daughter1()].name().c_str(), pythia.event[pythia.event[part_index].daughter2()].name().c_str(), 1.);
-                    sbarMothers.Fill(pythia.event[pythia.event[part_index].mother1()].name().c_str(), pythia.event[pythia.event[part_index].mother2()].name().c_str(), 1.);
                     printf("\nMother is a sbar quark\n");
-                    pythia.event.list(true, true);
+                    FindGoodMothers(&pythia.event, part_index, mother_particles_number);
                 } else if(strcmp(pythia.event[part_index].name().c_str(), "Delta++")==0){
                     DeltappDaughters.Fill(pythia.event[pythia.event[part_index].daughter1()].name().c_str(), pythia.event[pythia.event[part_index].daughter2()].name().c_str(), 1.);
                     DeltappMothers.Fill(pythia.event[pythia.event[part_index].mother1()].name().c_str(), pythia.event[pythia.event[part_index].mother2()].name().c_str(), 1.);
@@ -313,6 +289,27 @@ int main(int argc, char *argv[]){
                 } else if(strcmp(pythia.event[part_index].name().c_str(), "Deltabar--")==0){
                     DeltabarmmDaughters.Fill(pythia.event[pythia.event[part_index].daughter1()].name().c_str(), pythia.event[pythia.event[part_index].daughter2()].name().c_str(), 1.);
                     DeltabarmmMothers.Fill(pythia.event[pythia.event[part_index].mother1()].name().c_str(), pythia.event[pythia.event[part_index].mother2()].name().c_str(), 1.);
+                }
+                //final checks
+                if(!IsParticleQuarkOrGluon(pythia.event[part_index])){
+                    ParticlesReconstructed.Fill(pythia.event[part_index].name().c_str(), 1.);
+                } else{
+                    //removing potential particle duplicates
+                    sort(mother_particles_number.begin(), mother_particles_number.end());
+                    mother_particles_number.erase(unique(mother_particles_number.begin(), mother_particles_number.end()), mother_particles_number.end());
+                    //checking if there is something else than Pomerons
+                    if(mother_particles_number.size()==1&&abs(pythia.event[mother_particles_number[0]].id())==990){
+                        ParticlesReconstructed.Fill("#splitline{Single}{Pomeron}", 1.);
+                    } else if(mother_particles_number.size()==2&&abs(pythia.event[mother_particles_number[0]].id())==990&&abs(pythia.event[mother_particles_number[1]].id())==990){
+                        ParticlesReconstructed.Fill("#splitline{Double}{Pomeron}", 1.);
+                    } else{
+                        ParticlesReconstructed.Fill("other", 1.);
+                        for(auto &&parr:mother_particles_number){
+                            printf("%d: %s\n", parr, pythia.event[parr].name().c_str());
+                        }
+                        printf("\n");
+                        pythia.event.list(true, true);
+                    }
                 }
             }
         }
@@ -391,20 +388,6 @@ int main(int argc, char *argv[]){
     ParticlesReconstructed.LabelsDeflate();
     ParticlesReconstructed.SetMinimum(0);
     ParticlesReconstructed.LabelsOption("a", "X");
-    gDaughters.LabelsDeflate();
-    dDaughters.LabelsDeflate();
-    dbarDaughters.LabelsDeflate();
-    uDaughters.LabelsDeflate();
-    ubarDaughters.LabelsDeflate();
-    sDaughters.LabelsDeflate();
-    sbarDaughters.LabelsDeflate();
-    gMothers.LabelsDeflate();
-    dMothers.LabelsDeflate();
-    dbarMothers.LabelsDeflate();
-    uMothers.LabelsDeflate();
-    ubarMothers.LabelsDeflate();
-    sMothers.LabelsDeflate();
-    sbarMothers.LabelsDeflate();
     DeltappDaughters.LabelsDeflate();
     Delta0Daughters.LabelsDeflate();
     Deltabar0Daughters.LabelsDeflate();
@@ -497,4 +480,28 @@ bool IsInXiFiducialBBCL(TLorentzVector east, TLorentzVector west, double p = 254
         return false;
     }
     return true;
+}
+
+bool IsParticleQuarkOrGluon(Particle particle){
+    if(abs(particle.id())<=9 or abs(particle.id())==21){
+        return true;
+    }
+    return false;
+}
+
+void FindGoodMothers(Event *event, int particle, std::vector<int> &particle_set){
+    //put all mothers of a particle on a list
+    for(size_t i = 0; i<event->at(particle).motherList().size(); i++){
+        particle_set.push_back(event->at(particle).motherList()[i]);
+        //if particle is a quark or a gluon
+        //recursively do the same
+        if(IsParticleQuarkOrGluon(event->at(event->at(particle).motherList()[i]))){
+            FindGoodMothers(event, event->at(particle).motherList()[i], particle_set);
+        }
+    }
+    //and then, if the particle is on the list
+    //remove it
+    if(find(particle_set.begin(), particle_set.end(), particle)!=particle_set.end()&&IsParticleQuarkOrGluon(event->at(particle))){
+        particle_set.erase(find(particle_set.begin(), particle_set.end(), particle));
+    }
 }
