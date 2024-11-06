@@ -227,7 +227,7 @@ int main(int argc, char *argv[]){
         //with TPC acceptance of 60%
         int charge = 0;
         int TPCParticles = 0;
-        for(size_t i = 0; i<pythia.event.size(); i++){
+        for(int i = 0; i<pythia.event.size(); i++){
             if(isParticleInTPCAcceptance(pythia.event[i])&&generator.flat()<0.6){
                 TPCParticles++;
                 //for some reason charge is in normal units now???
@@ -235,7 +235,7 @@ int main(int argc, char *argv[]){
                 detected_particles_number.push_back(i);
             }
         }
-        if(TPCParticles==abs(charge)||TPCParticles<2){
+        if(TPCParticles<2){
             continue;
         }
 
@@ -256,7 +256,7 @@ int main(int argc, char *argv[]){
             if(pythia.event[part_index].id()==LambdaPDGid){ Lambdaindices.push_back(part_index); }
             if(pythia.event[part_index].id()==LambdabarPDGid){ LambdaBarindices.push_back(part_index); }
             DaughtersDetected = 0;
-            for(int daughter = 0; daughter<pythia.event[part_index].daughterList().size();daughter++){
+            for(size_t daughter = 0; daughter<pythia.event[part_index].daughterList().size();daughter++){
                 if(std::find(detected_particles_number.begin(), detected_particles_number.end(), pythia.event[part_index].daughterList()[daughter])!=detected_particles_number.end()){
                     DaughtersDetected++;
                 } else{
@@ -269,24 +269,38 @@ int main(int argc, char *argv[]){
                 if(strcmp(pythia.event[part_index].name().c_str(), "g")==0){
                     gDaughters.Fill(pythia.event[pythia.event[part_index].daughter1()].name().c_str(), pythia.event[pythia.event[part_index].daughter2()].name().c_str(), 1.);
                     gMothers.Fill(pythia.event[pythia.event[part_index].mother1()].name().c_str(), pythia.event[pythia.event[part_index].mother2()].name().c_str(), 1.);
+                    printf("\nMother is a gluon\n");
+                    pythia.event.list(true, true);
                 } else if(strcmp(pythia.event[part_index].name().c_str(), "d")==0){
                     dDaughters.Fill(pythia.event[pythia.event[part_index].daughter1()].name().c_str(), pythia.event[pythia.event[part_index].daughter2()].name().c_str(), 1.);
                     dMothers.Fill(pythia.event[pythia.event[part_index].mother1()].name().c_str(), pythia.event[pythia.event[part_index].mother2()].name().c_str(), 1.);
+                    printf("\nMother is a d quark\n");
+                    pythia.event.list(true, true);
                 } else if(strcmp(pythia.event[part_index].name().c_str(), "dbar")==0){
                     dbarDaughters.Fill(pythia.event[pythia.event[part_index].daughter1()].name().c_str(), pythia.event[pythia.event[part_index].daughter2()].name().c_str(), 1.);
                     dbarMothers.Fill(pythia.event[pythia.event[part_index].mother1()].name().c_str(), pythia.event[pythia.event[part_index].mother2()].name().c_str(), 1.);
+                    printf("\nMother is a dbar quark\n");
+                    pythia.event.list(true, true);
                 } else if(strcmp(pythia.event[part_index].name().c_str(), "u")==0){
                     uDaughters.Fill(pythia.event[pythia.event[part_index].daughter1()].name().c_str(), pythia.event[pythia.event[part_index].daughter2()].name().c_str(), 1.);
                     uMothers.Fill(pythia.event[pythia.event[part_index].mother1()].name().c_str(), pythia.event[pythia.event[part_index].mother2()].name().c_str(), 1.);
+                    printf("\nMother is a u quark\n");
+                    pythia.event.list(true, true);
                 } else if(strcmp(pythia.event[part_index].name().c_str(), "ubar")==0){
                     ubarDaughters.Fill(pythia.event[pythia.event[part_index].daughter1()].name().c_str(), pythia.event[pythia.event[part_index].daughter2()].name().c_str(), 1.);
                     ubarMothers.Fill(pythia.event[pythia.event[part_index].mother1()].name().c_str(), pythia.event[pythia.event[part_index].mother2()].name().c_str(), 1.);
+                    printf("\nMother is a ubar quark\n");
+                    pythia.event.list(true, true);
                 } else if(strcmp(pythia.event[part_index].name().c_str(), "s")==0){
                     sDaughters.Fill(pythia.event[pythia.event[part_index].daughter1()].name().c_str(), pythia.event[pythia.event[part_index].daughter2()].name().c_str(), 1.);
                     sMothers.Fill(pythia.event[pythia.event[part_index].mother1()].name().c_str(), pythia.event[pythia.event[part_index].mother2()].name().c_str(), 1.);
+                    printf("\nMother is a s quark\n");
+                    pythia.event.list(true, true);
                 } else if(strcmp(pythia.event[part_index].name().c_str(), "sbar")==0){
                     sbarDaughters.Fill(pythia.event[pythia.event[part_index].daughter1()].name().c_str(), pythia.event[pythia.event[part_index].daughter2()].name().c_str(), 1.);
                     sbarMothers.Fill(pythia.event[pythia.event[part_index].mother1()].name().c_str(), pythia.event[pythia.event[part_index].mother2()].name().c_str(), 1.);
+                    printf("\nMother is a sbar quark\n");
+                    pythia.event.list(true, true);
                 } else if(strcmp(pythia.event[part_index].name().c_str(), "Delta++")==0){
                     DeltappDaughters.Fill(pythia.event[pythia.event[part_index].daughter1()].name().c_str(), pythia.event[pythia.event[part_index].daughter2()].name().c_str(), 1.);
                     DeltappMothers.Fill(pythia.event[pythia.event[part_index].mother1()].name().c_str(), pythia.event[pythia.event[part_index].mother2()].name().c_str(), 1.);
@@ -303,7 +317,7 @@ int main(int argc, char *argv[]){
             }
         }
         //gathering info in detection loop
-        for(int part_index = 0; part_index<detected_particles_number.size(); part_index++){
+        for(size_t part_index = 0; part_index<detected_particles_number.size(); part_index++){
             ParticlesDetected.Fill(pythia.event[detected_particles_number[part_index]].name().c_str(), 1.);
         }
         //K0s
