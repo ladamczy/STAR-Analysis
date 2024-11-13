@@ -73,6 +73,14 @@ int main(int argc, char **argv){
     outsideprocessing.AddHistogram(TH1D("MpipiWidedEdx", ";m_{#pi^{#pm}#pi^{#mp}} [GeV];Number of pairs", 500, 0.0, 5.0));
     outsideprocessing.AddHistogram(TH1D("MpipiNarrow", ";m_{#pi^{#pm}#pi^{#mp}} [GeV];Number of pairs", 100, 0.4, 0.6));
     outsideprocessing.AddHistogram(TH1D("MpipiNarrowdEdx", ";m_{#pi^{#pm}#pi^{#mp}} [GeV];Number of pairs", 100, 0.4, 0.6));
+    outsideprocessing.AddHistogram(TH1D("MKKWideNoK0Lambda0Veto", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 500, 0.0, 5.0));
+    outsideprocessing.AddHistogram(TH1D("MKKWidedEdxNoK0Lambda0Veto", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 500, 0.0, 5.0));
+    outsideprocessing.AddHistogram(TH1D("MKKNarrowNoK0Lambda0Veto", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 100, 0.9, 1.2));
+    outsideprocessing.AddHistogram(TH1D("MKKNarrowdEdxNoK0Lambda0Veto", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 100, 0.9, 1.2));
+    outsideprocessing.AddHistogram(TH1D("MKpiWideNoK0Lambda0Veto", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 500, 0.0, 5.0));
+    outsideprocessing.AddHistogram(TH1D("MKpiWidedEdxNoK0Lambda0Veto", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 500, 0.0, 5.0));
+    outsideprocessing.AddHistogram(TH1D("MKpiNarrowNoK0Lambda0Veto", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 100, 0.8, 1.0));
+    outsideprocessing.AddHistogram(TH1D("MKpiNarrowdEdxNoK0Lambda0Veto", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 100, 0.8, 1.0));
     //other
     outsideprocessing.AddHistogram(TH2D("Mphipt2DHist", "Mphipt2DHist", 50, 0.9, 1.1, n_ptBins, ptBins));
     outsideprocessing.AddHistogram(TH2D("Mphieta2DHist", "Mphieta2DHist", 50, 0.9, 1.1, n_etaBins, etaBins));
@@ -154,7 +162,26 @@ int main(int argc, char **argv){
             //loop through particles
             for(long unsigned int i = 0; i<vector_Track_positive.size(); i++){
                 for(long unsigned int j = 0; j<vector_Track_negative.size(); j++){
-                    //normal
+                    //no veto
+                    //Kstar
+                    vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Kaon]);
+                    vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
+                    mass = (positive_track+negative_track).M();
+                    insideprocessing.Fill("MKpiWideNoK0Lambda0Veto", mass);
+                    insideprocessing.Fill("MKpiNarrowNoK0Lambda0Veto", mass);
+                    vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
+                    vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Kaon]);
+                    mass = (positive_track+negative_track).M();
+                    insideprocessing.Fill("MKpiWideNoK0Lambda0Veto", mass);
+                    insideprocessing.Fill("MKpiNarrowNoK0Lambda0Veto", mass);
+                    //phi
+                    vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Kaon]);
+                    vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Kaon]);
+                    mass = (positive_track+negative_track).M();
+                    insideprocessing.Fill("MKKWideNoK0Lambda0Veto", mass);
+                    insideprocessing.Fill("MKKNarrowNoK0Lambda0Veto", mass);
+
+                    //normal, with veto
                     //K0S (for vetoing)
                     vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
                     vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
@@ -202,29 +229,6 @@ int main(int argc, char **argv){
                         insideprocessing.Fill("Mphipt2DHist", mass, (positive_track+negative_track).Pt());
                         insideprocessing.Fill("Mphieta2DHist", mass, (positive_track+negative_track).Eta());
                     }
-                    //Kstar
-                    vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Kaon]);
-                    vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
-                    mass = (positive_track+negative_track).M();
-                    if(abs(vector_Track_positive[i]->getNSigmasTPCKaon())<3&&abs(vector_Track_negative[j]->getNSigmasTPCPion())<3){
-                        insideprocessing.Fill("MKpiWidedEdx", mass);
-                        insideprocessing.Fill("MKpiNarrowdEdx", mass);
-                    }
-                    vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
-                    vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Kaon]);
-                    mass = (positive_track+negative_track).M();
-                    if(abs(vector_Track_positive[i]->getNSigmasTPCPion())<3&&abs(vector_Track_negative[j]->getNSigmasTPCKaon())<3){
-                        insideprocessing.Fill("MKpiWidedEdx", mass);
-                        insideprocessing.Fill("MKpiNarrowdEdx", mass);
-                    }
-                    //phi
-                    vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Kaon]);
-                    vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Kaon]);
-                    mass = (positive_track+negative_track).M();
-                    if(abs(vector_Track_positive[i]->getNSigmasTPCKaon())<3&&abs(vector_Track_negative[j]->getNSigmasTPCKaon())<3){
-                        insideprocessing.Fill("MKKWidedEdx", mass);
-                        insideprocessing.Fill("MKKNarrowdEdx", mass);
-                    }
                 }
             }
 
@@ -253,6 +257,20 @@ int main(int argc, char **argv){
                     vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[vector_Track_positive_dEdx]);
                     vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[vector_Track_negative_dEdx]);
                     mass = (positive_track+negative_track).M();
+
+                    //no veto
+                    //KK pair
+                    if(vector_Track_positive_dEdx==Kaon&&vector_Track_negative_dEdx==Kaon){
+                        insideprocessing.Fill("MKKWidedEdxNoK0Lambda0Veto", mass);
+                        insideprocessing.Fill("MKKNarrowdEdxNoK0Lambda0Veto", mass);
+                    }
+                    //Kpi pair
+                    if((vector_Track_positive_dEdx==Kaon&&vector_Track_negative_dEdx==Pion)or(vector_Track_positive_dEdx==Pion&&vector_Track_negative_dEdx==Kaon)){
+                        insideprocessing.Fill("MKpiWidedEdxNoK0Lambda0Veto", mass);
+                        insideprocessing.Fill("MKpiNarrowdEdxNoK0Lambda0Veto", mass);
+                    }
+
+                    //with veto
                     if(vector_Track_positive_dEdx==Pion&&vector_Track_negative_dEdx==Pion){
                         insideprocessing.Fill("MpipiWidedEdx", mass);
                         insideprocessing.Fill("MpipiNarrowdEdx", mass);
