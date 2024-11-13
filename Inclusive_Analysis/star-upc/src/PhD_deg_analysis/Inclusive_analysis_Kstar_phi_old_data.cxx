@@ -73,14 +73,14 @@ int main(int argc, char **argv){
     outsideprocessing.AddHistogram(TH1D("MpipiWidedEdx", ";m_{#pi^{#pm}#pi^{#mp}} [GeV];Number of pairs", 500, 0.0, 5.0));
     outsideprocessing.AddHistogram(TH1D("MpipiNarrow", ";m_{#pi^{#pm}#pi^{#mp}} [GeV];Number of pairs", 100, 0.4, 0.6));
     outsideprocessing.AddHistogram(TH1D("MpipiNarrowdEdx", ";m_{#pi^{#pm}#pi^{#mp}} [GeV];Number of pairs", 100, 0.4, 0.6));
-    outsideprocessing.AddHistogram(TH1D("MKKWideVeto", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 500, 0.0, 5.0));
-    outsideprocessing.AddHistogram(TH1D("MKKWidedEdxVeto", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 500, 0.0, 5.0));
-    outsideprocessing.AddHistogram(TH1D("MKKNarrowVeto", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 100, 0.9, 1.2));
-    outsideprocessing.AddHistogram(TH1D("MKKNarrowdEdxVeto", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 100, 0.9, 1.2));
-    outsideprocessing.AddHistogram(TH1D("MKpiWideVeto", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 500, 0.0, 5.0));
-    outsideprocessing.AddHistogram(TH1D("MKpiWidedEdxVeto", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 500, 0.0, 5.0));
-    outsideprocessing.AddHistogram(TH1D("MKpiNarrowVeto", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 100, 0.8, 1.0));
-    outsideprocessing.AddHistogram(TH1D("MKpiNarrowdEdxVeto", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 100, 0.8, 1.0));
+    outsideprocessing.AddHistogram(TH1D("MKKWideNoVeto", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 500, 0.0, 5.0));
+    outsideprocessing.AddHistogram(TH1D("MKKWidedEdxNoVeto", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 500, 0.0, 5.0));
+    outsideprocessing.AddHistogram(TH1D("MKKNarrowNoVeto", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 100, 0.9, 1.2));
+    outsideprocessing.AddHistogram(TH1D("MKKNarrowdEdxNoVeto", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 100, 0.9, 1.2));
+    outsideprocessing.AddHistogram(TH1D("MKpiWideNoVeto", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 500, 0.0, 5.0));
+    outsideprocessing.AddHistogram(TH1D("MKpiWidedEdxNoVeto", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 500, 0.0, 5.0));
+    outsideprocessing.AddHistogram(TH1D("MKpiNarrowNoVeto", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 100, 0.8, 1.0));
+    outsideprocessing.AddHistogram(TH1D("MKpiNarrowdEdxNoVeto", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 100, 0.8, 1.0));
     //background
     outsideprocessing.AddHistogram(TH1D("MKKWideBackground", ";m_{K^{#pm}K^{#pm}} [GeV];Number of pairs", 500, 0.0, 5.0));
     outsideprocessing.AddHistogram(TH1D("MKKWidedEdxBackground", ";m_{K^{#pm}K^{#pm}} [GeV];Number of pairs", 500, 0.0, 5.0));
@@ -120,6 +120,8 @@ int main(int argc, char **argv){
         std::vector<StUPCTrack *> vector_Track_negative;
         int vector_Track_positive_dEdx;
         int vector_Track_negative_dEdx;
+        int vector_bcg_track_1_dEdx;
+        int vector_bcg_track_2_dEdx;
         StUPCTrack *tempTrack;
         TLorentzVector positive_track;
         TLorentzVector negative_track;
@@ -178,19 +180,19 @@ int main(int argc, char **argv){
                     vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Kaon]);
                     vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
                     mass = (positive_track+negative_track).M();
-                    insideprocessing.Fill("MKpiWideVeto", mass);
-                    insideprocessing.Fill("MKpiNarrowVeto", mass);
+                    insideprocessing.Fill("MKpiWideNoVeto", mass);
+                    insideprocessing.Fill("MKpiNarrowNoVeto", mass);
                     vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
                     vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Kaon]);
                     mass = (positive_track+negative_track).M();
-                    insideprocessing.Fill("MKpiWideVeto", mass);
-                    insideprocessing.Fill("MKpiNarrowVeto", mass);
+                    insideprocessing.Fill("MKpiWideNoVeto", mass);
+                    insideprocessing.Fill("MKpiNarrowNoVeto", mass);
                     //phi
                     vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Kaon]);
                     vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Kaon]);
                     mass = (positive_track+negative_track).M();
-                    insideprocessing.Fill("MKKWideVeto", mass);
-                    insideprocessing.Fill("MKKNarrowVeto", mass);
+                    insideprocessing.Fill("MKKWideNoVeto", mass);
+                    insideprocessing.Fill("MKKNarrowNoVeto", mass);
 
                     //normal, with veto
                     //K0S (for vetoing)
@@ -272,13 +274,13 @@ int main(int argc, char **argv){
                     //no veto
                     //KK pair
                     if(vector_Track_positive_dEdx==Kaon&&vector_Track_negative_dEdx==Kaon){
-                        insideprocessing.Fill("MKKWidedEdxVeto", mass);
-                        insideprocessing.Fill("MKKNarrowdEdxVeto", mass);
+                        insideprocessing.Fill("MKKWidedEdxNoVeto", mass);
+                        insideprocessing.Fill("MKKNarrowdEdxNoVeto", mass);
                     }
                     //Kpi pair
                     if((vector_Track_positive_dEdx==Kaon&&vector_Track_negative_dEdx==Pion)or(vector_Track_positive_dEdx==Pion&&vector_Track_negative_dEdx==Kaon)){
-                        insideprocessing.Fill("MKpiWidedEdxVeto", mass);
-                        insideprocessing.Fill("MKpiNarrowdEdxVeto", mass);
+                        insideprocessing.Fill("MKpiWidedEdxNoVeto", mass);
+                        insideprocessing.Fill("MKpiNarrowdEdxNoVeto", mass);
                     }
 
                     //with veto
@@ -314,6 +316,7 @@ int main(int argc, char **argv){
             //loop through background - positive
             for(long unsigned int i = 0; i<vector_Track_positive.size(); i++){
                 for(long unsigned int j = i+1; j<vector_Track_positive.size(); j++){
+                    //normal
                     //Kpi
                     vector_Track_positive[i]->getLorentzVector(bcg_track_1, particleMass[Kaon]);
                     vector_Track_positive[j]->getLorentzVector(bcg_track_2, particleMass[Pion]);
@@ -326,6 +329,38 @@ int main(int argc, char **argv){
                     mass = (bcg_track_1+bcg_track_2).M();
                     insideprocessing.Fill("MKKWideBackground", mass);
                     insideprocessing.Fill("MKKNarrowBackground", mass);
+
+                    //dEdx
+                    if(vector_Track_positive[i]->getNhitsDEdx()<15 or vector_Track_positive[j]->getNhitsDEdx()<15){
+                        continue;
+                    }
+                    vector_bcg_track_1_dEdx = Pion;
+                    vector_Track_positive[i]->getMomentum(tempMomentum);
+                    if(abs(vector_Track_positive[i]->getNSigmasTPCKaon())<3&&tempMomentum.Mag()<0.4){
+                        vector_bcg_track_1_dEdx = Kaon;
+                    } else if(abs(vector_Track_positive[i]->getNSigmasTPCProton())<3&&tempMomentum.Mag()<0.8){
+                        vector_bcg_track_1_dEdx = Proton;
+                    }
+                    vector_bcg_track_2_dEdx = Pion;
+                    vector_Track_positive[j]->getMomentum(tempMomentum);
+                    if(abs(vector_Track_positive[j]->getNSigmasTPCKaon())<3&&tempMomentum.Mag()<0.4){
+                        vector_bcg_track_2_dEdx = Kaon;
+                    } else if(abs(vector_Track_positive[j]->getNSigmasTPCProton())<3&&tempMomentum.Mag()<0.8){
+                        vector_bcg_track_2_dEdx = Proton;
+                    }
+                    vector_Track_positive[i]->getLorentzVector(bcg_track_1, particleMass[vector_bcg_track_1_dEdx]);
+                    vector_Track_positive[j]->getLorentzVector(bcg_track_2, particleMass[vector_bcg_track_2_dEdx]);
+                    mass = (bcg_track_1+bcg_track_2).M();
+                    //Kpi
+                    if((vector_bcg_track_1_dEdx==Kaon&&vector_bcg_track_2_dEdx==Pion)or(vector_bcg_track_1_dEdx==Pion&&vector_bcg_track_2_dEdx==Kaon)){
+                        insideprocessing.Fill("MKpiWidedEdxBackground", mass);
+                        insideprocessing.Fill("MKpiNarrowdEdxBackground", mass);
+                    }
+                    //KK
+                    if(vector_bcg_track_1_dEdx==Kaon&&vector_bcg_track_2_dEdx==Kaon){
+                        insideprocessing.Fill("MKKWidedEdxBackground", mass);
+                        insideprocessing.Fill("MKKNarrowdEdxBackground", mass);
+                    }
                 }
             }
 
@@ -344,6 +379,38 @@ int main(int argc, char **argv){
                     mass = (bcg_track_1+bcg_track_2).M();
                     insideprocessing.Fill("MKKWideBackground", mass);
                     insideprocessing.Fill("MKKNarrowBackground", mass);
+
+                    //dEdx
+                    if(vector_Track_negative[i]->getNhitsDEdx()<15 or vector_Track_negative[j]->getNhitsDEdx()<15){
+                        continue;
+                    }
+                    vector_bcg_track_1_dEdx = Pion;
+                    vector_Track_negative[i]->getMomentum(tempMomentum);
+                    if(abs(vector_Track_negative[i]->getNSigmasTPCKaon())<3&&tempMomentum.Mag()<0.4){
+                        vector_bcg_track_1_dEdx = Kaon;
+                    } else if(abs(vector_Track_negative[i]->getNSigmasTPCProton())<3&&tempMomentum.Mag()<0.8){
+                        vector_bcg_track_1_dEdx = Proton;
+                    }
+                    vector_bcg_track_2_dEdx = Pion;
+                    vector_Track_negative[j]->getMomentum(tempMomentum);
+                    if(abs(vector_Track_negative[j]->getNSigmasTPCKaon())<3&&tempMomentum.Mag()<0.4){
+                        vector_bcg_track_2_dEdx = Kaon;
+                    } else if(abs(vector_Track_negative[j]->getNSigmasTPCProton())<3&&tempMomentum.Mag()<0.8){
+                        vector_bcg_track_2_dEdx = Proton;
+                    }
+                    vector_Track_negative[i]->getLorentzVector(bcg_track_1, particleMass[vector_bcg_track_1_dEdx]);
+                    vector_Track_negative[j]->getLorentzVector(bcg_track_2, particleMass[vector_bcg_track_2_dEdx]);
+                    mass = (bcg_track_1+bcg_track_2).M();
+                    //Kpi
+                    if((vector_bcg_track_1_dEdx==Kaon&&vector_bcg_track_2_dEdx==Pion)or(vector_bcg_track_1_dEdx==Pion&&vector_bcg_track_2_dEdx==Kaon)){
+                        insideprocessing.Fill("MKpiWidedEdxBackground", mass);
+                        insideprocessing.Fill("MKpiNarrowdEdxBackground", mass);
+                    }
+                    //KK
+                    if(vector_bcg_track_1_dEdx==Kaon&&vector_bcg_track_2_dEdx==Kaon){
+                        insideprocessing.Fill("MKKWidedEdxBackground", mass);
+                        insideprocessing.Fill("MKKNarrowdEdxBackground", mass);
+                    }
                 }
             }
 
