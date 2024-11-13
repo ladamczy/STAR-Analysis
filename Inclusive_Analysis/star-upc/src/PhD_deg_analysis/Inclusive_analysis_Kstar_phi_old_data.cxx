@@ -60,7 +60,7 @@ int main(int argc, char **argv){
     outsideprocessing.AddHistogram(TH1D("MKKWide", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 500, 0.0, 5.0));
     outsideprocessing.AddHistogram(TH1D("MKKWidedEdx", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 500, 0.0, 5.0));
     outsideprocessing.AddHistogram(TH1D("MKKNarrow", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 100, 0.9, 1.2));
-    outsideprocessing.AddHistogram(TH1D("MKKNarrowdEdx", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 100, 0.9, 1.2));
+    outsideprocessing.AddHistogram(TH1D("MKKNarrowdEdx", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 100, 0.9, 1.2));
     outsideprocessing.AddHistogram(TH1D("MKpiWide", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 500, 0.0, 5.0));
     outsideprocessing.AddHistogram(TH1D("MKpiWidedEdx", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 500, 0.0, 5.0));
     outsideprocessing.AddHistogram(TH1D("MKpiNarrow", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 100, 0.8, 1.0));
@@ -73,14 +73,23 @@ int main(int argc, char **argv){
     outsideprocessing.AddHistogram(TH1D("MpipiWidedEdx", ";m_{#pi^{#pm}#pi^{#mp}} [GeV];Number of pairs", 500, 0.0, 5.0));
     outsideprocessing.AddHistogram(TH1D("MpipiNarrow", ";m_{#pi^{#pm}#pi^{#mp}} [GeV];Number of pairs", 100, 0.4, 0.6));
     outsideprocessing.AddHistogram(TH1D("MpipiNarrowdEdx", ";m_{#pi^{#pm}#pi^{#mp}} [GeV];Number of pairs", 100, 0.4, 0.6));
-    outsideprocessing.AddHistogram(TH1D("MKKWideNoK0Lambda0Veto", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 500, 0.0, 5.0));
-    outsideprocessing.AddHistogram(TH1D("MKKWidedEdxNoK0Lambda0Veto", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 500, 0.0, 5.0));
-    outsideprocessing.AddHistogram(TH1D("MKKNarrowNoK0Lambda0Veto", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 100, 0.9, 1.2));
-    outsideprocessing.AddHistogram(TH1D("MKKNarrowdEdxNoK0Lambda0Veto", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 100, 0.9, 1.2));
-    outsideprocessing.AddHistogram(TH1D("MKpiWideNoK0Lambda0Veto", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 500, 0.0, 5.0));
-    outsideprocessing.AddHistogram(TH1D("MKpiWidedEdxNoK0Lambda0Veto", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 500, 0.0, 5.0));
-    outsideprocessing.AddHistogram(TH1D("MKpiNarrowNoK0Lambda0Veto", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 100, 0.8, 1.0));
-    outsideprocessing.AddHistogram(TH1D("MKpiNarrowdEdxNoK0Lambda0Veto", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 100, 0.8, 1.0));
+    outsideprocessing.AddHistogram(TH1D("MKKWideVeto", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 500, 0.0, 5.0));
+    outsideprocessing.AddHistogram(TH1D("MKKWidedEdxVeto", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 500, 0.0, 5.0));
+    outsideprocessing.AddHistogram(TH1D("MKKNarrowVeto", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 100, 0.9, 1.2));
+    outsideprocessing.AddHistogram(TH1D("MKKNarrowdEdxVeto", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 100, 0.9, 1.2));
+    outsideprocessing.AddHistogram(TH1D("MKpiWideVeto", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 500, 0.0, 5.0));
+    outsideprocessing.AddHistogram(TH1D("MKpiWidedEdxVeto", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 500, 0.0, 5.0));
+    outsideprocessing.AddHistogram(TH1D("MKpiNarrowVeto", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 100, 0.8, 1.0));
+    outsideprocessing.AddHistogram(TH1D("MKpiNarrowdEdxVeto", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 100, 0.8, 1.0));
+    //background
+    outsideprocessing.AddHistogram(TH1D("MKKWideBackground", ";m_{K^{#pm}K^{#pm}} [GeV];Number of pairs", 500, 0.0, 5.0));
+    outsideprocessing.AddHistogram(TH1D("MKKWidedEdxBackground", ";m_{K^{#pm}K^{#pm}} [GeV];Number of pairs", 500, 0.0, 5.0));
+    outsideprocessing.AddHistogram(TH1D("MKKNarrowBackground", ";m_{K^{#pm}K^{#pm}} [GeV];Number of pairs", 100, 0.9, 1.2));
+    outsideprocessing.AddHistogram(TH1D("MKKNarrowdEdxBackground", ";m_{K^{#pm}K^{#pm}} [GeV];Number of pairs", 100, 0.9, 1.2));
+    outsideprocessing.AddHistogram(TH1D("MKpiWideBackground", ";m_{K^{#pm}#pi^{#pm}} [GeV];Number of pairs", 500, 0.0, 5.0));
+    outsideprocessing.AddHistogram(TH1D("MKpiWidedEdxBackground", ";m_{K^{#pm}#pi^{#pm}} [GeV];Number of pairs", 500, 0.0, 5.0));
+    outsideprocessing.AddHistogram(TH1D("MKpiNarrowBackground", ";m_{K^{#pm}#pi^{#pm}} [GeV];Number of pairs", 100, 0.8, 1.0));
+    outsideprocessing.AddHistogram(TH1D("MKpiNarrowdEdxBackground", ";m_{K^{#pm}#pi^{#pm}} [GeV];Number of pairs", 100, 0.8, 1.0));
     //other
     outsideprocessing.AddHistogram(TH2D("Mphipt2DHist", "Mphipt2DHist", 50, 0.9, 1.1, n_ptBins, ptBins));
     outsideprocessing.AddHistogram(TH2D("Mphieta2DHist", "Mphieta2DHist", 50, 0.9, 1.1, n_etaBins, etaBins));
@@ -114,6 +123,8 @@ int main(int argc, char **argv){
         StUPCTrack *tempTrack;
         TLorentzVector positive_track;
         TLorentzVector negative_track;
+        TLorentzVector bcg_track_1;
+        TLorentzVector bcg_track_2;
         TVector3 tempMomentum;
         double mass;
 
@@ -167,19 +178,19 @@ int main(int argc, char **argv){
                     vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Kaon]);
                     vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
                     mass = (positive_track+negative_track).M();
-                    insideprocessing.Fill("MKpiWideNoK0Lambda0Veto", mass);
-                    insideprocessing.Fill("MKpiNarrowNoK0Lambda0Veto", mass);
+                    insideprocessing.Fill("MKpiWideVeto", mass);
+                    insideprocessing.Fill("MKpiNarrowVeto", mass);
                     vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
                     vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Kaon]);
                     mass = (positive_track+negative_track).M();
-                    insideprocessing.Fill("MKpiWideNoK0Lambda0Veto", mass);
-                    insideprocessing.Fill("MKpiNarrowNoK0Lambda0Veto", mass);
+                    insideprocessing.Fill("MKpiWideVeto", mass);
+                    insideprocessing.Fill("MKpiNarrowVeto", mass);
                     //phi
                     vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Kaon]);
                     vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Kaon]);
                     mass = (positive_track+negative_track).M();
-                    insideprocessing.Fill("MKKWideNoK0Lambda0Veto", mass);
-                    insideprocessing.Fill("MKKNarrowNoK0Lambda0Veto", mass);
+                    insideprocessing.Fill("MKKWideVeto", mass);
+                    insideprocessing.Fill("MKKNarrowVeto", mass);
 
                     //normal, with veto
                     //K0S (for vetoing)
@@ -261,13 +272,13 @@ int main(int argc, char **argv){
                     //no veto
                     //KK pair
                     if(vector_Track_positive_dEdx==Kaon&&vector_Track_negative_dEdx==Kaon){
-                        insideprocessing.Fill("MKKWidedEdxNoK0Lambda0Veto", mass);
-                        insideprocessing.Fill("MKKNarrowdEdxNoK0Lambda0Veto", mass);
+                        insideprocessing.Fill("MKKWidedEdxVeto", mass);
+                        insideprocessing.Fill("MKKNarrowdEdxVeto", mass);
                     }
                     //Kpi pair
                     if((vector_Track_positive_dEdx==Kaon&&vector_Track_negative_dEdx==Pion)or(vector_Track_positive_dEdx==Pion&&vector_Track_negative_dEdx==Kaon)){
-                        insideprocessing.Fill("MKpiWidedEdxNoK0Lambda0Veto", mass);
-                        insideprocessing.Fill("MKpiNarrowdEdxNoK0Lambda0Veto", mass);
+                        insideprocessing.Fill("MKpiWidedEdxVeto", mass);
+                        insideprocessing.Fill("MKpiNarrowdEdxVeto", mass);
                     }
 
                     //with veto
@@ -299,6 +310,44 @@ int main(int argc, char **argv){
                     }
                 }
             }
+
+            //loop through background - positive
+            for(long unsigned int i = 0; i<vector_Track_positive.size(); i++){
+                for(long unsigned int j = i+1; j<vector_Track_positive.size(); j++){
+                    //Kpi
+                    vector_Track_positive[i]->getLorentzVector(bcg_track_1, particleMass[Kaon]);
+                    vector_Track_positive[j]->getLorentzVector(bcg_track_2, particleMass[Pion]);
+                    mass = (bcg_track_1+bcg_track_2).M();
+                    insideprocessing.Fill("MKpiWideBackground", mass);
+                    insideprocessing.Fill("MKpiNarrowBackground", mass);
+                    //KK
+                    vector_Track_positive[i]->getLorentzVector(bcg_track_1, particleMass[Kaon]);
+                    vector_Track_positive[j]->getLorentzVector(bcg_track_2, particleMass[Kaon]);
+                    mass = (bcg_track_1+bcg_track_2).M();
+                    insideprocessing.Fill("MKKWideBackground", mass);
+                    insideprocessing.Fill("MKKNarrowBackground", mass);
+                }
+            }
+
+            //loop through background - negative
+            for(long unsigned int i = 0; i<vector_Track_negative.size(); i++){
+                for(long unsigned int j = i+1; j<vector_Track_negative.size(); j++){
+                    //Kpi
+                    vector_Track_negative[i]->getLorentzVector(bcg_track_1, particleMass[Kaon]);
+                    vector_Track_negative[j]->getLorentzVector(bcg_track_2, particleMass[Pion]);
+                    mass = (bcg_track_1+bcg_track_2).M();
+                    insideprocessing.Fill("MKpiWideBackground", mass);
+                    insideprocessing.Fill("MKpiNarrowBackground", mass);
+                    //KK
+                    vector_Track_negative[i]->getLorentzVector(bcg_track_1, particleMass[Kaon]);
+                    vector_Track_negative[j]->getLorentzVector(bcg_track_2, particleMass[Kaon]);
+                    mass = (bcg_track_1+bcg_track_2).M();
+                    insideprocessing.Fill("MKKWideBackground", mass);
+                    insideprocessing.Fill("MKKNarrowBackground", mass);
+                }
+            }
+
+            //lambda finish
         }
         return 0;
         };
