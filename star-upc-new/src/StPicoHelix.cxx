@@ -101,7 +101,7 @@ void StPicoHelix::setCurvature(Double_t val) {
   }
 
 #ifndef ST_NO_NUMERIC_LIMITS
-  if ( ::fabs(mCurvature) <= numeric_limits<Double_t>::epsilon() ) {
+  if(::fabs(mCurvature)<=std::numeric_limits<Double_t>::epsilon()){
 #else
   if ( ::fabs(mCurvature) <= static_cast<Double_t>(0) ) {
 #endif
