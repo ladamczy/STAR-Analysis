@@ -6,11 +6,11 @@
 
 #include "string.h"
 
-int main(int argc, char const *argv[]){
-    TFile *data = TFile::Open("/home/adam/STAR-Analysis/Inclusive_Analysis/star-upc/AnaOutput_Inclusive_analysis_Kstar_phi_old_data.root");
+int main(int argc, char const* argv[]){
+    TFile* data = TFile::Open("/home/adam/STAR-Analysis/Inclusive_Analysis/star-upc/AnaOutput_Inclusive_analysis_Kstar_phi_old_data.root");
 
-    TH1D *signal = (TH1D *)data->Get("MKKWideNoVeto");
-    TH1D *bcg = (TH1D *)data->Get("MKKWideBackground");
+    TH1D* signal = (TH1D*)data->Get("MKKWideNoVeto");
+    TH1D* bcg = (TH1D*)data->Get("MKKWideBackground");
     signal->SetName("signal");
     bcg->SetName("bcg");
 
@@ -37,11 +37,11 @@ int main(int argc, char const *argv[]){
         break;
     }
     //scaling and making a difference
-    TH1D *difference = (TH1D *)signal->Clone();
+    TH1D* difference = (TH1D*)signal->Clone();
     difference->Add(bcg, -1.0);
 
     //signal & background
-    TCanvas *resultCanvas = new TCanvas("resultCanvas", "resultCanvas", 1800, 1600);
+    TCanvas* resultCanvas = new TCanvas("resultCanvas", "resultCanvas", 1800, 1600);
     gStyle->SetOptStat(0);
     signal->SetMinimum(0);
     signal->SetLineColor(kBlue);
@@ -50,7 +50,7 @@ int main(int argc, char const *argv[]){
     bcg->SetLineColor(kRed);
     bcg->SetLineWidth(2);
     bcg->Draw("Hist same");
-    TLegend *legend = new TLegend(0.7, 0.7, 0.89, 0.89);
+    TLegend* legend = new TLegend(0.7, 0.7, 0.89, 0.89);
     legend->SetTextSize(0.025);
     legend->SetHeader("#bf{pp, #sqrt{s} = 510 GeV}", "C");
     legend->AddEntry(signal->GetName(), "signal");
