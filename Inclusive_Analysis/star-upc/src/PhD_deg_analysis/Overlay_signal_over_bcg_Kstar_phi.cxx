@@ -18,6 +18,8 @@ int main(int argc, char const* argv[]){
     int idea;
     if(argc==1){
         idea = 0;
+    } else{
+        idea = atoi(argv[1]);
     }
     //init of all the variables used
     int left_bin, right_bin, highest_bin;
