@@ -146,6 +146,24 @@ int main(int argc, char **argv){
             }
             eventsProcessed++;
 
+            //additional cuts that normally are used in only-RP-cuts examples
+            //cause the data i used isn't properly filtered
+            //at least 2 good tracks of opposite signs
+            int nOfGoodTracks = 0;
+            for(int i = 0; i<tempUPCpointer->getNumberOfTracks(); i++){
+                StUPCTrack* tmptrk = tempUPCpointer->getTrack(i);
+                if(tmptrk->getFlag(StUPCTrack::kTof)&&abs(tmptrk->getEta())<0.7&&tmptrk->getPt()>0.2){
+                    nOfGoodTracks++;
+                }
+            }
+            if(nOfGoodTracks<2){
+                continue;
+            }
+            //exactly one vertex
+            if(tempUPCpointer->getNumberOfVertices()!=1){
+                continue;
+            }
+
             //cuts & histogram filling
             //selecting tracks matching criteria:
             //TOF
