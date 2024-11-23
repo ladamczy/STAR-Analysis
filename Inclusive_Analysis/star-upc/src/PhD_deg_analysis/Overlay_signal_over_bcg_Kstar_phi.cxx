@@ -14,15 +14,29 @@ int main(int argc, char const *argv[]){
     signal->SetName("signal");
     bcg->SetName("bcg");
 
-    //1st idea
-    // int left_bin = bcg->FindBin(1.5);
-    // int right_bin = bcg->FindBin(4.9);
-    // printf("Signal: %lf\nBackground: %lf\nRatio S/B: %lf\n", signal->Integral(left_bin, right_bin), bcg->Integral(left_bin, right_bin), signal->Integral(left_bin, right_bin)/bcg->Integral(left_bin, right_bin));
-    // bcg->Scale(signal->Integral(left_bin, right_bin)/bcg->Integral(left_bin, right_bin));
-    //2nd idea
-    int highest_bin = bcg->GetMaximumBin();
-    bcg->Scale(signal->GetBinContent(highest_bin)/bcg->GetBinContent(highest_bin));
-
+    //ideas
+    int idea;
+    if(argc==1){
+        idea = 0;
+    }
+    //init of all the variables used
+    int left_bin, right_bin, highest_bin;
+    switch(idea){
+    case 1:
+        left_bin = bcg->FindBin(1.5);
+        right_bin = bcg->FindBin(4.9);
+        printf("Signal: %lf\nBackground: %lf\nRatio S/B: %lf\n", signal->Integral(left_bin, right_bin), bcg->Integral(left_bin, right_bin), signal->Integral(left_bin, right_bin)/bcg->Integral(left_bin, right_bin));
+        bcg->Scale(signal->Integral(left_bin, right_bin)/bcg->Integral(left_bin, right_bin));
+        break;
+    case 2:
+        highest_bin = bcg->GetMaximumBin();
+        bcg->Scale(signal->GetBinContent(highest_bin)/bcg->GetBinContent(highest_bin));
+        break;
+    case 0:
+    default:
+        break;
+    }
+    //scaling and making a difference
     TH1D *difference = (TH1D *)signal->Clone();
     difference->Add(bcg, -1.0);
 
