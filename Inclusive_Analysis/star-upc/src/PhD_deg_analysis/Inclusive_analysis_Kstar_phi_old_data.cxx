@@ -97,6 +97,7 @@ int main(int argc, char **argv){
     outsideprocessing.AddHistogram(TH2D("MissingpXY", "MissingpXY", 100, -5., 5., 100, -5., 5.));
     outsideprocessing.AddHistogram(TH1D("MissingpT", "MissingpT", 500, 0., 5.));
     outsideprocessing.AddHistogram(TH1D("MissingpZ", "MissingpZ", 100, -5, 5.));
+    outsideprocessing.AddHistogram(TH1D("MKKExtraNarrowNoVeto", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 140, 0.98, 1.05));
 
     //processing
     //defining TreeProcessor
@@ -228,6 +229,7 @@ int main(int argc, char **argv){
                     mass = (positive_track+negative_track).M();
                     insideprocessing.Fill("MKKWideNoVeto", mass);
                     insideprocessing.Fill("MKKNarrowNoVeto", mass);
+                    insideprocessing.Fill("MKKExtraNarrowNoVeto", mass);
 
                     //normal, with veto
                     //K0S (for vetoing)
