@@ -90,9 +90,13 @@ int main(int argc, char **argv){
     outsideprocessing.AddHistogram(TH1D("MKpiWidedEdxBackground", ";m_{K^{#pm}#pi^{#pm}} [GeV];Number of pairs", 500, 0.0, 5.0));
     outsideprocessing.AddHistogram(TH1D("MKpiNarrowBackground", ";m_{K^{#pm}#pi^{#pm}} [GeV];Number of pairs", 100, 0.8, 1.0));
     outsideprocessing.AddHistogram(TH1D("MKpiNarrowdEdxBackground", ";m_{K^{#pm}#pi^{#pm}} [GeV];Number of pairs", 100, 0.8, 1.0));
-    //other
+    //phi(1020) histograms
     outsideprocessing.AddHistogram(TH2D("Mphipt2DHist", "Mphipt2DHist", 50, 0.9, 1.1, n_ptBins, ptBins));
     outsideprocessing.AddHistogram(TH2D("Mphieta2DHist", "Mphieta2DHist", 50, 0.9, 1.1, n_etaBins, etaBins));
+    //other
+    outsideprocessing.AddHistogram(TH2D("MissingpXY", "MissingpXY", 100, -5., 5., 100, -5., 5.));
+    outsideprocessing.AddHistogram(TH1D("MissingpT", "MissingpT", 500, 0., 5.));
+    outsideprocessing.AddHistogram(TH1D("MissingpZ", "MissingpZ", 100, -5, 5.));
 
     //processing
     //defining TreeProcessor
@@ -109,10 +113,10 @@ int main(int argc, char **argv){
     auto myFunction = [&](TTreeReader &myReader){
         //getting values from TChain, in-loop histogram initialization
         TTreeReaderValue<StUPCEvent> StUPCEventInstance(myReader, "mUPCEvent");
-        // TTreeReaderValue<StRPEvent> StRPEventInstance(myReader, "mRPEvent");
+        TTreeReaderValue<StRPEvent> StRPEventInstance(myReader, "mRPEvent");
         ProcessingInsideLoop insideprocessing;
         StUPCEvent *tempUPCpointer;
-        // StRPEvent *tempRPpointer;
+        StRPEvent* tempRPpointer;
         insideprocessing.GetLocalHistograms(&outsideprocessing);
 
         //helpful variables
@@ -128,17 +132,19 @@ int main(int argc, char **argv){
         TLorentzVector bcg_track_1;
         TLorentzVector bcg_track_2;
         TVector3 tempMomentum;
+        TVector3 totalMomentum;
         double mass;
 
         //actual loop
         while(myReader.Next()){
             //in a TTree, it *would* be constant, in TChain however not necessarily
             tempUPCpointer = StUPCEventInstance.Get();
-            // tempRPpointer = StRPEventInstance.Get();
+            tempRPpointer = StRPEventInstance.Get();
 
             //cleaning the loop
             vector_Track_positive.clear();
             vector_Track_negative.clear();
+            totalMomentum = { 0, 0, 0 };
 
             //cause I want to see what's going on
             if(eventsProcessed%10000==0){
@@ -165,6 +171,8 @@ int main(int argc, char **argv){
             }
 
             //cuts & histogram filling
+            //also missing momenta fill
+            tempMomentum.SetXYZ(0, 0, 0);
             //selecting tracks matching criteria:
             //TOF
             //pt & eta 
@@ -188,7 +196,16 @@ int main(int argc, char **argv){
                 } else{
                     vector_Track_negative.push_back(tempTrack);
                 }
+                tempTrack->getMomentum(tempMomentum);
+                totalMomentum += tempMomentum;
             }
+
+            //missing pt
+            totalMomentum += tempRPpointer->getTrack(0)->pVec();
+            totalMomentum += tempRPpointer->getTrack(1)->pVec();
+            insideprocessing.Fill("MissingpT", totalMomentum.Pt());
+            insideprocessing.Fill("MissingpXY", totalMomentum.X(), totalMomentum.Y());
+            insideprocessing.Fill("MissingpZ", totalMomentum.Z());
 
             //loop through particles
             for(long unsigned int i = 0; i<vector_Track_positive.size(); i++){
