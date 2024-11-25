@@ -95,9 +95,13 @@ int main(int argc, char **argv){
     outsideprocessing.AddHistogram(TH2D("Mphieta2DHist", "Mphieta2DHist", 50, 0.9, 1.1, n_etaBins, etaBins));
     //other
     outsideprocessing.AddHistogram(TH2D("MissingpXY", "MissingpXY", 100, -5., 5., 100, -5., 5.));
-    outsideprocessing.AddHistogram(TH1D("MissingpT", "MissingpT", 500, 0., 5.));
+    outsideprocessing.AddHistogram(TH1D("MissingpT", "MissingpT", 100, 0., 1.));
+    outsideprocessing.AddHistogram(TH1D("MissingpTWide", "MissingpT", 250, 0., 5.));
+
+    outsideprocessing.AddHistogram(TH1D("MissingpTtests", "MissingpT", 100, 0., 1.));
     outsideprocessing.AddHistogram(TH1D("MissingpZ", "MissingpZ", 100, -5, 5.));
     outsideprocessing.AddHistogram(TH1D("MKKExtraNarrowNoVeto", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 140, 0.98, 1.05));
+    outsideprocessing.AddHistogram(TH2D("xi", ";#xi_{E};#xi_{W}", 150, -0.05, 0.25, 150, -0.05, 0.25));
 
     //processing
     //defining TreeProcessor
@@ -155,7 +159,7 @@ int main(int argc, char **argv){
 
             //additional cuts that normally are used in only-RP-cuts examples
             //cause the data i used isn't properly filtered
-            //at least 2 good tracks of opposite signs
+            //at least 2 good tracks
             int nOfGoodTracks = 0;
             for(int i = 0; i<tempUPCpointer->getNumberOfTracks(); i++){
                 StUPCTrack* tmptrk = tempUPCpointer->getTrack(i);
@@ -205,8 +209,30 @@ int main(int argc, char **argv){
             totalMomentum += tempRPpointer->getTrack(0)->pVec();
             totalMomentum += tempRPpointer->getTrack(1)->pVec();
             insideprocessing.Fill("MissingpT", totalMomentum.Pt());
+            insideprocessing.Fill("MissingpTWide", totalMomentum.Pt());
             insideprocessing.Fill("MissingpXY", totalMomentum.X(), totalMomentum.Y());
             insideprocessing.Fill("MissingpZ", totalMomentum.Z());
+            //tests to bring back the peak at lowpT
+            totalMomentum = tempRPpointer->getTrack(0)->pVec();
+            totalMomentum += tempRPpointer->getTrack(1)->pVec();
+            for(long unsigned int i = 0; i<vector_Track_positive.size(); i++){
+                if(vector_Track_positive[i]->getNhitsDEdx()>=15){
+                    vector_Track_positive[i]->getMomentum(tempMomentum);
+                    totalMomentum += tempMomentum;
+                }
+            }
+            for(long unsigned int j = 0; j<vector_Track_negative.size(); j++){
+                if(vector_Track_negative[j]->getNhitsDEdx()>=15){
+                    vector_Track_negative[j]->getMomentum(tempMomentum);
+                    totalMomentum += tempMomentum;
+                }
+            }
+            insideprocessing.Fill("MissingpTtests", totalMomentum.Pt());
+            if(tempRPpointer->getTrack(0)->pVec().Z()>0){
+                insideprocessing.Fill("xi", tempRPpointer->getTrack(1)->xi(254.867), tempRPpointer->getTrack(0)->xi(254.867));
+            } else{
+                insideprocessing.Fill("xi", tempRPpointer->getTrack(0)->xi(254.867), tempRPpointer->getTrack(1)->xi(254.867));
+            }
 
             //loop through particles
             for(long unsigned int i = 0; i<vector_Track_positive.size(); i++){
