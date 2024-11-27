@@ -218,7 +218,7 @@ int main(int argc, char *argv[]){
         int charge = 0;
         int TPCParticles = 0;
         for(int i = 0; i<pythia.event.size(); i++){
-            if(isParticleInTPCAcceptance(pythia.event[i])&&generator.flat()<0.6){
+            if(isParticleInTPCAcceptance(pythia.event[i])&&isParticleDetected(&pythia.event[i], 0.)){
                 TPCParticles++;
                 //for some reason charge is in normal units now???
                 charge += pythia.event[i].charge();
