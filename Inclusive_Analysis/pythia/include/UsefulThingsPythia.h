@@ -49,12 +49,11 @@ bool readingAcceptanceFromFile(TH3F* Acceptance){
     return true;
 }
 
-bool isParticleDetected(Pythia8::Particle* particle, double zVx){
+bool isParticleDetected(Pythia8::Particle* particle){
     //filling the  histogram once at the beginning
     //and other static things
     static TH3F Acceptance[nSigns*nParticles];
     static bool isInitialised = readingAcceptanceFromFile(Acceptance);
-    static Pythia8::Rndm generator(0);
     //getting the histogram
     int histID = -1;
     switch(particle->id()){
@@ -77,10 +76,15 @@ bool isParticleDetected(Pythia8::Particle* particle, double zVx){
         histID = Proton+nParticles*Minus;
         break;
     default:
-        return generator.flat()<0.6;
+        if(particle->charge()>0){
+            histID = Pion+nParticles*Plus;
+        } else if(particle->charge()<0){
+            histID = Pion+nParticles*Minus;
+        }
     }
     TH3F* temp = &Acceptance[histID];
     //reading from the histogram (with safeguards at the edges)
+    double zVx = particle->zProd()/10;  //mm->cm
     double pT = particle->pT();
     double eta = particle->eta();
     if(zVx<temp->GetXaxis()->GetBinCenter(1) or zVx>temp->GetXaxis()->GetBinCenter(temp->GetNbinsX())){
