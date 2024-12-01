@@ -28,6 +28,7 @@ bool IsInMomElasticSpot(TLorentzVector, TLorentzVector);
 bool IsInXiFiducialNoBBCL(TLorentzVector, TLorentzVector, double);
 bool IsInXiFiducialBBCL(TLorentzVector, TLorentzVector, double);
 bool IsParticleQuarkOrGluon(Particle);
+bool IsInMeasurementSpecificCuts(Particle*);
 void FindGoodMothers(Event *, int, std::vector<int> &);
 
 int main(int argc, char *argv[]){
@@ -192,8 +193,7 @@ int main(int argc, char *argv[]){
         //with smulated TPC acceptance
         int TPCParticles = 0;
         for(int i = 0; i<pythia.event.size(); i++){
-            // added current bound (0.7 instead of 0.9)
-            if(isParticleInTPCAcceptance(pythia.event[i])&&isParticleDetected(&pythia.event[i])&&abs(pythia.event[i].eta())<0.7){
+            if(IsInMeasurementSpecificCuts(&pythia.event[i])&&isParticleInTPCAcceptance(pythia.event[i])&&isParticleDetected(&pythia.event[i])){
                 TPCParticles++;
                 detected_particles_number.push_back(i);
             }
@@ -384,6 +384,12 @@ bool IsParticleQuarkOrGluon(Particle particle){
         return true;
     }
     return false;
+}
+
+bool IsInMeasurementSpecificCuts(Particle* particle){
+    //|eta|<0.7
+    //production vertex closer to  primary vertex than 30mm
+    return abs(particle->eta())<0.7&&particle->vProd().pT()<30;
 }
 
 void FindGoodMothers(Event *event, int particle, std::vector<int> &particle_set){
