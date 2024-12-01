@@ -101,52 +101,11 @@ int main(int argc, char *argv[]){
     //after the settings and all that
     pythia.init();
 
-    //histogram variables
-    int n_ptBins = 9;
-    double ptBins[] = { 0,0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8 };
-    int n_etaBins = 10;
-    double etaBins[] = { -1., -0.8, -0.6, -0.4, -0.2, 0., 0.2, 0.4, 0.6, 0.8, 1.0 };
-    int stateBins = 40;
-    double stateMassMax = 40;
-
     //histograms
     //general
     TH1D ParticlesDetected("ParticlesDetected", "ParticlesDetected", 20000, -10000, 10000);
     TH1D ParticlesReconstructed("ParticlesReconstructed", "ParticlesReconstructed", 20000, -10000, 10000);
     THStack MpipiStack("MpipiStack", "#pion mass assumed");
-    //Deltas
-    TH2D DeltappDaughters("DeltappDaughters", "DeltappDaughters", 1, 0, 1, 1, 0, 1);
-    TH2D Delta0Daughters("Delta0Daughters", "Delta0Daughters", 1, 0, 1, 1, 0, 1);
-    TH2D Deltabar0Daughters("Deltabar0Daughters", "Deltabar0Daughters", 1, 0, 1, 1, 0, 1);
-    TH2D DeltabarmmDaughters("DeltabarmmDaughters", "DeltabarmmDaughters", 1, 0, 1, 1, 0, 1);
-    TH2D DeltappMothers("DeltappMothers", "DeltappMothers", 1, 0, 1, 1, 0, 1);
-    TH2D Delta0Mothers("Delta0Mothers", "Delta0Mothers", 1, 0, 1, 1, 0, 1);
-    TH2D Deltabar0Mothers("Deltabar0Mothers", "Deltabar0Mothers", 1, 0, 1, 1, 0, 1);
-    TH2D DeltabarmmMothers("DeltabarmmMothers", "DeltabarmmMothers", 1, 0, 1, 1, 0, 1);
-    //K0s
-    TH1D K0ptHist("K0ptHist", "K0ptHist", n_ptBins, ptBins);
-    TH1D K0etaHist("K0etaHist", "K0etaHist", n_etaBins, etaBins);
-    TH1D K0multiplicity("K0multiplicity", "K^{0}_{S} multiplicity", 10, 0, 10);
-    TH1D K0AdditionalTracks("K0AdditionalTracks", "Additional tracks except K^{0}_{S} daughters", 20, 0, 20);
-    TH2D K0multiplicityXmass("K0multiplicityXmass", "K^{0}_{S} multiplicity with respect to mass of a central state;m_{X} [GeV]", stateBins, 0, stateMassMax, 10, 0, 10);
-    TEfficiency K0ratioXmass("K0ratioXmass", "Ratio of detected K^{0}_{S} to all measured events with respect to mass of a central state;m_{X} [GeV]", stateBins, 0, stateMassMax);
-    TH2D K0AdditionalTracksXmass("K0AdditionalTracksXmass", "Additional tracks except K^{0}_{S} daughters;m_{X} [GeV]", stateBins, 0, stateMassMax, 20, 0, 20);
-    //Lambda0
-    TH1D LambdaptHist("LambdaptHist", "LambdaptHist", n_ptBins, ptBins);
-    TH1D LambdaetaHist("LambdaetaHist", "LambdaetaHist", n_etaBins, etaBins);
-    TH1D Lambdamultiplicity("Lambdamultiplicity", "#Lambda^{0} multiplicity", 10, 0, 10);
-    TH1D LambdaAdditionalTracks("LambdaAdditionalTracks", "Additional tracks except #Lambda^{0} daughters", 20, 0, 20);
-    TH2D LambdamultiplicityXmass("LambdamultiplicityXmass", "#Lambda^{0} multiplicity with respect to mass of a central state;m_{X} [GeV]", stateBins, 0, stateMassMax, 10, 0, 10);
-    TEfficiency LambdaratioXmass("LambdaratioXmass", "Ratio of detected #Lambda^{0} to all measured events with respect to mass of a central state;m_{X} [GeV]", stateBins, 0, stateMassMax);
-    TH2D LambdaAdditionalTracksXmass("LambdaAdditionalTracksXmass", "Additional tracks except #Lambda^{0} daughters;m_{X} [GeV]", stateBins, 0, stateMassMax, 20, 0, 20);
-    //LambdaBar0
-    TH1D LambdaBarptHist("LambdaBarptHist", "LambdaBarptHist", n_ptBins, ptBins);
-    TH1D LambdaBaretaHist("LambdaBaretaHist", "LambdaBaretaHist", n_etaBins, etaBins);
-    TH1D LambdaBarmultiplicity("LambdaBarmultiplicity", "#Lambda^{0} multiplicity", 10, 0, 10);
-    TH1D LambdaBarAdditionalTracks("LambdaBarAdditionalTracks", "Additional tracks except #Lambda^{0} daughters", 20, 0, 20);
-    TH2D LambdaBarmultiplicityXmass("LambdaBarmultiplicityXmass", "#Lambda^{0} multiplicity with respect to mass of a central state;m_{X} [GeV]", stateBins, 0, stateMassMax, 10, 0, 10);
-    TEfficiency LambdaBarratioXmass("LambdaBarratioXmass", "Ratio of detected #Lambda^{0} to all measured events with respect to mass of a central state;m_{X} [GeV]", stateBins, 0, stateMassMax);
-    TH2D LambdaBarAdditionalTracksXmass("LambdaBarAdditionalTracksXmass", "Additional tracks except #Lambda^{0} daughters;m_{X} [GeV]", stateBins, 0, stateMassMax, 20, 0, 20);
     //Technical
     TH1D MpipiNonresonant("MpipiNonresonant", ";m_{#pi#pi}", 500, 0, 5);
     // MpipiNonresonant.SetDirectory(nullptr);
@@ -167,16 +126,12 @@ int main(int argc, char *argv[]){
 
     //other things;
     int n_events = 0;
-    int n_K0 = 0;
-    int n_Lambda = 0;
-    int n_LambdaBar = 0;
     std::vector<int> detected_particles_number;
     std::vector<int> detected_particles_positive_number;
     std::vector<int> detected_particles_negative_number;
     std::vector<int> all_daughters_detected_resonant_number;
     std::vector<int> all_daughters_detected_nonresonant_number;
     Rndm generator(0);
-    TLorentzVector temp4Vector = { 0,0,0,0 };
     TLorentzVector temp4VectorPositive;
     TLorentzVector temp4VectorNegative;
     bool AllDaughtersDetected;
@@ -247,22 +202,9 @@ int main(int argc, char *argv[]){
             continue;
         }
 
-        //number of K0 & Lambda
-        int nK0 = 0;
-        int nLambda = 0;
-        int nLambdaBar = 0;
-        std::vector<int> K0indices;
-        std::vector<int> Lambdaindices;
-        std::vector<int> LambdaBarindices;
-        int tempDaughter1, tempDaughter2;
         std::vector<Pythia8::Particle> acceptedParticlesPlusDaughters;
-        temp4Vector.SetE(mEnergy);
-        double XStateMass = (temp4Vector-p1-p2).M();
         //gathering info in main loop
         for(int part_index = 0; part_index<pythia.event.size(); part_index++){
-            if(abs(pythia.event[part_index].id())==K0sPDGid){ K0indices.push_back(part_index); }
-            if(pythia.event[part_index].id()==LambdaPDGid){ Lambdaindices.push_back(part_index); }
-            if(pythia.event[part_index].id()==LambdabarPDGid){ LambdaBarindices.push_back(part_index); }
             DaughtersDetected = 0;
             AllDaughtersDetected = true;
             //check if all daugters of part_index particle are detected
@@ -276,50 +218,15 @@ int main(int argc, char *argv[]){
             //if all particles are detected, we check if we reconstruct a "viable" particle (not a gluon or quark)
             if(AllDaughtersDetected){
                 mother_particles_number.clear();
-                if(strcmp(pythia.event[part_index].name().c_str(), "g")==0){
-                    printf("\nParticle checked is a gluon\n");
-                    FindGoodMothers(&pythia.event, pythia.event[part_index].daughter1(), mother_particles_number);
-                } else if(strcmp(pythia.event[part_index].name().c_str(), "d")==0){
-                    printf("\nParticle checked is a d quark\n");
-                    FindGoodMothers(&pythia.event, pythia.event[part_index].daughter1(), mother_particles_number);
-                } else if(strcmp(pythia.event[part_index].name().c_str(), "dbar")==0){
-                    printf("\nParticle checked is a dbar quark\n");
-                    FindGoodMothers(&pythia.event, pythia.event[part_index].daughter1(), mother_particles_number);
-                } else if(strcmp(pythia.event[part_index].name().c_str(), "u")==0){
-                    printf("\nParticle checked is a u quark\n");
-                    FindGoodMothers(&pythia.event, pythia.event[part_index].daughter1(), mother_particles_number);
-                } else if(strcmp(pythia.event[part_index].name().c_str(), "ubar")==0){
-                    printf("\nParticle checked is a ubar quark\n");
-                    FindGoodMothers(&pythia.event, pythia.event[part_index].daughter1(), mother_particles_number);
-                } else if(strcmp(pythia.event[part_index].name().c_str(), "s")==0){
-                    printf("\nParticle checked is a s quark\n");
-                    FindGoodMothers(&pythia.event, pythia.event[part_index].daughter1(), mother_particles_number);
-                } else if(strcmp(pythia.event[part_index].name().c_str(), "sbar")==0){
-                    printf("\nParticle checked is a sbar quark\n");
-                    FindGoodMothers(&pythia.event, pythia.event[part_index].daughter1(), mother_particles_number);
-                } else if(strcmp(pythia.event[part_index].name().c_str(), "Delta++")==0){
-                    DeltappDaughters.Fill(pythia.event[pythia.event[part_index].daughter1()].name().c_str(), pythia.event[pythia.event[part_index].daughter2()].name().c_str(), 1.);
-                    DeltappMothers.Fill(pythia.event[pythia.event[part_index].mother1()].name().c_str(), pythia.event[pythia.event[part_index].mother2()].name().c_str(), 1.);
-                } else if(strcmp(pythia.event[part_index].name().c_str(), "Delta0")==0){
-                    Delta0Daughters.Fill(pythia.event[pythia.event[part_index].daughter1()].name().c_str(), pythia.event[pythia.event[part_index].daughter2()].name().c_str(), 1.);
-                    Delta0Mothers.Fill(pythia.event[pythia.event[part_index].mother1()].name().c_str(), pythia.event[pythia.event[part_index].mother2()].name().c_str(), 1.);
-                } else if(strcmp(pythia.event[part_index].name().c_str(), "Deltabar0")==0){
-                    Deltabar0Daughters.Fill(pythia.event[pythia.event[part_index].daughter1()].name().c_str(), pythia.event[pythia.event[part_index].daughter2()].name().c_str(), 1.);
-                    Deltabar0Mothers.Fill(pythia.event[pythia.event[part_index].mother1()].name().c_str(), pythia.event[pythia.event[part_index].mother2()].name().c_str(), 1.);
-                } else if(strcmp(pythia.event[part_index].name().c_str(), "Deltabar--")==0){
-                    DeltabarmmDaughters.Fill(pythia.event[pythia.event[part_index].daughter1()].name().c_str(), pythia.event[pythia.event[part_index].daughter2()].name().c_str(), 1.);
-                    DeltabarmmMothers.Fill(pythia.event[pythia.event[part_index].mother1()].name().c_str(), pythia.event[pythia.event[part_index].mother2()].name().c_str(), 1.);
-                }
                 //final checks to fill histograms
                 //this way every particle gets filled exactly once
                 //because only particles with TPC-detected decay products
                 //get to this point of a loop
                 //due to AllDaughtersDetected==true
                 //so even if there was a copy earlier in the decay tree, it won't get registered
-                if(!IsParticleQuarkOrGluon(pythia.event[part_index])){
-                    ParticlesReconstructed.Fill(pythia.event[part_index].name().c_str(), 1.);
-                    all_daughters_detected_resonant_number.push_back(part_index);
-                } else{
+                if(IsParticleQuarkOrGluon(pythia.event[part_index])){
+                    printf(("\nParticle checked: "+pythia.event[part_index].name()+"\n").c_str());
+                    FindGoodMothers(&pythia.event, pythia.event[part_index].daughter1(), mother_particles_number);
                     //removing potential particle duplicates
                     sort(mother_particles_number.begin(), mother_particles_number.end());
                     mother_particles_number.erase(unique(mother_particles_number.begin(), mother_particles_number.end()), mother_particles_number.end());
@@ -338,6 +245,9 @@ int main(int argc, char *argv[]){
                         printf("\n");
                         pythia.event.list(true, true);
                     }
+                } else{
+                    ParticlesReconstructed.Fill(pythia.event[part_index].name().c_str(), 1.);
+                    all_daughters_detected_resonant_number.push_back(part_index);
                 }
             }
         }
@@ -382,69 +292,8 @@ int main(int argc, char *argv[]){
         //assuming everything is a kaon
         //assuming proper cuts for kaons and protons (the rest is, you guessed it, assumed to be pions)
 
-        //tests for other particles
-        //K0s
-        for(long unsigned int K0candidate = 0; K0candidate<K0indices.size(); K0candidate++){
-            tempDaughter1 = pythia.event[K0indices[K0candidate]].daughter1();
-            tempDaughter2 = pythia.event[K0indices[K0candidate]].daughter2();
-            if((std::find(detected_particles_number.begin(), detected_particles_number.end(), tempDaughter1)!=detected_particles_number.end())&&(std::find(detected_particles_number.begin(), detected_particles_number.end(), tempDaughter2)!=detected_particles_number.end())&&(tempDaughter1+1==tempDaughter2)){
-                nK0++;
-                K0ptHist.Fill(pythia.event[K0indices[K0candidate]].pT());
-                K0etaHist.Fill(pythia.event[K0indices[K0candidate]].eta());
-            }
-        }
-        //Lambda0
-        for(long unsigned int Lambdacandidate = 0; Lambdacandidate<Lambdaindices.size(); Lambdacandidate++){
-            tempDaughter1 = pythia.event[Lambdaindices[Lambdacandidate]].daughter1();
-            tempDaughter2 = pythia.event[Lambdaindices[Lambdacandidate]].daughter2();
-            if((std::find(detected_particles_number.begin(), detected_particles_number.end(), tempDaughter1)!=detected_particles_number.end())&&(std::find(detected_particles_number.begin(), detected_particles_number.end(), tempDaughter2)!=detected_particles_number.end())&&(tempDaughter1+1==tempDaughter2)){
-                nLambda++;
-                LambdaptHist.Fill(pythia.event[Lambdaindices[Lambdacandidate]].pT());
-                LambdaetaHist.Fill(pythia.event[Lambdaindices[Lambdacandidate]].eta());
-            }
-        }
-        //LambdaBar0
-        for(long unsigned int LambdaBarcandidate = 0; LambdaBarcandidate<LambdaBarindices.size(); LambdaBarcandidate++){
-            tempDaughter1 = pythia.event[LambdaBarindices[LambdaBarcandidate]].daughter1();
-            tempDaughter2 = pythia.event[LambdaBarindices[LambdaBarcandidate]].daughter2();
-            if((std::find(detected_particles_number.begin(), detected_particles_number.end(), tempDaughter1)!=detected_particles_number.end())&&(std::find(detected_particles_number.begin(), detected_particles_number.end(), tempDaughter2)!=detected_particles_number.end())&&(tempDaughter1+1==tempDaughter2)){
-                nLambdaBar++;
-                LambdaBarptHist.Fill(pythia.event[LambdaBarindices[LambdaBarcandidate]].pT());
-                LambdaBaretaHist.Fill(pythia.event[LambdaBarindices[LambdaBarcandidate]].eta());
-            }
-        }
-
-        //final histograms
-        //K0s
-        if(nK0>0){
-            K0multiplicity.Fill(nK0);
-            K0multiplicityXmass.Fill(XStateMass, nK0);
-            K0ratioXmass.Fill(nK0>0, XStateMass);
-            K0AdditionalTracks.Fill(detected_particles_number.size()-nK0*2);
-            K0AdditionalTracksXmass.Fill(XStateMass, detected_particles_number.size()-nK0*2);
-        }
-        //Lambda0
-        if(nLambda>0){
-            Lambdamultiplicity.Fill(nLambda);
-            LambdamultiplicityXmass.Fill(XStateMass, nLambda);
-            LambdaratioXmass.Fill(nLambda>0, XStateMass);
-            LambdaAdditionalTracks.Fill(detected_particles_number.size()-nLambda*2);
-            LambdaAdditionalTracksXmass.Fill(XStateMass, detected_particles_number.size()-nLambda*2);
-        }
-        //LambdaBar0
-        if(nLambdaBar>0){
-            LambdaBarmultiplicity.Fill(nLambdaBar);
-            LambdaBarmultiplicityXmass.Fill(XStateMass, nLambdaBar);
-            LambdaBarratioXmass.Fill(nLambdaBar>0, XStateMass);
-            LambdaBarAdditionalTracks.Fill(detected_particles_number.size()-nLambdaBar*2);
-            LambdaBarAdditionalTracksXmass.Fill(XStateMass, detected_particles_number.size()-nLambdaBar*2);
-        }
-
         //total ratio
         n_events++;
-        n_K0 += nK0;
-        n_Lambda += nLambda;
-        n_LambdaBar += nLambdaBar;
     }
 
     //closing touches
@@ -454,14 +303,6 @@ int main(int argc, char *argv[]){
     ParticlesReconstructed.LabelsDeflate();
     ParticlesReconstructed.SetMinimum(0);
     ParticlesReconstructed.LabelsOption("a", "X");
-    DeltappDaughters.LabelsDeflate();
-    Delta0Daughters.LabelsDeflate();
-    Deltabar0Daughters.LabelsDeflate();
-    DeltabarmmDaughters.LabelsDeflate();
-    DeltappMothers.LabelsDeflate();
-    Delta0Mothers.LabelsDeflate();
-    Deltabar0Mothers.LabelsDeflate();
-    DeltabarmmMothers.LabelsDeflate();
     MpipiStack.Add(&MpipiNonresonant);
     MpipiStack.Add(&MpipiResonant);
 
@@ -475,18 +316,6 @@ int main(int argc, char *argv[]){
 
     //other things
     std::cout<<"N_events: "<<n_events<<endl;
-    std::cout<<"N_K0: "<<n_K0<<endl;
-    std::cout<<"N_Lambda: "<<n_Lambda<<endl;
-    std::cout<<"N_LambdaBar: "<<n_LambdaBar<<endl;
-    std::stringstream ratio_output;
-    ratio_output<<std::fixed<<std::setprecision(6)<<double(n_K0)/n_events;
-    std::cout<<"N_K0/N_events: "<<ratio_output.str()<<endl;
-    ratio_output.str(""); //clearing
-    ratio_output<<std::fixed<<std::setprecision(6)<<double(n_Lambda)/n_events;
-    std::cout<<"N_Lambda0/N_events: "<<ratio_output.str()<<endl;
-    ratio_output.str(""); //clearing
-    ratio_output<<std::fixed<<std::setprecision(6)<<double(n_LambdaBar)/n_events;
-    std::cout<<"N_LambdaBar0/N_events: "<<ratio_output.str()<<endl;
 
     return 0;
 }
