@@ -9,6 +9,7 @@ double beamMomentum = 254.867;
 
 enum PARTICLES{ Pion = 0, Kaon = 1, Proton = 2, nParticles };
 enum SIGN{ Minus, Plus, nSigns };
+const double particleMass[nParticles] = { 0.13957, 0.493677, 0.93827 }; // pion, kaon, proton in GeV /c^2 
 
 bool isParticleInTPCAcceptance(Pythia8::Particle particle){
     return abs(particle.eta())<0.9 && particle.pT()>0.2 && particle.isCharged() && particle.isFinal();
@@ -53,7 +54,10 @@ bool isParticleDetected(Pythia8::Particle* particle){
     //filling the  histogram once at the beginning
     //and other static things
     static TH3F Acceptance[nSigns*nParticles];
-    static bool isInitialised = readingAcceptanceFromFile(Acceptance);
+    //solving initialization in a prettier way
+    static bool isInitialised = false;
+    if(!isInitialised)
+        readingAcceptanceFromFile(Acceptance);
     //getting the histogram
     int histID = -1;
     switch(particle->id()){
