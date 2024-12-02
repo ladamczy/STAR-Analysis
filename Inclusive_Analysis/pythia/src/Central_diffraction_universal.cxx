@@ -105,15 +105,21 @@ int main(int argc, char *argv[]){
     //histograms
     //general
     TH1D ParticlesDetected("ParticlesDetected", "ParticlesDetected", 20000, -10000, 10000);
-    TH1D ParticlesReconstructed("ParticlesReconstructed", "ParticlesReconstructed", 20000, -10000, 10000);
-    THStack MpipiStack("MpipiStack", "#pion mass assumed");
+    TH1D ParticlesReconstructedTwoDaughters("ParticlesReconstructedTwoDaughters", "ParticlesReconstructedTwoDaughters", 20000, -10000, 10000);
+    TH1D ParticlesReconstructedMultipleDaughters("ParticlesReconstructedMultipleDaughters", "ParticlesReconstructedMultipleDaughters", 20000, -10000, 10000);
+    THStack MpipiStack("MpipiStack", "pion mass assumed");
+    TH1D MpipiSum("MpipiSum", ";m_{#pi#pi}", 500, 0, 5);
+    TH1D MKKSum("MKKSum", ";m_{KK}", 500, 0, 5);
+    THStack MKKStack("MKKStack", "kaon mass assumed");
     //Technical
     TH1D MpipiNonresonant("MpipiNonresonant", ";m_{#pi#pi}", 500, 0, 5);
-    // MpipiNonresonant.SetDirectory(nullptr);
     MpipiNonresonant.SetFillColor(kBlue);
     TH1D MpipiResonant("MpipiResonant", ";m_{#pi#pi}", 500, 0, 5);
-    // MpipiResonant.SetDirectory(nullptr);
     MpipiResonant.SetFillColor(kRed);
+    TH1D MKKNonresonant("MKKNonresonant", ";m_{KK}", 500, 0, 5);
+    MKKNonresonant.SetFillColor(kBlue);
+    TH1D MKKResonant("MKKResonant", ";m_{KK}", 500, 0, 5);
+    MKKResonant.SetFillColor(kRed);
 
     //Useful IDs
     const int K0sPDGid = 310;
@@ -130,14 +136,12 @@ int main(int argc, char *argv[]){
     std::vector<int> detected_particles_number;
     std::vector<int> detected_particles_positive_number;
     std::vector<int> detected_particles_negative_number;
-    std::vector<int> all_daughters_detected_resonant_number;
-    std::vector<int> all_daughters_detected_nonresonant_number;
+    std::vector<int> mother_particles_number;
     Rndm generator(0);
     TLorentzVector temp4VectorPositive;
     TLorentzVector temp4VectorNegative;
     bool AllDaughtersDetected;
     int DaughtersDetected;
-    std::vector<int> mother_particles_number;
 
     // Begin event loop. Generate event; skip if generation aborted.
     for(int iEvent = 0; iEvent<nEvents; ++iEvent){
@@ -146,8 +150,7 @@ int main(int argc, char *argv[]){
         detected_particles_number.clear();
         detected_particles_positive_number.clear();
         detected_particles_negative_number.clear();
-        all_daughters_detected_resonant_number.clear();
-        all_daughters_detected_nonresonant_number.clear();
+        mother_particles_number.clear();
         //fishing for diffracted protons
         int p1index = -1, p2index = -1;
         for(int part_index = 0; part_index<pythia.event.size(); part_index++){
@@ -192,80 +195,87 @@ int main(int argc, char *argv[]){
         //making a list of detected particles
         //with smulated TPC acceptance
         int TPCParticles = 0;
-        for(int i = 0; i<pythia.event.size(); i++){
-            if(IsInMeasurementSpecificCuts(&pythia.event[i])&&isParticleInTPCAcceptance(pythia.event[i])&&isParticleDetected(&pythia.event[i])){
+        for(int part_index = 0; part_index<pythia.event.size(); part_index++){
+            if(isParticleInTPCAcceptance(pythia.event[part_index])&&IsInMeasurementSpecificCuts(&pythia.event[part_index])&&isParticleDetected(&pythia.event[part_index])){
                 TPCParticles++;
-                detected_particles_number.push_back(i);
+                detected_particles_number.push_back(part_index);
             }
         }
         if(TPCParticles<2){
             continue;
         }
 
-        std::vector<Pythia8::Particle> acceptedParticlesPlusDaughters;
-        //gathering info in main loop
-        for(int part_index = 0; part_index<pythia.event.size(); part_index++){
+        //gathering info in detection loop and assigning mothers
+        for(size_t i = 0; i<detected_particles_number.size(); i++){
+            ParticlesDetected.Fill(pythia.event[detected_particles_number[i]].name().c_str(), 1.);
+            //getting mother: singular hadron
+            if(pythia.event[detected_particles_number[i]].mother1()>0&&pythia.event[detected_particles_number[i]].mother2()==0){
+                if(pythia.event[pythia.event[detected_particles_number[i]].mother1()].isHadron()){
+                    mother_particles_number.push_back(pythia.event[detected_particles_number[i]].mother1());
+                } else{
+                    printf("Particle %d, a mother, is not a hadron\n", pythia.event[detected_particles_number[i]].mother1());
+                    pythia.event.list(true, true);
+                    //FUTURE USE
+                    //     if(IsParticleQuarkOrGluon(pythia.event[part_index])){
+                    //     printf(("\nParticle checked: "+pythia.event[part_index].name()+"\n").c_str());
+                    //     FindGoodMothers(&pythia.event, pythia.event[part_index].daughter1(), mother_particles_number);
+                    //     //checking if there is something else than Pomerons
+                    //     if(mother_particles_number.size()==1&&abs(pythia.event[mother_particles_number[0]].id())==990){
+                    //         ParticlesReconstructed.Fill("#splitline{Single}{Pomeron}", 1.);
+                    //         all_daughters_detected_nonresonant_number.push_back(part_index);
+                    //     } else if(mother_particles_number.size()==2&&abs(pythia.event[mother_particles_number[0]].id())==990&&abs(pythia.event[mother_particles_number[1]].id())==990){
+                    //         ParticlesReconstructed.Fill("#splitline{Double}{Pomeron}", 1.);
+                    //         all_daughters_detected_nonresonant_number.push_back(part_index);
+                    //     } else{
+                    //         ParticlesReconstructed.Fill("other", 1.);
+                    //         for(auto &&parr:mother_particles_number){
+                    //             printf("%d: %s\n", parr, pythia.event[parr].name().c_str());
+                    //         }
+                    //         printf("\n");
+                    //         pythia.event.list(true, true);
+                    //     }
+                    // } else{
+                    //     ParticlesReconstructed.Fill(pythia.event[part_index].name().c_str(), 1.);
+                    //     all_daughters_detected_resonant_number.push_back(part_index);
+                    // }
+                }
+            }
+            //sorting into positive and negative
+            if(pythia.event[detected_particles_number[i]].charge()>0){
+                detected_particles_positive_number.push_back(detected_particles_number[i]);
+            } else{
+                detected_particles_negative_number.push_back(detected_particles_number[i]);
+            }
+        }
+
+        //removing potential mother particle duplicates
+        sort(mother_particles_number.begin(), mother_particles_number.end());
+        mother_particles_number.erase(unique(mother_particles_number.begin(), mother_particles_number.end()), mother_particles_number.end());
+        //mother loop
+        for(size_t i = 0; i<mother_particles_number.size(); i++){
             DaughtersDetected = 0;
             AllDaughtersDetected = true;
             //check if all daugters of part_index particle are detected
-            for(size_t daughter = 0; daughter<pythia.event[part_index].daughterList().size();daughter++){
-                if(std::find(detected_particles_number.begin(), detected_particles_number.end(), pythia.event[part_index].daughterList()[daughter])!=detected_particles_number.end()){
+            for(size_t daughter = 0; daughter<pythia.event[mother_particles_number[i]].daughterList().size();daughter++){
+                if(std::find(detected_particles_number.begin(), detected_particles_number.end(), pythia.event[mother_particles_number[i]].daughterList()[daughter])!=detected_particles_number.end()){
                     DaughtersDetected++;
                 } else{
                     AllDaughtersDetected = false;
                 }
             }
-            //if all particles are detected, we check if we reconstruct a "viable" particle (not a gluon or quark)
-            if(AllDaughtersDetected){
-                mother_particles_number.clear();
-                //final checks to fill histograms
-                //this way every particle gets filled exactly once
-                //because only particles with TPC-detected decay products
-                //get to this point of a loop
-                //due to AllDaughtersDetected==true
-                //so even if there was a copy earlier in the decay tree, it won't get registered
-                if(IsParticleQuarkOrGluon(pythia.event[part_index])){
-                    printf(("\nParticle checked: "+pythia.event[part_index].name()+"\n").c_str());
-                    FindGoodMothers(&pythia.event, pythia.event[part_index].daughter1(), mother_particles_number);
-                    //removing potential particle duplicates
-                    sort(mother_particles_number.begin(), mother_particles_number.end());
-                    mother_particles_number.erase(unique(mother_particles_number.begin(), mother_particles_number.end()), mother_particles_number.end());
-                    //checking if there is something else than Pomerons
-                    if(mother_particles_number.size()==1&&abs(pythia.event[mother_particles_number[0]].id())==990){
-                        ParticlesReconstructed.Fill("#splitline{Single}{Pomeron}", 1.);
-                        all_daughters_detected_nonresonant_number.push_back(part_index);
-                    } else if(mother_particles_number.size()==2&&abs(pythia.event[mother_particles_number[0]].id())==990&&abs(pythia.event[mother_particles_number[1]].id())==990){
-                        ParticlesReconstructed.Fill("#splitline{Double}{Pomeron}", 1.);
-                        all_daughters_detected_nonresonant_number.push_back(part_index);
-                    } else{
-                        ParticlesReconstructed.Fill("other", 1.);
-                        for(auto &&parr:mother_particles_number){
-                            printf("%d: %s\n", parr, pythia.event[parr].name().c_str());
-                        }
-                        printf("\n");
-                        pythia.event.list(true, true);
-                    }
-                } else{
-                    ParticlesReconstructed.Fill(pythia.event[part_index].name().c_str(), 1.);
-                    all_daughters_detected_resonant_number.push_back(part_index);
-                }
+            //doing stuff with their mothers
+            if(AllDaughtersDetected&&DaughtersDetected==2){
+                ParticlesReconstructedTwoDaughters.Fill(pythia.event[mother_particles_number[i]].name().c_str(), 1.);
+            }
+            if(AllDaughtersDetected&&DaughtersDetected>2){
+                ParticlesReconstructedMultipleDaughters.Fill(pythia.event[mother_particles_number[i]].name().c_str(), 1.);
             }
         }
 
-        //gathering info in detection loop
-        for(size_t part_index = 0; part_index<detected_particles_number.size(); part_index++){
-            ParticlesDetected.Fill(pythia.event[detected_particles_number[part_index]].name().c_str(), 1.);
-            if(pythia.event[detected_particles_number[part_index]].charge()>0){
-                detected_particles_positive_number.push_back(part_index);
-            } else{
-                detected_particles_negative_number.push_back(part_index);
-            }
-        }
-
-        //part for making a histogram of what is detected
-        //assuming everything is a pion
+        // part for making a histogram of what is detected
         for(size_t i = 0; i<detected_particles_positive_number.size(); i++){
             for(size_t j = 0; j<detected_particles_negative_number.size(); j++){
+                // assuming everything is a pion
                 //pair 4momenta setting
                 temp4VectorPositive.SetPtEtaPhiM(pythia.event[detected_particles_positive_number[i]].pT(),
                     pythia.event[detected_particles_positive_number[i]].eta(),
@@ -279,18 +289,46 @@ int main(int argc, char *argv[]){
                 double mass = (temp4VectorPositive+temp4VectorNegative).M();
                 int motherPositive = pythia.event[detected_particles_positive_number[i]].mother1();
                 int motherNegative = pythia.event[detected_particles_negative_number[j]].mother1();
-                bool t1 = std::find(all_daughters_detected_resonant_number.begin(), all_daughters_detected_resonant_number.end(), motherPositive)!=all_daughters_detected_resonant_number.end();
-                bool t2 = std::find(all_daughters_detected_resonant_number.begin(), all_daughters_detected_resonant_number.end(), motherNegative)!=all_daughters_detected_resonant_number.end();
+                bool t1 = std::find(mother_particles_number.begin(), mother_particles_number.end(), motherPositive)!=mother_particles_number.end();
+                bool t2 = std::find(mother_particles_number.begin(), mother_particles_number.end(), motherNegative)!=mother_particles_number.end();
                 bool t3 = motherNegative==motherPositive;
-                if(t1&&t2&&t3){
+                bool t4 = pythia.event[detected_particles_positive_number[i]].mother2()==0&&pythia.event[detected_particles_negative_number[j]].mother2()==0;
+                if(t1&&t2&&t3&&t4){
                     MpipiResonant.Fill(mass);
                 } else{
                     MpipiNonresonant.Fill(mass);
                 }
+                MpipiSum.Fill(mass);
+
+                // assuming everything is a kaon
+                //pair 4momenta setting
+                temp4VectorPositive.SetPtEtaPhiM(pythia.event[detected_particles_positive_number[i]].pT(),
+                    pythia.event[detected_particles_positive_number[i]].eta(),
+                    pythia.event[detected_particles_positive_number[i]].phi(),
+                    particleMass[Kaon]);
+                temp4VectorNegative.SetPtEtaPhiM(pythia.event[detected_particles_negative_number[j]].pT(),
+                    pythia.event[detected_particles_negative_number[j]].eta(),
+                    pythia.event[detected_particles_negative_number[j]].phi(),
+                    particleMass[Kaon]);
+                //pair 4momenta using and filling
+                mass = (temp4VectorPositive+temp4VectorNegative).M();
+                motherPositive = pythia.event[detected_particles_positive_number[i]].mother1();
+                motherNegative = pythia.event[detected_particles_negative_number[j]].mother1();
+                t1 = std::find(mother_particles_number.begin(), mother_particles_number.end(), motherPositive)!=mother_particles_number.end();
+                t2 = std::find(mother_particles_number.begin(), mother_particles_number.end(), motherNegative)!=mother_particles_number.end();
+                t3 = motherNegative==motherPositive;
+                t4 = pythia.event[detected_particles_positive_number[i]].mother2()==0&&pythia.event[detected_particles_negative_number[j]].mother2()==0;
+                if(t1&&t2&&t3&&t4){
+                    MKKResonant.Fill(mass);
+                } else{
+                    MKKNonresonant.Fill(mass);
+                }
+                MKKSum.Fill(mass);
+
+                // assuming proper cuts for kaons and protons (the rest is, you guessed it, assumed to be pions)
             }
         }
-        //assuming everything is a kaon
-        //assuming proper cuts for kaons and protons (the rest is, you guessed it, assumed to be pions)
+
 
         //total ratio
         n_events++;
@@ -300,11 +338,16 @@ int main(int argc, char *argv[]){
     ParticlesDetected.LabelsDeflate();
     ParticlesDetected.SetMinimum(0);
     ParticlesDetected.LabelsOption("a", "X");
-    ParticlesReconstructed.LabelsDeflate();
-    ParticlesReconstructed.SetMinimum(0);
-    ParticlesReconstructed.LabelsOption("a", "X");
+    ParticlesReconstructedTwoDaughters.LabelsDeflate();
+    ParticlesReconstructedTwoDaughters.SetMinimum(0);
+    ParticlesReconstructedTwoDaughters.LabelsOption("a", "X");
+    ParticlesReconstructedMultipleDaughters.LabelsDeflate();
+    ParticlesReconstructedMultipleDaughters.SetMinimum(0);
+    ParticlesReconstructedMultipleDaughters.LabelsOption("a", "X");
     MpipiStack.Add(&MpipiNonresonant);
     MpipiStack.Add(&MpipiResonant);
+    MKKStack.Add(&MKKNonresonant);
+    MKKStack.Add(&MKKResonant);
 
     //writing to file
     outFile->cd();
