@@ -160,6 +160,8 @@ int main(int argc, char** argv){
 
         // additional helpful variables
         bool IsFirstLoop = true;
+        double firstBranch, secondBranch;
+        bool goodQuality;
 
         // actual copying
         do{
@@ -177,8 +179,49 @@ int main(int argc, char** argv){
             mUPCTree->SetBranchAddress("mRPEvent", &tempRPpointer);
 
             //tests
-            //trigger 570701 (no BBCL veto) and 570705 (BBCL veto)
-            if(tempUPCpointer->isTrigger(570701) or tempUPCpointer->isTrigger(570705)){
+            //trigger 570701 (no BBCL veto, minimal scaling)
+            if(!tempUPCpointer->isTrigger(570701) or !(tempUPCpointer->getRunNumber()<=18083025)){
+                continue;
+            }
+            //2 tracks
+            if(tempRPpointer->getNumberOfTracks()!=2){
+                continue;
+            }
+            //1 track east, 1 track west (neat trick - assigning negative to east by
+            //substracting 1.5, and if after multiplying they are <0, they are from opposite sides
+            firstBranch = tempRPpointer->getTrack(0)->branch();
+            secondBranch = tempRPpointer->getTrack(1)->branch();
+            if((firstBranch-1.5)*(secondBranch-1.5)>0){
+                continue;
+            }
+            //at least 3 out of 4 planes on both and both should have both RPs hit
+            //also fiducial
+            for(unsigned int k = 0; k<tempRPpointer->getNumberOfTracks(); ++k){
+                // Get pointer to k-th track in Roman Pot data collection
+                StUPCRpsTrack* trk = tempRPpointer->getTrack(k);
+                trk->setEvent(tempRPpointer);
+                //there were problems with apparently not having track point like, entirely???
+                //so the first is check point if they do have them
+                //and then if points are of good quality
+                if(trk->getTrackPoint(0)==nullptr||trk->getTrackPoint(1)==nullptr){
+                    goodQuality = false;
+                    break;
+                }
+                //check if track has at least 3 of 4 RP planes used
+                if(trk->getTrackPoint(0)->planesUsed()<3||trk->getTrackPoint(1)->planesUsed()<3){
+                    goodQuality = false;
+                    break;
+                }
+            }
+            if(!goodQuality){ continue; }
+            //non-elastic
+            if(IsInXiElasticSpot(tempRPpointer->getTrack(0), tempRPpointer->getTrack(1)) or IsInMomElasticSpot(tempRPpointer->getTrack(0), tempRPpointer->getTrack(1))){
+                continue;
+            }
+            //end of tests
+
+            //filling
+            if(goodQuality){
                 mUPCTree->Fill();
                 filtered_entries++;
             }
