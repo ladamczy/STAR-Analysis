@@ -113,6 +113,10 @@ int main(int argc, char** argv){
             eventsProcessed++;
 
             //tests
+            //trigger RP_CPT2noBBCL
+            if(!tempUPCpointer->isTrigger(570705)){
+                continue;
+            }
             //2 tracks
             if(tempRPpointer->getNumberOfTracks()!=2){
                 continue;
