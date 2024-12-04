@@ -148,6 +148,8 @@ int main(int argc, char *argv[]){
     TLorentzVector temp4VectorNegative;
     bool AllDaughtersDetected;
     int DaughtersDetected;
+    Rndm generator(0);
+    double momentumTPCRescale;
 
     // Begin event loop. Generate event; skip if generation aborted.
     for(int iEvent = 0; iEvent<nEvents; ++iEvent){
@@ -199,9 +201,14 @@ int main(int argc, char *argv[]){
         }
 
         //making a list of detected particles
-        //with smulated TPC acceptance
+        //with simulated TPC acceptance
+        //and simulated momentum reconstruction
         int TPCParticles = 0;
         for(int part_index = 0; part_index<pythia.event.size(); part_index++){
+            momentumTPCRescale = 1+generator.gauss()*0.025;
+            pythia.event[part_index].px(momentumTPCRescale*pythia.event[part_index].px());
+            pythia.event[part_index].py(momentumTPCRescale*pythia.event[part_index].py());
+            pythia.event[part_index].pz(momentumTPCRescale*pythia.event[part_index].pz());
             if(isParticleInTPCAcceptance(pythia.event[part_index])&&IsInMeasurementSpecificCuts(&pythia.event[part_index])&&isParticleDetected(&pythia.event[part_index])){
                 TPCParticles++;
                 detected_particles_number.push_back(part_index);
