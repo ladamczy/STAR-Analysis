@@ -109,8 +109,10 @@ int main(int argc, char *argv[]){
     TH1D ParticlesReconstructedMultipleDaughters("ParticlesReconstructedMultipleDaughters", "ParticlesReconstructedMultipleDaughters", 20000, -10000, 10000);
     THStack MpipiStack("MpipiStack", "pion mass assumed");
     TH1D MpipiSum("MpipiSum", ";m_{#pi#pi}", 500, 0, 5);
-    TH1D MKKSum("MKKSum", ";m_{KK}", 500, 0, 5);
     THStack MKKStack("MKKStack", "kaon mass assumed");
+    TH1D MKKSum("MKKSum", ";m_{KK}", 500, 0, 5);
+    THStack MPIDStack("MPIDStack", "dE/dx PID tried");
+    TH1D MPIDSum("MPIDSum", ";m_{pair}", 500, 0, 5);
     //Technical
     TH1D MpipiNonresonant("MpipiNonresonant", ";m_{#pi#pi}", 500, 0, 5);
     MpipiNonresonant.SetFillColor(kBlue);
@@ -120,6 +122,10 @@ int main(int argc, char *argv[]){
     MKKNonresonant.SetFillColor(kBlue);
     TH1D MKKResonant("MKKResonant", ";m_{KK}", 500, 0, 5);
     MKKResonant.SetFillColor(kRed);
+    TH1D MPIDNonresonant("MPIDNonresonant", ";m_{pair}", 500, 0, 5);
+    MPIDNonresonant.SetFillColor(kBlue);
+    TH1D MPIDResonant("MPIDResonant", ";m_{pair}", 500, 0, 5);
+    MPIDResonant.SetFillColor(kRed);
 
     //Useful IDs
     const int K0sPDGid = 310;
@@ -326,6 +332,41 @@ int main(int argc, char *argv[]){
                 MKKSum.Fill(mass);
 
                 // assuming proper cuts for kaons and protons (the rest is, you guessed it, assumed to be pions)
+                //pair 4momenta setting
+                int massTag = Pion;
+                if(pythia.event[detected_particles_positive_number[i]].p().pAbs()<0.4&&pythia.event[detected_particles_positive_number[i]].idAbs()==321){
+                    massTag = Kaon;
+                } else if(pythia.event[detected_particles_positive_number[i]].p().pAbs()<0.8&&pythia.event[detected_particles_positive_number[i]].idAbs()==2212){
+                    massTag = Proton;
+                }
+                temp4VectorPositive.SetPtEtaPhiM(pythia.event[detected_particles_positive_number[i]].pT(),
+                    pythia.event[detected_particles_positive_number[i]].eta(),
+                    pythia.event[detected_particles_positive_number[i]].phi(),
+                    particleMass[massTag]);
+                int massTag = Pion;
+                if(pythia.event[detected_particles_negative_number[j]].p().pAbs()<0.4&&pythia.event[detected_particles_negative_number[j]].idAbs()==321){
+                    massTag = Kaon;
+                } else if(pythia.event[detected_particles_negative_number[j]].p().pAbs()<0.8&&pythia.event[detected_particles_negative_number[j]].idAbs()==2212){
+                    massTag = Proton;
+                }
+                temp4VectorNegative.SetPtEtaPhiM(pythia.event[detected_particles_negative_number[j]].pT(),
+                    pythia.event[detected_particles_negative_number[j]].eta(),
+                    pythia.event[detected_particles_negative_number[j]].phi(),
+                    particleMass[massTag]);
+                //pair 4momenta using and filling
+                mass = (temp4VectorPositive+temp4VectorNegative).M();
+                motherPositive = pythia.event[detected_particles_positive_number[i]].mother1();
+                motherNegative = pythia.event[detected_particles_negative_number[j]].mother1();
+                t1 = std::find(mother_particles_number.begin(), mother_particles_number.end(), motherPositive)!=mother_particles_number.end();
+                t2 = std::find(mother_particles_number.begin(), mother_particles_number.end(), motherNegative)!=mother_particles_number.end();
+                t3 = motherNegative==motherPositive;
+                t4 = pythia.event[detected_particles_positive_number[i]].mother2()==0&&pythia.event[detected_particles_negative_number[j]].mother2()==0;
+                if(t1&&t2&&t3&&t4){
+                    MPIDResonant.Fill(mass);
+                } else{
+                    MPIDNonresonant.Fill(mass);
+                }
+                MPIDSum.Fill(mass);
             }
         }
 
@@ -348,6 +389,8 @@ int main(int argc, char *argv[]){
     MpipiStack.Add(&MpipiResonant);
     MKKStack.Add(&MKKNonresonant);
     MKKStack.Add(&MKKResonant);
+    MPIDStack.Add(&MPIDNonresonant);
+    MPIDStack.Add(&MPIDResonant);
 
     //writing to file
     outFile->cd();
