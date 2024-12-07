@@ -165,6 +165,7 @@ int main(int argc, char** argv){
 
         // actual copying
         do{
+            goodQuality = true;
             //for some reason it *needs* to be here, God knows why
             tempUPCpointer = StUPCEventInstance.Get();
             if(!IsFirstLoop){
