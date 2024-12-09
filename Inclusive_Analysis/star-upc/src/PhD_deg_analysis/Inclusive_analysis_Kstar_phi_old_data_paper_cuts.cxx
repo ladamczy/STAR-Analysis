@@ -60,6 +60,12 @@ int main(int argc, char** argv){
     outsideprocessing.AddHistogram(TH1D("MissingpTWide", "MissingpT", 250, 0., 5.));
     outsideprocessing.AddHistogram(TH1D("MKKExtraNarrowNoVeto", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 140, 0.98, 1.05));
     outsideprocessing.AddHistogram(TH1D("MKKWideNoVeto", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 500, 0., 5.));
+    outsideprocessing.AddHistogram(TH1D("MpipiExtraNarrowNoVeto", ";m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 100, 0.3, 0.7));
+    outsideprocessing.AddHistogram(TH1D("MKKLikeInPaper", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 30, 0.9, 2.4));
+    outsideprocessing.AddHistogram(TH1D("M2TOFLikeInPaper", ";m^{2}_{TOF} [GeV^{2}];Number of pairs", 200, -0.5, 1.5));
+    outsideprocessing.AddHistogram(TH1D("M2TOFpipiLikeInPaper", ";m^{2}_{TOF} [GeV^{2}];Number of pairs", 200, -0.5, 1.5));
+    outsideprocessing.AddHistogram(TH1D("M2TOFKKLikeInPaper", ";m^{2}_{TOF} [GeV^{2}];Number of pairs", 200, -0.5, 1.5));
+    outsideprocessing.AddHistogram(TH1D("M2TOFppLikeInPaper", ";m^{2}_{TOF} [GeV^{2}];Number of pairs", 200, -0.5, 1.5));
     outsideprocessing.AddHistogram(TH1D("pT", ";p_{T} [GeV];tracks", 100, 0., 1.));
     outsideprocessing.AddHistogram(TH1D("eta", ";#eta;tracks", 220, -1.1, 1.1));
     outsideprocessing.AddHistogram(TH1D("vertices", ";vertices;events", 10, 0, 10));
@@ -93,6 +99,8 @@ int main(int argc, char** argv){
         double firstBranch, secondBranch;
         bool f1, f2, f3;
         double px, py;
+        double deltaT, A, B, C, L1, L2, p1, p2, m2TOF;
+        double chi2proton, chi2kaon, chi2pion;
 
         //actual loop
         while(myReader.Next()){
@@ -194,14 +202,21 @@ int main(int argc, char** argv){
             totalMomentum += tempMomentum;
             insideprocessing.Fill("MissingpT", totalMomentum.Pt());
             insideprocessing.Fill("MissingpTWide", totalMomentum.Pt());
-            //pT cut at 120 MeV
-            if(totalMomentum.Pt()>=0.12){
+            // //pT cut at 120 MeV
+            // if(totalMomentum.Pt()>=0.12){
+            //     continue;
+            // }
+            //test pT cut at 60 MeV
+            if(totalMomentum.Pt()>=0.06){
                 continue;
             }
             vector_Track_positive[0]->getLorentzVector(temp4Vector1, particleMass[Kaon]);
             vector_Track_negative[0]->getLorentzVector(temp4Vector2, particleMass[Kaon]);
             insideprocessing.Fill("MKKExtraNarrowNoVeto", (temp4Vector1+temp4Vector2).M());
             insideprocessing.Fill("MKKWideNoVeto", (temp4Vector1+temp4Vector2).M());
+            vector_Track_positive[0]->getLorentzVector(temp4Vector1, particleMass[Pion]);
+            vector_Track_negative[0]->getLorentzVector(temp4Vector2, particleMass[Pion]);
+            insideprocessing.Fill("MpipiExtraNarrowNoVeto", (temp4Vector1+temp4Vector2).M());
             insideprocessing.Fill("pT", vector_Track_positive[0]->getPt());
             insideprocessing.Fill("pT", vector_Track_negative[0]->getPt());
             insideprocessing.Fill("eta", vector_Track_positive[0]->getEta());
@@ -211,6 +226,35 @@ int main(int argc, char** argv){
                 insideprocessing.Fill("xi", tempRPpointer->getTrack(1)->xi(254.867), tempRPpointer->getTrack(0)->xi(254.867));
             } else{
                 insideprocessing.Fill("xi", tempRPpointer->getTrack(0)->xi(254.867), tempRPpointer->getTrack(1)->xi(254.867));
+            }
+            //making cuts like in the paper
+            //cm->m->ns (0.3m=1ns), those are to remeber how it works
+            // deltaT1 = vector_Track_positive[0]->getTofPathLength()/100.0/0.299792458*sqrt(1+pow(particleMass[Kaon]/temp4Vector1.P(), 2));
+            // deltaT2 = vector_Track_negative[0]->getTofPathLength()/100.0/0.299792458*sqrt(1+pow(particleMass[Kaon]/temp4Vector1.P(), 2));
+            deltaT = (vector_Track_positive[0]->getTofTime()-vector_Track_negative[0]->getTofTime())*100.0*0.299792458;
+            L1 = vector_Track_positive[0]->getTofPathLength();
+            L2 = vector_Track_negative[0]->getTofPathLength();
+            p1 = temp4Vector1.P();
+            p2 = temp4Vector2.P();
+            A = -2*pow(L1*L2/p1/p2, 2)+pow(L1/p1, 4)+pow(L2/p2, 4);
+            B = -2*pow(L1*L2, 2)*(pow(p1, -2)+pow(p2, -2))+2*pow(L1*L1/p1, 2)+2*pow(L2*L2/p2, 2)-2*pow(deltaT, 2)*(pow(L1/p1, 2)+pow(L2/p2, 2));
+            C = pow(deltaT, 4)-2*pow(deltaT, 2)*(L1*L1+L2*L2)+pow(L1*L1-L2*L2, 2);
+            m2TOF = (-B+sqrt(B*B-4*A*C))/2/A;
+            chi2pion = pow(vector_Track_positive[0]->getNSigmasTPCPion(), 2)+pow(vector_Track_negative[0]->getNSigmasTPCPion(), 2);
+            chi2kaon = pow(vector_Track_positive[0]->getNSigmasTPCKaon(), 2)+pow(vector_Track_negative[0]->getNSigmasTPCKaon(), 2);
+            chi2proton = pow(vector_Track_positive[0]->getNSigmasTPCProton(), 2)+pow(vector_Track_negative[0]->getNSigmasTPCProton(), 2);
+            insideprocessing.Fill("M2TOFLikeInPaper", m2TOF);
+            if(chi2pion>9&&chi2kaon>9&&chi2proton<9){
+                insideprocessing.Fill("M2TOFppLikeInPaper", m2TOF);
+            } else if(chi2pion>9&&chi2kaon<9&&chi2proton>9){
+                insideprocessing.Fill("M2TOFKKLikeInPaper", m2TOF);
+                if(m2TOF<0.6&&m2TOF>0.15){
+                    vector_Track_positive[0]->getLorentzVector(temp4Vector1, particleMass[Kaon]);
+                    vector_Track_negative[0]->getLorentzVector(temp4Vector2, particleMass[Kaon]);
+                    insideprocessing.Fill("MKKLikeInPaper", (temp4Vector1+temp4Vector2).M());
+                }
+            } else if(chi2pion<12){
+                insideprocessing.Fill("M2TOFpipiLikeInPaper", m2TOF);
             }
 
             //lambda finish
