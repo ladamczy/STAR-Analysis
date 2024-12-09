@@ -210,11 +210,20 @@ int main(int argc, char *argv[]){
         //and simulated momentum reconstruction
         int TPCParticles = 0;
         for(int part_index = 0; part_index<pythia.event.size(); part_index++){
+            if(!pythia.event[part_index].isFinal() or !pythia.event[part_index].isCharged()){
+                continue;
+            }
             momentumTPCRescale = 1+generator.gauss()*0.025;
             pythia.event[part_index].px(momentumTPCRescale*pythia.event[part_index].px());
             pythia.event[part_index].py(momentumTPCRescale*pythia.event[part_index].py());
             pythia.event[part_index].pz(momentumTPCRescale*pythia.event[part_index].pz());
-            if(isParticleInTPCAcceptance(pythia.event[part_index])&&IsInMeasurementSpecificCuts(&pythia.event[part_index])&&isParticleDetected(&pythia.event[part_index])){
+            if(!isParticleInTPCAcceptance(pythia.event[part_index])){
+                continue;
+            }
+            if(!IsInMeasurementSpecificCuts(&pythia.event[part_index])){
+                continue;
+            }
+            if(isParticleDetected(&pythia.event[part_index])){
                 TPCParticles++;
                 detected_particles_number.push_back(part_index);
             }
