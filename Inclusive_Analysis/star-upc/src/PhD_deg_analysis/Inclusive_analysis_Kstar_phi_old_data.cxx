@@ -81,6 +81,14 @@ int main(int argc, char **argv){
     outsideprocessing.AddHistogram(TH1D("MKpiWidedEdxNoVeto", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 500, 0.0, 5.0));
     outsideprocessing.AddHistogram(TH1D("MKpiNarrowNoVeto", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 100, 0.8, 1.0));
     outsideprocessing.AddHistogram(TH1D("MKpiNarrowdEdxNoVeto", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 100, 0.8, 1.0));
+    outsideprocessing.AddHistogram(TH1D("deltaT0Kpi", ";#Deltat_{0} [ns];Number of pairs", 100, -10, 10));
+    outsideprocessing.AddHistogram(TH1D("deltaT0KpiNarrow", ";#Deltat_{0} [ns];Number of pairs", 100, -1, 1));
+    outsideprocessing.AddHistogram(TH1D("MKpiTest", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 100, 0.7, 1.1));
+    outsideprocessing.AddHistogram(TH1D("deltaT0KKNarrow", ";#Deltat_{0} [ns];Number of pairs", 100, -1, 1));
+    outsideprocessing.AddHistogram(TH1D("MKKTest", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 100, 0.8, 1.2));
+    outsideprocessing.AddHistogram(TH1D("MKKTest2", ";m_{TOF} [GeV];Number of pairs", 100, 0.3, 0.7));
+    outsideprocessing.AddHistogram(TH1D("MKKTest3", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 100, 0.8, 1.2));
+
     //background
     outsideprocessing.AddHistogram(TH1D("MKKWideBackground", ";m_{K^{#pm}K^{#pm}} [GeV];Number of pairs", 500, 0.0, 5.0));
     outsideprocessing.AddHistogram(TH1D("MKKWidedEdxBackground", ";m_{K^{#pm}K^{#pm}} [GeV];Number of pairs", 500, 0.0, 5.0));
@@ -139,6 +147,8 @@ int main(int argc, char **argv){
         TVector3 tempMomentum;
         TVector3 totalMomentum;
         double mass;
+        double deltaT1, deltaT2, deltaT0;
+        double deltaT, A, B, C, L1, L2, p1, p2, m2TOF;
 
         //actual loop
         while(myReader.Next()){
@@ -238,17 +248,35 @@ int main(int argc, char **argv){
             for(long unsigned int i = 0; i<vector_Track_positive.size(); i++){
                 for(long unsigned int j = 0; j<vector_Track_negative.size(); j++){
                     //no veto
-                    //Kstar
+                    //Kstar K+pi-
                     vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Kaon]);
                     vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
                     mass = (positive_track+negative_track).M();
                     insideprocessing.Fill("MKpiWideNoVeto", mass);
                     insideprocessing.Fill("MKpiNarrowNoVeto", mass);
+                    //cm->m->ns (0.3m=1ns)
+                    deltaT1 = vector_Track_positive[i]->getTofPathLength()/100.0/0.299792458*sqrt(1+pow(particleMass[Kaon]/positive_track.P(), 2));
+                    deltaT2 = vector_Track_negative[j]->getTofPathLength()/100.0/0.299792458*sqrt(1+pow(particleMass[Pion]/negative_track.P(), 2));
+                    deltaT0 = (vector_Track_positive[i]->getTofTime()-deltaT1)-(vector_Track_negative[j]->getTofTime()-deltaT2);
+                    insideprocessing.Fill("deltaT0Kpi", deltaT0);
+                    insideprocessing.Fill("deltaT0KpiNarrow", deltaT0);
+                    if(abs(deltaT0)<0.35){
+                        insideprocessing.Fill("MKpiTest", mass);
+                    }
+                    //Kstar K-pi+
                     vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
                     vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Kaon]);
                     mass = (positive_track+negative_track).M();
                     insideprocessing.Fill("MKpiWideNoVeto", mass);
                     insideprocessing.Fill("MKpiNarrowNoVeto", mass);
+                    deltaT1 = vector_Track_positive[i]->getTofPathLength()/100.0/0.299792458*sqrt(1+pow(particleMass[Pion]/positive_track.P(), 2));
+                    deltaT2 = vector_Track_negative[j]->getTofPathLength()/100.0/0.299792458*sqrt(1+pow(particleMass[Kaon]/negative_track.P(), 2));
+                    deltaT0 = (vector_Track_positive[i]->getTofTime()-deltaT1)-(vector_Track_negative[j]->getTofTime()-deltaT2);
+                    insideprocessing.Fill("deltaT0Kpi", deltaT0);
+                    insideprocessing.Fill("deltaT0KpiNarrow", deltaT0);
+                    if(abs(deltaT0)<0.35){
+                        insideprocessing.Fill("MKpiTest", mass);
+                    }
                     //phi
                     vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Kaon]);
                     vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Kaon]);
@@ -256,6 +284,26 @@ int main(int argc, char **argv){
                     insideprocessing.Fill("MKKWideNoVeto", mass);
                     insideprocessing.Fill("MKKNarrowNoVeto", mass);
                     insideprocessing.Fill("MKKExtraNarrowNoVeto", mass);
+                    deltaT1 = vector_Track_positive[i]->getTofPathLength()/100.0/0.299792458*sqrt(1+pow(particleMass[Kaon]/positive_track.P(), 2));
+                    deltaT2 = vector_Track_negative[j]->getTofPathLength()/100.0/0.299792458*sqrt(1+pow(particleMass[Kaon]/negative_track.P(), 2));
+                    deltaT0 = (vector_Track_positive[i]->getTofTime()-deltaT1)-(vector_Track_negative[j]->getTofTime()-deltaT2);
+                    insideprocessing.Fill("deltaT0KKNarrow", deltaT0);
+                    if(abs(deltaT0)<0.35){
+                        insideprocessing.Fill("MKKTest", mass);
+                    }
+                    deltaT = (vector_Track_positive[i]->getTofTime()-vector_Track_negative[j]->getTofTime())*100.0*0.299792458;
+                    L1 = vector_Track_positive[i]->getTofPathLength();
+                    L2 = vector_Track_negative[j]->getTofPathLength();
+                    p1 = positive_track.P();
+                    p2 = negative_track.P();
+                    A = -2*pow(L1*L2/p1/p2, 2)+pow(L1/p1, 4)+pow(L2/p2, 4);
+                    B = -2*pow(L1*L2, 2)*(pow(p1, -2)+pow(p2, -2))+2*pow(L1*L1/p1, 2)+2*pow(L2*L2/p2, 2)-2*pow(deltaT, 2)*(pow(L1/p1, 2)+pow(L2/p2, 2));
+                    C = pow(deltaT, 4)-2*pow(deltaT, 2)*(L1*L1+L2*L2)+pow(L1*L1-L2*L2, 2);
+                    m2TOF = (-B+sqrt(B*B-4*A*C))/2/A;
+                    insideprocessing.Fill("MKKTest2", sqrt(m2TOF));
+                    if(m2TOF<0.53&&m2TOF>0.47){
+                        insideprocessing.Fill("MKKTest3", mass);
+                    }
 
                     //normal, with veto
                     //K0S (for vetoing)
