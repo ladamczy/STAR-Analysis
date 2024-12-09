@@ -182,8 +182,8 @@ int main(int argc, char **argv){
             mUPCTree->SetBranchAddress("mRPEvent", &tempRPpointer);
 
             //tests
-            //trigger 570701 (no BBCL veto, minimal scaling)
-            if(!tempUPCpointer->isTrigger(570701) or !(tempUPCpointer->getRunNumber()<=18083025)){
+            //trigger 570701 (no BBCL veto) or 570705 (BBCL veto, aka noBBCL)
+            if(!tempUPCpointer->isTrigger(570701) or !tempUPCpointer->isTrigger(570705)){
                 continue;
             }
             //2 tracks
