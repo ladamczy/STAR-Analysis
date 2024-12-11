@@ -183,7 +183,7 @@ int main(int argc, char **argv){
 
             //tests
             //trigger 570701 (no BBCL veto) or 570705 (BBCL veto, aka noBBCL)
-            if(!tempUPCpointer->isTrigger(570701) or !tempUPCpointer->isTrigger(570705)){
+            if(!tempUPCpointer->isTrigger(570701) and !tempUPCpointer->isTrigger(570705)){
                 continue;
             }
             //2 tracks
