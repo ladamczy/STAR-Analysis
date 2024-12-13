@@ -215,10 +215,6 @@ int main(int argc, char** argv){
                 }
             }
             if(!goodQuality){ continue; }
-            //non-elastic
-            if(IsInXiElasticSpot(tempRPpointer->getTrack(0), tempRPpointer->getTrack(1)) or IsInMomElasticSpot(tempRPpointer->getTrack(0), tempRPpointer->getTrack(1))){
-                continue;
-            }
             //end of tests
 
             //filling
