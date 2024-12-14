@@ -119,4 +119,35 @@ bool CutDownTriggers(StUPCEvent *localupcEvt){
     return CPTtrigger;
 }
 
+//cm->m->ns (0.3m=1ns), those are to remeber how it works
+// deltaT1 = vector_Track_positive[0]->getTofPathLength()/100.0/0.299792458*sqrt(1+pow(particleMass[Kaon]/temp4Vector1.P(), 2));
+// deltaT2 = vector_Track_negative[0]->getTofPathLength()/100.0/0.299792458*sqrt(1+pow(particleMass[Kaon]/temp4Vector1.P(), 2));
+
+double t0(StUPCTrack* track, double mass){
+    TVector3 mom;
+    track->getMomentum(mom);
+    //t1-(t1-t0), in ns
+    return track->getTofTime()-track->getTofPathLength()/100.0/0.299792458*sqrt(1+pow(mass/mom.Mag(), 2));
+}
+
+double DeltaT0(StUPCTrack* track1, StUPCTrack* track2, double mass1, double mass2){
+    return t0(track1, mass1)-t0(track2, mass2);
+}
+
+double M2TOF(StUPCTrack* track1, StUPCTrack* track2){
+    double deltaT = (track1->getTofTime()-track2->getTofTime())*100.0*0.299792458;
+    double L1 = track1->getTofPathLength();
+    double L2 = track2->getTofPathLength();
+    TVector3 mom1, mom2;
+    track1->getMomentum(mom1);
+    track2->getMomentum(mom2);
+    double p1 = mom1.Mag();
+    double p2 = mom2.Mag();
+    double A = -2*pow(L1*L2/p1/p2, 2)+pow(L1/p1, 4)+pow(L2/p2, 4);
+    double B = -2*pow(L1*L2, 2)*(pow(p1, -2)+pow(p2, -2))+2*pow(L1*L1/p1, 2)+2*pow(L2*L2/p2, 2)-2*pow(deltaT, 2)*(pow(L1/p1, 2)+pow(L2/p2, 2));
+    double C = pow(deltaT, 4)-2*pow(deltaT, 2)*(L1*L1+L2*L2)+pow(L1*L1-L2*L2, 2);
+    double m2TOF = (-B+sqrt(B*B-4*A*C))/2/A;
+    return m2TOF;
+}
+
 #endif

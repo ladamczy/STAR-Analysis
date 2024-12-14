@@ -99,7 +99,7 @@ int main(int argc, char** argv){
         double firstBranch, secondBranch;
         bool f1, f2, f3;
         double px, py;
-        double deltaT, A, B, C, L1, L2, p1, p2, m2TOF;
+        double m2TOF;
         double chi2proton, chi2kaon, chi2pion;
 
         //actual loop
@@ -228,18 +228,7 @@ int main(int argc, char** argv){
                 insideprocessing.Fill("xi", tempRPpointer->getTrack(0)->xi(254.867), tempRPpointer->getTrack(1)->xi(254.867));
             }
             //making cuts like in the paper
-            //cm->m->ns (0.3m=1ns), those are to remeber how it works
-            // deltaT1 = vector_Track_positive[0]->getTofPathLength()/100.0/0.299792458*sqrt(1+pow(particleMass[Kaon]/temp4Vector1.P(), 2));
-            // deltaT2 = vector_Track_negative[0]->getTofPathLength()/100.0/0.299792458*sqrt(1+pow(particleMass[Kaon]/temp4Vector1.P(), 2));
-            deltaT = (vector_Track_positive[0]->getTofTime()-vector_Track_negative[0]->getTofTime())*100.0*0.299792458;
-            L1 = vector_Track_positive[0]->getTofPathLength();
-            L2 = vector_Track_negative[0]->getTofPathLength();
-            p1 = temp4Vector1.P();
-            p2 = temp4Vector2.P();
-            A = -2*pow(L1*L2/p1/p2, 2)+pow(L1/p1, 4)+pow(L2/p2, 4);
-            B = -2*pow(L1*L2, 2)*(pow(p1, -2)+pow(p2, -2))+2*pow(L1*L1/p1, 2)+2*pow(L2*L2/p2, 2)-2*pow(deltaT, 2)*(pow(L1/p1, 2)+pow(L2/p2, 2));
-            C = pow(deltaT, 4)-2*pow(deltaT, 2)*(L1*L1+L2*L2)+pow(L1*L1-L2*L2, 2);
-            m2TOF = (-B+sqrt(B*B-4*A*C))/2/A;
+            m2TOF = M2TOF(vector_Track_positive[0], vector_Track_negative[0]);
             chi2pion = pow(vector_Track_positive[0]->getNSigmasTPCPion(), 2)+pow(vector_Track_negative[0]->getNSigmasTPCPion(), 2);
             chi2kaon = pow(vector_Track_positive[0]->getNSigmasTPCKaon(), 2)+pow(vector_Track_negative[0]->getNSigmasTPCKaon(), 2);
             chi2proton = pow(vector_Track_positive[0]->getNSigmasTPCProton(), 2)+pow(vector_Track_negative[0]->getNSigmasTPCProton(), 2);
