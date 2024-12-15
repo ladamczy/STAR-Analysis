@@ -108,6 +108,7 @@ int main(int argc, char *argv[]){
     TH1D ParticlesReconstructedMultipleDaughters("ParticlesReconstructedMultipleDaughters", "ParticlesReconstructedMultipleDaughters", 20000, -10000, 10000);
     TH1D MpipiSum("MpipiSum", ";m_{#pi#pi}", 500, 0, 5);
     TH1D MKKSum("MKKSum", ";m_{KK}", 500, 0, 5);
+    TH1D MKpiSum("MKpiSum", ";m_{K#pi}", 500, 0, 5);
     TH1D MPIDSum("MPIDSum", ";m_{pair}", 500, 0, 5);
     TH1D MKKBackgroundPositiveSum("MKKBackgroundPositiveSum", ";m_{KK}", 500, 0, 5);
     TH1D MKKBackgroundNegativeSum("MKKBackgroundNegativeSum", ";m_{KK}", 500, 0, 5);
@@ -122,6 +123,11 @@ int main(int argc, char *argv[]){
     TH1D MKKNonresonant("MKKNonresonant", ";m_{KK}", 500, 0, 5);
     TH1D MKKResonant("MKKResonant", ";m_{KK}", 500, 0, 5);
     TH2D MKKParticles("MKKParticles", "", 1, 0, 1, 500, 0, 5);
+    //everything as kaon-pion pairs
+    TH1D MKpiNonresonant("MKpiNonresonant", ";m_{K#pi}", 500, 0, 5);
+    TH1D MKpiResonant("MKpiResonant", ";m_{K#pi}", 500, 0, 5);
+    TH2D MKpiParticles("MKpiParticles", "", 1, 0, 1, 500, 0, 5);
+    //the rest
     TH1D MPIDNonresonant("MPIDNonresonant", ";m_{pair}", 500, 0, 5);
     TH1D MPIDResonant("MPIDResonant", ";m_{pair}", 500, 0, 5);
     TH1D MKKBackgroundPositiveNonresonant("MKKBackgroundPositiveNonresonant", ";m_{KK}", 500, 0, 5);
@@ -332,6 +338,56 @@ int main(int argc, char *argv[]){
                 }
                 MKKSum.Fill(mass);
 
+                // assuming kaon-pion pairs, both directions
+                //pair 4momenta setting
+                temp4VectorPositive.SetPtEtaPhiM(pythia.event[detected_particles_positive_number[i]].pT(),
+                    pythia.event[detected_particles_positive_number[i]].eta(),
+                    pythia.event[detected_particles_positive_number[i]].phi(),
+                    particleMass[Kaon]);
+                temp4VectorNegative.SetPtEtaPhiM(pythia.event[detected_particles_negative_number[j]].pT(),
+                    pythia.event[detected_particles_negative_number[j]].eta(),
+                    pythia.event[detected_particles_negative_number[j]].phi(),
+                    particleMass[Pion]);
+                //pair 4momenta using and filling
+                mass = (temp4VectorPositive+temp4VectorNegative).M();
+                motherPositive = pythia.event[detected_particles_positive_number[i]].mother1();
+                motherNegative = pythia.event[detected_particles_negative_number[j]].mother1();
+                t1 = std::find(mother_particles_number.begin(), mother_particles_number.end(), motherPositive)!=mother_particles_number.end();
+                t2 = std::find(mother_particles_number.begin(), mother_particles_number.end(), motherNegative)!=mother_particles_number.end();
+                t3 = motherNegative==motherPositive;
+                t4 = pythia.event[detected_particles_positive_number[i]].mother2()==0&&pythia.event[detected_particles_negative_number[j]].mother2()==0;
+                if(t1&&t2&&t3&&t4){
+                    MKpiResonant.Fill(mass);
+                    MKpiParticles.Fill(pythia.particleData.name(pythia.event[motherPositive].idAbs()).c_str(), mass, 1.);
+                } else{
+                    MKpiNonresonant.Fill(mass);
+                }
+                MKpiSum.Fill(mass);
+                //pair 4momenta setting
+                temp4VectorPositive.SetPtEtaPhiM(pythia.event[detected_particles_positive_number[i]].pT(),
+                    pythia.event[detected_particles_positive_number[i]].eta(),
+                    pythia.event[detected_particles_positive_number[i]].phi(),
+                    particleMass[Pion]);
+                temp4VectorNegative.SetPtEtaPhiM(pythia.event[detected_particles_negative_number[j]].pT(),
+                    pythia.event[detected_particles_negative_number[j]].eta(),
+                    pythia.event[detected_particles_negative_number[j]].phi(),
+                    particleMass[Kaon]);
+                //pair 4momenta using and filling
+                mass = (temp4VectorPositive+temp4VectorNegative).M();
+                motherPositive = pythia.event[detected_particles_positive_number[i]].mother1();
+                motherNegative = pythia.event[detected_particles_negative_number[j]].mother1();
+                t1 = std::find(mother_particles_number.begin(), mother_particles_number.end(), motherPositive)!=mother_particles_number.end();
+                t2 = std::find(mother_particles_number.begin(), mother_particles_number.end(), motherNegative)!=mother_particles_number.end();
+                t3 = motherNegative==motherPositive;
+                t4 = pythia.event[detected_particles_positive_number[i]].mother2()==0&&pythia.event[detected_particles_negative_number[j]].mother2()==0;
+                if(t1&&t2&&t3&&t4){
+                    MKpiResonant.Fill(mass);
+                    MKpiParticles.Fill(pythia.particleData.name(pythia.event[motherPositive].idAbs()).c_str(), mass, 1.);
+                } else{
+                    MKpiNonresonant.Fill(mass);
+                }
+                MKpiSum.Fill(mass);
+
                 // assuming proper cuts for kaons and protons (the rest is, you guessed it, assumed to be pions)
                 //pair 4momenta setting
                 int massTag = Pion;
@@ -507,6 +563,35 @@ int main(int argc, char *argv[]){
     MKKStack.Draw();
     canvas.BuildLegend(0.7, 0.6, 0.89, 0.89, "Particles reconstructed", "F");
     canvas.SaveAs(string(filename).replace(string(filename).find(".root"), 5, "MKKv2.pdf").c_str());
+    for(size_t i = 0; i<projections.size(); i++){
+        delete projections[i];
+    }
+
+    //pairs assumed as kaon-pion pairs
+    MKpiParticles.LabelsDeflate();
+    THStack MKpiStack("MKpiStack", "K#pi pairs");
+    MKpiNonresonant.SetName("Nonresonant or mismatched");
+    MKpiNonresonant.SetFillColor(1);
+    MKpiNonresonant.SetLineWidth(0);
+    MKpiStack.Add(&MKpiNonresonant);
+    projections.clear();
+    for(Int_t i = 1; i<MKpiParticles.GetXaxis()->GetNbins()+1; i++){
+        projections.push_back(new TH1D(*MKpiParticles.ProjectionY("", i, i)));
+        projections[i-1]->SetName(MKpiParticles.GetXaxis()->GetBinLabel(i));
+        projections[i-1]->SetFillColor(i+1+(i>=9)); //color 10 is white, cant have that
+        projections[i-1]->SetLineWidth(0);
+        MKpiStack.Add(projections[i-1]);
+    }
+    canvas.Clear();
+    MKpiStack.Draw();
+    canvas.BuildLegend(0.6, 0.5, 0.89, 0.89, "Particles reconstructed", "F");
+    canvas.SaveAs(string(filename).replace(string(filename).find(".root"), 5, "MKpi.pdf").c_str());
+    //2nd version with interesting space zoomed into
+    canvas.Clear();
+    MKpiStack.GetXaxis()->SetRangeUser(0.6, 1.2);
+    MKpiStack.Draw();
+    canvas.BuildLegend(0.7, 0.6, 0.89, 0.89, "Particles reconstructed", "F");
+    canvas.SaveAs(string(filename).replace(string(filename).find(".root"), 5, "MKpiv2.pdf").c_str());
     for(size_t i = 0; i<projections.size(); i++){
         delete projections[i];
     }
