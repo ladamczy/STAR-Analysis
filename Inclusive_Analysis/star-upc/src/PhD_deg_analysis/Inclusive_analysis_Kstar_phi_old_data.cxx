@@ -111,6 +111,9 @@ int main(int argc, char **argv){
     outsideprocessing.AddHistogram(TH1D("MKKExtraNarrowNoVeto", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 140, 0.98, 1.05));
     outsideprocessing.AddHistogram(TH2D("xi", ";#xi_{E};#xi_{W}", 150, -0.05, 0.25, 150, -0.05, 0.25));
 
+    outsideprocessing.AddHistogram(TH1D("t0piTest", ";t-t_{0} [ns]", 100, 0, 50));
+    outsideprocessing.AddHistogram(TH1D("t0piDifference", ";t_{0, 2nd}-t_{0, 1st} [ns]", 100, 0, 5));
+
     //processing
     //defining TreeProcessor
     ROOT::TTreeProcessorMT TreeProc(*upcChain, nthreads);
@@ -149,6 +152,8 @@ int main(int argc, char **argv){
         double mass;
         double deltaT0;
         double m2TOF;
+        std::vector<double> vector_t0_all_pions;
+        double min_t0;
 
         //actual loop
         while(myReader.Next()){
@@ -508,6 +513,30 @@ int main(int argc, char **argv){
                         insideprocessing.Fill("MKKNarrowdEdxBackground", mass);
                     }
                 }
+            }
+
+            vector_t0_all_pions.clear();
+            for(long unsigned int i = 0; i<vector_Track_positive.size(); i++){
+                if(vector_Track_positive[i]->getTofPathLength()<=0 or vector_Track_positive[i]->getTofTime()<=0){
+                    vector_t0_all_pions.push_back(1e6);
+                } else{
+                    vector_t0_all_pions.push_back(t0(vector_Track_positive[i], particleMass[Pion]));
+                }
+            }
+            for(long unsigned int j = 0; j<vector_Track_negative.size(); j++){
+                if(vector_Track_negative[j]->getTofPathLength()<=0 or vector_Track_negative[j]->getTofTime()<=0){
+                    vector_t0_all_pions.push_back(1e6);
+                } else{
+                    vector_t0_all_pions.push_back(t0(vector_Track_negative[j], particleMass[Pion]));
+                }
+            }
+            min_t0 = *min_element(vector_t0_all_pions.begin(), vector_t0_all_pions.end());
+            for(size_t i = 0; i<vector_t0_all_pions.size(); i++){
+                insideprocessing.Fill("t0piTest", vector_t0_all_pions[i]-min_t0);
+            }
+            if(vector_t0_all_pions.size()>=2){
+                sort(vector_t0_all_pions.begin(), vector_t0_all_pions.end());
+                insideprocessing.Fill("t0piDifference", vector_t0_all_pions[1]-vector_t0_all_pions[0]);
             }
 
             //lambda finish

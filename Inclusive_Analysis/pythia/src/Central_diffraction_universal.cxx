@@ -14,6 +14,7 @@
 #include "TF1.h"
 #include "TEfficiency.h"
 #include "THStack.h"
+#include "TCanvas.h"
 
 // My classes and stuff
 #include "UsefulThingsPythia.h"
@@ -110,11 +111,17 @@ int main(int argc, char *argv[]){
     TH1D MPIDSum("MPIDSum", ";m_{pair}", 500, 0, 5);
     TH1D MKKBackgroundPositiveSum("MKKBackgroundPositiveSum", ";m_{KK}", 500, 0, 5);
     TH1D MKKBackgroundNegativeSum("MKKBackgroundNegativeSum", ";m_{KK}", 500, 0, 5);
-    //Technical
+    TH1D t0Resonant("t0Resonant", ";t_{0} [ns]", 100, 0, 50);
+    TH1D t0Nonresonant("t0Nonresonant", ";t_{0} [ns]", 100, 0, 50);
+    //Detector simulation
+    //everything as pion pairs
     TH1D MpipiNonresonant("MpipiNonresonant", ";m_{#pi#pi}", 500, 0, 5);
     TH1D MpipiResonant("MpipiResonant", ";m_{#pi#pi}", 500, 0, 5);
+    TH2D MpipiParticles("MpipiParticles", "", 1, 0, 1, 500, 0, 5);
+    //everything as kaon pairs
     TH1D MKKNonresonant("MKKNonresonant", ";m_{KK}", 500, 0, 5);
     TH1D MKKResonant("MKKResonant", ";m_{KK}", 500, 0, 5);
+    TH2D MKKParticles("MKKParticles", "", 1, 0, 1, 500, 0, 5);
     TH1D MPIDNonresonant("MPIDNonresonant", ";m_{pair}", 500, 0, 5);
     TH1D MPIDResonant("MPIDResonant", ";m_{pair}", 500, 0, 5);
     TH1D MKKBackgroundPositiveNonresonant("MKKBackgroundPositiveNonresonant", ";m_{KK}", 500, 0, 5);
@@ -228,12 +235,15 @@ int main(int argc, char *argv[]){
             //it works because all detected particles are sorted as positive or negative
             //and all particles without hadron, proper mothers, go to "Nonresonant" histogram
             if(pythia.event[detected_particles_number[i]].mother1()>0&&pythia.event[detected_particles_number[i]].mother2()==0){
+                t0Resonant.Fill(pythia.event[detected_particles_number[i]].tProd()/299.792458); //300 mm/c = 1ns <-> 1 mm/c = 1/300 ns
                 if(pythia.event[pythia.event[detected_particles_number[i]].mother1()].isHadron()){
                     mother_particles_number.push_back(pythia.event[detected_particles_number[i]].mother1());
                 } else{
                     printf("Particle %d, a mother, is not a hadron\n", pythia.event[detected_particles_number[i]].mother1());
                     pythia.event.list(true, true);
                 }
+            } else{
+                t0Nonresonant.Fill(pythia.event[detected_particles_number[i]].tProd()/299.792458); //300 mm/c = 1ns <-> 1 mm/c = 1/300 ns
             }
             //sorting into positive and negative
             if(pythia.event[detected_particles_number[i]].charge()>0){
@@ -290,6 +300,7 @@ int main(int argc, char *argv[]){
                 bool t4 = pythia.event[detected_particles_positive_number[i]].mother2()==0&&pythia.event[detected_particles_negative_number[j]].mother2()==0;
                 if(t1&&t2&&t3&&t4){
                     MpipiResonant.Fill(mass);
+                    MpipiParticles.Fill(pythia.particleData.name(pythia.event[motherPositive].idAbs()).c_str(), mass, 1.);
                 } else{
                     MpipiNonresonant.Fill(mass);
                 }
@@ -315,6 +326,7 @@ int main(int argc, char *argv[]){
                 t4 = pythia.event[detected_particles_positive_number[i]].mother2()==0&&pythia.event[detected_particles_negative_number[j]].mother2()==0;
                 if(t1&&t2&&t3&&t4){
                     MKKResonant.Fill(mass);
+                    MKKParticles.Fill(pythia.particleData.name(pythia.event[motherPositive].idAbs()).c_str(), mass, 1.);
                 } else{
                     MKKNonresonant.Fill(mass);
                 }
@@ -440,6 +452,64 @@ int main(int argc, char *argv[]){
     outFile->cd();
     outFile->Write();
     outFile->Close();
+
+    //pairs assumed as pions
+    MpipiParticles.LabelsDeflate();
+    THStack MpipiStack("MpipiStack", "#pi#pi pairs");
+    MpipiNonresonant.SetName("Nonresonant or mismatched");
+    MpipiNonresonant.SetFillColor(1);
+    MpipiNonresonant.SetLineWidth(0);
+    MpipiStack.Add(&MpipiNonresonant);
+    std::vector<TH1D*> projections;
+    for(Int_t i = 1; i<MpipiParticles.GetXaxis()->GetNbins()+1; i++){
+        projections.push_back(new TH1D(*MpipiParticles.ProjectionY("", i, i)));
+        projections[i-1]->SetName(MpipiParticles.GetXaxis()->GetBinLabel(i));
+        projections[i-1]->SetFillColor(i+1+(i>=9)); //color 10 is white, cant have that
+        projections[i-1]->SetLineWidth(0);
+        MpipiStack.Add(projections[i-1]);
+    }
+    TCanvas canvas("Stack", "Stack", 4000, 2400);
+    MpipiStack.Draw();
+    canvas.BuildLegend(0.6, 0.5, 0.89, 0.89, "Particles reconstructed", "F");
+    canvas.SaveAs(string(filename).replace(string(filename).find(".root"), 5, "Mpipi.pdf").c_str());
+    //2nd version with interesting space zoomed into
+    canvas.Clear();
+    MpipiStack.GetXaxis()->SetRangeUser(0.2, 1.2);
+    MpipiStack.Draw();
+    canvas.BuildLegend(0.7, 0.6, 0.89, 0.89, "Particles reconstructed", "F");
+    canvas.SaveAs(string(filename).replace(string(filename).find(".root"), 5, "Mpipiv2.pdf").c_str());
+    for(size_t i = 0; i<projections.size(); i++){
+        delete projections[i];
+    }
+
+    //pairs assumed as kaons
+    MKKParticles.LabelsDeflate();
+    THStack MKKStack("MKKStack", "KK pairs");
+    MKKNonresonant.SetName("Nonresonant or mismatched");
+    MKKNonresonant.SetFillColor(1);
+    MKKNonresonant.SetLineWidth(0);
+    MKKStack.Add(&MKKNonresonant);
+    projections.clear();
+    for(Int_t i = 1; i<MKKParticles.GetXaxis()->GetNbins()+1; i++){
+        projections.push_back(new TH1D(*MKKParticles.ProjectionY("", i, i)));
+        projections[i-1]->SetName(MKKParticles.GetXaxis()->GetBinLabel(i));
+        projections[i-1]->SetFillColor(i+1+(i>=9)); //color 10 is white, cant have that
+        projections[i-1]->SetLineWidth(0);
+        MKKStack.Add(projections[i-1]);
+    }
+    canvas.Clear();
+    MKKStack.Draw();
+    canvas.BuildLegend(0.6, 0.5, 0.89, 0.89, "Particles reconstructed", "F");
+    canvas.SaveAs(string(filename).replace(string(filename).find(".root"), 5, "MKK.pdf").c_str());
+    //2nd version with interesting space zoomed into
+    canvas.Clear();
+    MKKStack.GetXaxis()->SetRangeUser(0.9, 1.7);
+    MKKStack.Draw();
+    canvas.BuildLegend(0.7, 0.6, 0.89, 0.89, "Particles reconstructed", "F");
+    canvas.SaveAs(string(filename).replace(string(filename).find(".root"), 5, "MKKv2.pdf").c_str());
+    for(size_t i = 0; i<projections.size(); i++){
+        delete projections[i];
+    }
 
     // Statistics on event generation.
     pythia.stat();
