@@ -27,9 +27,7 @@ bool IsInXiElasticSpot(TLorentzVector, TLorentzVector);
 bool IsInMomElasticSpot(TLorentzVector, TLorentzVector);
 bool IsInXiFiducialNoBBCL(TLorentzVector, TLorentzVector, double);
 bool IsInXiFiducialBBCL(TLorentzVector, TLorentzVector, double);
-bool IsParticleQuarkOrGluon(Particle);
 bool IsInMeasurementSpecificCuts(Particle*);
-void FindGoodMothers(Event *, int, std::vector<int> &);
 
 int main(int argc, char *argv[]){
 
@@ -114,25 +112,15 @@ int main(int argc, char *argv[]){
     TH1D MKKBackgroundNegativeSum("MKKBackgroundNegativeSum", ";m_{KK}", 500, 0, 5);
     //Technical
     TH1D MpipiNonresonant("MpipiNonresonant", ";m_{#pi#pi}", 500, 0, 5);
-    MpipiNonresonant.SetFillColor(kBlue);
     TH1D MpipiResonant("MpipiResonant", ";m_{#pi#pi}", 500, 0, 5);
-    MpipiResonant.SetFillColor(kRed);
     TH1D MKKNonresonant("MKKNonresonant", ";m_{KK}", 500, 0, 5);
-    MKKNonresonant.SetFillColor(kBlue);
     TH1D MKKResonant("MKKResonant", ";m_{KK}", 500, 0, 5);
-    MKKResonant.SetFillColor(kRed);
     TH1D MPIDNonresonant("MPIDNonresonant", ";m_{pair}", 500, 0, 5);
-    MPIDNonresonant.SetFillColor(kBlue);
     TH1D MPIDResonant("MPIDResonant", ";m_{pair}", 500, 0, 5);
-    MPIDResonant.SetFillColor(kRed);
     TH1D MKKBackgroundPositiveNonresonant("MKKBackgroundPositiveNonresonant", ";m_{KK}", 500, 0, 5);
-    MKKBackgroundPositiveNonresonant.SetFillColor(kBlue);
     TH1D MKKBackgroundPositiveResonant("MKKBackgroundPositiveResonant", ";m_{KK}", 500, 0, 5);
-    MKKBackgroundPositiveResonant.SetFillColor(kRed);
     TH1D MKKBackgroundNegativeNonresonant("MKKBackgroundNegativeNonresonant", ";m_{KK}", 500, 0, 5);
-    MKKBackgroundNegativeNonresonant.SetFillColor(kBlue);
     TH1D MKKBackgroundNegativeResonant("MKKBackgroundNegativeResonant", ";m_{KK}", 500, 0, 5);
-    MKKBackgroundNegativeResonant.SetFillColor(kRed);
     //Useful IDs
     const int K0sPDGid = 310;
     const int K0sbarPDGid = -310;
@@ -236,35 +224,15 @@ int main(int argc, char *argv[]){
         for(size_t i = 0; i<detected_particles_number.size(); i++){
             ParticlesDetected.Fill(pythia.event[detected_particles_number[i]].name().c_str(), 1.);
             //getting mother: singular hadron
+            //if hadron is not the mother, then it wont be saved
+            //it works because all detected particles are sorted as positive or negative
+            //and all particles without hadron, proper mothers, go to "Nonresonant" histogram
             if(pythia.event[detected_particles_number[i]].mother1()>0&&pythia.event[detected_particles_number[i]].mother2()==0){
                 if(pythia.event[pythia.event[detected_particles_number[i]].mother1()].isHadron()){
                     mother_particles_number.push_back(pythia.event[detected_particles_number[i]].mother1());
                 } else{
                     printf("Particle %d, a mother, is not a hadron\n", pythia.event[detected_particles_number[i]].mother1());
                     pythia.event.list(true, true);
-                    //FUTURE USE
-                    //     if(IsParticleQuarkOrGluon(pythia.event[part_index])){
-                    //     printf(("\nParticle checked: "+pythia.event[part_index].name()+"\n").c_str());
-                    //     FindGoodMothers(&pythia.event, pythia.event[part_index].daughter1(), mother_particles_number);
-                    //     //checking if there is something else than Pomerons
-                    //     if(mother_particles_number.size()==1&&abs(pythia.event[mother_particles_number[0]].id())==990){
-                    //         ParticlesReconstructed.Fill("#splitline{Single}{Pomeron}", 1.);
-                    //         all_daughters_detected_nonresonant_number.push_back(part_index);
-                    //     } else if(mother_particles_number.size()==2&&abs(pythia.event[mother_particles_number[0]].id())==990&&abs(pythia.event[mother_particles_number[1]].id())==990){
-                    //         ParticlesReconstructed.Fill("#splitline{Double}{Pomeron}", 1.);
-                    //         all_daughters_detected_nonresonant_number.push_back(part_index);
-                    //     } else{
-                    //         ParticlesReconstructed.Fill("other", 1.);
-                    //         for(auto &&parr:mother_particles_number){
-                    //             printf("%d: %s\n", parr, pythia.event[parr].name().c_str());
-                    //         }
-                    //         printf("\n");
-                    //         pythia.event.list(true, true);
-                    //     }
-                    // } else{
-                    //     ParticlesReconstructed.Fill(pythia.event[part_index].name().c_str(), 1.);
-                    //     all_daughters_detected_resonant_number.push_back(part_index);
-                    // }
                 }
             }
             //sorting into positive and negative
@@ -541,32 +509,8 @@ bool IsInXiFiducialBBCL(TLorentzVector east, TLorentzVector west, double p = 254
     return true;
 }
 
-bool IsParticleQuarkOrGluon(Particle particle){
-    if(abs(particle.id())<=9 or abs(particle.id())==21){
-        return true;
-    }
-    return false;
-}
-
 bool IsInMeasurementSpecificCuts(Particle* particle){
     //|eta|<0.7
     //production vertex closer to  primary vertex than 30mm
     return abs(particle->eta())<0.7&&particle->vProd().pT()<30;
-}
-
-void FindGoodMothers(Event *event, int particle, std::vector<int> &particle_set){
-    //put all mothers of a particle on a list
-    for(size_t i = 0; i<event->at(particle).motherList().size(); i++){
-        particle_set.push_back(event->at(particle).motherList()[i]);
-        //if particle is a quark or a gluon
-        //recursively do the same
-        if(IsParticleQuarkOrGluon(event->at(event->at(particle).motherList()[i]))){
-            FindGoodMothers(event, event->at(particle).motherList()[i], particle_set);
-        }
-    }
-    //and then, if the particle is on the list
-    //remove it
-    if(find(particle_set.begin(), particle_set.end(), particle)!=particle_set.end()&&IsParticleQuarkOrGluon(event->at(particle))){
-        particle_set.erase(find(particle_set.begin(), particle_set.end(), particle));
-    }
 }
