@@ -113,6 +113,32 @@ int main(int argc, char **argv){
 
     outsideprocessing.AddHistogram(TH1D("t0piTest", ";t-t_{0} [ns]", 100, 0, 50));
     outsideprocessing.AddHistogram(TH1D("t0piDifference", ";t_{0, 2nd}-t_{0, 1st} [ns]", 100, 0, 5));
+    outsideprocessing.AddHistogram(TH1D("deltaT0pipi", ";t_{0}^{+}-t_{0}^{-} [ns]", 200, -20, 20));
+    outsideprocessing.AddHistogram(TH1D("deltaT0Kpi2", ";t_{0}^{+}-t_{0}^{-} [ns]", 200, -20, 20));
+    outsideprocessing.AddHistogram(TH1D("deltaT0KK", ";t_{0}^{+}-t_{0}^{-} [ns]", 200, -20, 20));
+    outsideprocessing.AddHistogram(TH1D("deltaT0ppi", ";t_{0}^{+}-t_{0}^{-} [ns]", 200, -20, 20));
+    TH1D temp("choice", ";choice", 16, 0, 16);
+    // int pairchoice = ppiPair*8+pipiPair*4+KpiPair*2+KKPair;
+    temp.GetXaxis()->SetBinLabel(1, "Nothing");
+    temp.GetXaxis()->SetBinLabel(2, "KK");
+    temp.GetXaxis()->SetBinLabel(3, "K#pi");
+    temp.GetXaxis()->SetBinLabel(4, "K#pi+KK");
+    temp.GetXaxis()->SetBinLabel(5, "#pi#pi");
+    temp.GetXaxis()->SetBinLabel(6, "#pi#pi+KK");
+    temp.GetXaxis()->SetBinLabel(7, "#pi#pi+Kpi");
+    temp.GetXaxis()->SetBinLabel(8, "#pi#pi+Kpi+KK");
+    temp.GetXaxis()->SetBinLabel(9, "p#pi");
+    temp.GetXaxis()->SetBinLabel(11, "p#pi+K#pi");
+    temp.GetXaxis()->SetBinLabel(15, "p#pi+KK+K#pi");
+    temp.GetXaxis()->SetBinLabel(16, "All");
+    outsideprocessing.AddHistogram(temp);
+    outsideprocessing.AddHistogram(TH1D("MKKNarrowChoice", ";m_{K^{#pm}K^{#pm}} [GeV];Number of pairs", 100, 0.9, 1.7));
+    outsideprocessing.AddHistogram(TH1D("MKpiNarrowChoice", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 25, 0.8, 1.0));
+    outsideprocessing.AddHistogram(TH1D("MppiNarrowChoice", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 75, 0.9, 1.5));
+    outsideprocessing.AddHistogram(TH1D("MpipiChoice", ";m_{#pi^{#pm}#pi^{#mp}} [GeV];Number of pairs", 100, 0., 2.));
+    outsideprocessing.AddHistogram(TH1D("MpipiNoChoice", ";m_{#pi^{#pm}#pi^{#mp}} [GeV];Number of pairs", 100, 0., 2.));
+    outsideprocessing.AddHistogram(TH1D("M2TOFpipiKK", ";m_{TOF}^{2} [GeV^{2}];Number of pairs", 100, -0.25, 0.75));
+    outsideprocessing.AddHistogram(TH2D("chi2pipiKK", ";n#sigma_{#pi};n#sigma_{K}", 50, 0, 10, 50, 0, 10));
 
     //processing
     //defining TreeProcessor
@@ -293,6 +319,65 @@ int main(int argc, char **argv){
                     insideprocessing.Fill("MKKTest2", sqrt(m2TOF));
                     if(m2TOF<0.53&&m2TOF>0.47){
                         insideprocessing.Fill("MKKTest3", mass);
+                    }
+
+                    //other things
+                    if(vector_Track_positive[i]->getTofPathLength()>0&&vector_Track_positive[i]->getTofTime()>0&&vector_Track_negative[j]->getTofPathLength()>0&&vector_Track_negative[j]->getTofTime()){
+                        insideprocessing.Fill("deltaT0pipi", DeltaT0(vector_Track_positive[i], vector_Track_negative[j], particleMass[Pion], particleMass[Pion]));
+                        insideprocessing.Fill("deltaT0Kpi2", DeltaT0(vector_Track_positive[i], vector_Track_negative[j], particleMass[Pion], particleMass[Kaon]));
+                        insideprocessing.Fill("deltaT0Kpi2", DeltaT0(vector_Track_positive[i], vector_Track_negative[j], particleMass[Kaon], particleMass[Pion]));
+                        insideprocessing.Fill("deltaT0KK", DeltaT0(vector_Track_positive[i], vector_Track_negative[j], particleMass[Kaon], particleMass[Kaon]));
+                        insideprocessing.Fill("deltaT0ppi", DeltaT0(vector_Track_positive[i], vector_Track_negative[j], particleMass[Pion], particleMass[Proton]));
+                        insideprocessing.Fill("deltaT0ppi", DeltaT0(vector_Track_positive[i], vector_Track_negative[j], particleMass[Proton], particleMass[Pion]));
+                        double t0cutoff = 0.6;
+                        bool pipiPair = abs(DeltaT0(vector_Track_positive[i], vector_Track_negative[j], particleMass[Pion], particleMass[Pion]))<t0cutoff;
+                        bool KpiPair = abs(DeltaT0(vector_Track_positive[i], vector_Track_negative[j], particleMass[Pion], particleMass[Kaon]))<t0cutoff or abs(DeltaT0(vector_Track_positive[i], vector_Track_negative[j], particleMass[Kaon], particleMass[Pion]))<t0cutoff;
+                        bool KKPair = abs(DeltaT0(vector_Track_positive[i], vector_Track_negative[j], particleMass[Kaon], particleMass[Kaon]))<t0cutoff;
+                        bool ppiPair = abs(DeltaT0(vector_Track_positive[i], vector_Track_negative[j], particleMass[Pion], particleMass[Proton]))<t0cutoff or abs(DeltaT0(vector_Track_positive[i], vector_Track_negative[j], particleMass[Proton], particleMass[Pion]))<t0cutoff;
+                        int pairchoice = ppiPair*8+pipiPair*4+KpiPair*2+KKPair;
+                        if(pairchoice==5){
+                            insideprocessing.Fill("M2TOFpipiKK", M2TOF(vector_Track_positive[i], vector_Track_negative[j]));
+                            double chi2pion = pow(vector_Track_positive[i]->getNSigmasTPCPion(), 2)+pow(vector_Track_negative[j]->getNSigmasTPCPion(), 2);
+                            double chi2kaon = pow(vector_Track_positive[i]->getNSigmasTPCKaon(), 2)+pow(vector_Track_negative[j]->getNSigmasTPCKaon(), 2);
+                            insideprocessing.Fill("chi2pipiKK", sqrt(chi2pion), sqrt(chi2kaon));
+                        }
+                        insideprocessing.Fill("choice", pairchoice);
+                        if(pairchoice==8){
+                            if(abs(DeltaT0(vector_Track_positive[i], vector_Track_negative[j], particleMass[Pion], particleMass[Proton]))<abs(DeltaT0(vector_Track_positive[i], vector_Track_negative[j], particleMass[Proton], particleMass[Pion]))){
+                                vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
+                                vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Proton]);
+                            } else{
+                                vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Proton]);
+                                vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
+                            }
+                            mass = (positive_track+negative_track).M();
+                            insideprocessing.Fill("MppiNarrowChoice", mass);
+                        } else if(pairchoice==4){
+                            vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
+                            vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
+                            mass = (positive_track+negative_track).M();
+                            insideprocessing.Fill("MpipiChoice", mass);
+                        } else if(pairchoice==2){
+                            if(abs(DeltaT0(vector_Track_positive[i], vector_Track_negative[j], particleMass[Pion], particleMass[Kaon]))<abs(DeltaT0(vector_Track_positive[i], vector_Track_negative[j], particleMass[Kaon], particleMass[Pion]))){
+                                vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
+                                vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Kaon]);
+                            } else{
+                                vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Kaon]);
+                                vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
+                            }
+                            mass = (positive_track+negative_track).M();
+                            insideprocessing.Fill("MKpiNarrowChoice", mass);
+                        } else if(pairchoice==1){
+                            vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Kaon]);
+                            vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Kaon]);
+                            mass = (positive_track+negative_track).M();
+                            insideprocessing.Fill("MKKNarrowChoice", mass);
+                        } else if(pairchoice==0){
+                            vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
+                            vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
+                            mass = (positive_track+negative_track).M();
+                            insideprocessing.Fill("MpipiNoChoice", mass);
+                        }
                     }
 
                     //normal, with veto
