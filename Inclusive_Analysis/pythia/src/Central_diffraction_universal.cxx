@@ -114,6 +114,7 @@ int main(int argc, char *argv[]){
     TH1D MKKBackgroundNegativeSum("MKKBackgroundNegativeSum", ";m_{KK}", 500, 0, 5);
     TH1D t0Resonant("t0Resonant", ";t_{0} [ns]", 100, 0, 50);
     TH1D t0Nonresonant("t0Nonresonant", ";t_{0} [ns]", 100, 0, 50);
+    TH1D electronMothers("electronMothers", "electronMothers", 20000, -10000, 10000);
     //Detector simulation
     //everything as pion pairs
     TH1D MpipiNonresonant("MpipiNonresonant", ";m_{#pi#pi}", 500, 0, 5);
@@ -244,6 +245,10 @@ int main(int argc, char *argv[]){
                 t0Resonant.Fill(pythia.event[detected_particles_number[i]].tProd()/299.792458); //300 mm/c = 1ns <-> 1 mm/c = 1/300 ns
                 if(pythia.event[pythia.event[detected_particles_number[i]].mother1()].isHadron()){
                     mother_particles_number.push_back(pythia.event[detected_particles_number[i]].mother1());
+                    if(pythia.event[detected_particles_number[i]].idAbs()==11){
+                        //checks how is the mother of an electron called
+                        electronMothers.Fill(pythia.particleData.name(pythia.event[pythia.event[detected_particles_number[i]].mother1()].id()).c_str(), 1.);
+                    }
                 } else{
                     printf("Particle %d, a mother, is not a hadron\n", pythia.event[detected_particles_number[i]].mother1());
                     pythia.event.list(true, true);
@@ -503,6 +508,9 @@ int main(int argc, char *argv[]){
     ParticlesReconstructedMultipleDaughters.LabelsDeflate();
     ParticlesReconstructedMultipleDaughters.SetMinimum(0);
     ParticlesReconstructedMultipleDaughters.LabelsOption("a", "X");
+    electronMothers.LabelsDeflate();
+    electronMothers.SetMinimum(0);
+    electronMothers.LabelsOption("a", "X");
 
     //writing to file
     outFile->cd();
