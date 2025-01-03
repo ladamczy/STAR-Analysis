@@ -4,6 +4,10 @@
 #include <ROOT/TThreadedObject.hxx>
 #include <TTreeReader.h>
 #include <ROOT/TTreeProcessorMT.hxx>
+#include "TF1.h"
+#include "TCanvas.h"
+#include "TLegend.h"
+#include "TPaveStats.h"
 
 // picoDst headers
 #include "StRPEvent.h"
@@ -33,6 +37,7 @@ enum BRANCH_ID{ EU, ED, WU, WD, nBranches };
 enum RP_ID{ E1U, E1D, E2U, E2D, W1U, W1D, W2U, W2D, nRomanPots };
 enum SUSPECTED_PARTICLES{ K0S, Lambda, Kstar, Phi };
 
+void drawFit(TH1D* hist, string outfileName, double mint0 = -3., double maxt0 = 3., double* params = nullptr);
 int main(int argc, char** argv){
 
     int nthreads = 1;
@@ -269,7 +274,7 @@ int main(int argc, char** argv){
 
     outsideprocessing.Merge();
 
-    //setting up a tree & output file
+    //setting up output file name
     string path = string(argv[0]);
     string outfileName;
     if(outputFolder.find(".root")!=std::string::npos){
@@ -277,10 +282,58 @@ int main(int argc, char** argv){
     } else{
         outfileName = outputFolder+"AnaOutput_"+path.substr(path.find_last_of("/\\")+1)+".root";
     }
+    //fitting the gauss+pol2
+    //pe = 13, Kpi=15, ppi=16, KK=17, pp=19
+    drawFit(outsideprocessing.GetPointerAfterMerge1D(13).get(), outfileName, -2, 2);
+    drawFit(outsideprocessing.GetPointerAfterMerge1D(15).get(), outfileName, -0.8, 0.8);
+    drawFit(outsideprocessing.GetPointerAfterMerge1D(16).get(), outfileName, -1.5, 1.5);
+    drawFit(outsideprocessing.GetPointerAfterMerge1D(17).get(), outfileName, -1.5, 1.5);
+    drawFit(outsideprocessing.GetPointerAfterMerge1D(19).get(), outfileName, -2, 2);
+    //actully making the output file
     cout<<"Created output file "<<outfileName<<endl;
     TFile* outputFileHist = TFile::Open(outfileName.c_str(), "recreate");
     outsideprocessing.SaveToFile(outputFileHist);
     outputFileHist->Close();
 
     return 0;
+}
+
+void drawFit(TH1D* hist, string outfileName, double mint0, double maxt0, double* params){
+    TCanvas* result = new TCanvas("result", "result", 1800, 1600);
+    TF1* GfitK = new TF1("GfitK", "gausn(0) + pol2(3)");
+    GfitK->SetRange(mint0, maxt0);
+    GfitK->SetParNames("Constant", "Mean", "Sigma", "c", "b", "a");
+    if(params!=nullptr){
+        GfitK->SetParameters(params);
+    } else{
+        GfitK->SetParameters(1000, 0.0, 0.2, 0, 0, 0);
+    }
+    GfitK->SetParLimits(2, 0., 0.5);
+    hist->SetMinimum(0);
+    hist->SetMarkerStyle(kFullCircle);
+    hist->Fit(GfitK, "R0");
+    TH1D* tempHist = (TH1D*)hist->DrawClone("E");
+    gPad->Update();
+    TPaveStats* st = (TPaveStats*)tempHist->FindObject("stats");
+    st->SetX1NDC(0.15);
+    st->SetX2NDC(0.35);
+    st->SetY1NDC(0.15);
+    st->SetY2NDC(0.35);
+    st->SetBorderSize(0);
+    Double_t paramsK[6];
+    GfitK->GetParameters(paramsK);
+    GfitK->SetNpx(1000);
+    GfitK->Draw("CSAME");
+
+    // TLegend* legendK = new TLegend(0.7, 0.7, 0.89, 0.89);
+    // legendK->AddEntry("MpipiWide", "pp data, #sqrt{s} = 510 GeV");
+    // legendK->AddEntry("GfitK", "Data fit", "l");
+    // legendK->AddEntry("GfitKBcg", "Background", "l");
+    // legendK->AddEntry("GfitK1Sig", "K^{0} fit", "l");
+    // legendK->SetBorderSize(0);
+    // legendK->Draw("SAME");
+
+    // gPad->RedrawAxis();
+    string output = outfileName.insert(outfileName.find_last_of("."), "_"+string(hist->GetName())).substr(0, outfileName.find_last_of("."))+".pdf";
+    result->SaveAs(output.c_str());
 }
