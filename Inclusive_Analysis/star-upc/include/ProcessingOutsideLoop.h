@@ -40,6 +40,9 @@ public:
     std::shared_ptr<TH1D> GetPointerAfterMerge1D(int);
     std::shared_ptr<TH2D> GetPointerAfterMerge2D(int);
     std::shared_ptr<TH3D> GetPointerAfterMerge3D(int);
+    std::shared_ptr<TH1D> GetPointerAfterMerge1D(const char*);
+    std::shared_ptr<TH2D> GetPointerAfterMerge2D(const char*);
+    std::shared_ptr<TH3D> GetPointerAfterMerge3D(const char*);
 };
 
 ProcessingOutsideLoop::ProcessingOutsideLoop(/* args */){
@@ -100,5 +103,29 @@ ROOT::TThreadedObject<TH3D> &ProcessingOutsideLoop::GetPointer3D(int i){ return 
 std::shared_ptr<TH1D> ProcessingOutsideLoop::GetPointerAfterMerge1D(int i){ return hist1dtabFinal[i]; }
 std::shared_ptr<TH2D> ProcessingOutsideLoop::GetPointerAfterMerge2D(int i){ return hist2dtabFinal[i]; }
 std::shared_ptr<TH3D> ProcessingOutsideLoop::GetPointerAfterMerge3D(int i){ return hist3dtabFinal[i]; }
+std::shared_ptr<TH1D> ProcessingOutsideLoop::GetPointerAfterMerge1D(const char* hist_name){
+    for(long unsigned int i = 0; i<hist1dtabFinal.size(); i++){
+        if(hist1dtabFinal[i]!=nullptr&&strcmp(hist_name, hist1dtabFinal[i]->GetName())==0){
+            return hist1dtabFinal[i];
+        }
+    }
+    throw std::invalid_argument("Histogram with name \""+std::string(hist_name)+"\" could not be found.");
+}
+std::shared_ptr<TH2D> ProcessingOutsideLoop::GetPointerAfterMerge2D(const char* hist_name){
+    for(long unsigned int i = 0; i<hist1dtabFinal.size(); i++){
+        if(hist2dtabFinal[i]!=nullptr&&strcmp(hist_name, hist2dtabFinal[i]->GetName())==0){
+            return hist2dtabFinal[i];
+        }
+    }
+    throw std::invalid_argument("Histogram with name \""+std::string(hist_name)+"\" could not be found.");
+}
+std::shared_ptr<TH3D> ProcessingOutsideLoop::GetPointerAfterMerge3D(const char* hist_name){
+    for(long unsigned int i = 0; i<hist1dtabFinal.size(); i++){
+        if(hist3dtabFinal[i]!=nullptr&&strcmp(hist_name, hist3dtabFinal[i]->GetName())==0){
+            return hist3dtabFinal[i];
+        }
+    }
+    throw std::invalid_argument("Histogram with name \""+std::string(hist_name)+"\" could not be found.");
+}
 
 #endif
