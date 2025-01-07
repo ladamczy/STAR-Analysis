@@ -62,13 +62,13 @@ int main(int argc, char** argv){
     //deltaT0 - all the combinations (+narrow versions)
     string particleNicks[nParticlesExtended] = { "e", "pi", "K", "p" };
     for(size_t i = 0; i<nParticlesExtended; i++){
-        for(size_t j = i; j<nParticlesExtended; j++){
-            outsideprocessing.AddHistogram(TH1D(("deltaT0"+particleNicks[j]+particleNicks[i]).c_str(), ";t_{0}^{+}-t_{0}^{-} [ns]", 200, -20, 20));
+        for(size_t j = 0; j<nParticlesExtended; j++){
+            outsideprocessing.AddHistogram(TH1D(("deltaT0"+particleNicks[i]+particleNicks[j]).c_str(), ";t_{0}^{+}-t_{0}^{-} [ns]", 200, -20, 20));
         }
     }
     for(size_t i = 0; i<nParticlesExtended; i++){
-        for(size_t j = i; j<nParticlesExtended; j++){
-            outsideprocessing.AddHistogram(TH1D(("deltaT0"+particleNicks[j]+particleNicks[i]+"Narrow").c_str(), ";t_{0}^{+}-t_{0}^{-} [ns]", 100, -5, 5));
+        for(size_t j = 0; j<nParticlesExtended; j++){
+            outsideprocessing.AddHistogram(TH1D(("deltaT0"+particleNicks[i]+particleNicks[j]+"Narrow").c_str(), ";t_{0}^{+}-t_{0}^{-} [ns]", 100, -5, 5));
         }
     }
     TH1D temp("choice", ";choice", 16, 0, 16);
@@ -196,14 +196,10 @@ int main(int argc, char** argv){
                         continue;
                     }
                     //filling the histograms
-                    for(size_t light = 0; light<nParticlesExtended; light++){
-                        for(size_t heavy = light; heavy<nParticlesExtended; heavy++){
-                            insideprocessing.Fill(("deltaT0"+particleNicks[heavy]+particleNicks[light]).c_str(), DeltaT0(vector_Track_positive[i], vector_Track_negative[j], particleMassExtended[heavy], particleMassExtended[light]));
-                            insideprocessing.Fill(("deltaT0"+particleNicks[heavy]+particleNicks[light]+"Narrow").c_str(), DeltaT0(vector_Track_positive[i], vector_Track_negative[j], particleMassExtended[heavy], particleMassExtended[light]));
-                            if(heavy!=light){
-                                insideprocessing.Fill(("deltaT0"+particleNicks[heavy]+particleNicks[light]).c_str(), DeltaT0(vector_Track_positive[i], vector_Track_negative[j], particleMassExtended[light], particleMassExtended[heavy]));
-                                insideprocessing.Fill(("deltaT0"+particleNicks[heavy]+particleNicks[light]+"Narrow").c_str(), DeltaT0(vector_Track_positive[i], vector_Track_negative[j], particleMassExtended[light], particleMassExtended[heavy]));
-                            }
+                    for(size_t pos = 0; pos<nParticlesExtended; pos++){
+                        for(size_t neg = 0; neg<nParticlesExtended; neg++){
+                            insideprocessing.Fill(("deltaT0"+particleNicks[pos]+particleNicks[neg]).c_str(), DeltaT0(vector_Track_positive[i], vector_Track_negative[j], particleMassExtended[pos], particleMassExtended[neg]));
+                            insideprocessing.Fill(("deltaT0"+particleNicks[pos]+particleNicks[neg]+"Narrow").c_str(), DeltaT0(vector_Track_positive[i], vector_Track_negative[j], particleMassExtended[pos], particleMassExtended[neg]));
                         }
                     }
                     double t0cutoff = 0.6;
