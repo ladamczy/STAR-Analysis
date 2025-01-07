@@ -8,6 +8,7 @@
 #include "TCanvas.h"
 #include "TLegend.h"
 #include "TPaveStats.h"
+#include "TStyle.h"
 
 // picoDst headers
 #include "StRPEvent.h"
@@ -37,7 +38,7 @@ enum BRANCH_ID{ EU, ED, WU, WD, nBranches };
 enum RP_ID{ E1U, E1D, E2U, E2D, W1U, W1D, W2U, W2D, nRomanPots };
 enum SUSPECTED_PARTICLES{ K0S, Lambda, Kstar, Phi };
 
-void drawFit(TH1D* hist, string outfileName, double mint0 = -3., double maxt0 = 3., double* params = nullptr);
+double drawFit(TH1D* hist, string outfileName, double mint0 = -3., double maxt0 = 3., double* params = nullptr, string histName = "");
 int main(int argc, char** argv){
 
     int nthreads = 1;
@@ -279,23 +280,35 @@ int main(int argc, char** argv){
         outfileName = outputFolder+"AnaOutput_"+path.substr(path.find_last_of("/\\")+1)+".root";
     }
     //fitting the gauss+pol2
-    //pe = 13, Kpi=15, ppi=16, KK=17, pp=19
-    drawFit(outsideprocessing.GetPointerAfterMerge1D(13).get(), outfileName, -2, 2);
-    drawFit(outsideprocessing.GetPointerAfterMerge1D(15).get(), outfileName, -0.8, 0.8);
-    drawFit(outsideprocessing.GetPointerAfterMerge1D(16).get(), outfileName, -1.5, 1.5);
-    drawFit(outsideprocessing.GetPointerAfterMerge1D(17).get(), outfileName, -1.5, 1.5);
-    drawFit(outsideprocessing.GetPointerAfterMerge1D(19).get(), outfileName, -2, 2);
+    std::vector<string> sigmaNames;
+    std::vector<double> sigmaValues;
+    string tempname;
+    double tempsigma;
+    for(size_t i = 0; i<nParticlesExtended; i++){
+        for(size_t j = 0; j<nParticlesExtended; j++){
+            tempname = "#Delta t_{0}: "+((i==1) ? "#pi" : particleNicks[i])+"^{+}"+((j==1) ? "#pi" : particleNicks[j])+"^{-}";
+            tempsigma = drawFit(outsideprocessing.GetPointerAfterMerge1D(("deltaT0"+particleNicks[i]+particleNicks[j]+"Narrow").c_str()).get(), outfileName, -1.0, 1.0, nullptr, tempname);
+            sigmaNames.push_back(tempname);
+            sigmaValues.push_back(tempsigma);
+        }
+    }
+
     //actully making the output file
     cout<<"Created output file "<<outfileName<<endl;
     TFile* outputFileHist = TFile::Open(outfileName.c_str(), "recreate");
     outsideprocessing.SaveToFile(outputFileHist);
     outputFileHist->Close();
 
+    for(size_t i = 0; i<sigmaNames.size(); i++){
+        printf("%s:\t%lf\n", sigmaNames[i].c_str(), sigmaValues[i]);
+    }
+
     return 0;
 }
 
-void drawFit(TH1D* hist, string outfileName, double mint0, double maxt0, double* params){
+double drawFit(TH1D* hist, string outfileName, double mint0, double maxt0, double* params, string histName){
     TCanvas* result = new TCanvas("result", "result", 1800, 1600);
+    gStyle->SetOptStat(0);
     TF1* GfitK = new TF1("GfitK", "gausn(0) + pol2(3)");
     GfitK->SetRange(mint0, maxt0);
     GfitK->SetParNames("Constant", "Mean", "Sigma", "c", "b", "a");
@@ -308,14 +321,19 @@ void drawFit(TH1D* hist, string outfileName, double mint0, double maxt0, double*
     hist->SetMinimum(0);
     hist->SetMarkerStyle(kFullCircle);
     hist->Fit(GfitK, "R0");
+    if(histName.length()!=0){
+        hist->SetTitle(histName.c_str());
+    }
     TH1D* tempHist = (TH1D*)hist->DrawClone("E");
-    gPad->Update();
-    TPaveStats* st = (TPaveStats*)tempHist->FindObject("stats");
-    st->SetX1NDC(0.15);
-    st->SetX2NDC(0.35);
-    st->SetY1NDC(0.15);
-    st->SetY2NDC(0.35);
-    st->SetBorderSize(0);
+    if(gStyle->GetOptStat()!=0){
+        gPad->Update();
+        TPaveStats* st = (TPaveStats*)tempHist->FindObject("stats");
+        st->SetX1NDC(0.15);
+        st->SetX2NDC(0.35);
+        st->SetY1NDC(0.15);
+        st->SetY2NDC(0.25);
+        st->SetBorderSize(0);
+    }
     Double_t paramsK[6];
     GfitK->GetParameters(paramsK);
     GfitK->SetNpx(1000);
@@ -332,4 +350,6 @@ void drawFit(TH1D* hist, string outfileName, double mint0, double maxt0, double*
     // gPad->RedrawAxis();
     string output = outfileName.insert(outfileName.find_last_of("."), "_"+string(hist->GetName())).substr(0, outfileName.find_last_of("."))+".pdf";
     result->SaveAs(output.c_str());
+    gStyle->SetOptStat(1);
+    return paramsK[2];
 }
