@@ -103,6 +103,30 @@ int main(int argc, char **argv){
     outsideprocessing.AddHistogram(TH1D("MissingpZ", "MissingpZ", 100, -5, 5.));
     outsideprocessing.AddHistogram(TH1D("MKKExtraNarrowNoVeto", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 140, 0.98, 1.05));
     outsideprocessing.AddHistogram(TH2D("xi", ";#xi_{E};#xi_{W}", 150, -0.05, 0.25, 150, -0.05, 0.25));
+    //adding chi2 histograms
+    // #Delta t_{0}: e^{+}e^{-}:       0.257688
+    // #Delta t_{0}: e^{+}#pi^{-}:     0.218939
+    // #Delta t_{0}: e^{+}K^{-}:       0.206298
+    // #Delta t_{0}: e^{+}p^{-}:       0.238605
+    // #Delta t_{0}: #pi^{+}e^{-}:     0.218417
+    // #Delta t_{0}: #pi^{+}#pi^{-}:   0.131243
+    // #Delta t_{0}: #pi^{+}K^{-}:     0.129570
+    // #Delta t_{0}: #pi^{+}p^{-}:     0.159117
+    // #Delta t_{0}: K^{+}e^{-}:       0.191863
+    // #Delta t_{0}: K^{+}#pi^{-}:     0.125116
+    // #Delta t_{0}: K^{+}K^{-}:       0.137073
+    // #Delta t_{0}: K^{+}p^{-}:       0.067341
+    // #Delta t_{0}: p^{+}e^{-}:       0.239464
+    // #Delta t_{0}: p^{+}#pi^{-}:     0.167620
+    // #Delta t_{0}: p^{+}K^{-}:       0.055787
+    // #Delta t_{0}: p^{+}p^{-}:       0.198271
+    outsideprocessing.AddHistogram(TH2D("chi2pipivsKpi1", ";#pi^{+}#pi^{-};K^{+}#pi^{-}", 100, 0, 100, 100, 0, 100));
+    outsideprocessing.AddHistogram(TH1D("MKpiChi2Narrow", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 50, 0.8, 1.0));
+    outsideprocessing.AddHistogram(TH1D("MKpiChi2Wide", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 150, 0.0, 1.5));
+    outsideprocessing.AddHistogram(TH1D("MKpiChi2WideTest3", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 150, 0.0, 1.5));
+    outsideprocessing.AddHistogram(TH1D("MKpiChi2WideTest6", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 150, 0.0, 1.5));
+    outsideprocessing.AddHistogram(TH1D("MKpiChi2WideTest9", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 150, 0.0, 1.5));
+    outsideprocessing.AddHistogram(TH1D("MKpiChi2WideTest12", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 150, 0.0, 1.5));
 
     //processing
     //defining TreeProcessor
@@ -139,7 +163,7 @@ int main(int argc, char **argv){
         TLorentzVector bcg_track_2;
         TVector3 tempMomentum;
         TVector3 totalMomentum;
-        double mass;
+        double mass, chi1, chi2;
 
         //actual loop
         while(myReader.Next()){
@@ -316,7 +340,31 @@ int main(int argc, char **argv){
                     if(vector_Track_positive[i]->getNhitsDEdx()<15 or vector_Track_negative[j]->getNhitsDEdx()<15){
                         continue;
                     }
-                    //positive
+                    //chi2
+                    vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Kaon]);
+                    vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
+                    mass = (positive_track+negative_track).M();
+                    chi1 = pow(vector_Track_positive[i]->getNSigmasTPCPion(), 2)+pow(vector_Track_negative[j]->getNSigmasTPCPion(), 2)+pow(DeltaT0(vector_Track_positive[i], vector_Track_negative[j], particleMass[Pion], particleMass[Pion])/0.131243, 2);
+                    chi2 = pow(vector_Track_positive[i]->getNSigmasTPCKaon(), 2)+pow(vector_Track_negative[j]->getNSigmasTPCPion(), 2)+pow(DeltaT0(vector_Track_positive[i], vector_Track_negative[j], particleMass[Kaon], particleMass[Pion])/0.125116, 2);
+                    insideprocessing.Fill("chi2pipivsKpi1", chi1, chi2);
+                    if(chi2<9&&chi1>9){
+                        insideprocessing.Fill("MKpiChi2Narrow", mass);
+                        insideprocessing.Fill("MKpiChi2Wide", mass);
+                    }
+                    if(chi2<3&&chi1>3){
+                        insideprocessing.Fill("MKpiChi2WideTest3", mass);
+                    }
+                    if(chi2<6&&chi1>6){
+                        insideprocessing.Fill("MKpiChi2WideTest6", mass);
+                    }
+                    if(chi2<9&&chi1>9){
+                        insideprocessing.Fill("MKpiChi2WideTest9", mass);
+                    }
+                    if(chi2<12&&chi1>12){
+                        insideprocessing.Fill("MKpiChi2WideTest12", mass);
+                    }
+
+                    //getting mass as assumed
                     vector_Track_positive_dEdx = Pion;
                     vector_Track_positive[i]->getMomentum(tempMomentum);
                     if(abs(vector_Track_positive[i]->getNSigmasTPCKaon())<3&&tempMomentum.Mag()<0.4){
