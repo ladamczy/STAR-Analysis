@@ -282,13 +282,13 @@ int main(int argc, char** argv){
     //fitting the gauss+pol2
     std::vector<string> sigmaNames;
     std::vector<double> sigmaValues;
-    string tempname;
+    string temptitle;
     double tempsigma;
     for(size_t i = 0; i<nParticlesExtended; i++){
         for(size_t j = 0; j<nParticlesExtended; j++){
-            tempname = "#Delta t_{0}: "+((i==1) ? "#pi" : particleNicks[i])+"^{+}"+((j==1) ? "#pi" : particleNicks[j])+"^{-}";
-            tempsigma = drawFit(outsideprocessing.GetPointerAfterMerge1D(("deltaT0"+particleNicks[i]+particleNicks[j]+"Narrow").c_str()).get(), outfileName, -1.0, 1.0, nullptr, tempname);
-            sigmaNames.push_back(tempname);
+            temptitle = "#Delta t_{0}: "+((i==1) ? "#pi" : particleNicks[i])+"^{+}"+((j==1) ? "#pi" : particleNicks[j])+"^{-}";
+            tempsigma = drawFit(outsideprocessing.GetPointerAfterMerge1D(("deltaT0"+particleNicks[i]+particleNicks[j]+"Narrow").c_str()).get(), outfileName, -1.0, 1.0, nullptr, temptitle);
+            sigmaNames.push_back(particleNicks[i]+"_"+particleNicks[j]);
             sigmaValues.push_back(tempsigma);
         }
     }
@@ -299,9 +299,17 @@ int main(int argc, char** argv){
     outsideprocessing.SaveToFile(outputFileHist);
     outputFileHist->Close();
 
+    //writing calculated sigma values to a txt file
+    string sigmaOutput = outfileName.substr(0, outfileName.find_last_of("."))+"_sigmaValues.txt";
+    string tempString;
+    TFile* sigmaOutputFile = TFile::Open((sigmaOutput+"?filetype=raw").c_str(), "recreate");
     for(size_t i = 0; i<sigmaNames.size(); i++){
         printf("%s:\t%lf\n", sigmaNames[i].c_str(), sigmaValues[i]);
+        tempString = sigmaNames[i]+"\t\t"+sigmaValues[i]+"\n";
+        sigmaOutputFile->WriteBuffer(tempString.c_str(), tempString.length());
+        sigmaOutputFile->Flush();
     }
+    sigmaOutputFile->Close();
 
     return 0;
 }
