@@ -11,6 +11,8 @@ Data preparation (Przemysław)
 
 # Użyteczne linki:
 
+Diploma work of Patrycja Malinowska [PracaDyplomowa_PatrycjaMalinowska.pdf](https://github.com/user-attachments/files/18375738/PracaDyplomowa_PatrycjaMalinowska.pdf)
+
 Praca Pana Rafała Sikory (https://cds.cern.ch/record/2747846/files/CERN-THESIS-2020-235.pdf)
 
 Praca Pana Łukasza Fulka (https://cds.cern.ch/record/2724061/files/CERN-THESIS-2020-066.pdf)
