@@ -36,6 +36,7 @@ enum SUSPECTED_PARTICLES{ K0S, Lambda, Kstar, Phi };
 string particleNicks[nParticlesExtended] = { "e", "pi", "K", "p" };
 
 double getChi2(StUPCTrack* positive, StUPCTrack* negative, int positiveId, int negativeId, double sigmaT);
+bool almostAllChi2(map<string, double> chi2Map, string exception, double limit);
 
 int main(int argc, char** argv){
 
@@ -72,13 +73,18 @@ int main(int argc, char** argv){
         sigmaMap.insert({ string(sigmaName), sigmaValue });
     }
     sigmaFile.close();
+    //chi2 tests
     outsideprocessing.AddHistogram(TH2D("chi2pipivsKpi1", ";#pi^{+}#pi^{-};K^{+}#pi^{-}", 100, 0, 100, 100, 0, 100));
-    outsideprocessing.AddHistogram(TH1D("MKpiChi2Narrow", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 50, 0.8, 1.0));
-    outsideprocessing.AddHistogram(TH1D("MKpiChi2Wide", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 150, 0.0, 1.5));
-    outsideprocessing.AddHistogram(TH1D("MKpiChi2WideTest3", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 150, 0.0, 1.5));
-    outsideprocessing.AddHistogram(TH1D("MKpiChi2WideTest6", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 150, 0.0, 1.5));
-    outsideprocessing.AddHistogram(TH1D("MKpiChi2WideTest9", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 150, 0.0, 1.5));
-    outsideprocessing.AddHistogram(TH1D("MKpiChi2WideTest12", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 150, 0.0, 1.5));
+    for(size_t i = 3; i<31; i += 3){
+        outsideprocessing.AddHistogram(TH1D(("MKpiChi2Test"+to_string(i)).c_str(), ";m_{K^{+}#pi^{-}} [GeV];Number of pairs", 150, 0.0, 1.5));
+    }
+    //mass histograms
+    outsideprocessing.AddHistogram(TH1D("MKpiChi2Narrow", ";m_{K^{+}#pi^{-}} [GeV];Number of pairs", 100, 0.5, 1.5));
+    outsideprocessing.AddHistogram(TH1D("MKpiChi2Wide", ";m_{K^{+}#pi^{-}} [GeV];Number of pairs", 100, 0.5, 2.0));
+    outsideprocessing.AddHistogram(TH1D("MppiChi2Wide", ";m_{p^{+}#pi^{-}} [GeV];Number of pairs", 100, 1.0, 2.5));
+    outsideprocessing.AddHistogram(TH1D("MpipChi2Wide", ";m_{#pi^{+}p^{-}} [GeV];Number of pairs", 100, 1.0, 2.5));
+    outsideprocessing.AddHistogram(TH1D("MKKChi2Wide", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 100, 0.9, 2.4));
+    outsideprocessing.AddHistogram(TH1D("MpipiChi2Wide", ";m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 120, 0.2, 1.4));
 
     //processing
     //defining TreeProcessor
@@ -103,7 +109,7 @@ int main(int argc, char** argv){
         StUPCTrack* tempTrack;
         TLorentzVector positive_track;
         TLorentzVector negative_track;
-        double mass, chi1, chi2;
+        double mass, chi2pipi, chi2Kpi;
         map<string, double> chi2Map;
         bool isdEdxOk, isTOFOk;
         string tempPairName;
@@ -199,28 +205,52 @@ int main(int argc, char** argv){
                         }
                     }
 
-                    chi1 = chi2Map["pi_pi"];
-                    chi2 = chi2Map["K_pi"];
-                    insideprocessing.Fill("chi2pipivsKpi1", chi1, chi2);
+                    //chi2 comparison
+                    chi2pipi = chi2Map["pi_pi"];
+                    chi2Kpi = chi2Map["K_pi"];
+                    insideprocessing.Fill("chi2pipivsKpi1", chi2pipi, chi2Kpi);
 
-                    vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Kaon]);
-                    vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
-                    mass = (positive_track+negative_track).M();
-                    if(chi2<9&&chi1>9){
+                    //example test for chi2 on Kpi pair
+                    for(size_t chitest = 3; chitest<31; chitest += 3){
+                        if(chi2Kpi<chitest&&chi2pipi>chitest){
+                            vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Kaon]);
+                            vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
+                            mass = (positive_track+negative_track).M();
+                            insideprocessing.Fill(("MKpiChi2Test"+to_string(chitest)).c_str(), mass);
+                        }
+                    }
+
+                    //mass tests on different pairs
+                    if(almostAllChi2(chi2Map, "K_pi", 9)){
+                        vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Kaon]);
+                        vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
+                        mass = (positive_track+negative_track).M();
                         insideprocessing.Fill("MKpiChi2Narrow", mass);
                         insideprocessing.Fill("MKpiChi2Wide", mass);
                     }
-                    if(chi2<3&&chi1>3){
-                        insideprocessing.Fill("MKpiChi2WideTest3", mass);
+                    if(almostAllChi2(chi2Map, "p_pi", 9)){
+                        vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Proton]);
+                        vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
+                        mass = (positive_track+negative_track).M();
+                        insideprocessing.Fill("MppiChi2Wide", mass);
                     }
-                    if(chi2<6&&chi1>6){
-                        insideprocessing.Fill("MKpiChi2WideTest6", mass);
+                    if(almostAllChi2(chi2Map, "pi_p", 9)){
+                        vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
+                        vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Proton]);
+                        mass = (positive_track+negative_track).M();
+                        insideprocessing.Fill("MpipChi2Wide", mass);
                     }
-                    if(chi2<9&&chi1>9){
-                        insideprocessing.Fill("MKpiChi2WideTest9", mass);
+                    if(almostAllChi2(chi2Map, "K_K", 9)){
+                        vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Kaon]);
+                        vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Kaon]);
+                        mass = (positive_track+negative_track).M();
+                        insideprocessing.Fill("MKKChi2Wide", mass);
                     }
-                    if(chi2<12&&chi1>12){
-                        insideprocessing.Fill("MKpiChi2WideTest12", mass);
+                    if(almostAllChi2(chi2Map, "pi_pi", 9)){
+                        vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
+                        vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
+                        mass = (positive_track+negative_track).M();
+                        insideprocessing.Fill("MpipiChi2Wide", mass);
                     }
                 }
             }
@@ -255,4 +285,17 @@ double getChi2(StUPCTrack* positive, StUPCTrack* negative, int positiveId, int n
     double sigma2 = pow(negative->getNSigmasTPC(static_cast<StUPCTrack::Part>(negativeId)), 2);
     double sigma3 = pow(DeltaT0(positive, negative, particleMassExtended[positiveId], particleMassExtended[negativeId])/sigmaT, 2);
     return sigma1+sigma2+sigma3;
+}
+
+bool almostAllChi2(map<string, double> chi2Map, string exception, double limit){
+    //checks if almost all chi2 statistics stay above limit
+    //except the exception, which needs to stay below
+    for(auto&& i:chi2Map){
+        if(i.first!=exception&&i.second<limit){
+            return false;
+        } else if(i.first==exception&&i.second>limit){
+            return false;
+        }
+    }
+    return true;
 }
