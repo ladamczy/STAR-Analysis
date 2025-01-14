@@ -32,7 +32,7 @@ enum BRANCH_ID{ EU, ED, WU, WD, nBranches };
 enum RP_ID{ E1U, E1D, E2U, E2D, W1U, W1D, W2U, W2D, nRomanPots };
 enum SUSPECTED_PARTICLES{ K0S, Lambda, Kstar, Phi };
 
-int main(int argc, char **argv){
+int main(int argc, char** argv){
 
     int nthreads = 1;
     if(argc==4){
@@ -45,11 +45,11 @@ int main(int argc, char **argv){
     // ROOT::EnableImplicitMT(nthreads); //turn on multicore processing
 
     //preparing input & output
-    TChain *upcChain = new TChain("mUPCTree");
+    TChain* upcChain = new TChain("mUPCTree");
     if(ConnectInput(argc, argv, upcChain)){
         cout<<"All files connected"<<endl;
     }
-    const string &outputFolder = argv[2];
+    const string& outputFolder = argv[2];
 
     //histograms
     ProcessingOutsideLoop outsideprocessing;
@@ -86,23 +86,25 @@ int main(int argc, char **argv){
     double Lambda0WindowHigh = 1.15;
 
     //defining processing function
-    auto myFunction = [&](TTreeReader &myReader){
+    auto myFunction = [&](TTreeReader& myReader){
         //getting values from TChain, in-loop histogram initialization
         TTreeReaderValue<StUPCEvent> StUPCEventInstance(myReader, "mUPCEvent");
         // TTreeReaderValue<StRPEvent> StRPEventInstance(myReader, "mRPEvent");
+        // TTreeReaderValue<StRPEvent> StRPEventInstance(myReader, "mRPEvent");
         ProcessingInsideLoop insideprocessing;
-        StUPCEvent *tempUPCpointer;
+        StUPCEvent* tempUPCpointer;
+        // StRPEvent* tempRPpointer;
         // StRPEvent* tempRPpointer;
         insideprocessing.GetLocalHistograms(&outsideprocessing);
 
         //helpful variables
-        std::vector<StUPCTrack *> vector_Track_positive;
-        std::vector<StUPCTrack *> vector_Track_negative;
+        std::vector<StUPCTrack*> vector_Track_positive;
+        std::vector<StUPCTrack*> vector_Track_negative;
         int vector_Track_positive_dEdx;
         int vector_Track_negative_dEdx;
         int vector_bcg_track_1_dEdx;
         int vector_bcg_track_2_dEdx;
-        StUPCTrack *tempTrack;
+        StUPCTrack* tempTrack;
         TLorentzVector positive_track;
         TLorentzVector negative_track;
         TLorentzVector bcg_track_1;
@@ -113,6 +115,7 @@ int main(int argc, char **argv){
         while(myReader.Next()){
             //in a TTree, it *would* be constant, in TChain however not necessarily
             tempUPCpointer = StUPCEventInstance.Get();
+            // tempRPpointer = StRPEventInstance.Get();
             // tempRPpointer = StRPEventInstance.Get();
 
             //cleaning the loop
@@ -204,7 +207,7 @@ int main(int argc, char **argv){
             //lambda finish
         }
         return 0;
-        };
+    };
 
     TreeProc.Process(myFunction);
 
@@ -219,7 +222,7 @@ int main(int argc, char **argv){
         outfileName = outputFolder+"AnaOutput_"+path.substr(path.find_last_of("/\\")+1)+".root";
     }
     cout<<"Created output file "<<outfileName<<endl;
-    TFile *outputFileHist = TFile::Open(outfileName.c_str(), "recreate");
+    TFile* outputFileHist = TFile::Open(outfileName.c_str(), "recreate");
     outsideprocessing.SaveToFile(outputFileHist);
     outputFileHist->Close();
 
