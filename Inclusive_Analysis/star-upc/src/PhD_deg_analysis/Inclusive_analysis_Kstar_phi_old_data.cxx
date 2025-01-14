@@ -1,4 +1,5 @@
 //cpp headers
+#include <map>
 
 //ROOT headers
 #include <ROOT/TThreadedObject.hxx>
@@ -104,22 +105,18 @@ int main(int argc, char **argv){
     outsideprocessing.AddHistogram(TH1D("MKKExtraNarrowNoVeto", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 140, 0.98, 1.05));
     outsideprocessing.AddHistogram(TH2D("xi", ";#xi_{E};#xi_{W}", 150, -0.05, 0.25, 150, -0.05, 0.25));
     //adding chi2 histograms
-    // #Delta t_{0}: e^{+}e^{-}:       0.257688
-    // #Delta t_{0}: e^{+}#pi^{-}:     0.218939
-    // #Delta t_{0}: e^{+}K^{-}:       0.206298
-    // #Delta t_{0}: e^{+}p^{-}:       0.238605
-    // #Delta t_{0}: #pi^{+}e^{-}:     0.218417
-    // #Delta t_{0}: #pi^{+}#pi^{-}:   0.131243
-    // #Delta t_{0}: #pi^{+}K^{-}:     0.129570
-    // #Delta t_{0}: #pi^{+}p^{-}:     0.159117
-    // #Delta t_{0}: K^{+}e^{-}:       0.191863
-    // #Delta t_{0}: K^{+}#pi^{-}:     0.125116
-    // #Delta t_{0}: K^{+}K^{-}:       0.137073
-    // #Delta t_{0}: K^{+}p^{-}:       0.067341
-    // #Delta t_{0}: p^{+}e^{-}:       0.239464
-    // #Delta t_{0}: p^{+}#pi^{-}:     0.167620
-    // #Delta t_{0}: p^{+}K^{-}:       0.055787
-    // #Delta t_{0}: p^{+}p^{-}:       0.198271
+    //file with sigma values:
+    ifstream sigmaFile;
+    string line;
+    char sigmaName[10];
+    double sigmaValue;
+    map<string, double> sigmaMap;
+    sigmaFile.open("STAR-Analysis/Inclusive_Analysis/star-upc/AnaOutput_Inclusive_analysis_Kstar_phi_old_data_TOF_tests_sigmaValues.txt");
+    while(getline(sigmaFile, line)){
+        sscanf(line.c_str(), "%s\t\t%lf", sigmaName, &sigmaValue);
+        sigmaMap.insert({ string(sigmaName), sigmaValue });
+    }
+    sigmaFile.close();
     outsideprocessing.AddHistogram(TH2D("chi2pipivsKpi1", ";#pi^{+}#pi^{-};K^{+}#pi^{-}", 100, 0, 100, 100, 0, 100));
     outsideprocessing.AddHistogram(TH1D("MKpiChi2Narrow", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 50, 0.8, 1.0));
     outsideprocessing.AddHistogram(TH1D("MKpiChi2Wide", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 150, 0.0, 1.5));
