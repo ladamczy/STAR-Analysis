@@ -27,10 +27,15 @@ enum{
 };
 enum SIDE{ E = 0, East = 0, W = 1, West = 1, nSides };
 enum PARTICLES{ Pion = 0, Kaon = 1, Proton = 2, nParticles };
+enum EXTENDED_PARTICLES{ ExtElectron = 0, ExtPion = 1, ExtKaon = 2, ExtProton = 3, nParticlesExtended };
 const double particleMass[nParticles] = { 0.13957, 0.493677, 0.93827 }; // pion, kaon, proton in GeV /c^2 
+const double particleMassExtended[nParticlesExtended] = { 0.000510999, 0.13957, 0.493677, 0.93827 }; // electron, pion, kaon, proton in GeV /c^2 
 enum BRANCH_ID{ EU, ED, WU, WD, nBranches };
 enum RP_ID{ E1U, E1D, E2U, E2D, W1U, W1D, W2U, W2D, nRomanPots };
 enum SUSPECTED_PARTICLES{ K0S, Lambda, Kstar, Phi };
+string particleNicks[nParticlesExtended] = { "e", "pi", "K", "p" };
+
+double getChi2(StUPCTrack* positive, StUPCTrack* negative, int positiveId, int negativeId, double sigmaT);
 
 int main(int argc, char** argv){
 
@@ -53,6 +58,7 @@ int main(int argc, char** argv){
 
     //histograms
     ProcessingOutsideLoop outsideprocessing;
+    outsideprocessing.AddHistogram(TH1D("pairInfo", "", 1, 0, 1));
     //adding chi2 histograms
     //file with sigma values:
     ifstream sigmaFile;
@@ -80,42 +86,32 @@ int main(int argc, char** argv){
 
     //other things
     int eventsProcessed = 0;
-    double K0WindowLow = 0.48;
-    double K0WindowHigh = 0.51;
-    double Lambda0WindowLow = 1.05;
-    double Lambda0WindowHigh = 1.15;
 
     //defining processing function
     auto myFunction = [&](TTreeReader& myReader){
         //getting values from TChain, in-loop histogram initialization
         TTreeReaderValue<StUPCEvent> StUPCEventInstance(myReader, "mUPCEvent");
         // TTreeReaderValue<StRPEvent> StRPEventInstance(myReader, "mRPEvent");
-        // TTreeReaderValue<StRPEvent> StRPEventInstance(myReader, "mRPEvent");
         ProcessingInsideLoop insideprocessing;
         StUPCEvent* tempUPCpointer;
-        // StRPEvent* tempRPpointer;
         // StRPEvent* tempRPpointer;
         insideprocessing.GetLocalHistograms(&outsideprocessing);
 
         //helpful variables
         std::vector<StUPCTrack*> vector_Track_positive;
         std::vector<StUPCTrack*> vector_Track_negative;
-        int vector_Track_positive_dEdx;
-        int vector_Track_negative_dEdx;
-        int vector_bcg_track_1_dEdx;
-        int vector_bcg_track_2_dEdx;
         StUPCTrack* tempTrack;
         TLorentzVector positive_track;
         TLorentzVector negative_track;
-        TLorentzVector bcg_track_1;
-        TLorentzVector bcg_track_2;
         double mass, chi1, chi2;
+        map<string, double> chi2Map;
+        bool isdEdxOk, isTOFOk;
+        string tempPairName;
 
         //actual loop
         while(myReader.Next()){
             //in a TTree, it *would* be constant, in TChain however not necessarily
             tempUPCpointer = StUPCEventInstance.Get();
-            // tempRPpointer = StRPEventInstance.Get();
             // tempRPpointer = StRPEventInstance.Get();
 
             //cleaning the loop
@@ -172,19 +168,44 @@ int main(int argc, char** argv){
                 }
             }
 
+            //filling a chi2 map with keys for all the possibilities
+            for(auto const& imap:sigmaMap){
+                chi2Map.insert({ imap.first, 0. });
+            }
+
             //loop through identified particles
             for(long unsigned int i = 0; i<vector_Track_positive.size(); i++){
                 for(long unsigned int j = 0; j<vector_Track_negative.size(); j++){
-                    if(vector_Track_positive[i]->getNhitsDEdx()<15 or vector_Track_negative[j]->getNhitsDEdx()<15){
+                    isdEdxOk = (vector_Track_positive[i]->getNhitsDEdx()>=15)&&(vector_Track_negative[j]->getNhitsDEdx()>=15);
+                    isTOFOk = (vector_Track_positive[i]->getTofPathLength()>0)&&(vector_Track_positive[i]->getTofTime()>0)&&(vector_Track_negative[j]->getTofPathLength()>0)&&(vector_Track_negative[j]->getTofTime()>0);
+                    if(isdEdxOk&&isTOFOk){
+                        insideprocessing.Fill("pairInfo", "OK", 1.0);
+                    } else if(isdEdxOk&&!isTOFOk){
+                        insideprocessing.Fill("pairInfo", "TOF wrong", 1.0);
+                        continue;
+                    } else if(!isdEdxOk&&isTOFOk){
+                        insideprocessing.Fill("pairInfo", "dEdx wrong", 1.0);
+                        continue;
+                    } else if(!isdEdxOk&&!isTOFOk){
+                        insideprocessing.Fill("pairInfo", "Both wrong", 1.0);
                         continue;
                     }
+
                     //chi2
+                    for(size_t pos = 0; pos<nParticlesExtended; pos++){
+                        for(size_t neg = 0; neg<nParticlesExtended; neg++){
+                            tempPairName = particleNicks[pos]+"_"+particleNicks[neg];
+                            chi2Map[tempPairName] = getChi2(vector_Track_positive[i], vector_Track_negative[j], pos, neg, sigmaMap[tempPairName]);
+                        }
+                    }
+
+                    chi1 = chi2Map["pi_pi"];
+                    chi2 = chi2Map["K_pi"];
+                    insideprocessing.Fill("chi2pipivsKpi1", chi1, chi2);
+
                     vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Kaon]);
                     vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
                     mass = (positive_track+negative_track).M();
-                    chi1 = pow(vector_Track_positive[i]->getNSigmasTPCPion(), 2)+pow(vector_Track_negative[j]->getNSigmasTPCPion(), 2)+pow(DeltaT0(vector_Track_positive[i], vector_Track_negative[j], particleMass[Pion], particleMass[Pion])/0.131243, 2);
-                    chi2 = pow(vector_Track_positive[i]->getNSigmasTPCKaon(), 2)+pow(vector_Track_negative[j]->getNSigmasTPCPion(), 2)+pow(DeltaT0(vector_Track_positive[i], vector_Track_negative[j], particleMass[Kaon], particleMass[Pion])/0.125116, 2);
-                    insideprocessing.Fill("chi2pipivsKpi1", chi1, chi2);
                     if(chi2<9&&chi1>9){
                         insideprocessing.Fill("MKpiChi2Narrow", mass);
                         insideprocessing.Fill("MKpiChi2Wide", mass);
@@ -227,4 +248,11 @@ int main(int argc, char** argv){
     outputFileHist->Close();
 
     return 0;
+}
+
+double getChi2(StUPCTrack* positive, StUPCTrack* negative, int positiveId, int negativeId, double sigmaT){
+    double sigma1 = pow(positive->getNSigmasTPC(static_cast<StUPCTrack::Part>(positiveId)), 2);
+    double sigma2 = pow(negative->getNSigmasTPC(static_cast<StUPCTrack::Part>(negativeId)), 2);
+    double sigma3 = pow(DeltaT0(positive, negative, particleMassExtended[positiveId], particleMassExtended[negativeId])/sigmaT, 2);
+    return sigma1+sigma2+sigma3;
 }
