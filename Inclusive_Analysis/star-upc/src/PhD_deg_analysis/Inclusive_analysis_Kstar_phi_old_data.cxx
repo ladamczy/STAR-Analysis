@@ -228,8 +228,8 @@ int main(int argc, char** argv){
                         insideprocessing.Fill("MKpiChi2Wide", mass);
                     }
                     if(almostAllChi2(chi2Map, "pi_K", 9)){
-                        vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Kaon]);
-                        vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
+                        vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
+                        vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Kaon]);
                         mass = (positive_track+negative_track).M();
                         insideprocessing.Fill("MpiKChi2Wide", mass);
                     }
