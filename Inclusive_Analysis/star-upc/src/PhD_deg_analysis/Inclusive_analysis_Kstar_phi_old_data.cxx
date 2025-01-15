@@ -79,8 +79,8 @@ int main(int argc, char** argv){
         outsideprocessing.AddHistogram(TH1D(("MKpiChi2Test"+to_string(i)).c_str(), ";m_{K^{+}#pi^{-}} [GeV];Number of pairs", 150, 0.0, 1.5));
     }
     //mass histograms
-    outsideprocessing.AddHistogram(TH1D("MKpiChi2Narrow", ";m_{K^{+}#pi^{-}} [GeV];Number of pairs", 100, 0.5, 1.5));
     outsideprocessing.AddHistogram(TH1D("MKpiChi2Wide", ";m_{K^{+}#pi^{-}} [GeV];Number of pairs", 100, 0.5, 2.0));
+    outsideprocessing.AddHistogram(TH1D("MpiKChi2Wide", ";m_{K^{+}#pi^{-}} [GeV];Number of pairs", 100, 0.5, 2.0));
     outsideprocessing.AddHistogram(TH1D("MppiChi2Wide", ";m_{p^{+}#pi^{-}} [GeV];Number of pairs", 100, 1.0, 2.5));
     outsideprocessing.AddHistogram(TH1D("MpipChi2Wide", ";m_{#pi^{+}p^{-}} [GeV];Number of pairs", 100, 1.0, 2.5));
     outsideprocessing.AddHistogram(TH1D("MKKChi2Wide", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 100, 0.9, 2.4));
@@ -225,8 +225,13 @@ int main(int argc, char** argv){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Kaon]);
                         vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
                         mass = (positive_track+negative_track).M();
-                        insideprocessing.Fill("MKpiChi2Narrow", mass);
                         insideprocessing.Fill("MKpiChi2Wide", mass);
+                    }
+                    if(almostAllChi2(chi2Map, "pi_K", 9)){
+                        vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Kaon]);
+                        vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
+                        mass = (positive_track+negative_track).M();
+                        insideprocessing.Fill("MpiKChi2Wide", mass);
                     }
                     if(almostAllChi2(chi2Map, "p_pi", 9)){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Proton]);
