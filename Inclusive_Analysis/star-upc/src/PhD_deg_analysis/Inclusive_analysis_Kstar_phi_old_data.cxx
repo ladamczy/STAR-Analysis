@@ -290,7 +290,19 @@ double getChi2(StUPCTrack* positive, StUPCTrack* negative, int positiveId, int n
 bool almostAllChi2(map<string, double> chi2Map, string exception, double limit){
     //checks if almost all chi2 statistics stay above limit
     //except the exception, which needs to stay below
+    //and some that just don't make sense
     for(auto&& i:chi2Map){
+        if(i.first=="e_e"
+            or i.first=="K_e"
+            or i.first=="e_K"
+            or i.first=="pi_e"
+            or i.first=="e_pi"
+            or i.first=="p_e"
+            or i.first=="e_p"
+            or i.first=="p_K"
+            or i.first=="K_p"){
+            continue;
+        }
         if(i.first!=exception&&i.second<limit){
             return false;
         } else if(i.first==exception&&i.second>limit){
