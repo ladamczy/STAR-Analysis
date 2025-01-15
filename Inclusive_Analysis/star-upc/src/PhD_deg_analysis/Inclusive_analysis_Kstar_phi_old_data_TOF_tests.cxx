@@ -72,6 +72,7 @@ int main(int argc, char** argv){
             outsideprocessing.AddHistogram(TH1D(("deltaT0"+particleNicks[i]+particleNicks[j]+"Narrow").c_str(), ";t_{0}^{+}-t_{0}^{-} [ns]", 100, -5, 5));
         }
     }
+    outsideprocessing.AddHistogram(TH1D("deltaT0p0Narrow", ";t_{0}^{+}-t_{0}^{-} [ns]", 100, -5, 5));
     TH1D temp("choice", ";choice", 16, 0, 16);
     // int pairchoice = ppiPair*8+pipiPair*4+KpiPair*2+KKPair;
     temp.GetXaxis()->SetBinLabel(1, "Nothing");
@@ -203,6 +204,8 @@ int main(int argc, char** argv){
                             insideprocessing.Fill(("deltaT0"+particleNicks[pos]+particleNicks[neg]+"Narrow").c_str(), DeltaT0(vector_Track_positive[i], vector_Track_negative[j], particleMassExtended[pos], particleMassExtended[neg]));
                         }
                     }
+                    //test histogram for peaks close to 0
+                    insideprocessing.Fill("deltaT0p0Narrow", DeltaT0(vector_Track_positive[i], vector_Track_negative[j], particleMassExtended[ExtProton], 0.));
                     double t0cutoff = 0.6;
                     bool pipiPair = abs(DeltaT0(vector_Track_positive[i], vector_Track_negative[j], particleMass[Pion], particleMass[Pion]))<t0cutoff;
                     bool KpiPair = abs(DeltaT0(vector_Track_positive[i], vector_Track_negative[j], particleMass[Pion], particleMass[Kaon]))<t0cutoff or abs(DeltaT0(vector_Track_positive[i], vector_Track_negative[j], particleMass[Kaon], particleMass[Pion]))<t0cutoff;
@@ -292,7 +295,7 @@ int main(int argc, char** argv){
             sigmaValues.push_back(tempsigma);
         }
     }
-
+    drawFit(outsideprocessing.GetPointerAfterMerge1D("deltaT0p0Narrow").get(), outfileName, -1.0, 1.0, nullptr, "#Delta t_{0}: p\"#gamma\"");
     //actully making the output file
     cout<<"Created output file "<<outfileName<<endl;
     TFile* outputFileHist = TFile::Open(outfileName.c_str(), "recreate");
