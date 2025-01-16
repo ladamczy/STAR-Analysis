@@ -3,6 +3,7 @@ Inclusive_Analysis/**/*.pdf
 Inclusive_Analysis/**/*.root
 Inclusive_Analysis/**/*.png
 Inclusive_Analysis/**/*.fzd
+Inclusive_Analysis/
 Inclusive_Analysis/star-upc/AnaOutput_Inclusive_analysis_Kstar_phi_old_data_TOF_tests_sigmaValues.txt
 test/build
 test/run

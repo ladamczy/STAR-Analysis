@@ -15,7 +15,7 @@
 #include <sys/stat.h>
 #include <iterator>
 #include <ostream>
-#include <iomanip>                      
+#include <iomanip>
 #include <stdexcept>
 #include <limits>
 #include "TROOT.h"
@@ -41,8 +41,6 @@
 #include <TColor.h> 
 #include <TLine.h> 
 #include <TExec.h> 
-#include <TParticle.h>
-#include <TParticlePDG.h>
 #include <TFitResultPtr.h> 
 #include <TFitResult.h> 
 #include <TLatex.h> 
@@ -61,5 +59,4 @@
 #include "StUPCTofHit.h"
 #include "MatchFillPosition.h"
 #include "ReadFillPositionFile.h"
-//#include "ReadPicoLambdaK0.h"
 # endif // INCLUDES_H
