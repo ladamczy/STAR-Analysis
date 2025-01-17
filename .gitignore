@@ -14,3 +14,5 @@ plots/dime_K0K0.root
 plots/dime_LLBar.root
 .vscode
 .DS_Store
+*.gch
+
