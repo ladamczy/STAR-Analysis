@@ -85,6 +85,7 @@ int main(int argc, char** argv){
     outsideprocessing.AddHistogram(TH1D("MpipChi2Wide", ";m_{#pi^{+}p^{-}} [GeV];Number of pairs", 100, 1.0, 2.5));
     outsideprocessing.AddHistogram(TH1D("MKKChi2Wide", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 100, 0.9, 2.4));
     outsideprocessing.AddHistogram(TH1D("MpipiChi2Wide", ";m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 120, 0.2, 1.4));
+    outsideprocessing.AddHistogram(TH1D("MppChi2Wide", ";m_{p^{+}p^{-}} [GeV];Number of pairs", 100, 1.5, 3.5));
 
     //processing
     //defining TreeProcessor
@@ -256,6 +257,12 @@ int main(int argc, char** argv){
                         vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
                         mass = (positive_track+negative_track).M();
                         insideprocessing.Fill("MpipiChi2Wide", mass);
+                    }
+                    if(almostAllChi2(chi2Map, "p_p", 9)){
+                        vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Proton]);
+                        vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Proton]);
+                        mass = (positive_track+negative_track).M();
+                        insideprocessing.Fill("MppChi2Wide", mass);
                     }
                 }
             }
