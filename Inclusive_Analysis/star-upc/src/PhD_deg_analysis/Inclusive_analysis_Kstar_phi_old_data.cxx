@@ -37,6 +37,7 @@ string particleNicks[nParticlesExtended] = { "e", "pi", "K", "p" };
 
 double getChi2(StUPCTrack* positive, StUPCTrack* negative, int positiveId, int negativeId, double sigmaT);
 bool almostAllChi2(map<string, double> chi2Map, string exception, double limit);
+double getMass(StUPCTrack* assumed, StUPCTrack* calculated, double massAssumed);
 
 int main(int argc, char** argv){
 
@@ -80,12 +81,18 @@ int main(int argc, char** argv){
     }
     //mass histograms
     outsideprocessing.AddHistogram(TH1D("MKpiChi2Wide", ";m_{K^{+}#pi^{-}} [GeV];Number of pairs", 100, 0.5, 2.0));
-    outsideprocessing.AddHistogram(TH1D("MpiKChi2Wide", ";m_{K^{+}#pi^{-}} [GeV];Number of pairs", 100, 0.5, 2.0));
+    outsideprocessing.AddHistogram(TH1D("MpiKChi2Wide", ";m_{#pi^{+}K^{-}} [GeV];Number of pairs", 100, 0.5, 2.0));
     outsideprocessing.AddHistogram(TH1D("MppiChi2Wide", ";m_{p^{+}#pi^{-}} [GeV];Number of pairs", 100, 1.0, 2.5));
     outsideprocessing.AddHistogram(TH1D("MpipChi2Wide", ";m_{#pi^{+}p^{-}} [GeV];Number of pairs", 100, 1.0, 2.5));
     outsideprocessing.AddHistogram(TH1D("MKKChi2Wide", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 100, 0.9, 2.4));
     outsideprocessing.AddHistogram(TH1D("MpipiChi2Wide", ";m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 120, 0.2, 1.4));
     outsideprocessing.AddHistogram(TH1D("MppChi2Wide", ";m_{p^{+}p^{-}} [GeV];Number of pairs", 100, 1.5, 3.5));
+    //test of mass measuring
+    outsideprocessing.AddHistogram(TH1D("MpiplusAssumedKminusExpected", ";m [GeV];Number of particles", 100, 0.0, 1.0));
+    outsideprocessing.AddHistogram(TH1D("MpiKChi2AndMassWide", ";m_{#pi^{+}K^{-}} [GeV];Number of pairs", 100, 0.5, 2.0));
+    outsideprocessing.AddHistogram(TH1D("MpiplusAssumedpiminusExpected", ";m [GeV];Number of particles", 100, 0.0, 1.0));
+    outsideprocessing.AddHistogram(TH1D("MpipiChi2AndMassWide", ";m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 120, 0.2, 1.4));
+
 
     //processing
     //defining TreeProcessor
@@ -114,6 +121,7 @@ int main(int argc, char** argv){
         map<string, double> chi2Map;
         bool isdEdxOk, isTOFOk;
         string tempPairName;
+        double testmass;
 
         //actual loop
         while(myReader.Next()){
@@ -233,6 +241,11 @@ int main(int argc, char** argv){
                         vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Kaon]);
                         mass = (positive_track+negative_track).M();
                         insideprocessing.Fill("MpiKChi2Wide", mass);
+                        testmass = getMass(vector_Track_positive[i], vector_Track_negative[j], particleMass[Pion]);
+                        insideprocessing.Fill("MpiplusAssumedKminusExpected", testmass);
+                        if(testmass<0.8){
+                            insideprocessing.Fill("MpiKChi2AndMassWide", mass);
+                        }
                     }
                     if(almostAllChi2(chi2Map, "p_pi", 9)){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Proton]);
@@ -257,6 +270,11 @@ int main(int argc, char** argv){
                         vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
                         mass = (positive_track+negative_track).M();
                         insideprocessing.Fill("MpipiChi2Wide", mass);
+                        testmass = getMass(vector_Track_positive[i], vector_Track_negative[j], particleMass[Pion]);
+                        insideprocessing.Fill("MpiplusAssumedpiminusExpected", testmass);
+                        if(testmass<0.8){
+                            insideprocessing.Fill("MpipiChi2AndMassWide", mass);
+                        }
                     }
                     if(almostAllChi2(chi2Map, "p_p", 9)){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Proton]);
@@ -322,4 +340,11 @@ bool almostAllChi2(map<string, double> chi2Map, string exception, double limit){
         }
     }
     return true;
+}
+
+double getMass(StUPCTrack* assumed, StUPCTrack* calculated, double massAssumed){
+    double intermediateSquareRoot = assumed->getTofPathLength()/calculated->getTofPathLength()-(assumed->getTofTime()-calculated->getTofTime())*100*0.299792458/calculated->getTofPathLength();
+    TVector3 momentum;
+    calculated->getMomentum(momentum);
+    return momentum.Mag()*sqrt(intermediateSquareRoot*intermediateSquareRoot-1);
 }
