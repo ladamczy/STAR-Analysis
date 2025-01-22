@@ -511,6 +511,9 @@ int main(int argc, char *argv[]){
     electronMothers.LabelsDeflate();
     electronMothers.SetMinimum(0);
     electronMothers.LabelsOption("a", "X");
+    MpipiParticles.LabelsDeflate();
+    MKKParticles.LabelsDeflate();
+    MKpiParticles.LabelsDeflate();
 
     //writing to file
     outFile->cd();
@@ -518,7 +521,6 @@ int main(int argc, char *argv[]){
     outFile->Close();
 
     //pairs assumed as pions
-    MpipiParticles.LabelsDeflate();
     THStack MpipiStack("MpipiStack", "#pi#pi pairs");
     MpipiNonresonant.SetName("Nonresonant or mismatched");
     MpipiNonresonant.SetFillColor(1);
@@ -547,7 +549,6 @@ int main(int argc, char *argv[]){
     }
 
     //pairs assumed as kaons
-    MKKParticles.LabelsDeflate();
     THStack MKKStack("MKKStack", "KK pairs");
     MKKNonresonant.SetName("Nonresonant or mismatched");
     MKKNonresonant.SetFillColor(1);
@@ -576,7 +577,6 @@ int main(int argc, char *argv[]){
     }
 
     //pairs assumed as kaon-pion pairs
-    MKpiParticles.LabelsDeflate();
     THStack MKpiStack("MKpiStack", "K#pi pairs");
     MKpiNonresonant.SetName("Nonresonant or mismatched");
     MKpiNonresonant.SetFillColor(1);
