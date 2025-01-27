@@ -29,11 +29,11 @@ int main(int argc, char const* argv[]){
     }
 
     //drawing them
-    drawStack(MpipiParticles, nullptr, folderWithDiagonal, "MpipiNoBcg", "Assuming  #pi#pi masses, no background", 0.2, 1.0);
+    drawStack(MpipiParticles, nullptr, folderWithDiagonal, "MpipiNoBcg", "Assuming  #pi#pi masses, only resonant production shown", 0.2, 1.0);
     drawStack(MpipiParticles, MpipiNonresonant, folderWithDiagonal, "Mpipi", "Assuming  #pi#pi masses", 0.2, 1.0);
-    drawStack(MKpiParticles, nullptr, folderWithDiagonal, "MKpiNoBcg", "Assuming  K#pi masses, no background", 0.5, 1.3);
+    drawStack(MKpiParticles, nullptr, folderWithDiagonal, "MKpiNoBcg", "Assuming  K#pi masses, only resonant production shown", 0.5, 1.3);
     drawStack(MKpiParticles, MKpiNonresonant, folderWithDiagonal, "MKpi", "Assuming  K#pi masses", 0.5, 1.3);
-    drawStack(MKKParticles, nullptr, folderWithDiagonal, "MKKNoBcg", "Assuming  KK masses, no background", 0.9, 1.7);
+    drawStack(MKKParticles, nullptr, folderWithDiagonal, "MKKNoBcg", "Assuming  KK masses, only resonant production shown", 0.9, 1.7);
     drawStack(MKKParticles, MKKNonresonant, folderWithDiagonal, "MKK", "Assuming  KK masses", 0.9, 1.7);
 
     return 0;
