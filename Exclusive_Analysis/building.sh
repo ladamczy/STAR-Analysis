@@ -23,7 +23,7 @@ ROOT_LIBS=$(root-config --libs)
 ROOT_EG_LIB="-lEG"  # Add EG library explicitly
 
 # Set the library path
-export LD_LIBRARY_PATH=/home/sbhosale/Work/STAR-Analysis/star-upc-new/build:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=/home/sbhosale/Work/STAR-Analysis/star-upc-new/build:$ROOTSYS/lib
 
 # Compile Preselection
 echo "Compiling Preselection..."
