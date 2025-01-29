@@ -76,9 +76,6 @@ int main(int argc, char** argv){
     sigmaFile.close();
     //chi2 tests
     outsideprocessing.AddHistogram(TH2D("chi2pipivsKpi1", ";#pi^{+}#pi^{-};K^{+}#pi^{-}", 100, 0, 100, 100, 0, 100));
-    for(size_t i = 3; i<31; i += 3){
-        outsideprocessing.AddHistogram(TH1D(("MKpiChi2Test"+to_string(i)).c_str(), ";m_{K^{+}#pi^{-}} [GeV];Number of pairs", 150, 0.0, 1.5));
-    }
     //mass histograms
     outsideprocessing.AddHistogram(TH1D("MKpiChi2Wide", ";m_{K^{+}#pi^{-}} [GeV];Number of pairs", 100, 0.5, 2.0));
     outsideprocessing.AddHistogram(TH1D("MpiKChi2Wide", ";m_{#pi^{+}K^{-}} [GeV];Number of pairs", 100, 0.5, 2.0));
@@ -225,16 +222,6 @@ int main(int argc, char** argv){
                     chi2pipi = chi2Map["pi_pi"];
                     chi2Kpi = chi2Map["K_pi"];
                     insideprocessing.Fill("chi2pipivsKpi1", chi2pipi, chi2Kpi);
-
-                    //example test for chi2 on Kpi pair
-                    for(size_t chitest = 3; chitest<31; chitest += 3){
-                        if(chi2Kpi<chitest&&chi2pipi>chitest){
-                            vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Kaon]);
-                            vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
-                            mass = (positive_track+negative_track).M();
-                            insideprocessing.Fill(("MKpiChi2Test"+to_string(chitest)).c_str(), mass);
-                        }
-                    }
 
                     //mass tests on different pairs
                     if(almostAllChi2(chi2Map, "K_pi", 9)){
