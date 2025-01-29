@@ -33,20 +33,17 @@ export LD_LIBRARY_PATH=/home/sbhosale/Work/STAR-Analysis/star-upc-new/build:$LD_
 echo "Compiling Exclusive_try2..."
     g++ Exclusive_try2.cxx \
         ExclusiveCode.cxx \
-        -o build/Exclusive_try2 \
         -I/usr/include/root \
         -I./include \
         -I/home/sbhosale/Work/STAR-Analysis/star-upc-new/include \
         -pthread -std=c++17 -m64 \
-        $(root-config --cflags) \
         $(root-config --libs) -lEG \
         -L/home/sbhosale/Work/STAR-Analysis/star-upc-new/build -lstar-upc
 
-
+        
 if [ $? -eq 0 ]; then
-    echo "Build complete. Executable is in build/Exclusive_try2"
+    echo "Build complete. Executable is in build/Preselection"
 else
     echo "Build failed!"
     exit 1
 fi
-
