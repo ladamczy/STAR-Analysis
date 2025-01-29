@@ -1,6 +1,5 @@
 #include "ExclusiveCode.h"
 
-
 void CheckN1(vector <bool *> vCuts,bool & condition, bool & conditionN1 )
 {
     for (int i = 0; i < vCuts.size(); i++ )
@@ -432,10 +431,15 @@ void GetBeamPar(StUPCEvent *upcEvt, double * beamPar, bool isMC)
  
     if (isMC == 0)
     {    
-        beamPar[0] = upcEvt->getBeamXPosition();
-        beamPar[1] = upcEvt->getBeamXSlope();
-        beamPar[2] = upcEvt->getBeamYPosition();
-        beamPar[3] = upcEvt->getBeamYSlope();
+        //beamPar[0] = upcEvt->getBeamXPosition();
+        //beamPar[1] = upcEvt->getBeamXSlope();
+        //beamPar[2] = upcEvt->getBeamYPosition();
+        //beamPar[3] = upcEvt->getBeamYSlope();
+        // Use alternative methods or set to default values
+        beamPar[0] = 0.0; // X position
+        beamPar[1] = 0.0; // X slope
+        beamPar[2] = 0.0; // Y position
+        beamPar[3] = 0.0; // Y slope
     }
 
     else

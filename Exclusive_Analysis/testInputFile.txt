@@ -1,6 +1,0 @@
-/data2/star_data_5/18142001.root
-/data2/star_data_5/18142002.root
-/data2/star_data_5/18142003.root
-/data2/star_data_5/18142007.root
-/data2/star_data_5/18142008.root
-/data2/star_data_5/18142009.root

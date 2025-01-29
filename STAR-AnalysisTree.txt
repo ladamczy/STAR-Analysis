@@ -1,0 +1,1721 @@
+.
+├── Data_Preparation
+│   ├── CompareTrees.C
+│   ├── FindFillPosition.py
+│   ├── IntegrateLuminosity.py
+│   ├── MatchFillPosition.cxx
+│   ├── MatchFillPosition.h
+│   ├── MergeFriends.C
+│   ├── ReadFillPositionFile.cxx
+│   ├── ReadFillPositionFile.h
+│   └── README
+├── Efficiency.cxx
+├── Exclusive_Analysis
+│   ├── analysis_results.root
+│   ├── build
+│   │   └── Exclusive_try
+│   ├── building_Exclusive_try.sh
+│   ├── building_MonteCarloEfficiency.sh
+│   ├── building.sh
+│   ├── code
+│   │   └── TofEfficiency.cxx
+│   ├── code.zip
+│   ├── Efficiency
+│   ├── ExclusiveAnalysis.cxx
+│   ├── ExclusiveAnalysisStUPCV0.cxx
+│   ├── ExclusiveAnalysisStUPCV0_Mass.cxx
+│   ├── ExclusiveAnalysisStUPCV0_v2.cxx
+│   ├── ExclusiveCode.cxx
+│   ├── Exclusive_llbar.cxx
+│   ├── Exclusive_try2.cxx
+│   ├── Exclusive_try.cxx
+│   ├── include
+│   │   ├── ExclusiveCode.h
+│   │   ├── ExclusiveCode.h.gch
+│   │   ├── Includes.h
+│   │   ├── Includes.h.gch
+│   │   ├── MatchFillPosition.h
+│   │   ├── MatchFillPosition.h.gch
+│   │   ├── ReadFillPositionFile.h
+│   │   ├── ReadFillPositionFile.h.gch
+│   │   ├── ReadPicoLambdaK0.h
+│   │   └── ReadPicoLambdaK0.h.gch
+│   ├── list_of_files5_top20.txt
+│   ├── list_of_files5.txt
+│   ├── MonteCarloEfficiency.cxx
+│   ├── New.cxx
+│   ├── output.root
+│   ├── plot.cxx
+│   ├── preselected_10.txt
+│   ├── Preselection.cxx
+│   ├── README
+│   ├── scripts
+│   │   ├── Preselection.cxx
+│   │   └── TofEfficiency.cxx
+│   ├── scripts.zip
+│   ├── share -> /home/sbhosale/Work/STAR-Analysis/share
+│   ├── src
+│   │   ├── MatchFillPosition.cxx
+│   │   ├── ReadFillPositionFile.cxx
+│   │   └── ReadPicoLambdaK0.cxx
+│   ├── test2
+│   ├── testInputFile.txt
+│   ├── TofEfficiency.cxx
+│   └── TruthLevelAnalysis.cxx
+├── Inclusive_Analysis
+│   ├── other_useful_things
+│   │   ├── Hist2D_drawing_script.cxx
+│   │   └── TEff_drawing_script.cxx
+│   ├── probably_unimportant_things
+│   │   ├── build-maker.sh
+│   │   ├── kompil.sh
+│   │   ├── merge
+│   │   │   ├── MergeFiles.C
+│   │   │   └── RunMerge.py
+│   │   ├── RunFilterMaker.C
+│   │   └── TArgumentParser.h
+│   ├── pythia
+│   │   ├── building.sh
+│   │   ├── CMakeLists.txt
+│   │   ├── FindPythia8.cmake
+│   │   ├── include
+│   │   │   ├── UsefulThingsPythia.h
+│   │   │   └── XiHistogramsClass.h
+│   │   ├── legacy
+│   │   │   ├── main999.cc
+│   │   │   ├── main99.cc
+│   │   │   └── Makefile
+│   │   ├── ROOTtoPDF.sh -> ../../share/ROOT_to_PDF_conversion/ROOTtoPDF.sh
+│   │   ├── src
+│   │   │   ├── Central_diffraction_K0andLambda.cxx
+│   │   │   ├── Central_diffraction_K0andLambda_diffractive_BBCLveto.cxx
+│   │   │   ├── Central_diffraction_K0andLambda_diffractive_noBBCLveto.cxx
+│   │   │   ├── Central_diffraction_presentation.cxx
+│   │   │   ├── Central_diffraction_presentation_Kstar_phi.cxx
+│   │   │   ├── Central_diffraction_universal.cxx
+│   │   │   ├── Central_diffraction_v1.cxx
+│   │   │   └── Central_diffraction_v2.cxx
+│   │   └── STAR_scripts
+│   │       ├── centralDiffractive.C
+│   │       ├── doubleDiffractive.C
+│   │       ├── elastic.C
+│   │       ├── nonDiffractive.C
+│   │       ├── paw.metafile
+│   │       ├── reconstruct_all.sh
+│   │       ├── run_all.sh
+│   │       └── singleDiffractive.C
+│   ├── README.md
+│   └── star-upc
+│       ├── AnaOutput_Inclusive_analysis_Kstar_phi_old_data.root
+│       ├── build
+│       │   ├── bin
+│       │   │   ├── Algorithm_check
+│       │   │   ├── Basic_inclusive_analysis
+│       │   │   ├── DCA_Sweep
+│       │   │   ├── Differential_crosssection
+│       │   │   ├── Differential_crosssection_new_data_only
+│       │   │   ├── Differential_crosssection_phi
+│       │   │   ├── Filter-CPT
+│       │   │   ├── Filter_everything
+│       │   │   ├── Filter_everything_but_with_new_histogram_handling_test
+│       │   │   ├── Filter-everything-except-fiducial-and-track-quality
+│       │   │   ├── Filter-fiducial-and-elastic-deletion
+│       │   │   ├── Filter_fiducial_and_elastic_deletion_lambda
+│       │   │   ├── Filter-more-cuts
+│       │   │   ├── Filter-one-proton
+│       │   │   ├── Filter-RP-cuts
+│       │   │   ├── Filter-RP-cuts-alternative
+│       │   │   ├── Filter-RP-cuts-exact-alternative
+│       │   │   ├── Filter-RP-cuts-minus-fiducial
+│       │   │   ├── Final_fit_comparison
+│       │   │   ├── Final_fit_comparison_new_data_only
+│       │   │   ├── Fitting_Gauss_2D_1D_Xi
+│       │   │   ├── Fitting_Gauss_2D_data
+│       │   │   ├── Fitting_Gauss_2D_zerobias
+│       │   │   ├── Fixed_DCA
+│       │   │   ├── Fixed_DCA_with_angle_check
+│       │   │   ├── HistogramNMinusOne_making
+│       │   │   ├── Histograms
+│       │   │   ├── Histograms_after_RP_cuts
+│       │   │   ├── Histograms_NMinusOne
+│       │   │   ├── Inclusive_analysis_Kstar_phi_old_data
+│       │   │   ├── Inclusive_analysis_Kstar_phi_old_data_no_TOF
+│       │   │   ├── Inclusive_analysis_Kstar_phi_old_data_paper_cuts
+│       │   │   ├── Inclusive_analysis_Kstar_phi_old_data_TOF_tests
+│       │   │   ├── Inclusive_analysis_with_STUPCV0
+│       │   │   ├── Inclusive_analysis_with_STUPCV0_with_extended_range_noAfterburner
+│       │   │   ├── Inclusive_zerobias_background_analysis_with_STUPCV0
+│       │   │   ├── New_analysis
+│       │   │   ├── New_analysis_basic_filter
+│       │   │   ├── Old_new_data_check
+│       │   │   ├── Overlay_MC_over_data
+│       │   │   ├── Overlay_MC_over_data_phi
+│       │   │   ├── Overlay_signal_over_bcg_Kstar_phi
+│       │   │   ├── Partial_histograms
+│       │   │   ├── Preselection1_2p_WE_3of4planes_fiducial_XiBBCLveto_nonelastic_2plusTOF_pteta_nhits_charge
+│       │   │   ├── Preselection1_2p_WE_3of4planes_fiducial_XinoBBCLveto_nonelastic_2plusTOF_pteta_nhits_charge
+│       │   │   ├── Preselection1_CPT_2p_WE_3of4planes_fiducial
+│       │   │   ├── Preselection1_NOAFTERBURNER_2p_WE_3of4planes_fiducial_XiBBCLveto_nonelastic_2plusTOF_pteta_nhits_charge
+│       │   │   ├── Preselection1_NOAFTERBURNER_2p_WE_3of4planes_fiducial_XinoBBCLveto_nonelastic_2plusTOF_pteta_nhits_charge
+│       │   │   ├── Preselection2_1vertex_4TOF_charge_kinem_Nhits_clusters
+│       │   │   ├── Preselection2_4TOF_charge_kinem_Nhits_clusters
+│       │   │   ├── Preselection2_charge_kinem_Nhits_clusters
+│       │   │   ├── Preselection_CPT_partial_histogram_test
+│       │   │   ├── Preselectioninclusive1_trigger_2p_WE_3of4planes_fiducial_noPV_noBBCL
+│       │   │   ├── Preselectioninclusive1_triggerONLY570704
+│       │   │   ├── Preselection_NOAFTERBURNER_olddata_from_beginning
+│       │   │   ├── Preselection_olddata_from_beginning
+│       │   │   ├── Preselection_olddata_from_beginning_only_RP_cuts
+│       │   │   ├── Preselection_olddata_from_beginning_only_triggers_and_RP_planes
+│       │   │   ├── Preselection_trigger_sorting
+│       │   │   ├── Presentation_pdf_creator
+│       │   │   ├── Quick_BBCL_check
+│       │   │   ├── STAR_Preselection
+│       │   │   ├── Test_of_partial_histograms
+│       │   │   ├── Trigger_coincidence_check
+│       │   │   └── True_detector_comparison_K0
+│       │   ├── CMakeCache.txt
+│       │   ├── CMakeFiles
+│       │   │   ├── 3.26.5
+│       │   │   │   ├── CMakeCCompiler.cmake
+│       │   │   │   ├── CMakeCXXCompiler.cmake
+│       │   │   │   ├── CMakeDetermineCompilerABI_C.bin
+│       │   │   │   ├── CMakeDetermineCompilerABI_CXX.bin
+│       │   │   │   ├── CMakeSystem.cmake
+│       │   │   │   ├── CompilerIdC
+│       │   │   │   │   ├── a.out
+│       │   │   │   │   ├── CMakeCCompilerId.c
+│       │   │   │   │   └── tmp
+│       │   │   │   └── CompilerIdCXX
+│       │   │   │       ├── a.out
+│       │   │   │       ├── CMakeCXXCompilerId.cpp
+│       │   │   │       └── tmp
+│       │   │   ├── Algorithm_check.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── holiday_analysis
+│       │   │   │           ├── Algorithm_check.cxx.o
+│       │   │   │           └── Algorithm_check.cxx.o.d
+│       │   │   ├── Basic_inclusive_analysis.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── master_deg_analysis
+│       │   │   │           ├── Basic_inclusive_analysis.cxx.o
+│       │   │   │           └── Basic_inclusive_analysis.cxx.o.d
+│       │   │   ├── cmake.check_cache
+│       │   │   ├── CMakeConfigureLog.yaml
+│       │   │   ├── CMakeDirectoryInformation.cmake
+│       │   │   ├── CMakeRuleHashes.txt
+│       │   │   ├── DCA_Sweep.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── holiday_analysis
+│       │   │   │           ├── DCA_Sweep.cxx.o
+│       │   │   │           └── DCA_Sweep.cxx.o.d
+│       │   │   ├── Differential_crosssection.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── master_deg_analysis
+│       │   │   │           └── Wide_K0_search
+│       │   │   │               ├── Differential_crosssection.cxx.o
+│       │   │   │               └── Differential_crosssection.cxx.o.d
+│       │   │   ├── Differential_crosssection_new_data_only.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── master_deg_analysis
+│       │   │   │           └── Wide_K0_search
+│       │   │   │               ├── Differential_crosssection_new_data_only.cxx.o
+│       │   │   │               └── Differential_crosssection_new_data_only.cxx.o.d
+│       │   │   ├── Differential_crosssection_phi.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── PhD_deg_analysis
+│       │   │   │           ├── Differential_crosssection_phi.cxx.o
+│       │   │   │           └── Differential_crosssection_phi.cxx.o.d
+│       │   │   ├── Filter-CPT.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── eng_deg_analysis
+│       │   │   │           ├── Filter-CPT.cxx.o
+│       │   │   │           └── Filter-CPT.cxx.o.d
+│       │   │   ├── Filter_everything_but_with_new_histogram_handling_test.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── master_deg_analysis
+│       │   │   │           ├── Filter_everything_but_with_new_histogram_handling_test.cxx.o
+│       │   │   │           └── Filter_everything_but_with_new_histogram_handling_test.cxx.o.d
+│       │   │   ├── Filter_everything.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── holiday_analysis
+│       │   │   │           ├── Filter_everything.cxx.o
+│       │   │   │           └── Filter_everything.cxx.o.d
+│       │   │   ├── Filter-everything-except-fiducial-and-track-quality.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── eng_deg_analysis
+│       │   │   │           ├── Filter-everything-except-fiducial-and-track-quality.cxx.o
+│       │   │   │           └── Filter-everything-except-fiducial-and-track-quality.cxx.o.d
+│       │   │   ├── Filter-fiducial-and-elastic-deletion.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── eng_deg_analysis
+│       │   │   │           ├── Filter-fiducial-and-elastic-deletion.cxx.o
+│       │   │   │           └── Filter-fiducial-and-elastic-deletion.cxx.o.d
+│       │   │   ├── Filter_fiducial_and_elastic_deletion_lambda.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── eng_deg_analysis
+│       │   │   │           ├── Filter_fiducial_and_elastic_deletion_lambda.cxx.o
+│       │   │   │           └── Filter_fiducial_and_elastic_deletion_lambda.cxx.o.d
+│       │   │   ├── Filter-more-cuts.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── eng_deg_analysis
+│       │   │   │           ├── Filter-more-cuts.cxx.o
+│       │   │   │           └── Filter-more-cuts.cxx.o.d
+│       │   │   ├── Filter-one-proton.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── eng_deg_analysis
+│       │   │   │           ├── Filter-one-proton.cxx.o
+│       │   │   │           └── Filter-one-proton.cxx.o.d
+│       │   │   ├── Filter-RP-cuts-alternative.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── eng_deg_analysis
+│       │   │   │           ├── Filter-RP-cuts-alternative.cxx.o
+│       │   │   │           └── Filter-RP-cuts-alternative.cxx.o.d
+│       │   │   ├── Filter-RP-cuts.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── eng_deg_analysis
+│       │   │   │           ├── Filter-RP-cuts.cxx.o
+│       │   │   │           └── Filter-RP-cuts.cxx.o.d
+│       │   │   ├── Filter-RP-cuts-exact-alternative.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── eng_deg_analysis
+│       │   │   │           ├── Filter-RP-cuts-exact-alternative.cxx.o
+│       │   │   │           └── Filter-RP-cuts-exact-alternative.cxx.o.d
+│       │   │   ├── Filter-RP-cuts-minus-fiducial.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── eng_deg_analysis
+│       │   │   │           ├── Filter-RP-cuts-minus-fiducial.cxx.o
+│       │   │   │           └── Filter-RP-cuts-minus-fiducial.cxx.o.d
+│       │   │   ├── Final_fit_comparison.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── master_deg_analysis
+│       │   │   │           └── Wide_K0_search
+│       │   │   │               ├── Final_fit_comparison.cxx.o
+│       │   │   │               └── Final_fit_comparison.cxx.o.d
+│       │   │   ├── Final_fit_comparison_new_data_only.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── master_deg_analysis
+│       │   │   │           └── Wide_K0_search
+│       │   │   │               ├── Final_fit_comparison_new_data_only.cxx.o
+│       │   │   │               └── Final_fit_comparison_new_data_only.cxx.o.d
+│       │   │   ├── Fitting_Gauss_2D_1D_Xi.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── master_deg_analysis
+│       │   │   │           ├── Fitting_Gauss_2D_1D_Xi.cxx.o
+│       │   │   │           └── Fitting_Gauss_2D_1D_Xi.cxx.o.d
+│       │   │   ├── Fitting_Gauss_2D_data.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── master_deg_analysis
+│       │   │   │           ├── Fitting_Gauss_2D_data.cxx.o
+│       │   │   │           └── Fitting_Gauss_2D_data.cxx.o.d
+│       │   │   ├── Fitting_Gauss_2D_zerobias.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── master_deg_analysis
+│       │   │   │           ├── Fitting_Gauss_2D_zerobias.cxx.o
+│       │   │   │           └── Fitting_Gauss_2D_zerobias.cxx.o.d
+│       │   │   ├── Fixed_DCA.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── holiday_analysis
+│       │   │   │           ├── Fixed_DCA.cxx.o
+│       │   │   │           └── Fixed_DCA.cxx.o.d
+│       │   │   ├── Fixed_DCA_with_angle_check.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── holiday_analysis
+│       │   │   │           ├── Fixed_DCA_with_angle_check.cxx.o
+│       │   │   │           └── Fixed_DCA_with_angle_check.cxx.o.d
+│       │   │   ├── HistogramNMinusOne_making.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── master_deg_analysis
+│       │   │   │           └── Wide_K0_search
+│       │   │   │               ├── HistogramNMinusOne_making.cxx.o
+│       │   │   │               └── HistogramNMinusOne_making.cxx.o.d
+│       │   │   ├── Histograms_after_RP_cuts.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── PhD_deg_analysis
+│       │   │   │           ├── Histograms_after_RP_cuts.cxx.o
+│       │   │   │           └── Histograms_after_RP_cuts.cxx.o.d
+│       │   │   ├── Histograms.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── eng_deg_analysis
+│       │   │   │           ├── Histograms.cxx.o
+│       │   │   │           └── Histograms.cxx.o.d
+│       │   │   ├── Histograms_NMinusOne.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── master_deg_analysis
+│       │   │   │           └── Wide_K0_search
+│       │   │   │               ├── Histograms_NMinusOne.cxx.o
+│       │   │   │               └── Histograms_NMinusOne.cxx.o.d
+│       │   │   ├── Inclusive_analysis_Kstar_phi_old_data.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── PhD_deg_analysis
+│       │   │   │           ├── Inclusive_analysis_Kstar_phi_old_data.cxx.o
+│       │   │   │           └── Inclusive_analysis_Kstar_phi_old_data.cxx.o.d
+│       │   │   ├── Inclusive_analysis_Kstar_phi_old_data_no_TOF.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── PhD_deg_analysis
+│       │   │   │           ├── Inclusive_analysis_Kstar_phi_old_data_no_TOF.cxx.o
+│       │   │   │           └── Inclusive_analysis_Kstar_phi_old_data_no_TOF.cxx.o.d
+│       │   │   ├── Inclusive_analysis_Kstar_phi_old_data_paper_cuts.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── PhD_deg_analysis
+│       │   │   │           ├── Inclusive_analysis_Kstar_phi_old_data_paper_cuts.cxx.o
+│       │   │   │           └── Inclusive_analysis_Kstar_phi_old_data_paper_cuts.cxx.o.d
+│       │   │   ├── Inclusive_analysis_Kstar_phi_old_data_TOF_tests.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── PhD_deg_analysis
+│       │   │   │           ├── Inclusive_analysis_Kstar_phi_old_data_TOF_tests.cxx.o
+│       │   │   │           └── Inclusive_analysis_Kstar_phi_old_data_TOF_tests.cxx.o.d
+│       │   │   ├── Inclusive_analysis_with_STUPCV0.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── master_deg_analysis
+│       │   │   │           ├── Inclusive_analysis_with_STUPCV0.cxx.o
+│       │   │   │           └── Inclusive_analysis_with_STUPCV0.cxx.o.d
+│       │   │   ├── Inclusive_analysis_with_STUPCV0_with_extended_range_noAfterburner.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── master_deg_analysis
+│       │   │   │           └── Wide_K0_search
+│       │   │   │               ├── Inclusive_analysis_with_STUPCV0_with_extended_range_noAfterburner.cxx.o
+│       │   │   │               └── Inclusive_analysis_with_STUPCV0_with_extended_range_noAfterburner.cxx.o.d
+│       │   │   ├── Inclusive_zerobias_background_analysis_with_STUPCV0.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── master_deg_analysis
+│       │   │   │           ├── Inclusive_zerobias_background_analysis_with_STUPCV0.cxx.o
+│       │   │   │           └── Inclusive_zerobias_background_analysis_with_STUPCV0.cxx.o.d
+│       │   │   ├── Makefile2
+│       │   │   ├── Makefile.cmake
+│       │   │   ├── New_analysis_basic_filter.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── holiday_analysis
+│       │   │   │           ├── New_analysis_basic_filter.cxx.o
+│       │   │   │           └── New_analysis_basic_filter.cxx.o.d
+│       │   │   ├── New_analysis.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── holiday_analysis
+│       │   │   │           ├── New_analysis.cxx.o
+│       │   │   │           └── New_analysis.cxx.o.d
+│       │   │   ├── Old_new_data_check.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── master_deg_analysis
+│       │   │   │           └── Wide_K0_search
+│       │   │   │               ├── Old_new_data_check.cxx.o
+│       │   │   │               └── Old_new_data_check.cxx.o.d
+│       │   │   ├── Overlay_MC_over_data.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── master_deg_analysis
+│       │   │   │           └── Wide_K0_search
+│       │   │   │               ├── Overlay_MC_over_data.cxx.o
+│       │   │   │               └── Overlay_MC_over_data.cxx.o.d
+│       │   │   ├── Overlay_MC_over_data_phi.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── PhD_deg_analysis
+│       │   │   │           ├── Overlay_MC_over_data_phi.cxx.o
+│       │   │   │           └── Overlay_MC_over_data_phi.cxx.o.d
+│       │   │   ├── Overlay_signal_over_bcg_Kstar_phi.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── PhD_deg_analysis
+│       │   │   │           ├── Overlay_signal_over_bcg_Kstar_phi.cxx.o
+│       │   │   │           └── Overlay_signal_over_bcg_Kstar_phi.cxx.o.d
+│       │   │   ├── Partial_histograms.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── master_deg_analysis
+│       │   │   │           ├── Partial_histograms.cxx.o
+│       │   │   │           └── Partial_histograms.cxx.o.d
+│       │   │   ├── pkgRedirects
+│       │   │   ├── Preselection1_2p_WE_3of4planes_fiducial_XiBBCLveto_nonelastic_2plusTOF_pteta_nhits_charge.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── master_deg_analysis
+│       │   │   │           └── Wide_K0_search
+│       │   │   │               ├── Preselection1_2p_WE_3of4planes_fiducial_XiBBCLveto_nonelastic_2plusTOF_pteta_nhits_charge.cxx.o
+│       │   │   │               └── Preselection1_2p_WE_3of4planes_fiducial_XiBBCLveto_nonelastic_2plusTOF_pteta_nhits_charge.cxx.o.d
+│       │   │   ├── Preselection1_2p_WE_3of4planes_fiducial_XinoBBCLveto_nonelastic_2plusTOF_pteta_nhits_charge.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── master_deg_analysis
+│       │   │   │           └── Wide_K0_search
+│       │   │   │               ├── Preselection1_2p_WE_3of4planes_fiducial_XinoBBCLveto_nonelastic_2plusTOF_pteta_nhits_charge.cxx.o
+│       │   │   │               └── Preselection1_2p_WE_3of4planes_fiducial_XinoBBCLveto_nonelastic_2plusTOF_pteta_nhits_charge.cxx.o.d
+│       │   │   ├── Preselection1_CPT_2p_WE_3of4planes_fiducial.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── master_deg_analysis
+│       │   │   │           ├── Preselection1_CPT_2p_WE_3of4planes_fiducial.cxx.o
+│       │   │   │           └── Preselection1_CPT_2p_WE_3of4planes_fiducial.cxx.o.d
+│       │   │   ├── Preselection1_NOAFTERBURNER_2p_WE_3of4planes_fiducial_XiBBCLveto_nonelastic_2plusTOF_pteta_nhits_charge.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── master_deg_analysis
+│       │   │   │           └── Wide_K0_search
+│       │   │   │               ├── Preselection1_NOAFTERBURNER_2p_WE_3of4planes_fiducial_XiBBCLveto_nonelastic_2plusTOF_pteta_nhits_charge.cxx.o
+│       │   │   │               └── Preselection1_NOAFTERBURNER_2p_WE_3of4planes_fiducial_XiBBCLveto_nonelastic_2plusTOF_pteta_nhits_charge.cxx.o.d
+│       │   │   ├── Preselection1_NOAFTERBURNER_2p_WE_3of4planes_fiducial_XinoBBCLveto_nonelastic_2plusTOF_pteta_nhits_charge.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── master_deg_analysis
+│       │   │   │           └── Wide_K0_search
+│       │   │   │               ├── Preselection1_NOAFTERBURNER_2p_WE_3of4planes_fiducial_XinoBBCLveto_nonelastic_2plusTOF_pteta_nhits_charge.cxx.o
+│       │   │   │               └── Preselection1_NOAFTERBURNER_2p_WE_3of4planes_fiducial_XinoBBCLveto_nonelastic_2plusTOF_pteta_nhits_charge.cxx.o.d
+│       │   │   ├── Preselection2_1vertex_4TOF_charge_kinem_Nhits_clusters.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── master_deg_analysis
+│       │   │   │           ├── Preselection2_1vertex_4TOF_charge_kinem_Nhits_clusters.cxx.o
+│       │   │   │           └── Preselection2_1vertex_4TOF_charge_kinem_Nhits_clusters.cxx.o.d
+│       │   │   ├── Preselection2_4TOF_charge_kinem_Nhits_clusters.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── master_deg_analysis
+│       │   │   │           ├── Preselection2_4TOF_charge_kinem_Nhits_clusters.cxx.o
+│       │   │   │           └── Preselection2_4TOF_charge_kinem_Nhits_clusters.cxx.o.d
+│       │   │   ├── Preselection2_charge_kinem_Nhits_clusters.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── master_deg_analysis
+│       │   │   │           ├── Preselection2_charge_kinem_Nhits_clusters.cxx.o
+│       │   │   │           └── Preselection2_charge_kinem_Nhits_clusters.cxx.o.d
+│       │   │   ├── Preselection_CPT_partial_histogram_test.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── master_deg_analysis
+│       │   │   │           ├── Preselection_CPT_partial_histogram_test.cxx.o
+│       │   │   │           └── Preselection_CPT_partial_histogram_test.cxx.o.d
+│       │   │   ├── Preselectioninclusive1_trigger_2p_WE_3of4planes_fiducial_noPV_noBBCL.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── master_deg_analysis
+│       │   │   │           ├── Preselectioninclusive1_trigger_2p_WE_3of4planes_fiducial_noPV_noBBCL.cxx.o
+│       │   │   │           └── Preselectioninclusive1_trigger_2p_WE_3of4planes_fiducial_noPV_noBBCL.cxx.o.d
+│       │   │   ├── Preselectioninclusive1_triggerONLY570704.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── master_deg_analysis
+│       │   │   │           ├── Preselectioninclusive1_triggerONLY570704.cxx.o
+│       │   │   │           └── Preselectioninclusive1_triggerONLY570704.cxx.o.d
+│       │   │   ├── Preselection_NOAFTERBURNER_olddata_from_beginning.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── PhD_deg_analysis
+│       │   │   │           ├── Preselection_NOAFTERBURNER_olddata_from_beginning.cxx.o
+│       │   │   │           └── Preselection_NOAFTERBURNER_olddata_from_beginning.cxx.o.d
+│       │   │   ├── Preselection_olddata_from_beginning.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── PhD_deg_analysis
+│       │   │   │           ├── Preselection_olddata_from_beginning.cxx.o
+│       │   │   │           └── Preselection_olddata_from_beginning.cxx.o.d
+│       │   │   ├── Preselection_olddata_from_beginning_only_RP_cuts.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── PhD_deg_analysis
+│       │   │   │           ├── Preselection_olddata_from_beginning_only_RP_cuts.cxx.o
+│       │   │   │           └── Preselection_olddata_from_beginning_only_RP_cuts.cxx.o.d
+│       │   │   ├── Preselection_olddata_from_beginning_only_triggers_and_RP_planes.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── PhD_deg_analysis
+│       │   │   │           ├── Preselection_olddata_from_beginning_only_triggers_and_RP_planes.cxx.o
+│       │   │   │           └── Preselection_olddata_from_beginning_only_triggers_and_RP_planes.cxx.o.d
+│       │   │   ├── Preselection_trigger_sorting.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── master_deg_analysis
+│       │   │   │           └── Wide_K0_search
+│       │   │   │               ├── Preselection_trigger_sorting.cxx.o
+│       │   │   │               └── Preselection_trigger_sorting.cxx.o.d
+│       │   │   ├── Presentation_pdf_creator.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── PhD_deg_analysis
+│       │   │   │           ├── Presentation_pdf_creator.cxx.o
+│       │   │   │           └── Presentation_pdf_creator.cxx.o.d
+│       │   │   ├── progress.marks
+│       │   │   ├── Quick_BBCL_check.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── master_deg_analysis
+│       │   │   │           ├── Quick_BBCL_check.cxx.o
+│       │   │   │           └── Quick_BBCL_check.cxx.o.d
+│       │   │   ├── STAR_Preselection.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── master_deg_analysis
+│       │   │   │           └── Wide_K0_search
+│       │   │   │               ├── STAR_Preselection.cxx.o
+│       │   │   │               └── STAR_Preselection.cxx.o.d
+│       │   │   ├── star-upc.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── home
+│       │   │   │   │   └── sbhosale
+│       │   │   │   │       └── Work
+│       │   │   │   │           └── STAR-Analysis
+│       │   │   │   │               └── star-upc-new
+│       │   │   │   │                   └── src
+│       │   │   │   │                       ├── BeamPosition.cxx.o
+│       │   │   │   │                       ├── BeamPosition.cxx.o.d
+│       │   │   │   │                       ├── StPicoHelix.cxx.o
+│       │   │   │   │                       ├── StPicoHelix.cxx.o.d
+│       │   │   │   │                       ├── StPicoPhysicalHelix.cxx.o
+│       │   │   │   │                       ├── StPicoPhysicalHelix.cxx.o.d
+│       │   │   │   │                       ├── StRPEvent.cxx.o
+│       │   │   │   │                       ├── StRPEvent.cxx.o.d
+│       │   │   │   │                       ├── StUPCBemcCluster.cxx.o
+│       │   │   │   │                       ├── StUPCBemcCluster.cxx.o.d
+│       │   │   │   │                       ├── StUPCEvent.cxx.o
+│       │   │   │   │                       ├── StUPCEvent.cxx.o.d
+│       │   │   │   │                       ├── StUPCRpsCluster.cxx.o
+│       │   │   │   │                       ├── StUPCRpsCluster.cxx.o.d
+│       │   │   │   │                       ├── StUPCRpsTrack.cxx.o
+│       │   │   │   │                       ├── StUPCRpsTrack.cxx.o.d
+│       │   │   │   │                       ├── StUPCRpsTrackPoint.cxx.o
+│       │   │   │   │                       ├── StUPCRpsTrackPoint.cxx.o.d
+│       │   │   │   │                       ├── StUPCTofHit.cxx.o
+│       │   │   │   │                       ├── StUPCTofHit.cxx.o.d
+│       │   │   │   │                       ├── StUPCTrack.cxx.o
+│       │   │   │   │                       ├── StUPCTrack.cxx.o.d
+│       │   │   │   │                       ├── StUPCV0.cxx.o
+│       │   │   │   │                       ├── StUPCV0.cxx.o.d
+│       │   │   │   │                       ├── StUPCVertex.cxx.o
+│       │   │   │   │                       └── StUPCVertex.cxx.o.d
+│       │   │   │   ├── lib
+│       │   │   │   │   ├── G__star-upc.cxx.o
+│       │   │   │   │   └── G__star-upc.cxx.o.d
+│       │   │   │   ├── link.txt
+│       │   │   │   └── progress.make
+│       │   │   ├── TargetDirectories.txt
+│       │   │   ├── Test_of_partial_histograms.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── master_deg_analysis
+│       │   │   │           ├── Test_of_partial_histograms.cxx.o
+│       │   │   │           └── Test_of_partial_histograms.cxx.o.d
+│       │   │   ├── Trigger_coincidence_check.dir
+│       │   │   │   ├── build.make
+│       │   │   │   ├── cmake_clean.cmake
+│       │   │   │   ├── compiler_depend.internal
+│       │   │   │   ├── compiler_depend.make
+│       │   │   │   ├── compiler_depend.ts
+│       │   │   │   ├── DependInfo.cmake
+│       │   │   │   ├── depend.make
+│       │   │   │   ├── flags.make
+│       │   │   │   ├── link.txt
+│       │   │   │   ├── progress.make
+│       │   │   │   └── src
+│       │   │   │       └── master_deg_analysis
+│       │   │   │           └── Wide_K0_search
+│       │   │   │               ├── Trigger_coincidence_check.cxx.o
+│       │   │   │               └── Trigger_coincidence_check.cxx.o.d
+│       │   │   └── True_detector_comparison_K0.dir
+│       │   │       ├── build.make
+│       │   │       ├── cmake_clean.cmake
+│       │   │       ├── compiler_depend.internal
+│       │   │       ├── compiler_depend.make
+│       │   │       ├── compiler_depend.ts
+│       │   │       ├── DependInfo.cmake
+│       │   │       ├── depend.make
+│       │   │       ├── flags.make
+│       │   │       ├── link.txt
+│       │   │       ├── progress.make
+│       │   │       └── src
+│       │   │           └── holiday_analysis
+│       │   │               ├── True_detector_comparison_K0.cxx.o
+│       │   │               └── True_detector_comparison_K0.cxx.o.d
+│       │   ├── cmake_install.cmake
+│       │   ├── lib
+│       │   │   ├── G__star-upc.cxx
+│       │   │   ├── G__star-upc_rdict.pcm
+│       │   │   └── libstar-upc.so
+│       │   └── Makefile
+│       ├── building.sh
+│       ├── buildingSTAR.sh
+│       ├── CMakeLists.txt
+│       ├── Different_CMakes
+│       │   ├── CMakeListsNormal.txt
+│       │   └── CMakeListsStar.txt
+│       ├── include
+│       │   ├── PartialHistograms.h
+│       │   ├── ProcessingInsideLoop.h
+│       │   ├── ProcessingOutsideLoop.h
+│       │   └── UsefulThings.h
+│       ├── K0.list
+│       ├── kod_do_histogramów.ipynb
+│       ├── Lambda.list
+│       ├── README.md
+│       ├── scripts
+│       │   ├── FinalFit.cxx
+│       │   ├── FinalFitLambda.cxx
+│       │   └── Hist.cxx
+│       ├── src
+│       │   ├── eng_deg_analysis
+│       │   │   ├── Filter-CPT.cxx
+│       │   │   ├── Filter-everything-except-fiducial-and-track-quality.cxx
+│       │   │   ├── Filter-fiducial-and-elastic-deletion.cxx
+│       │   │   ├── Filter_fiducial_and_elastic_deletion_lambda.cxx
+│       │   │   ├── Filter-more-cuts.cxx
+│       │   │   ├── Filter-one-proton.cxx
+│       │   │   ├── Filter-RP-cuts-alternative.cxx
+│       │   │   ├── Filter-RP-cuts.cxx
+│       │   │   ├── Filter-RP-cuts-exact-alternative.cxx
+│       │   │   ├── Filter-RP-cuts-minus-fiducial.cxx
+│       │   │   ├── Histograms.cxx
+│       │   │   └── quickjob.sh
+│       │   ├── holiday_analysis
+│       │   │   ├── Algorithm_check.cxx
+│       │   │   ├── DCA_Sweep.cxx
+│       │   │   ├── Filter_everything.cxx
+│       │   │   ├── Fixed_DCA.cxx
+│       │   │   ├── Fixed_DCA_with_angle_check.cxx
+│       │   │   ├── New_analysis_basic_filter.cxx
+│       │   │   ├── New_analysis.cxx
+│       │   │   └── True_detector_comparison_K0.cxx
+│       │   ├── master_deg_analysis
+│       │   │   ├── Basic_inclusive_analysis.cxx
+│       │   │   ├── Filter_everything_but_with_new_histogram_handling_test.cxx
+│       │   │   ├── Fitting_Gauss_2D_1D_Xi.cxx
+│       │   │   ├── Fitting_Gauss_2D_data.cxx
+│       │   │   ├── Fitting_Gauss_2D_zerobias.cxx
+│       │   │   ├── Inclusive_analysis_with_STUPCV0.cxx
+│       │   │   ├── Inclusive_zerobias_background_analysis_with_STUPCV0.cxx
+│       │   │   ├── Partial_histograms.cxx
+│       │   │   ├── Preselection1_CPT_2p_WE_3of4planes_fiducial.cxx
+│       │   │   ├── Preselection2_1vertex_4TOF_charge_kinem_Nhits_clusters.cxx
+│       │   │   ├── Preselection2_4TOF_charge_kinem_Nhits_clusters.cxx
+│       │   │   ├── Preselection2_charge_kinem_Nhits_clusters.cxx
+│       │   │   ├── Preselection_CPT_partial_histogram_test.cxx
+│       │   │   ├── Preselectioninclusive1_trigger_2p_WE_3of4planes_fiducial_noPV_noBBCL.cxx
+│       │   │   ├── Preselectioninclusive1_triggerONLY570704.cxx
+│       │   │   ├── Quick_BBCL_check.cxx
+│       │   │   ├── Test_of_partial_histograms.cxx
+│       │   │   └── Wide_K0_search
+│       │   │       ├── Differential_crosssection.cxx
+│       │   │       ├── Differential_crosssection_new_data_only.cxx
+│       │   │       ├── Final_fit_comparison.cxx
+│       │   │       ├── Final_fit_comparison_new_data_only.cxx
+│       │   │       ├── HistogramNMinusOne_making.cxx
+│       │   │       ├── Histograms_NMinusOne.cxx
+│       │   │       ├── Inclusive_analysis_with_STUPCV0_with_extended_range_noAfterburner.cxx
+│       │   │       ├── Old_new_data_check.cxx
+│       │   │       ├── Overlay_MC_over_data.cxx
+│       │   │       ├── Preselection1_2p_WE_3of4planes_fiducial_XiBBCLveto_nonelastic_2plusTOF_pteta_nhits_charge.cxx
+│       │   │       ├── Preselection1_2p_WE_3of4planes_fiducial_XinoBBCLveto_nonelastic_2plusTOF_pteta_nhits_charge.cxx
+│       │   │       ├── Preselection1_NOAFTERBURNER_2p_WE_3of4planes_fiducial_XiBBCLveto_nonelastic_2plusTOF_pteta_nhits_charge.cxx
+│       │   │       ├── Preselection1_NOAFTERBURNER_2p_WE_3of4planes_fiducial_XinoBBCLveto_nonelastic_2plusTOF_pteta_nhits_charge.cxx
+│       │   │       ├── Preselection_trigger_sorting.cxx
+│       │   │       ├── STAR_Preselection.cxx
+│       │   │       └── Trigger_coincidence_check.cxx
+│       │   └── PhD_deg_analysis
+│       │       ├── Differential_crosssection_phi.cxx
+│       │       ├── Histograms_after_RP_cuts.cxx
+│       │       ├── Inclusive_analysis_Kstar_phi_old_data.cxx
+│       │       ├── Inclusive_analysis_Kstar_phi_old_data_no_TOF.cxx
+│       │       ├── Inclusive_analysis_Kstar_phi_old_data_paper_cuts.cxx
+│       │       ├── Inclusive_analysis_Kstar_phi_old_data_TOF_tests.cxx
+│       │       ├── Overlay_MC_over_data_phi.cxx
+│       │       ├── Overlay_signal_over_bcg_Kstar_phi.cxx
+│       │       ├── Preselection_NOAFTERBURNER_olddata_from_beginning.cxx
+│       │       ├── Preselection_olddata_from_beginning.cxx
+│       │       ├── Preselection_olddata_from_beginning_only_RP_cuts.cxx
+│       │       ├── Preselection_olddata_from_beginning_only_triggers_and_RP_planes.cxx
+│       │       └── Presentation_pdf_creator.cxx
+│       └── sweep.C
+├── plots
+│   ├── Armenteros-Podolanski_2.png
+│   ├── Armenteros-Podolanski.jpg
+│   ├── Armenteros-Podolanski_log.jpg
+│   ├── build
+│   │   └── PlotsK0
+│   ├── building2Dcos.sh
+│   ├── buildingArmenteros.sh
+│   ├── buildingHowMany.sh
+│   ├── buildingK0.sh
+│   ├── buildingLambdaBar.sh
+│   ├── buildingLambda.sh
+│   ├── buildingThetaStar.sh
+│   ├── cos2DK0s.cxx
+│   ├── cosPointingAngle_DecayLength_K0_log.jpg
+│   ├── Decay_PlotsLambda.cxx
+│   ├── HowMany.cxx
+│   ├── include
+│   │   └── Includes.h
+│   ├── K0s.png
+│   ├── k0ThetaStar.png
+│   ├── lambdaBarThetaStar.png
+│   ├── lambdaThetaStar.png
+│   ├── PlotsK0.cxx
+│   ├── PlotsLambdaBar.cxx
+│   ├── Podolanski-Armenteros.cxx
+│   ├── ThetaStar_K0.cxx
+│   └── ThetaStar_Lambda.cxx
+├── PracaDyplomowa_PatrycjaMalinowska.pdf
+├── README.md
+├── share
+│   ├── beamLine.txt
+│   ├── dp_ejcf_20_truhlar.pdf
+│   ├── etaPhiEfficiency_16_01_19_delta015_twoRuns.root
+│   ├── Extention-of-the-ROOT-data-structure-describing-proton-proton-collisions-at-STAR-experiment-with-secondary-vertices-4.pdf
+│   ├── Extention-of-the-ROOT-data-structure-describing-proton-proton-collisions-at-STAR-experiment-with-secondary-vertices-6.pdf
+│   ├── lum_perrun_RP_CPT2.txt
+│   ├── OffSetsCorrectionsRun17.list
+│   ├── ROOT_to_PDF_conversion
+│   │   ├── README.md
+│   │   ├── ROOTtoPDF.cxx
+│   │   ├── ROOTtoPDF.sh
+│   │   └── Styles.h
+│   ├── Run7PolarizationWithPosition.csv
+│   ├── runDataMatchedWithPosition.csv
+│   ├── runNumberWithPosition.csv
+│   ├── runs_2017.txt
+│   ├── share -> share/
+│   ├── starlist.list
+│   ├── st_dime_1.picoLambdaK0.root
+│   ├── st_rp_18149028_raw_0000009.picoHFtree.root
+│   ├── StUPC_dime_1_sim.root
+│   ├── StUPC_dime_2_1_emb.root
+│   ├── StUPC_dime_primary_embeding.root
+│   ├── StUPC_dime_primary_starsim.root
+│   ├── StUPC_K0K0_v1.root
+│   ├── StUPC_LLBar_primary_embeding.root
+│   ├── StUPC_minBiasLL_v1.root
+│   ├── StUPCRP_production.root
+│   ├── treeparrentF.root
+│   ├── treeparrent.root
+│   ├── treepart1F.root
+│   ├── treepart1.root
+│   ├── treepart2F.root
+│   └── treepart2.root
+├── STAR-AnalysisTree.txt
+├── star-upc
+│   ├── build
+│   │   ├── CMakeCache.txt
+│   │   ├── CMakeFiles
+│   │   │   ├── 3.26.5
+│   │   │   │   ├── CMakeCCompiler.cmake
+│   │   │   │   ├── CMakeCXXCompiler.cmake
+│   │   │   │   ├── CMakeDetermineCompilerABI_C.bin
+│   │   │   │   ├── CMakeDetermineCompilerABI_CXX.bin
+│   │   │   │   ├── CMakeSystem.cmake
+│   │   │   │   ├── CompilerIdC
+│   │   │   │   │   ├── a.out
+│   │   │   │   │   ├── CMakeCCompilerId.c
+│   │   │   │   │   └── tmp
+│   │   │   │   └── CompilerIdCXX
+│   │   │   │       ├── a.out
+│   │   │   │       ├── CMakeCXXCompilerId.cpp
+│   │   │   │       └── tmp
+│   │   │   ├── cmake.check_cache
+│   │   │   ├── CMakeConfigureLog.yaml
+│   │   │   ├── CMakeDirectoryInformation.cmake
+│   │   │   ├── CMakeRuleHashes.txt
+│   │   │   ├── CMakeScratch
+│   │   │   ├── Makefile2
+│   │   │   ├── Makefile.cmake
+│   │   │   ├── pkgRedirects
+│   │   │   ├── progress.marks
+│   │   │   ├── star-upc.dir
+│   │   │   │   ├── build.make
+│   │   │   │   ├── cmake_clean.cmake
+│   │   │   │   ├── compiler_depend.make
+│   │   │   │   ├── compiler_depend.ts
+│   │   │   │   ├── DependInfo.cmake
+│   │   │   │   ├── depend.make
+│   │   │   │   ├── flags.make
+│   │   │   │   ├── G__star-upc.cxx.o
+│   │   │   │   ├── G__star-upc.cxx.o.d
+│   │   │   │   ├── link.txt
+│   │   │   │   ├── progress.make
+│   │   │   │   └── src
+│   │   │   │       ├── BeamPosition.cxx.o
+│   │   │   │       ├── BeamPosition.cxx.o.d
+│   │   │   │       ├── StPicoHelix.cxx.o
+│   │   │   │       ├── StPicoHelix.cxx.o.d
+│   │   │   │       ├── StPicoPhysicalHelix.cxx.o
+│   │   │   │       ├── StPicoPhysicalHelix.cxx.o.d
+│   │   │   │       ├── StRPEvent.cxx.o
+│   │   │   │       ├── StRPEvent.cxx.o.d
+│   │   │   │       ├── StUPCBemcCluster.cxx.o
+│   │   │   │       ├── StUPCBemcCluster.cxx.o.d
+│   │   │   │       ├── StUPCEvent.cxx.o
+│   │   │   │       ├── StUPCEvent.cxx.o.d
+│   │   │   │       ├── StUPCRpsCluster.cxx.o
+│   │   │   │       ├── StUPCRpsCluster.cxx.o.d
+│   │   │   │       ├── StUPCRpsTrack.cxx.o
+│   │   │   │       ├── StUPCRpsTrack.cxx.o.d
+│   │   │   │       ├── StUPCRpsTrackPoint.cxx.o
+│   │   │   │       ├── StUPCRpsTrackPoint.cxx.o.d
+│   │   │   │       ├── StUPCTofHit.cxx.o
+│   │   │   │       ├── StUPCTofHit.cxx.o.d
+│   │   │   │       ├── StUPCTrack.cxx.o
+│   │   │   │       ├── StUPCTrack.cxx.o.d
+│   │   │   │       ├── StUPCV0.cxx.o
+│   │   │   │       ├── StUPCV0.cxx.o.d
+│   │   │   │       ├── StUPCVertex.cxx.o
+│   │   │   │       └── StUPCVertex.cxx.o.d
+│   │   │   └── TargetDirectories.txt
+│   │   ├── cmake_install.cmake
+│   │   ├── G__star-upc.cxx
+│   │   ├── G__star-upc_rdict.pcm
+│   │   ├── libstar-upc.so
+│   │   └── Makefile
+│   ├── buildLib.sh
+│   ├── CMakeLists.txt
+│   ├── include
+│   │   ├── Afterburner.h
+│   │   ├── BeamPosition.h
+│   │   ├── BeamPosition.h.gch
+│   │   ├── PhysicalConstants.h
+│   │   ├── PhysicalConstants.h.gch
+│   │   ├── star-upcLinkDef.h
+│   │   ├── star-upcLinkDef.h.gch
+│   │   ├── StPicoHelix.h
+│   │   ├── StPicoHelix.h.gch
+│   │   ├── StPicoPhysicalHelix.h
+│   │   ├── StPicoPhysicalHelix.h.gch
+│   │   ├── StRPEvent.h
+│   │   ├── StRPEvent.h.gch
+│   │   ├── StUPCBemcCluster.h
+│   │   ├── StUPCBemcCluster.h.gch
+│   │   ├── StUPCEvent.h
+│   │   ├── StUPCEvent.h.gch
+│   │   ├── StUPCFilterBemcUtil.h
+│   │   ├── StUPCFilterBemcUtil.h.gch
+│   │   ├── StUPCFilterMaker.h
+│   │   ├── StUPCFilterMaker.h.gch
+│   │   ├── StUPCFilterRPUtil.h
+│   │   ├── StUPCFilterRPUtil.h.gch
+│   │   ├── StUPCFilterTrgUtil.h
+│   │   ├── StUPCFilterTrgUtil.h.gch
+│   │   ├── StUPCRpsCluster.h
+│   │   ├── StUPCRpsCluster.h.gch
+│   │   ├── StUPCRpsTrack.h
+│   │   ├── StUPCRpsTrack.h.gch
+│   │   ├── StUPCRpsTrackPoint.h
+│   │   ├── StUPCRpsTrackPoint.h.gch
+│   │   ├── StUPCTofHit.h
+│   │   ├── StUPCTofHit.h.gch
+│   │   ├── StUPCTrack.h
+│   │   ├── StUPCTrack.h.gch
+│   │   ├── StUPCV0.h
+│   │   ├── StUPCV0.h.gch
+│   │   ├── StUPCVertex.h
+│   │   ├── StUPCVertex.h.gch
+│   │   ├── SystemOfUnits.h
+│   │   ├── SystemOfUnits.h.gch
+│   │   ├── Util.h
+│   │   └── Util.h.gch
+│   └── src
+│       ├── BeamPosition.cxx
+│       ├── StPicoHelix.cxx
+│       ├── StPicoPhysicalHelix.cxx
+│       ├── StRPEvent.cxx
+│       ├── StUPCBemcCluster.cxx
+│       ├── StUPCEvent.cxx
+│       ├── StUPCRpsCluster.cxx
+│       ├── StUPCRpsTrack.cxx
+│       ├── StUPCRpsTrackPoint.cxx
+│       ├── StUPCTofHit.cxx
+│       ├── StUPCTrack.cxx
+│       ├── StUPCV0.cxx
+│       └── StUPCVertex.cxx
+├── star-upc-new
+│   ├── build
+│   │   ├── CMakeCache.txt
+│   │   ├── CMakeFiles
+│   │   │   ├── 3.26.5
+│   │   │   │   ├── CMakeCCompiler.cmake
+│   │   │   │   ├── CMakeCXXCompiler.cmake
+│   │   │   │   ├── CMakeDetermineCompilerABI_C.bin
+│   │   │   │   ├── CMakeDetermineCompilerABI_CXX.bin
+│   │   │   │   ├── CMakeSystem.cmake
+│   │   │   │   ├── CompilerIdC
+│   │   │   │   │   ├── a.out
+│   │   │   │   │   ├── CMakeCCompilerId.c
+│   │   │   │   │   └── tmp
+│   │   │   │   └── CompilerIdCXX
+│   │   │   │       ├── a.out
+│   │   │   │       ├── CMakeCXXCompilerId.cpp
+│   │   │   │       └── tmp
+│   │   │   ├── cmake.check_cache
+│   │   │   ├── CMakeConfigureLog.yaml
+│   │   │   ├── CMakeDirectoryInformation.cmake
+│   │   │   ├── CMakeRuleHashes.txt
+│   │   │   ├── CMakeScratch
+│   │   │   ├── Makefile2
+│   │   │   ├── Makefile.cmake
+│   │   │   ├── pkgRedirects
+│   │   │   ├── progress.marks
+│   │   │   ├── star-upc.dir
+│   │   │   │   ├── build.make
+│   │   │   │   ├── cmake_clean.cmake
+│   │   │   │   ├── compiler_depend.make
+│   │   │   │   ├── compiler_depend.ts
+│   │   │   │   ├── DependInfo.cmake
+│   │   │   │   ├── depend.make
+│   │   │   │   ├── flags.make
+│   │   │   │   ├── G__star-upc.cxx.o
+│   │   │   │   ├── G__star-upc.cxx.o.d
+│   │   │   │   ├── link.txt
+│   │   │   │   ├── progress.make
+│   │   │   │   └── src
+│   │   │   │       ├── BeamPosition.cxx.o
+│   │   │   │       ├── BeamPosition.cxx.o.d
+│   │   │   │       ├── StPicoHelix.cxx.o
+│   │   │   │       ├── StPicoHelix.cxx.o.d
+│   │   │   │       ├── StPicoPhysicalHelix.cxx.o
+│   │   │   │       ├── StPicoPhysicalHelix.cxx.o.d
+│   │   │   │       ├── StRPEvent.cxx.o
+│   │   │   │       ├── StRPEvent.cxx.o.d
+│   │   │   │       ├── StUPCBemcCluster.cxx.o
+│   │   │   │       ├── StUPCBemcCluster.cxx.o.d
+│   │   │   │       ├── StUPCEvent.cxx.o
+│   │   │   │       ├── StUPCEvent.cxx.o.d
+│   │   │   │       ├── StUPCRpsCluster.cxx.o
+│   │   │   │       ├── StUPCRpsCluster.cxx.o.d
+│   │   │   │       ├── StUPCRpsTrack.cxx.o
+│   │   │   │       ├── StUPCRpsTrack.cxx.o.d
+│   │   │   │       ├── StUPCRpsTrackPoint.cxx.o
+│   │   │   │       ├── StUPCRpsTrackPoint.cxx.o.d
+│   │   │   │       ├── StUPCTofHit.cxx.o
+│   │   │   │       ├── StUPCTofHit.cxx.o.d
+│   │   │   │       ├── StUPCTrack.cxx.o
+│   │   │   │       ├── StUPCTrack.cxx.o.d
+│   │   │   │       ├── StUPCV0.cxx.o
+│   │   │   │       ├── StUPCV0.cxx.o.d
+│   │   │   │       ├── StUPCVertex.cxx.o
+│   │   │   │       └── StUPCVertex.cxx.o.d
+│   │   │   └── TargetDirectories.txt
+│   │   ├── cmake_install.cmake
+│   │   ├── G__star-upc.cxx
+│   │   ├── G__star-upc_rdict.pcm
+│   │   ├── libstar-upc.so
+│   │   └── Makefile
+│   ├── buildLib.sh
+│   ├── CMakeLists.txt
+│   ├── include
+│   │   ├── Afterburner.h
+│   │   ├── BeamPosition.h
+│   │   ├── PhysicalConstants.h
+│   │   ├── star-upcLinkDef.h
+│   │   ├── StPicoHelix.h
+│   │   ├── StPicoPhysicalHelix.h
+│   │   ├── StRPEvent.h
+│   │   ├── StUPCBemcCluster.h
+│   │   ├── StUPCEvent.h
+│   │   ├── StUPCFilterBemcUtil.h
+│   │   ├── StUPCFilterMaker.h
+│   │   ├── StUPCFilterRPUtil.h
+│   │   ├── StUPCFilterTrgUtil.h
+│   │   ├── StUPCRpsCluster.h
+│   │   ├── StUPCRpsTrack.h
+│   │   ├── StUPCRpsTrackPoint.h
+│   │   ├── StUPCTofHit.h
+│   │   ├── StUPCTrack.h
+│   │   ├── StUPCV0.h
+│   │   ├── StUPCVertex.h
+│   │   ├── SystemOfUnits.h
+│   │   └── Util.h
+│   └── src
+│       ├── BeamPosition.cxx
+│       ├── StPicoHelix.cxx
+│       ├── StPicoPhysicalHelix.cxx
+│       ├── StRPEvent.cxx
+│       ├── StUPCBemcCluster.cxx
+│       ├── StUPCEvent.cxx
+│       ├── StUPCRpsCluster.cxx
+│       ├── StUPCRpsTrack.cxx
+│       ├── StUPCRpsTrackPoint.cxx
+│       ├── StUPCTofHit.cxx
+│       ├── StUPCTrack.cxx
+│       ├── StUPCV0.cxx
+│       └── StUPCVertex.cxx
+├── test
+│   ├── 0.root -> /star/u/adamczyk/pwd/picoUPC/picoUPC/0.root
+│   ├── 1.root -> /star/u/adamczyk/pwd/picoUPC/picoUPC/1.root
+│   ├── 2.root -> /star/u/adamczyk/pwd/picoUPC/picoUPC/2.root
+│   ├── 3.root -> /star/u/adamczyk/pwd/picoUPC/picoUPC/3.root
+│   ├── 4.root -> /star/u/adamczyk/pwd/picoUPC/picoUPC/4.root
+│   ├── 5.root -> /star/u/adamczyk/pwd/picoUPC/picoUPC/5.root
+│   ├── 6.root -> /star/u/adamczyk/pwd/picoUPC/picoUPC/6.root
+│   ├── 7.root -> /star/u/adamczyk/pwd/picoUPC/picoUPC/7.root
+│   ├── 8.root -> /star/u/adamczyk/pwd/picoUPC/picoUPC/8.root
+│   ├── 9.root -> /star/u/adamczyk/pwd/picoUPC/picoUPC/9.root
+│   ├── build.sh
+│   ├── CPT2
+│   ├── FastTemplate2.xml
+│   ├── FastTemplate.xml
+│   ├── include
+│   │   ├── Includes.h
+│   │   ├── MatchFillPosition.h
+│   │   └── ReadFillPositionFile.h
+│   ├── MonteCarloEfficiency.cxx
+│   ├── pico_K0K0.root -> /gpfs01/star/pwg/adamczyk/picoUPC/test9_picodst/106697089819A407DB456B9EF492B7C3_1.root
+│   ├── run_dime_K0K0_pico5.sh
+│   ├── run_dime_K0K0_pico.sh
+│   ├── run_dime_K0K0.sh
+│   ├── run_dime_LLBar_pico.sh
+│   ├── run_dime_LLBar.sh
+│   ├── run_dime_LLBar_test.sh
+│   ├── run_on_rcf.sh
+│   ├── run.sh
+│   ├── run_testpico.sh
+│   ├── src
+│   │   ├── MatchFillPosition.cxx
+│   │   └── ReadFillPositionFile.cxx
+│   ├── test.out
+│   └── test.root
+├── test2
+│   ├── build
+│   │   └── MonteCarloEfficiency
+│   ├── building_MonteCarloEfficiency.sh
+│   ├── build.sh
+│   ├── CMakeLists.txt
+│   ├── include
+│   │   ├── Includes.h
+│   │   ├── MatchFillPosition.h
+│   │   ├── ReadFillPositionFile.h
+│   │   └── ReadPicoLambdaK0.h
+│   ├── matched_events.txt
+│   ├── MonteCarloEfficiency.cxx
+│   ├── out.root
+│   ├── src
+│   │   ├── MatchFillPosition.cxx
+│   │   ├── ReadFillPositionFile.cxx
+│   │   └── ReadPicoLambdaK0.cxx
+│   ├── st_dime_1.picoLambdaK0.root
+│   └── StUPC_dime_1_sim.root
+└── test3
+    ├── build
+    │   └── MergeK0withUPCDst
+    ├── building_MergeK0withUPCDst.sh
+    ├── CMakeLists.txt
+    ├── include
+    │   ├── Includes.h
+    │   ├── MatchFillPosition.h
+    │   ├── ReadFillPositionFile.h
+    │   └── ReadPicoLambdaK0.h
+    ├── MergeK0withUPCDst_copy.cxx
+    ├── MergeK0withUPCDst.cxx
+    ├── out.root
+    ├── src
+    │   ├── MatchFillPosition.cxx
+    │   ├── ReadFillPositionFile.cxx
+    │   └── ReadPicoLambdaK0.cxx
+    ├── st_dime_1.picoLambdaK0.root
+    └── StUPC_dime_1_sim.root
+
+300 directories, 1418 files

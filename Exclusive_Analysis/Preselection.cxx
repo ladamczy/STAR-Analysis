@@ -1,3 +1,4 @@
+//curent working //// jan23 15:28
 #include <iostream>
 #include <string>    
 #include <utility>
@@ -57,6 +58,7 @@
 #include "MatchFillPosition.h"
 #include "ReadFillPositionFile.h"
 #include <Afterburner.h>
+#include "StUPCV0.h"
 #include <StRPEvent.h>
 #include <map>
 
@@ -73,11 +75,17 @@ int main(int argc, char** argv)
     TH2D* HistRpTrackPxPy= new TH2D("4_HistRpTrackPxPy", ";p_{x} [GeV]; p_{y} [GeV]", 100, -1.5, 1.5, 100, -1.5, 1.5);	
     TH1D* HistNumTofMatchedTracks = new TH1D("5_HistNumTofMatchedTracks", ";number of TOF matched tracks; count", 16, -0.5, 15.5);    
 
-    TH1D* HistTriggersPostSelection = new TH1D("1_HistTriggersPs", ";trigger number; count", 17, -0.5, 16.5);
-    TH1D* HistRpTrackBranchPostSelection = new TH1D("2_HistRpTrackBranchPs", ";RP track branch; count", 4, -0.5, 3.5);
-    TH1D* HistRpTrackPointPlanesUsedPostSelection = new TH1D("3_HistRpTrackPointPlanesUsedPs", ";Number Of Planes per TrackPoint; count", 5, -0.5, 4.5);
-    TH2D* HistRpTrackPxPyPostSelection = new TH2D("4_HistRpTrackPxPyPs", ";p_{x} [GeV]; p_{y} [GeV]", 100, -1.5, 1.5, 100, -1.5, 1.5);	
-    TH1D* HistNumTofMatchedTracksPostSelection = new TH1D("5_HistNumTofMatchedTracksPs", ";number of TOF matched tracks; count", 16, -0.5, 15.5);    
+    TH1D* HistTriggersPostSelection = new TH1D("1_HistTriggersPostSelection", ";trigger number; count", 17, -0.5, 16.5);
+    TH1D* HistRpTrackBranchPostSelection = new TH1D("2_HistRpTrackBranchPostSelection", ";RP track branch; count", 4, -0.5, 3.5);
+    TH1D* HistRpTrackPointPlanesUsedPostSelection = new TH1D("3_HistRpTrackPointPlanesUsedPostSelection", ";Number Of Planes per TrackPoint; count", 5, -0.5, 4.5);
+    TH2D* HistRpTrackPxPyPostSelection = new TH2D("4_HistRpTrackPxPyPostSelection", ";p_{x} [GeV]; p_{y} [GeV]", 100, -1.5, 1.5, 100, -1.5, 1.5);	
+    TH1D* HistNumTofMatchedTracksPostSelection = new TH1D("5_HistNumTofMatchedTracksPostSelection", ";number of TOF matched tracks; count", 16, -0.5, 15.5);    
+
+    TH1D* HistTriggersN1 = new TH1D("1_HistTriggersN1", ";trigger number; count", 17, -0.5, 16.5);
+    TH1D* HistRpTrackBranchN1 = new TH1D("2_HistRpTrackBranchN1", ";RP track branch; count", 4, -0.5, 3.5);
+    TH1D* HistRpTrackPointPlanesUsedN1 = new TH1D("3_HistRpTrackPointPlanesUsedN1", ";Number Of Planes per TrackPoint; count", 5, -0.5, 4.5);
+    TH2D* HistRpTrackPxPyN1 = new TH2D("4_HistRpTrackPxPyN1", ";p_{x} [GeV]; p_{y} [GeV]", 100, -1.5, 1.5, 100, -1.5, 1.5);	
+   
 
     ifstream inputFilePathList(argv[1]);
     if (!inputFilePathList) 
@@ -89,11 +97,14 @@ int main(int argc, char** argv)
     TChain *chain = new TChain("mUPCTree"); 
 
     string inputFileName;
-
     while (std::getline(inputFilePathList, inputFileName))
     {
+        cout << "Adding file: " << inputFileName << endl;
         chain->Add(inputFileName.c_str());
     }
+
+    cout << "Total number of files added: " << chain->GetListOfFiles()->GetEntries() << endl;
+    cout << "Total number of entries: " << chain->GetEntries() << endl;
 
     inputFilePathList.close();
 
@@ -104,11 +115,11 @@ int main(int argc, char** argv)
     chain->SetBranchAddress("mUPCEvent", &upcEvt);
     chain->SetBranchAddress("mRPEvent", &rpEvt);
 
-    LoadOffsetFile("../share/OffSetsCorrectionsRun17.list", mCorrection);
+    LoadOffsetFile("/home/sbhosale/Work/STAR-Analysis/share/OffSetsCorrectionsRun17.list", mCorrection);
 
     TTree* mUPCTree = new TTree("mUPCTree", "mUPCTree");
-   // mUPCTree->Branch("mUPCEvent", &upcEvt);
-   // mUPCTree->Branch("correctedRpEvent", &correctedRpEvent);
+    mUPCTree->Branch("mUPCEvent", &upcEvt);
+    mUPCTree->Branch("correctedRpEvent", &correctedRpEvent);
 
 	TVector3 pVector;
 
@@ -119,12 +130,20 @@ int main(int argc, char** argv)
 
     for (Long64_t i = 0; i < chain->GetEntries(); ++i) 
     {
-        if (i%1000000 == 0)  { cout << i << "/" <<  chain->GetEntries()  << endl;}
+        if (i%10000000 == 0)  { cout << i << "/" <<  chain->GetEntries()  << endl;}
         chain->GetEntry(i);
 
+     
         correctedRpEvent = new StRPEvent(*rpEvt);
+        correctedRpEvent->clearEvent();
         runAfterburner(rpEvt, correctedRpEvent, upcEvt->getRunNumber());
-/*
+
+        // selection
+        // CEP Triggers
+        // two RP tracks
+        // 3 out of 4 planes
+        // fiducial region
+
         // triggers - one event can have several triggers
         for (unsigned long int i = 0; i < triggerID.size(); i++)
         {
@@ -144,23 +163,12 @@ int main(int argc, char** argv)
             }
         }
 
-
-        // post-selection triggers
-        for (unsigned long int i = 0; i < triggerID.size(); i++)
-        {
-            if (upcEvt->isTrigger(triggerID[i]))
-            {
-                HistTriggersPostSelection->Fill(i);
-            }
-        }        
-
         // two RP tracks on the opposite sides of the detector
         bool hasTwoRpTracksOppositeSide = 0;
 		int numberOfTracksEast = 0;
 		int numberOfTracksWest = 0;
 		int indexWest = 0;
 		int indexEast = 0;
-
 
 		for(UInt_t i = 0; i < correctedRpEvent->getNumberOfTracks(); i++)
 		{
@@ -172,15 +180,8 @@ int main(int argc, char** argv)
 		if (numberOfTracksWest == 1 and numberOfTracksEast == 1)
 		{
 			hasTwoRpTracksOppositeSide = 1;
+
 		}
-
-
-        // post-selection RP branches
-		for(UInt_t i = 0; i < correctedRpEvent->getNumberOfTracks(); i++)
-        {
-			int iBranch = correctedRpEvent->getTrack(i)->branch();
-            HistRpTrackBranchPostSelection->Fill(iBranch);
-        }
 
         // RP trackpoints: # of used planes - at least 3 out of 4
     	bool useAtLeastThreePlanes = 1;
@@ -194,12 +195,6 @@ int main(int argc, char** argv)
 			}
 		}		
 
-        // post-selection: # of planes per tracpoint
-		for(UInt_t i = 0; i < correctedRpEvent->getNumberOfTrackPoints(); i++)
-		{
-            HistRpTrackPointPlanesUsedPostSelection->Fill(correctedRpEvent->getTrackPoint(i)->planesUsed());
-        }
-
         // fiducial region
     	bool withinFiducialRegion = 1;
 	    for(unsigned int k = 0; k < correctedRpEvent->getNumberOfTracks(); ++k)
@@ -209,10 +204,9 @@ int main(int argc, char** argv)
             double thetaX = trk->thetaRp(0);
             double thetaY = trk->thetaRp(1);
             double thetaZ = trk->thetaRp(2);
-            double px = 255*thetaX;
-            double py = 255*thetaY;
-            double pz = 255*thetaZ;     
-
+            double px = 254.867*thetaX;
+            double py = 254.867*thetaY;
+            double pz = 254.867*thetaZ;     
 
 			HistRpTrackPxPy->Fill(px, py);
 
@@ -222,53 +216,161 @@ int main(int argc, char** argv)
 			}  	
 		}
 
-        // post-seletcion: fiducial region
-	    for(unsigned int k = 0; k < correctedRpEvent->getNumberOfTracks(); ++k)
-	    {		
-			StUPCRpsTrack *trk = correctedRpEvent->getTrack(k);
-		    trk->setEvent(correctedRpEvent);
-            double thetaX = trk->thetaRp(0);
-            double thetaY = trk->thetaRp(1);
-            double thetaZ = trk->thetaRp(2);
-            double px = 255*thetaX;
-            double py = 255*thetaY;
-            double pz = 255*thetaZ;  
-	
-			HistRpTrackPxPyPostSelection->Fill(px, py);
-        }
- 
+
 		// vector for TOF matched tracks
 		vector <StUPCTrack*> tracksWithTofHit;
+        vector <StUPCTrack*> tracksWithTofHistClassA;
+        vector <StUPCTrack*> tracksWithTofHistClassB;
+              
         for (Int_t i = 0; i<upcEvt->getNumberOfTracks(); i++)
 		{
 			if(upcEvt->getTrack(i)->getFlag(StUPCTrack::kTof))
 			{
                 tracksWithTofHit.push_back(upcEvt->getTrack(i));
 			}
+
+			if(upcEvt->getTrack(i)->getFlag(StUPCTrack::kTof) and !(upcEvt->getTrack(i)->getFlag(StUPCTrack::kV0)) and !(upcEvt->getTrack(i)->getFlag(StUPCTrack::kCEP))  )
+			{
+                tracksWithTofHistClassA.push_back(upcEvt->getTrack(i));
+			}
+            
+			if(upcEvt->getTrack(i)->getFlag(StUPCTrack::kTof) and upcEvt->getTrack(i)->getFlag(StUPCTrack::kV0))
+			{
+                tracksWithTofHistClassB.push_back(upcEvt->getTrack(i));
+			}
 		}       		
 
 		// two TOF-matched primary tracks
         HistNumTofMatchedTracks->Fill(tracksWithTofHit.size());
 		bool isValidNumberOfTofMatchedTracks = 0;
-		if (tracksWithTofHit.size() <= 4)
+		bool isValidNumberOfTofMatchedTracksClassA = 0;
+        bool isValidNumberOfTofMatchedTracksClassB = 0;
+        
+              
+        
+		if (tracksWithTofHit.size() >=2 )
 		{
 			isValidNumberOfTofMatchedTracks = 1;
 		}
 
-        // set branch adress
-        mUPCTree->SetBranchAddress("mUPCEvent", &upcEvt);
-        mUPCTree->SetBranchAddress("correctedRpEvent", &correctedRpEvent);
         
-        // fill tree
-        mUPCTree->Fill();*/
-        
-        delete correctedRpEvent;
-    }
+		if (tracksWithTofHistClassA.size() >=2 )
+		{
+			isValidNumberOfTofMatchedTracksClassA = 1;
+		}
 
+        
+		if (tracksWithTofHistClassB.size() >=2 )
+		{
+			isValidNumberOfTofMatchedTracksClassB = 1;
+		}
+
+
+
+
+        if (hasTwoRpTracksOppositeSide and useAtLeastThreePlanes and withinFiducialRegion)
+        {
+            for (unsigned long int i = 0; i < triggerID.size(); i++)
+            {
+                if (upcEvt->isTrigger(triggerID[i]))
+                {
+                    HistTriggersN1->Fill(i);
+                }
+            }
+        }
+
+        if (isCepTrigger and useAtLeastThreePlanes and withinFiducialRegion)
+        {
+            for(UInt_t i = 0; i < correctedRpEvent->getNumberOfTracks(); i++)
+            {
+                int iBranch = correctedRpEvent->getTrack(i)->branch();
+                HistRpTrackBranchN1->Fill(iBranch);
+            }
+        }
+
+        if (isCepTrigger and hasTwoRpTracksOppositeSide and withinFiducialRegion)
+        {
+            for(UInt_t i = 0; i < correctedRpEvent->getNumberOfTrackPoints(); i++)
+            {
+                HistRpTrackPointPlanesUsedN1->Fill(correctedRpEvent->getTrackPoint(i)->planesUsed());
+            }	
+        }
+
+        if (isCepTrigger and hasTwoRpTracksOppositeSide and useAtLeastThreePlanes)
+        {
+
+            for(unsigned int k = 0; k < correctedRpEvent->getNumberOfTracks(); ++k)
+            {		
+                StUPCRpsTrack *trk = correctedRpEvent->getTrack(k);
+                trk->setEvent(correctedRpEvent);
+                double thetaX = trk->thetaRp(0);
+                double thetaY = trk->thetaRp(1);
+                double thetaZ = trk->thetaRp(2);
+                double px = 254.867*thetaX;
+                double py = 254.867*thetaY;
+                double pz = 254.867*thetaZ;     
+                HistRpTrackPxPyN1->Fill(px, py);
+            }
+
+        }
+
+
+        if (isCepTrigger and hasTwoRpTracksOppositeSide and useAtLeastThreePlanes and withinFiducialRegion and (isValidNumberOfTofMatchedTracksClassA or isValidNumberOfTofMatchedTracksClassB) )
+        {
+            // set branch adress
+            mUPCTree->SetBranchAddress("mUPCEvent", &upcEvt);
+            mUPCTree->SetBranchAddress("correctedRpEvent", &correctedRpEvent);
+            
+            // fill tree
+            mUPCTree->Fill();
+
+            for (unsigned long int i = 0; i < triggerID.size(); i++)
+            {
+                if (upcEvt->isTrigger(triggerID[i]))
+                {
+                    HistTriggersPostSelection->Fill(i);
+                }
+            }
+            
+            for(UInt_t i = 0; i < correctedRpEvent->getNumberOfTracks(); i++)
+            {
+                int iBranch = correctedRpEvent->getTrack(i)->branch();
+                HistRpTrackBranchPostSelection->Fill(iBranch);
+            }
+
+            for(UInt_t i = 0; i < correctedRpEvent->getNumberOfTrackPoints(); i++)
+            {
+                HistRpTrackPointPlanesUsedPostSelection->Fill(correctedRpEvent->getTrackPoint(i)->planesUsed());
+            }	
+
+            for(unsigned int k = 0; k < correctedRpEvent->getNumberOfTracks(); ++k)
+            {		
+                StUPCRpsTrack *trk = correctedRpEvent->getTrack(k);
+                trk->setEvent(correctedRpEvent);
+                double thetaX = trk->thetaRp(0);
+                double thetaY = trk->thetaRp(1);
+                double thetaZ = trk->thetaRp(2);
+                double px = 254.867*thetaX;
+                double py = 254.867*thetaY;
+                double pz = 254.867*thetaZ;     
+                HistRpTrackPxPyPostSelection->Fill(px, py);
+            }
+            HistNumTofMatchedTracksPostSelection->Fill(tracksWithTofHit.size());
+        }
+
+        delete correctedRpEvent;
+    
+    }
     // save root files that passed selection
     TFile outputFile(argv[3], "RECREATE");
     mUPCTree->Write();
     outputFile.Close();
+
+    //clean up
+    delete chain;
+    delete mUPCTree;
+    delete upcEvt;
+    delete rpEvt;
 
     // save histograms
     TFile *outfile = TFile::Open(argv[2], "recreate"); 
@@ -278,12 +380,39 @@ int main(int argc, char** argv)
     HistRpTrackPointPlanesUsed->Write();
     HistRpTrackPxPy->Write();
     HistNumTofMatchedTracks->Write();
+
     HistTriggersPostSelection->Write();
     HistRpTrackBranchPostSelection->Write();
     HistRpTrackPointPlanesUsedPostSelection->Write();
     HistRpTrackPxPyPostSelection->Write();
     HistNumTofMatchedTracksPostSelection->Write();
+
+    HistTriggersN1->Write();
+    HistRpTrackBranchN1->Write();
+    HistRpTrackPointPlanesUsedN1->Write();
+    HistRpTrackPxPyN1->Write();
+
     outfile->Close();
+
+    //Null the histogram pointers after deletion
+    HistTriggers = nullptr;
+    HistRpTrackBranch = nullptr;
+
+    HistRpTrackPointPlanesUsed= nullptr;
+    HistRpTrackPxPy= nullptr;
+    HistNumTofMatchedTracks= nullptr;
+
+    HistTriggersPostSelection= nullptr;
+    HistRpTrackBranchPostSelection= nullptr;
+    HistRpTrackPointPlanesUsedPostSelection= nullptr;
+    HistRpTrackPxPyPostSelection= nullptr;
+    HistNumTofMatchedTracksPostSelection= nullptr;
+
+    HistTriggersN1= nullptr;
+    HistRpTrackBranchN1= nullptr;
+    HistRpTrackPointPlanesUsedN1= nullptr;
+    HistRpTrackPxPyN1= nullptr;
+
 
     return 0;
 }

@@ -15,4 +15,6 @@ plots/dime_LLBar.root
 .vscode
 .DS_Store
 *.gch
-
+Exclusive_Analysis/data
+Exclusive_Analysis/share
+Exclusive_Analysis/PSData
