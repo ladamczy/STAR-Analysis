@@ -32,10 +32,33 @@ const double particleMass[nParticles] = { 0.13957, 0.493677, 0.93827 }; // pion,
 enum BRANCH_ID{ EU, ED, WU, WD, nBranches };
 enum RP_ID{ E1U, E1D, E2U, E2D, W1U, W1D, W2U, W2D, nRomanPots };
 
+//creating custom structure
+//for storing the data
+struct DataHolder{
+    bool isOld;
+    int fill, run, event;
+    // std::vector<double> RP_px, RP_py;
+
+    DataHolder(int fill, int run, int event): fill(fill), run(run), event(event){}
+
+    bool operator==(const DataHolder& rhs){
+        return std::tie(fill, run, event)==std::tie(rhs.fill, rhs.run, rhs.event);
+    }
+
+    bool operator<(const DataHolder& rhs){
+        if(fill<rhs.fill)
+            return true;
+        if(fill==rhs.fill&&run<rhs.run)
+            return true;
+        if(fill==rhs.fill&&run==rhs.run&&event<rhs.event)
+            return true;
+        return false;
+    }
+};
+
 bool CustomConnectInput(int arg, char **argv, TChain *fileChain);
-void FillingFunction(TChain* fileChain, StUPCEvent* tempUPCpointer, std::vector<tuple<int, int, int>>* tupleStorage);
-void DifferentiatingFunction(std::vector<tuple<int, int, int>>* tuplesFirst, std::vector<tuple<int, int, int>>* tuplesSecond, std::string name);
-bool tuple_sort(tuple<int, int, int> t1, tuple<int, int, int> t2);
+void FillingFunction(TChain* fileChain, StUPCEvent* tempUPCpointer, std::vector<DataHolder>* dataStorage);
+void DifferentiatingFunction(std::vector<DataHolder>* dataFirst, std::vector<DataHolder>* dataSecond, std::string name);
 
 int main(int argc, char **argv){
 
@@ -59,21 +82,21 @@ int main(int argc, char **argv){
     }
 
     //tables
-    std::vector<tuple<int, int, int>> id_old;
-    std::vector<tuple<int, int, int>> id_new;
+    std::vector<DataHolder> data_old;
+    std::vector<DataHolder> data_new;
 
     //setting up variables
     StUPCEvent* tempUPCpointer = new StUPCEvent();
     // StRPEvent* tempRPpointer = nullptr;
 
-    FillingFunction(upcChainOld, tempUPCpointer, &id_old);
-    FillingFunction(upcChainNew, tempUPCpointer, &id_new);
+    FillingFunction(upcChainOld, tempUPCpointer, &data_old);
+    FillingFunction(upcChainNew, tempUPCpointer, &data_new);
 
-    std::sort(id_old.begin(), id_old.end(), tuple_sort);
-    std::sort(id_new.begin(), id_new.end(), tuple_sort);
+    std::sort(data_old.begin(), data_old.end());
+    std::sort(data_new.begin(), data_new.end());
 
-    DifferentiatingFunction(&id_old, &id_new, "old - new");
-    DifferentiatingFunction(&id_new, &id_old, "new - old");
+    DifferentiatingFunction(&data_old, &data_new, "old - new");
+    DifferentiatingFunction(&data_new, &data_old, "new - old");
 }
 
 bool CustomConnectInput(int arg, char **argv, TChain *fileChain){
@@ -121,7 +144,7 @@ bool CustomConnectInput(int arg, char **argv, TChain *fileChain){
     return true;
 }
 
-void FillingFunction(TChain* fileChain, StUPCEvent* tempUPCpointer, std::vector<tuple<int, int, int>>* tupleStorage){
+void FillingFunction(TChain* fileChain, StUPCEvent* tempUPCpointer, std::vector<DataHolder>* dataStorage){
     //setting up branches
     fileChain->SetBranchAddress("mUPCEvent", &tempUPCpointer);
     // fileChain->SetBranchAddress("mRPEvent", &tempRPpointer);
@@ -132,28 +155,18 @@ void FillingFunction(TChain* fileChain, StUPCEvent* tempUPCpointer, std::vector<
         if(i%100000==0){
             std::cout<<i<<std::endl;
         }
-        tupleStorage->push_back(tuple(tempUPCpointer->getFillNumber(), tempUPCpointer->getRunNumber(), tempUPCpointer->getEventNumber()));
+        dataStorage->push_back(DataHolder(tempUPCpointer->getFillNumber(), tempUPCpointer->getRunNumber(), tempUPCpointer->getEventNumber()));
     }
 }
 
-void DifferentiatingFunction(std::vector<tuple<int, int, int>>* tuplesFirst, std::vector<tuple<int, int, int>>* tuplesSecond, std::string name){
-    std::vector<tuple<int, int, int>> id_difference;
-    std::set_difference(tuplesFirst->begin(), tuplesFirst->end(), tuplesSecond->begin(), tuplesSecond->end(), std::back_inserter(id_difference), tuple_sort);
-    printf("Difference %s: %ld\n", name.c_str(), id_difference.size());
-    id_difference.erase(unique(id_difference.begin(), id_difference.end()), id_difference.end());
-    printf("Difference %s, deduplicated: %ld\nList of differing entries:\n", name.c_str(), id_difference.size());
-    for(size_t i = 0; i<id_difference.size(); i++){
-        printf("%d %d %d\n", std::get<0>(id_difference[i]), std::get<1>(id_difference[i]), std::get<2>(id_difference[i]));
+void DifferentiatingFunction(std::vector<DataHolder>* dataFirst, std::vector<DataHolder>* dataSecond, std::string name){
+    std::vector<DataHolder> data_difference;
+    std::set_difference(dataFirst->begin(), dataFirst->end(), dataSecond->begin(), dataSecond->end(), std::back_inserter(data_difference));
+    printf("Difference %s: %ld\n", name.c_str(), data_difference.size());
+    data_difference.erase(unique(data_difference.begin(), data_difference.end()), data_difference.end());
+    printf("Difference %s, deduplicated: %ld\nList of differing entries:\n", name.c_str(), data_difference.size());
+    for(size_t i = 0; i<data_difference.size(); i++){
+        printf("%d %d %d\n", data_difference[i].fill, data_difference[i].run, data_difference[i].event);
     }
-    id_difference.clear();
-}
-
-bool tuple_sort(tuple<int, int, int> t1, tuple<int, int, int> t2){
-    if(std::get<0>(t1)<std::get<0>(t2))
-        return true;
-    if(std::get<0>(t1)==std::get<0>(t2)&&std::get<1>(t1)<std::get<1>(t2))
-        return true;
-    if(std::get<0>(t1)==std::get<0>(t2)&&std::get<1>(t1)==std::get<1>(t2)&&std::get<2>(t1)<std::get<2>(t2))
-        return true;
-    return false;
+    data_difference.clear();
 }
