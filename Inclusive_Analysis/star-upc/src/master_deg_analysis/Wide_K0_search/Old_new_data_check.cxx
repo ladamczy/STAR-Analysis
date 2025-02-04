@@ -33,6 +33,8 @@ enum BRANCH_ID{ EU, ED, WU, WD, nBranches };
 enum RP_ID{ E1U, E1D, E2U, E2D, W1U, W1D, W2U, W2D, nRomanPots };
 
 bool CustomConnectInput(int arg, char **argv, TChain *fileChain);
+void FillingFunction(TChain* fileChain, StUPCEvent* tempUPCpointer, std::vector<tuple<int, int, int>>* tupleStorage);
+void DifferentiatingFunction(std::vector<tuple<int, int, int>>* tuplesFirst, std::vector<tuple<int, int, int>>* tuplesSecond, std::string name);
 bool tuple_sort(tuple<int, int, int> t1, tuple<int, int, int> t2);
 
 int main(int argc, char **argv){
@@ -59,67 +61,19 @@ int main(int argc, char **argv){
     //tables
     std::vector<tuple<int, int, int>> id_old;
     std::vector<tuple<int, int, int>> id_new;
-    std::vector<tuple<int, int, int>> id_difference;
 
     //setting up variables
-    StUPCEvent *tempUPCpointer = new StUPCEvent();
-    // StRPEvent *tempRPpointer = nullptr;
+    StUPCEvent* tempUPCpointer = new StUPCEvent();
+    // StRPEvent* tempRPpointer = nullptr;
 
-    //old data
-    //setting up branches
-    upcChainOld->Branch("mUPCEvent", tempUPCpointer);
-    // upcChainOld->Branch("mRPEvent", tempRPpointer);
-    upcChainOld->SetBranchAddress("mUPCEvent", &tempUPCpointer);
-    // upcChainOld->SetBranchAddress("mRPEvent", &tempRPpointer);
-    //fill loop
-    std::cout<<"Old data: "<<upcChainOld->GetEntries()<<std::endl;
-    for(size_t i = 0; i<upcChainOld->GetEntries(); i++){
-        upcChainOld->GetEntry(i);
-        if(i%100000==0){
-            std::cout<<i<<std::endl;
-        }
-        id_old.push_back(tuple(tempUPCpointer->getFillNumber(), tempUPCpointer->getRunNumber(), tempUPCpointer->getEventNumber()));
-        // std::cout<<tempUPCpointer->getFillNumber()<<" "<<tempUPCpointer->getRunNumber()<<" "<<tempUPCpointer->getEventNumber()<<std::endl;
-    }
-    //new data
-    //setting up branches
-    upcChainNew->Branch("mUPCEvent", tempUPCpointer);
-    // upcChainNew->Branch("mRPEvent", tempRPpointer);
-    upcChainNew->SetBranchAddress("mUPCEvent", &tempUPCpointer);
-    // upcChainNew->SetBranchAddress("mRPEvent", &tempRPpointer);
-    //fill loop
-    std::cout<<"New data: "<<upcChainNew->GetEntries()<<std::endl;
-    for(size_t i = 0; i<upcChainNew->GetEntries(); i++){
-        upcChainNew->GetEntry(i);
-        if(i%100000==0){
-            std::cout<<i<<std::endl;
-        }
-        id_new.push_back(tuple(tempUPCpointer->getFillNumber(), tempUPCpointer->getRunNumber(), tempUPCpointer->getEventNumber()));
-        // std::cout<<tempUPCpointer->getFillNumber()<<" "<<tempUPCpointer->getRunNumber()<<" "<<tempUPCpointer->getEventNumber()<<std::endl;
-    }
+    FillingFunction(upcChainOld, tempUPCpointer, &id_old);
+    FillingFunction(upcChainNew, tempUPCpointer, &id_new);
 
     std::sort(id_old.begin(), id_old.end(), tuple_sort);
     std::sort(id_new.begin(), id_new.end(), tuple_sort);
 
-    //old - new
-    std::set_difference(id_old.begin(), id_old.end(), id_new.begin(), id_new.end(), std::back_inserter(id_difference), tuple_sort);
-    printf("Difference old - new: %ld\n", id_difference.size());
-    id_difference.erase(unique(id_difference.begin(), id_difference.end()), id_difference.end());
-    printf("Difference old - new, deduplicated: %ld\nList of differing entries:\n", id_difference.size());
-    for(size_t i = 0; i<id_difference.size(); i++){
-        printf("%d %d %d\n", std::get<0>(id_difference[i]), std::get<1>(id_difference[i]), std::get<2>(id_difference[i]));
-    }
-    id_difference.clear();
-
-    //new - old
-    std::set_difference(id_new.begin(), id_new.end(), id_old.begin(), id_old.end(), std::back_inserter(id_difference), tuple_sort);
-    printf("Difference new - old: %ld\n", id_difference.size());
-    id_difference.erase(unique(id_difference.begin(), id_difference.end()), id_difference.end());
-    printf("Difference new - old, deduplicated: %ld\nList of differing entries:\n", id_difference.size());
-    for(size_t i = 0; i<id_difference.size(); i++){
-        printf("%d %d %d\n", std::get<0>(id_difference[i]), std::get<1>(id_difference[i]), std::get<2>(id_difference[i]));
-    }
-    id_difference.clear();
+    DifferentiatingFunction(&id_old, &id_new, "old - new");
+    DifferentiatingFunction(&id_new, &id_old, "new - old");
 }
 
 bool CustomConnectInput(int arg, char **argv, TChain *fileChain){
@@ -165,6 +119,33 @@ bool CustomConnectInput(int arg, char **argv, TChain *fileChain){
 
     cout<<"There are "<<fileChain->GetEntries()<<" entries"<<endl;
     return true;
+}
+
+void FillingFunction(TChain* fileChain, StUPCEvent* tempUPCpointer, std::vector<tuple<int, int, int>>* tupleStorage){
+    //setting up branches
+    fileChain->SetBranchAddress("mUPCEvent", &tempUPCpointer);
+    // fileChain->SetBranchAddress("mRPEvent", &tempRPpointer);
+    //fill loop
+    std::cout<<"Old data: "<<fileChain->GetEntries()<<std::endl;
+    for(Long64_t i = 0; i<fileChain->GetEntries(); i++){
+        fileChain->GetEntry(i);
+        if(i%100000==0){
+            std::cout<<i<<std::endl;
+        }
+        tupleStorage->push_back(tuple(tempUPCpointer->getFillNumber(), tempUPCpointer->getRunNumber(), tempUPCpointer->getEventNumber()));
+    }
+}
+
+void DifferentiatingFunction(std::vector<tuple<int, int, int>>* tuplesFirst, std::vector<tuple<int, int, int>>* tuplesSecond, std::string name){
+    std::vector<tuple<int, int, int>> id_difference;
+    std::set_difference(tuplesFirst->begin(), tuplesFirst->end(), tuplesSecond->begin(), tuplesSecond->end(), std::back_inserter(id_difference), tuple_sort);
+    printf("Difference %s: %ld\n", name.c_str(), id_difference.size());
+    id_difference.erase(unique(id_difference.begin(), id_difference.end()), id_difference.end());
+    printf("Difference %s, deduplicated: %ld\nList of differing entries:\n", name.c_str(), id_difference.size());
+    for(size_t i = 0; i<id_difference.size(); i++){
+        printf("%d %d %d\n", std::get<0>(id_difference[i]), std::get<1>(id_difference[i]), std::get<2>(id_difference[i]));
+    }
+    id_difference.clear();
 }
 
 bool tuple_sort(tuple<int, int, int> t1, tuple<int, int, int> t2){
