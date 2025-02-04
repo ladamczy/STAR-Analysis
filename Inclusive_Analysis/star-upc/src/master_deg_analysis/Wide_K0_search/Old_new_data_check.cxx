@@ -59,14 +59,13 @@ void DifferentiatingFunction(std::vector<DataHolder>* dataFirst, std::vector<Dat
 
 int main(int argc, char **argv){
 
-    // int nthreads = 2;
-    // if(argc==4){
-    //     nthreads = atoi(argv[3]);
-    // }
-    // cout<<"Program is running on "<<nthreads<<" threads"<<endl;
+    int nthreads = 2;
+    if(argc==4){
+        nthreads = atoi(argv[3]);
+    }
+    cout<<"Program is running on "<<nthreads<<" threads"<<endl;
     ROOT::EnableThreadSafety();
-    //actually i'm not sure if it's needed here
-    // ROOT::EnableImplicitMT(nthreads); //turn on multicore processing
+    ROOT::EnableImplicitMT(nthreads); //turn on multicore processing
 
     //preparing inputs
     TChain *upcChainOld = new TChain("mUPCTree");
