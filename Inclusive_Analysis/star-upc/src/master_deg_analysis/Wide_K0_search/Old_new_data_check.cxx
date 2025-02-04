@@ -45,13 +45,13 @@ struct DataHolder{
         TPC_eta(TPC_eta), TPC_phi(TPC_phi){}
 
     bool operator==(const DataHolder& rhs){
-        return std::tie(fill, run, event, RP_px, RP_py, TPC_pt, TPC_eta, TPC_phi)==std::tie(rhs.fill, rhs.run, rhs.event, rhs.RP_px, rhs.RP_py, rhs.TPC_pt, rhs.TPC_eta, rhs.TPC_phi);
+        return std::tie(fill, run, event, RP_px, RP_py, TPC_pt, TPC_eta, TPC_phi, nonPrimaryWithNoAdditionalFlags)==std::tie(rhs.fill, rhs.run, rhs.event, rhs.RP_px, rhs.RP_py, rhs.TPC_pt, rhs.TPC_eta, rhs.TPC_phi, rhs.nonPrimaryWithNoAdditionalFlags);
     }
     bool operator<(const DataHolder& rhs){
-        return std::tie(fill, run, event, RP_px, RP_py, TPC_pt, TPC_eta, TPC_phi)<std::tie(rhs.fill, rhs.run, rhs.event, rhs.RP_px, rhs.RP_py, rhs.TPC_pt, rhs.TPC_eta, rhs.TPC_phi);
+        return std::tie(fill, run, event, RP_px, RP_py, TPC_pt, TPC_eta, TPC_phi, nonPrimaryWithNoAdditionalFlags)<std::tie(rhs.fill, rhs.run, rhs.event, rhs.RP_px, rhs.RP_py, rhs.TPC_pt, rhs.TPC_eta, rhs.TPC_phi, rhs.nonPrimaryWithNoAdditionalFlags);
     }
     bool operator>(const DataHolder& rhs){
-        return std::tie(fill, run, event, RP_px, RP_py, TPC_pt, TPC_eta, TPC_phi)>std::tie(rhs.fill, rhs.run, rhs.event, rhs.RP_px, rhs.RP_py, rhs.TPC_pt, rhs.TPC_eta, rhs.TPC_phi);
+        return std::tie(fill, run, event, RP_px, RP_py, TPC_pt, TPC_eta, TPC_phi, nonPrimaryWithNoAdditionalFlags)>std::tie(rhs.fill, rhs.run, rhs.event, rhs.RP_px, rhs.RP_py, rhs.TPC_pt, rhs.TPC_eta, rhs.TPC_phi, rhs.nonPrimaryWithNoAdditionalFlags);
     }
 };
 
@@ -192,6 +192,10 @@ void FillingFunction(TChain* fileChain, StUPCEvent* tempUPCpointer, StRPEvent* t
         dataStorage->push_back(DataHolder(tempUPCpointer->getFillNumber(), tempUPCpointer->getRunNumber(), tempUPCpointer->getEventNumber(),
             RP_px, RP_py, TPC_pt, TPC_eta, TPC_phi));
         dataStorage->back().nonPrimaryWithNoAdditionalFlags = NoAdditionalFlags;
+        if(i==2000&&strcmp(dataName.c_str(), "Old Data")==0){
+            dataStorage->back().nonPrimaryWithNoAdditionalFlags = true;
+        }
+
         //cleaning
         RP_px.clear();
         RP_py.clear();
