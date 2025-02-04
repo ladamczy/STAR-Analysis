@@ -37,27 +37,24 @@ enum RP_ID{ E1U, E1D, E2U, E2D, W1U, W1D, W2U, W2D, nRomanPots };
 struct DataHolder{
     bool isOld;
     int fill, run, event;
-    // std::vector<double> RP_px, RP_py;
+    std::vector<double> RP_px, RP_py;
 
-    DataHolder(int fill, int run, int event): fill(fill), run(run), event(event){}
+    DataHolder(int fill, int run, int event, std::vector<double> RP_px, std::vector<double> RP_py):
+        fill(fill), run(run), event(event), RP_px(RP_px), RP_py(RP_py){}
 
     bool operator==(const DataHolder& rhs){
-        return std::tie(fill, run, event)==std::tie(rhs.fill, rhs.run, rhs.event);
+        return std::tie(fill, run, event, RP_px, RP_py)==std::tie(rhs.fill, rhs.run, rhs.event, rhs.RP_px, rhs.RP_py);
     }
-
     bool operator<(const DataHolder& rhs){
-        if(fill<rhs.fill)
-            return true;
-        if(fill==rhs.fill&&run<rhs.run)
-            return true;
-        if(fill==rhs.fill&&run==rhs.run&&event<rhs.event)
-            return true;
-        return false;
+        return std::tie(fill, run, event, RP_px, RP_py)<std::tie(rhs.fill, rhs.run, rhs.event, rhs.RP_px, rhs.RP_py);
+    }
+    bool operator>(const DataHolder& rhs){
+        return std::tie(fill, run, event, RP_px, RP_py)>std::tie(rhs.fill, rhs.run, rhs.event, rhs.RP_px, rhs.RP_py);
     }
 };
 
 bool CustomConnectInput(int arg, char **argv, TChain *fileChain);
-void FillingFunction(TChain* fileChain, StUPCEvent* tempUPCpointer, std::vector<DataHolder>* dataStorage);
+void FillingFunction(TChain* fileChain, StUPCEvent* tempUPCpointer, StRPEvent* tempRPpointer, std::vector<DataHolder>* dataStorage, std::string dataName);
 void DifferentiatingFunction(std::vector<DataHolder>* dataFirst, std::vector<DataHolder>* dataSecond, std::string name);
 
 int main(int argc, char **argv){
@@ -87,10 +84,10 @@ int main(int argc, char **argv){
 
     //setting up variables
     StUPCEvent* tempUPCpointer = new StUPCEvent();
-    // StRPEvent* tempRPpointer = nullptr;
+    StRPEvent* tempRPpointer = new StRPEvent();
 
-    FillingFunction(upcChainOld, tempUPCpointer, &data_old);
-    FillingFunction(upcChainNew, tempUPCpointer, &data_new);
+    FillingFunction(upcChainOld, tempUPCpointer, tempRPpointer, &data_old, "Old data");
+    FillingFunction(upcChainNew, tempUPCpointer, tempRPpointer, &data_new, "New data");
 
     std::sort(data_old.begin(), data_old.end());
     std::sort(data_new.begin(), data_new.end());
@@ -144,18 +141,30 @@ bool CustomConnectInput(int arg, char **argv, TChain *fileChain){
     return true;
 }
 
-void FillingFunction(TChain* fileChain, StUPCEvent* tempUPCpointer, std::vector<DataHolder>* dataStorage){
+void FillingFunction(TChain* fileChain, StUPCEvent* tempUPCpointer, StRPEvent* tempRPpointer, std::vector<DataHolder>* dataStorage, std::string dataName){
     //setting up branches
     fileChain->SetBranchAddress("mUPCEvent", &tempUPCpointer);
-    // fileChain->SetBranchAddress("mRPEvent", &tempRPpointer);
+    fileChain->SetBranchAddress("mRPEvent", &tempRPpointer);
+    //setting up other variables
+    std::vector<double> RP_px, RP_py;
     //fill loop
-    std::cout<<"Old data: "<<fileChain->GetEntries()<<std::endl;
+    std::cout<<dataName+": "<<fileChain->GetEntries()<<std::endl;
     for(Long64_t i = 0; i<fileChain->GetEntries(); i++){
         fileChain->GetEntry(i);
         if(i%100000==0){
             std::cout<<i<<std::endl;
         }
-        dataStorage->push_back(DataHolder(tempUPCpointer->getFillNumber(), tempUPCpointer->getRunNumber(), tempUPCpointer->getEventNumber()));
+        for(size_t j = 0; j<tempRPpointer->getNumberOfTracks(); j++){
+            RP_px.push_back(tempRPpointer->getTrack(j)->pVec().X());
+            RP_py.push_back(tempRPpointer->getTrack(j)->pVec().Y());
+        }
+
+        //filling the data
+        dataStorage->push_back(DataHolder(tempUPCpointer->getFillNumber(), tempUPCpointer->getRunNumber(), tempUPCpointer->getEventNumber(),
+            RP_px, RP_py));
+        //cleaning
+        RP_px.clear();
+        RP_py.clear();
     }
 }
 
