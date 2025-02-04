@@ -37,6 +37,7 @@ enum RP_ID{ E1U, E1D, E2U, E2D, W1U, W1D, W2U, W2D, nRomanPots };
 struct DataHolder{
     int fill, run, event;
     std::vector<double> RP_px, RP_py, TPC_pt, TPC_eta, TPC_phi;
+    bool nonPrimaryWithNoAdditionalFlags;
 
     DataHolder(int fill, int run, int event, std::vector<double> RP_px, std::vector<double> RP_py,
         std::vector<double>TPC_pt, std::vector<double>TPC_eta, std::vector<double>TPC_phi):
@@ -94,6 +95,21 @@ int main(int argc, char **argv){
 
     DifferentiatingFunction(&data_old, &data_new, "old - new");
     DifferentiatingFunction(&data_new, &data_old, "new - old");
+
+    //other check:
+    //if all the tracks with no kPrimary have either kV0 or kCEP
+    printf("Old data, if there exist some tracks with no kPrimary flag:\n");
+    for(size_t i = 0; i<data_old.size(); i++){
+        if(data_old[i].nonPrimaryWithNoAdditionalFlags){
+            printf("%d %d %d\n", data_old[i].fill, data_old[i].run, data_old[i].event);
+        }
+    }
+    printf("New data, if there exist some tracks with no kPrimary and no kV0 or kCEP flags:\n");
+    for(size_t i = 0; i<data_new.size(); i++){
+        if(data_new[i].nonPrimaryWithNoAdditionalFlags){
+            printf("%d %d %d\n", data_new[i].fill, data_new[i].run, data_new[i].event);
+        }
+    }
 }
 
 bool CustomConnectInput(int arg, char **argv, TChain *fileChain){
@@ -147,6 +163,7 @@ void FillingFunction(TChain* fileChain, StUPCEvent* tempUPCpointer, StRPEvent* t
     fileChain->SetBranchAddress("mRPEvent", &tempRPpointer);
     //setting up other variables
     std::vector<double> RP_px, RP_py, TPC_pt, TPC_eta, TPC_phi;
+    bool NoAdditionalFlags = false;
     //fill loop
     std::cout<<dataName+": "<<fileChain->GetEntries()<<std::endl;
     for(Long64_t i = 0; i<fileChain->GetEntries(); i++){
@@ -163,6 +180,8 @@ void FillingFunction(TChain* fileChain, StUPCEvent* tempUPCpointer, StRPEvent* t
                 TPC_pt.push_back(tempUPCpointer->getTrack(j)->getPt());
                 TPC_eta.push_back(tempUPCpointer->getTrack(j)->getEta());
                 TPC_phi.push_back(tempUPCpointer->getTrack(j)->getPhi());
+            } else if(!tempUPCpointer->getTrack(j)->getFlag(StUPCTrack::kV0)&&!tempUPCpointer->getTrack(j)->getFlag(StUPCTrack::kCEP)){
+                NoAdditionalFlags = true;
             }
         }
         std::sort(TPC_pt.begin(), TPC_pt.end());
@@ -172,12 +191,14 @@ void FillingFunction(TChain* fileChain, StUPCEvent* tempUPCpointer, StRPEvent* t
         //filling the data
         dataStorage->push_back(DataHolder(tempUPCpointer->getFillNumber(), tempUPCpointer->getRunNumber(), tempUPCpointer->getEventNumber(),
             RP_px, RP_py, TPC_pt, TPC_eta, TPC_phi));
+        dataStorage->back().nonPrimaryWithNoAdditionalFlags = NoAdditionalFlags;
         //cleaning
         RP_px.clear();
         RP_py.clear();
         TPC_pt.clear();
         TPC_eta.clear();
         TPC_phi.clear();
+        NoAdditionalFlags = false;
     }
 }
 
