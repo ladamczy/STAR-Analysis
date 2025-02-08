@@ -188,7 +188,9 @@ int main(int argc, char** argv){
             //     continue;
             // }
             //different triggers
-            if(!tempUPCpointer->isTrigger(570701) or !tempUPCpointer->isTrigger(570705) or !tempUPCpointer->isTrigger(570711)){
+            if(tempUPCpointer->isTrigger(570701) or tempUPCpointer->isTrigger(570705) or tempUPCpointer->isTrigger(570711)){
+                //do nothing, go further, its okay, it has triggers
+            } else{
                 continue;
             }
             //2 tracks
