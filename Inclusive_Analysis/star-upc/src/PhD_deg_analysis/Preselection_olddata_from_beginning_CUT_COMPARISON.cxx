@@ -277,7 +277,7 @@ int main(int argc, char** argv){
                     classB++;
                 }
             }
-            if(classA<2 or classB<2){
+            if(classA<2 && classB<2){
                 continue;
             }
 
