@@ -264,6 +264,23 @@ int main(int argc, char** argv){
             //     continue;
             // }
 
+            //two class test
+            //at least 2 good tracks of opposite signs
+            int classA = 0;
+            int classB = 0;
+            for(int i = 0; i<tempUPCpointer->getNumberOfTracks(); i++){
+                StUPCTrack* tmptrk = tempUPCpointer->getTrack(i);
+                if(tmptrk->getFlag(StUPCTrack::kTof)&&(!tmptrk->getFlag(StUPCTrack::kV0))&&(!tmptrk->getFlag(StUPCTrack::kCEP))){
+                    classA++;
+                }
+                if(tmptrk->getFlag(StUPCTrack::kTof)&&tmptrk->getFlag(StUPCTrack::kV0)){
+                    classB++;
+                }
+            }
+            if(classA<2 or classB<2){
+                continue;
+            }
+
             //end of tests
 
             //filling
