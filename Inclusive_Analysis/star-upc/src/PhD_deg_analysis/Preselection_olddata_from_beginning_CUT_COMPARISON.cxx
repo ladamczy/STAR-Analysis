@@ -224,8 +224,15 @@ int main(int argc, char** argv){
                 }
 
                 //fiducial
+                // old
                 px = trk->pVec().X();
                 py = trk->pVec().Y();
+                // test
+                // double thetaX = trk->thetaRp(0);
+                // double thetaY = trk->thetaRp(1);
+                // px = 254.867*thetaX;
+                // py = 254.867*thetaY;
+                // actual part
                 f1 = (0.4<abs(py)&&abs(py)<0.8);
                 f2 = (-0.27<px);
                 f3 = (pow(px+0.6, 2)+pow(py, 2)<1.25);
@@ -280,6 +287,14 @@ int main(int argc, char** argv){
             if(classA<2 && classB<2){
                 continue;
             }
+
+            //test for ALL of the trackpoints
+            // for(int i = 0; i<tempRPpointer->getNumberOfTrackPoints(); i++){
+            //     if(tempRPpointer->getTrackPoint(i)->planesUsed()<3){
+            //         goodQuality = false;
+            //         break;
+            //     }
+            // }
 
             //end of tests
 
