@@ -10,6 +10,7 @@
 #include <iostream>
 
 // ROOT headers
+#include "TH1D.h"
 #include "TSystem.h"
 #include <TTreeReader.h>
 #include <ROOT/TTreeProcessorMT.hxx>
@@ -84,6 +85,16 @@ int main(int argc, char** argv){
     //Afterburner things
     LoadOffsetFile("STAR-Analysis/share/OffSetsCorrectionsRun17.list", mCorrection);
 
+    //histogram for measuring event number
+    int nEvents = 6;
+    ROOT::TThreadedObject<TH1D> events("events", ";;events", nEvents, 0, nEvents);
+    events->GetXaxis()->SetBinLabel(1, "All");
+    events->GetXaxis()->SetBinLabel(2, "CPT cuts");
+    events->GetXaxis()->SetBinLabel(3, "two protons");
+    events->GetXaxis()->SetBinLabel(4, "#splitline{one proton}{each side}");
+    events->GetXaxis()->SetBinLabel(5, "#splitline{RP tracks}{quality check}");
+    events->GetXaxis()->SetBinLabel(6, "#splitline{central tracks}{quality check}");
+
     auto myFunction = [&](TFile* myFile){
         //test if tree is not empty
         TFile* tempFile = TFile::Open(myFile->GetTitle());
@@ -120,6 +131,9 @@ int main(int argc, char** argv){
         double firstBranch, secondBranch;
         bool IsFirstLoop = true;
 
+        //cutflow histogram
+        auto eventsLocal = events.Get();
+
         // actual copying
         do{
             goodQuality = true;
@@ -152,6 +166,7 @@ int main(int argc, char** argv){
             // 590701 RP_CPT2
             // 590705 RP_CPT2noBBCL
             // 590708 RP_CPTnoBBCL
+            eventsLocal->Fill(0);
             if(!tempUPCpointer->isTrigger(570701)&&
                 !tempUPCpointer->isTrigger(570711)&&
                 !tempUPCpointer->isTrigger(570705)&&
@@ -161,10 +176,12 @@ int main(int argc, char** argv){
                 !tempUPCpointer->isTrigger(590708)){
                 continue;
             }
+            eventsLocal->Fill(1);
             //2 tracks
             if(tempRPpointer->getNumberOfTracks()!=2){
                 continue;
             }
+            eventsLocal->Fill(2);
             //1 track east, 1 track west (neat trick - assigning negative to east by
             //substracting 1.5, and if after multiplying they are <0, they are from opposite sides
             firstBranch = tempRPpointer->getTrack(0)->branch();
@@ -172,6 +189,7 @@ int main(int argc, char** argv){
             if((firstBranch-1.5)*(secondBranch-1.5)>0){
                 continue;
             }
+            eventsLocal->Fill(3);
             //at least 3 out of 4 planes on both and both should have both RPs hit
             //also fiducial
             for(unsigned int k = 0; k<tempRPpointer->getNumberOfTracks(); ++k){
@@ -198,6 +216,7 @@ int main(int argc, char** argv){
                 }
             }
             if(!goodQuality){ continue; }
+            eventsLocal->Fill(4);
 
             //UPC tests
             //at least 2 good tracks, either from new or old data
@@ -217,6 +236,7 @@ int main(int argc, char** argv){
             if(nOfGoodTracksOld<2&&nOfGoodTracksNew<2){
                 continue;
             }
+            eventsLocal->Fill(5);
 
             //end of tests
 
@@ -267,6 +287,13 @@ int main(int argc, char** argv){
     ROOT::TThreadExecutor TreeProcessor(nthreads);
     // Launch the parallel processing of the tree
     filtered_entries = TreeProcessor.MapReduce(myFunction, listOfFiles, redFunction);
+
+    //create the cutflow histogram
+    auto eventsFinal = events.Merge();
+    TFile* eventsOutputFile = TFile::Open((outputFolder+"result.root").c_str(), "recreate");
+    eventsOutputFile->cd();
+    eventsFinal->Write();
+    eventsOutputFile->Close();
 
     cout<<"Finished processing "<<endl;
     cout<<"Analyzed total "<<upcChain->GetEntries()<<" entries"<<endl;
