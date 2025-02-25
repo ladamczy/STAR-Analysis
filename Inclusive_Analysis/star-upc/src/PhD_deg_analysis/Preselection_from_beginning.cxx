@@ -153,6 +153,7 @@ int main(int argc, char** argv){
             //unused cuts:
             //fiducial
             //Xi <0.005 cut
+            //Xi >0.2 cut
             //elastic Momentum and Xi cut
             //exactly one vertex
             //pT and eta cuts
@@ -205,12 +206,6 @@ int main(int argc, char** argv){
                 }
                 //check if track has at least 3 of 4 RP planes used
                 if(trk->getTrackPoint(0)->planesUsed()<3||trk->getTrackPoint(1)->planesUsed()<3){
-                    goodQuality = false;
-                    break;
-                }
-
-                //Xi cut
-                if(trk->xi(beamMomentum)>=0.2){
                     goodQuality = false;
                     break;
                 }
