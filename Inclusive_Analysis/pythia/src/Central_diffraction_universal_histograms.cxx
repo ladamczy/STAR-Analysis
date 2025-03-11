@@ -9,8 +9,12 @@
 #include "TEfficiency.h"
 #include "THStack.h"
 #include "TCanvas.h"
+#include "TStyle.h"
+#include "TROOT.h"
 
-void drawStack(TH2D* particles, TH1D* background, std::string folderWithDiagonal, std::string name, std::string title, double x1, double x2);
+#include "MyStyles.h"
+
+void drawStack(TH2D* particles, TH1D* background, std::string folderWithDiagonal, std::string name, std::string title, double x1, double x2, double* legendPosition = nullptr);
 
 int main(int argc, char const* argv[]){
     TFile* input = TFile::Open(argv[1]);
@@ -30,16 +34,23 @@ int main(int argc, char const* argv[]){
 
     //drawing them
     drawStack(MpipiParticles, nullptr, folderWithDiagonal, "MpipiNoBcg", "Assuming  #pi#pi masses, only resonant production shown", 0.2, 1.0);
-    drawStack(MpipiParticles, MpipiNonresonant, folderWithDiagonal, "Mpipi", "Assuming  #pi#pi masses", 0.2, 1.0);
-    drawStack(MKpiParticles, nullptr, folderWithDiagonal, "MKpiNoBcg", "Assuming  K#pi masses, only resonant production shown", 0.5, 1.3);
-    drawStack(MKpiParticles, MKpiNonresonant, folderWithDiagonal, "MKpi", "Assuming  K#pi masses", 0.5, 1.3);
+    double legPos[] = { 0.35, 0.2, 0.65, 0.5 };
+    drawStack(MpipiParticles, MpipiNonresonant, folderWithDiagonal, "Mpipi", "Assuming  #pi#pi masses", 0.2, 1.0, legPos);
+    double legPos2[] = { 0.25, 0.65, 0.45, 0.89 };
+    drawStack(MKpiParticles, nullptr, folderWithDiagonal, "MKpiNoBcg", "Assuming  K#pi masses, only resonant production shown", 0.5, 1.3, legPos2);
+    double legPos3[] = { 0.4, 0.22, 0.7, 0.47 };
+    drawStack(MKpiParticles, MKpiNonresonant, folderWithDiagonal, "MKpi", "Assuming  K#pi masses", 0.5, 1.3, legPos3);
     drawStack(MKKParticles, nullptr, folderWithDiagonal, "MKKNoBcg", "Assuming  KK masses, only resonant production shown", 0.9, 1.7);
     drawStack(MKKParticles, MKKNonresonant, folderWithDiagonal, "MKK", "Assuming  KK masses", 0.9, 1.7);
 
     return 0;
 }
 
-void drawStack(TH2D* particles, TH1D* background, std::string folderWithDiagonal, std::string name, std::string title, double x1, double x2){
+void drawStack(TH2D* particles, TH1D* background, std::string folderWithDiagonal, std::string name, std::string title, double x1, double x2, double* legendPosition){
+    MyStyles styleLibrary;
+    TStyle mystyle = styleLibrary.Hist2DQuarterSize(true);
+    mystyle.cd();
+    gROOT->ForceStyle();
     THStack MStack(name.c_str(), title.c_str());
     std::vector<TH1D*> projections;
     for(Int_t i = 1; i<particles->GetXaxis()->GetNbins()+1; i++){
@@ -48,7 +59,7 @@ void drawStack(TH2D* particles, TH1D* background, std::string folderWithDiagonal
     }
     //adding background if necessary
     if(background!=nullptr){
-        background->SetName("Nonresonant or mismatched");
+        background->SetName("Nonresonant/mismatched");
         background->SetFillColor(1);
         background->SetLineWidth(0);
         MStack.Add(background);
@@ -82,12 +93,21 @@ void drawStack(TH2D* particles, TH1D* background, std::string folderWithDiagonal
         stackOptions = "nostack";
     }
     MStack.Draw(stackOptions.c_str());
+    //X axis
     MStack.GetXaxis()->SetRangeUser(x1, x2);
     MStack.GetXaxis()->SetTitle("m_{inv} [GeV/c^{2}]");
+    //Y axis
     MStack.GetYaxis()->SetTitle("number of particles");
+    MStack.GetYaxis()->SetTitleOffset(0.8);
+    //the rest
     canvas.Update();
-    // canvas.BuildLegend(0.7, 0.6, 0.89, 0.89, "Particles reconstructed", "F");
-    canvas.BuildLegend(0.7, 0.7, 0.89, 0.89, "Particles reconstructed", "F");
+    if(legendPosition==nullptr&&background==nullptr){
+        canvas.BuildLegend(0.7, 0.65, 0.89, 0.89, "Particles reconstructed", "F");
+    } else if(legendPosition==nullptr&&background!=nullptr){
+        canvas.BuildLegend(0.6, 0.6, 0.89, 0.89, "Particles reconstructed", "F");
+    } else{
+        canvas.BuildLegend(legendPosition[0], legendPosition[1], legendPosition[2], legendPosition[3], "Particles reconstructed", "F");
+    }
     canvas.SaveAs((folderWithDiagonal+name+".pdf").c_str());
     for(size_t i = 0; i<projections.size(); i++){
         delete projections[i];

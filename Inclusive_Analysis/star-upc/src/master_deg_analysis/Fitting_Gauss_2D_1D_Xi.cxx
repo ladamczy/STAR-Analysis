@@ -10,14 +10,22 @@
 #include <TLegend.h>
 #include <TPad.h>
 #include <TPaveStats.h>
+#include <TROOT.h>
 
 #include <stdio.h>
 #include <string>
 
+#include "MyStyles.h"
+
 int main(int argc, char *argv[]){
     //something used so that the histograms would draw
     //https://stackoverflow.com/questions/30932725/painting-a-tcanvas-to-the-screen-in-a-compiled-root-cern-application
-    TApplication theApp("App", &argc, argv);
+    // TApplication theApp("App", &argc, argv);
+
+    MyStyles styleLibrary;
+    TStyle mystyle = styleLibrary.Hist2DNormalSize(false);
+    mystyle.cd();
+    gROOT->ForceStyle();
 
     TFile *HistDataFile = TFile::Open("/home/adam/STAR-Analysis/Inclusive_Analysis/star-upc/AnaOutput_Inclusive_analysis_with_STUPCV0.root");
     TFile *HistZerobiasFile = TFile::Open("/home/adam/STAR-Analysis/Inclusive_Analysis/star-upc/AnaOutput_Inclusive_zerobias_background_analysis_with_STUPCV0.root");
@@ -57,41 +65,32 @@ int main(int argc, char *argv[]){
     functionToMultiply->SetParameter(0, maxXiWData/maxXiWZerobias);
     XiWZerobiasHist->Multiply(functionToMultiply);
 
-
-    TCanvas *c1 = new TCanvas("c1", "c1", 1600, 1200);
-    gStyle->SetOptStat(0);
-    XiEDataHist->SetLineWidth(2);
+    TCanvas* c1 = new TCanvas("c1", "c1", 1600, 1200);
     XiEDataHist->SetTitle("");
     XiEDataHist->Draw();
     XiEZerobiasHist->SetLineColor(2);
-    XiEZerobiasHist->SetLineWidth(2);
     XiEZerobiasHist->Draw("same");
-    TLegend legend1 = TLegend(0.45, 0.7, 0.89, 0.89);
-    legend1.SetTextSize(0.035);
+    //the legend
+    TLegend legend1 = TLegend(0.5, 0.75, 0.89, 0.94);
     legend1.AddEntry(XiEDataHist, "pp collision data", "l");
     legend1.AddEntry(XiEZerobiasHist, "Normalised zerobias trigger", "l");
-    legend1.SetBorderSize(0);
     legend1.Draw("same");
     c1->Draw();
-    c1->Print("XiE.pdf");
+    c1->Print("~/XiE.pdf");
 
-    TCanvas *c2 = new TCanvas("c2", "c2", 1600, 1200);
-    gStyle->SetOptStat(0);
-    XiWDataHist->SetLineWidth(2);
+    TCanvas* c2 = new TCanvas("c2", "c2", 1600, 1200);
     XiWDataHist->SetTitle("");
     XiWDataHist->Draw();
     XiWZerobiasHist->SetLineColor(2);
-    XiWZerobiasHist->SetLineWidth(2);
     XiWZerobiasHist->Draw("same");
-    TLegend legend2 = TLegend(0.45, 0.7, 0.89, 0.89);
-    legend2.SetTextSize(0.035);
+    //the legend
+    TLegend legend2 = TLegend(0.5, 0.75, 0.89, 0.94);
     legend2.AddEntry(XiWDataHist, "pp collision data", "l");
     legend2.AddEntry(XiWZerobiasHist, "Normalised zerobias trigger", "l");
-    legend2.SetBorderSize(0);
     legend2.Draw("same");
     c2->Draw();
-    c2->Print("XiW.pdf");
+    c2->Print("~/XiW.pdf");
 
-    theApp.Run();
+    // theApp.Run();
     return 0;
 }

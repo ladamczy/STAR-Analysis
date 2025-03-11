@@ -8,8 +8,11 @@
 #include "TLatex.h"
 #include "TLine.h"
 #include "TStyle.h"
+#include "TROOT.h"
 
 #include "string.h"
+
+#include "MyStyles.h"
 
 void draw_and_save(TH1D *data, TH1D *sim, std::string fileTitle, bool isYlogarithmic = false, double x1 = 0, double y1 = 0, double x2 = 0, double y2 = 0, double line1 = 0, double line2 = 0);
 void simpler_draw_and_save(TH1 *hist, std::string filename = "", bool is3D = false, bool isYlogarithmic = false, double line1 = 0, double line2 = 0);
@@ -94,8 +97,8 @@ int main(int argc, char const *argv[]){
     simpler_draw_and_save(DataFigure3_5b, "Figure3_5b");
     simpler_draw_and_save(DataFigure3_5c, "Figure3_5c");
     simpler_draw_and_save(DataFigure3_5d, "Figure3_5d");
-    draw_and_save(DataFigure3_6ab, PythiaFigure3_6ab, "Figure3_6ab", false, 0.4, 0.2, 0.6, 0.4);
-    draw_and_save(DataFigure3_6c, PythiaFigure3_6c, "Figure3_6c", true, 0.64, 0.69, 0.84, 0.89);
+    draw_and_save(DataFigure3_6ab, PythiaFigure3_6ab, "Figure3_6ab", false, 0.36, 0.2, 0.55, 0.4);
+    draw_and_save(DataFigure3_6c, PythiaFigure3_6c, "Figure3_6c", true, 0.55, 0.64, 0.85, 0.94);
     draw_and_save(DataFigure3_6d, PythiaFigure3_6d, "Figure3_6d", false, 0.4, 0.2, 0.6, 0.4);
     simpler_draw_and_save(PythiaFigure3_7, "Figure3_7");
     simpler_draw_and_save(PythiaFigure3_7noAcceptance, "Figure3_7noAcceptance");
@@ -338,6 +341,10 @@ int main(int argc, char const *argv[]){
 }
 
 void draw_and_save(TH1D *data, TH1D *sim, std::string fileTitle, bool isYlogarithmic, double x1, double y1, double x2, double y2, double line1, double line2){
+    MyStyles styleLibrary;
+    TStyle mystyle = styleLibrary.Hist2DNormalSize(false);
+    mystyle.cd();
+    gROOT->ForceStyle();
     TCanvas *resultCanvas = new TCanvas("resultCanvas", "resultCanvas", 1800, 1600);
     //it'll work
     resultCanvas->SetLogy(isYlogarithmic);
@@ -347,27 +354,24 @@ void draw_and_save(TH1D *data, TH1D *sim, std::string fileTitle, bool isYlogarit
     } else{
         data->SetMaximum(std::max(data->GetMaximum(), sim->GetMaximum())*2.1);
     }
+    data->Draw("E");
+    sim->Draw("Hist same");
+    if(x1*y1*x2*y2!=0){
+        TLegend* legend = new TLegend(x1, y1, x2, y2);
+        legend->SetHeader("#bf{pp, #sqrt{s} = 510 GeV}", "C");
+        legend->AddEntry(data->GetName(), "#bf{upcDST data}");
+        legend->AddEntry(sim->GetName(), "#bf{PYTHIA8 simulation}");
+        legend->Draw("SAME");
+    }
+    resultCanvas->UseCurrentStyle();
     data->SetMarkerStyle(kFullCircle);
     data->SetMarkerSize(2);
     data->SetMarkerColor(kBlue);
     data->SetLineColor(kBlue+2);
-    data->Draw("E");
     sim->SetMarkerColor(kRed);
     sim->SetLineColor(kRed+2);
-    // sim->SetLineStyle(k); do lepszego końca linii
-    sim->Draw("Hist same");
-    if(x1*y1*x2*y2!=0){
-        TLegend *legend = new TLegend(x1, y1, x2, y2);
-        legend->SetTextSize(0.025);
-        legend->SetHeader("#bf{pp, #sqrt{s} = 510 GeV}", "C");
-        legend->AddEntry(data->GetName(), "#bf{upcDST data}");
-        legend->AddEntry(sim->GetName(), "#bf{PYTHIA8 simulation}");
-        legend->SetBorderSize(0);
-        legend->Draw("SAME");
-    }
-    resultCanvas->SetLeftMargin(0.15);
-    resultCanvas->SetRightMargin(0.07);
     gPad->Update();
+
     resultCanvas->SaveAs(("/home/adam/STAR-Analysis/Inclusive_Analysis/star-upc/scripts/presentation_pdfs/"+fileTitle+".pdf").c_str());
 }
 

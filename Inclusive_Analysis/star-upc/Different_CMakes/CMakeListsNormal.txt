@@ -83,6 +83,7 @@ target_link_libraries(${LIB} ${ROOT_DEPS} )
 
 #add custom (mine) headers
 include_directories(include)
+include_directories(../common_assets)
 
 #create executables in BIN
 foreach(IBIN ${BIN})

@@ -24,6 +24,7 @@
 #include "UsefulThings.h"
 #include "ProcessingInsideLoop.h"
 #include "ProcessingOutsideLoop.h"
+#include "MyStyles.h"
 
 enum{
     kAll = 1, kCPT, kRP, kOneVertex, kTPCTOF,
@@ -64,15 +65,15 @@ int main(int argc, char** argv){
     string particleNicks[nParticlesExtended] = { "e", "pi", "K", "p" };
     for(size_t i = 0; i<nParticlesExtended; i++){
         for(size_t j = 0; j<nParticlesExtended; j++){
-            outsideprocessing.AddHistogram(TH1D(("deltaT0"+particleNicks[i]+particleNicks[j]).c_str(), ";t_{0}^{+}-t_{0}^{-} [ns]", 200, -20, 20));
+            outsideprocessing.AddHistogram(TH1D(("deltaT0"+particleNicks[i]+particleNicks[j]).c_str(), ";t_{0}^{+}-t_{0}^{-} [ns];pair count", 200, -20, 20));
         }
     }
     for(size_t i = 0; i<nParticlesExtended; i++){
         for(size_t j = 0; j<nParticlesExtended; j++){
-            outsideprocessing.AddHistogram(TH1D(("deltaT0"+particleNicks[i]+particleNicks[j]+"Narrow").c_str(), ";t_{0}^{+}-t_{0}^{-} [ns]", 100, -5, 5));
+            outsideprocessing.AddHistogram(TH1D(("deltaT0"+particleNicks[i]+particleNicks[j]+"Narrow").c_str(), ";t_{0}^{+}-t_{0}^{-} [ns];pair count", 100, -5, 5));
         }
     }
-    outsideprocessing.AddHistogram(TH1D("deltaT0p0Narrow", ";t_{0}^{+}-t_{0}^{-} [ns]", 100, -5, 5));
+    outsideprocessing.AddHistogram(TH1D("deltaT0p0Narrow", ";t_{0}^{+}-t_{0}^{-} [ns];pair count", 100, -5, 5));
     TH1D temp("choice", ";choice", 16, 0, 16);
     // int pairchoice = ppiPair*8+pipiPair*4+KpiPair*2+KKPair;
     temp.GetXaxis()->SetBinLabel(1, "Nothing");
@@ -318,8 +319,11 @@ int main(int argc, char** argv){
 }
 
 double drawFit(TH1D* hist, string outfileName, double mint0, double maxt0, double* params, string histName){
+    MyStyles styleLibrary;
+    TStyle mystyle = styleLibrary.Hist2DQuarterSize(true);
+    mystyle.cd();
+    gROOT->ForceStyle();
     TCanvas* result = new TCanvas("result", "result", 1800, 1600);
-    gStyle->SetOptStat(0);
     TF1* GfitK = new TF1("GfitK", "gausn(0) + pol2(3)");
     GfitK->SetRange(mint0, maxt0);
     GfitK->SetParNames("Constant", "Mean", "Sigma", "c", "b", "a");
@@ -335,30 +339,13 @@ double drawFit(TH1D* hist, string outfileName, double mint0, double maxt0, doubl
     if(histName.length()!=0){
         hist->SetTitle(histName.c_str());
     }
-    TH1D* tempHist = (TH1D*)hist->DrawClone("E");
-    if(gStyle->GetOptStat()!=0){
-        gPad->Update();
-        TPaveStats* st = (TPaveStats*)tempHist->FindObject("stats");
-        st->SetX1NDC(0.15);
-        st->SetX2NDC(0.35);
-        st->SetY1NDC(0.15);
-        st->SetY2NDC(0.25);
-        st->SetBorderSize(0);
-    }
+    hist->Draw("E");
     Double_t paramsK[6];
     GfitK->GetParameters(paramsK);
     GfitK->SetNpx(1000);
     GfitK->Draw("CSAME");
+    result->UseCurrentStyle();
 
-    // TLegend* legendK = new TLegend(0.7, 0.7, 0.89, 0.89);
-    // legendK->AddEntry("MpipiWide", "pp data, #sqrt{s} = 510 GeV");
-    // legendK->AddEntry("GfitK", "Data fit", "l");
-    // legendK->AddEntry("GfitKBcg", "Background", "l");
-    // legendK->AddEntry("GfitK1Sig", "K^{0} fit", "l");
-    // legendK->SetBorderSize(0);
-    // legendK->Draw("SAME");
-
-    // gPad->RedrawAxis();
     string output = outfileName.insert(outfileName.find_last_of("."), "_"+string(hist->GetName())).substr(0, outfileName.find_last_of("."))+".pdf";
     result->SaveAs(output.c_str());
     gStyle->SetOptStat(1);

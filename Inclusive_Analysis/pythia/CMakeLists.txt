@@ -85,6 +85,7 @@ target_link_libraries(${LIB} ${ROOT_DEPS} )
 
 #add custom (mine) headers
 include_directories(include)
+include_directories(../common_assets)
 
 #add PYTHIA stuff
 include_directories(${PYTHIA8_INCLUDE_DIR})

@@ -2,8 +2,12 @@
 #include "TCanvas.h"
 #include "TLegend.h"
 #include "TH1D.h"
+#include "TStyle.h"
+#include "TROOT.h"
 
 #include "string.h"
+
+#include "MyStyles.h"
 
 void draw_and_save(TH1D *data, TH1D *sim, std::string fileTitle, double x1, double y1, double x2, double y2);
 
@@ -57,28 +61,29 @@ int main(int argc, char const *argv[]){
 }
 
 void draw_and_save(TH1D *data, TH1D *sim, std::string fileTitle, double x1, double y1, double x2, double y2){
+    MyStyles styleLibrary;
+    TStyle mystyle = styleLibrary.Hist2DNormalSize(true);
+    mystyle.cd();
+    gROOT->ForceStyle();
     TCanvas *resultCanvas = new TCanvas("resultCanvas", "resultCanvas", 1800, 1600);
     sim->Scale(data->Integral()/sim->GetEntries());
     data->SetMinimum(0);
     data->SetMaximum(std::max(data->GetMaximum(), sim->GetMaximum())*1.1);
+    data->Draw("E");
+    sim->Draw("Hist same");
+    TLegend* legend = new TLegend(x1, y1, x2, y2);
+    legend->SetHeader("#bf{pp, #sqrt{s} = 510 GeV}", "C");
+    legend->AddEntry(data->GetName(), "#bf{extended upcDST}");
+    legend->AddEntry(sim->GetName(), "#bf{PYTHIA8 true level}");
+    legend->Draw("SAME");
+    resultCanvas->UseCurrentStyle();
     data->SetMarkerStyle(kFullCircle);
     data->SetMarkerSize(2);
     data->SetMarkerColor(kBlue);
     data->SetLineColor(kBlue+2);
-    data->Draw("E");
     sim->SetMarkerColor(kRed);
     sim->SetLineColor(kRed+2);
-    // sim->SetLineStyle(k); do lepszego końca linii
-    sim->Draw("Hist same");
-    TLegend *legend = new TLegend(x1, y1, x2, y2);
-    legend->SetTextSize(0.025);
-    legend->SetHeader("#bf{pp, #sqrt{s} = 510 GeV}", "C");
-    legend->AddEntry(data->GetName(), "#bf{extended upcDST}");
-    legend->AddEntry(sim->GetName(), "#bf{PYTHIA8 true level}");
-    legend->SetBorderSize(0);
-    legend->Draw("SAME");
-    resultCanvas->SetLeftMargin(0.15);
-    resultCanvas->SetRightMargin(0.05);
     gPad->Update();
+
     resultCanvas->SaveAs(("/home/adam/STAR-Analysis/Inclusive_Analysis/star-upc/scripts/"+fileTitle).c_str());
 }
