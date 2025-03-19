@@ -1,4 +1,5 @@
 #include "TStyle.h"
+#include "TROOT.h"
 
 class MyStyles{
 private:
