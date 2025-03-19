@@ -378,41 +378,50 @@ int main(int argc, char** argv){
             //moving "current" pairs to "previous" storage if non-empty
             //and filling the current storage
             //MIXEDTOF and NOTOF
-            for(auto&& i:previous_vector_Track_positive){
-                delete i;
-            }
-            previous_vector_Track_positive.clear();
-            for(long unsigned int i = 0; i<vector_Track_positive.size(); i++){
-                //copying empty track
-                previous_vector_Track_positive.push_back(new StUPCTrack());
-                //setting needed values
-                vector_Track_positive[i]->getPtEtaPhi(pt, eta, phi);
-                previous_vector_Track_positive.back()->setPtEtaPhi(pt, eta, phi);
-                previous_vector_Track_positive.back()->setTofPathLength(vector_Track_positive[i]->getTofPathLength());
-                previous_vector_Track_positive.back()->setTofTime(vector_Track_positive[i]->getTofTime());
-                for(size_t part = 0; part<nParticlesExtended; part++){
-                    previous_vector_Track_positive.back()->setNSigmasTPC(static_cast<StUPCTrack::Part>(part), vector_Track_positive[i]->getNSigmasTPC(static_cast<StUPCTrack::Part>(part)));
+            //if there is no good tracks in current event, there is no need to delete the old ones
+            if(vector_Track_positive.size()!=0){
+                for(auto&& i:previous_vector_Track_positive){
+                    delete i;
+                }
+                previous_vector_Track_positive.clear();
+                for(long unsigned int i = 0; i<vector_Track_positive.size(); i++){
+                    //copying empty track
+                    previous_vector_Track_positive.push_back(new StUPCTrack());
+                    //setting needed values
+                    vector_Track_positive[i]->getPtEtaPhi(pt, eta, phi);
+                    previous_vector_Track_positive.back()->setPtEtaPhi(pt, eta, phi);
+                    previous_vector_Track_positive.back()->setTofPathLength(vector_Track_positive[i]->getTofPathLength());
+                    previous_vector_Track_positive.back()->setTofTime(vector_Track_positive[i]->getTofTime());
+                    for(size_t part = 0; part<nParticlesExtended; part++){
+                        previous_vector_Track_positive.back()->setNSigmasTPC(static_cast<StUPCTrack::Part>(part), vector_Track_positive[i]->getNSigmasTPC(static_cast<StUPCTrack::Part>(part)));
+                    }
                 }
             }
-            for(auto&& i:previous_vector_Track_negative){
-                delete i;
-            }
-            previous_vector_Track_negative.clear();
-            for(long unsigned int j = 0; j<vector_Track_negative.size(); j++){
-                //copying empty track
-                previous_vector_Track_negative.push_back(new StUPCTrack());
-                //setting needed values
-                vector_Track_negative[j]->getPtEtaPhi(pt, eta, phi);
-                previous_vector_Track_negative.back()->setPtEtaPhi(pt, eta, phi);
-                previous_vector_Track_negative.back()->setTofPathLength(vector_Track_negative[j]->getTofPathLength());
-                previous_vector_Track_negative.back()->setTofTime(vector_Track_negative[j]->getTofTime());
-                for(size_t part = 0; part<nParticlesExtended; part++){
-                    previous_vector_Track_negative.back()->setNSigmasTPC(static_cast<StUPCTrack::Part>(part), vector_Track_negative[j]->getNSigmasTPC(static_cast<StUPCTrack::Part>(part)));
+            if(vector_Track_negative.size()!=0){
+                for(auto&& i:previous_vector_Track_negative){
+                    delete i;
+                }
+                previous_vector_Track_negative.clear();
+                for(long unsigned int j = 0; j<vector_Track_negative.size(); j++){
+                    //copying empty track
+                    previous_vector_Track_negative.push_back(new StUPCTrack());
+                    //setting needed values
+                    vector_Track_negative[j]->getPtEtaPhi(pt, eta, phi);
+                    previous_vector_Track_negative.back()->setPtEtaPhi(pt, eta, phi);
+                    previous_vector_Track_negative.back()->setTofPathLength(vector_Track_negative[j]->getTofPathLength());
+                    previous_vector_Track_negative.back()->setTofTime(vector_Track_negative[j]->getTofTime());
+                    for(size_t part = 0; part<nParticlesExtended; part++){
+                        previous_vector_Track_negative.back()->setNSigmasTPC(static_cast<StUPCTrack::Part>(part), vector_Track_negative[j]->getNSigmasTPC(static_cast<StUPCTrack::Part>(part)));
+                    }
                 }
             }
             //NORMALTOF
             //positive
             for(auto&& name:pairNames){
+                //if there is no good tracks in current event, there is no need to delete the old ones
+                if(vector_Track_positive_normal_TOF[name].size()==0){
+                    continue;
+                }
                 //removing previous pointers
                 for(auto&& i:previous_vector_Track_positive_normal_TOF[name]){
                     delete i;
@@ -434,6 +443,10 @@ int main(int argc, char** argv){
             }
             //negative
             for(auto&& name:pairNames){
+                //if there is no good tracks in current event, there is no need to delete the old ones
+                if(vector_Track_negative_normal_TOF[name].size()==0){
+                    continue;
+                }
                 //removing previous pointers
                 for(auto&& i:previous_vector_Track_negative_normal_TOF[name]){
                     delete i;
