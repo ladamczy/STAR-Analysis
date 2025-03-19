@@ -61,14 +61,22 @@ int main(int argc, char** argv){
 
     //histograms
     ProcessingOutsideLoop outsideprocessing;
-    //mass histograms with TOF
-    outsideprocessing.AddHistogram(TH1D("MKpiChi2bcg", ";m_{K^{+}#pi^{-}} [GeV];Number of pairs", 100, 0.5, 2.0));
-    outsideprocessing.AddHistogram(TH1D("MpiKChi2bcg", ";m_{#pi^{+}K^{-}} [GeV];Number of pairs", 100, 0.5, 2.0));
-    outsideprocessing.AddHistogram(TH1D("MppiChi2bcg", ";m_{p^{+}#pi^{-}} [GeV];Number of pairs", 100, 1.0, 2.5));
-    outsideprocessing.AddHistogram(TH1D("MpipChi2bcg", ";m_{#pi^{+}p^{-}} [GeV];Number of pairs", 100, 1.0, 2.5));
-    outsideprocessing.AddHistogram(TH1D("MKKChi2bcg", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 100, 0.9, 2.4));
-    outsideprocessing.AddHistogram(TH1D("MpipiChi2bcg", ";m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 120, 0.2, 1.4));
-    outsideprocessing.AddHistogram(TH1D("MppChi2bcg", ";m_{p^{+}p^{-}} [GeV];Number of pairs", 100, 1.5, 3.5));
+    //mass histograms with TOF for mixed-events pairs
+    outsideprocessing.AddHistogram(TH1D("MKpiChi2bcgMIXEDTOF", ";m_{K^{+}#pi^{-}} [GeV];Number of pairs", 100, 0.5, 2.0));
+    outsideprocessing.AddHistogram(TH1D("MpiKChi2bcgMIXEDTOF", ";m_{#pi^{+}K^{-}} [GeV];Number of pairs", 100, 0.5, 2.0));
+    outsideprocessing.AddHistogram(TH1D("MppiChi2bcgMIXEDTOF", ";m_{p^{+}#pi^{-}} [GeV];Number of pairs", 100, 1.0, 2.5));
+    outsideprocessing.AddHistogram(TH1D("MpipChi2bcgMIXEDTOF", ";m_{#pi^{+}p^{-}} [GeV];Number of pairs", 100, 1.0, 2.5));
+    outsideprocessing.AddHistogram(TH1D("MKKChi2bcgMIXEDTOF", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 100, 0.9, 2.4));
+    outsideprocessing.AddHistogram(TH1D("MpipiChi2bcgMIXEDTOF", ";m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 120, 0.2, 1.4));
+    outsideprocessing.AddHistogram(TH1D("MppChi2bcgMIXEDTOF", ";m_{p^{+}p^{-}} [GeV];Number of pairs", 100, 1.5, 3.5));
+    //mass histograms with TOF first and mixing event pairs after
+    outsideprocessing.AddHistogram(TH1D("MKpiChi2bcgNORMALTOF", ";m_{K^{+}#pi^{-}} [GeV];Number of pairs", 100, 0.5, 2.0));
+    outsideprocessing.AddHistogram(TH1D("MpiKChi2bcgNORMALTOF", ";m_{#pi^{+}K^{-}} [GeV];Number of pairs", 100, 0.5, 2.0));
+    outsideprocessing.AddHistogram(TH1D("MppiChi2bcgNORMALTOF", ";m_{p^{+}#pi^{-}} [GeV];Number of pairs", 100, 1.0, 2.5));
+    outsideprocessing.AddHistogram(TH1D("MpipChi2bcgNORMALTOF", ";m_{#pi^{+}p^{-}} [GeV];Number of pairs", 100, 1.0, 2.5));
+    outsideprocessing.AddHistogram(TH1D("MKKChi2bcgNORMALTOF", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 100, 0.9, 2.4));
+    outsideprocessing.AddHistogram(TH1D("MpipiChi2bcgNORMALTOF", ";m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 120, 0.2, 1.4));
+    outsideprocessing.AddHistogram(TH1D("MppChi2bcgNORMALTOF", ";m_{p^{+}p^{-}} [GeV];Number of pairs", 100, 1.5, 3.5));
     //mass histograms without TOF
     outsideprocessing.AddHistogram(TH1D("MKpiChi2bcgNOTOF", ";m_{K^{+}#pi^{-}} [GeV];Number of pairs", 100, 0.5, 2.0));
     outsideprocessing.AddHistogram(TH1D("MpiKChi2bcgNOTOF", ";m_{#pi^{+}K^{-}} [GeV];Number of pairs", 100, 0.5, 2.0));
@@ -112,6 +120,10 @@ int main(int argc, char** argv){
         std::vector<StUPCTrack*> vector_Track_negative = {};
         std::vector<StUPCTrack*> previous_vector_Track_positive = {};
         std::vector<StUPCTrack*> previous_vector_Track_negative = {};
+        map<string, std::vector<StUPCTrack*>> vector_Track_positive_normal_TOF = {};
+        map<string, std::vector<StUPCTrack*>> vector_Track_negative_normal_TOF = {};
+        map<string, std::vector<StUPCTrack*>> previous_vector_Track_positive_normal_TOF = {};
+        map<string, std::vector<StUPCTrack*>> previous_vector_Track_negative_normal_TOF = {};
         StUPCTrack* tempTrack;
         TLorentzVector positive_track;
         TLorentzVector negative_track;
@@ -130,6 +142,11 @@ int main(int argc, char** argv){
             //cleaning the loop
             vector_Track_positive.clear();
             vector_Track_negative.clear();
+            for(auto&& name:pairNames){
+                //removing previous pointers without removing their memory, because it is already invalidated
+                vector_Track_positive_normal_TOF[name].clear();
+                vector_Track_negative_normal_TOF[name].clear();
+            }
 
             //cause I want to see what's going on
             if(eventsProcessed%10000==0){
@@ -186,7 +203,7 @@ int main(int argc, char** argv){
                 chi2Map.insert({ imap.first, 0. });
             }
 
-            //loop through particles
+            //loop through particles for NOTOF and MIXEDTOF
             //previous +, current -
             for(long unsigned int i = 0; i<previous_vector_Track_positive.size(); i++){
                 for(long unsigned int j = 0; j<vector_Track_negative.size(); j++){
@@ -203,7 +220,7 @@ int main(int argc, char** argv){
                         if(almostAllChi2(chi2Map, name, 9)){
                             auto pair = extractExtendedParticlesNumbersFromPair(name);
                             //replaces $ with pair name without "_"
-                            string tempHistName = "M$Chi2bcg";
+                            string tempHistName = "M$Chi2bcgMIXEDTOF";
                             tempPairName = name;
                             tempPairName = tempPairName.erase(find(tempPairName.begin(), tempPairName.end(), '_')-tempPairName.begin(), 1);
                             tempHistName.replace(find(tempHistName.begin(), tempHistName.end(), '$')-tempHistName.begin(), 1, tempPairName);
@@ -260,7 +277,7 @@ int main(int argc, char** argv){
                         if(almostAllChi2(chi2Map, name, 9)){
                             auto pair = extractExtendedParticlesNumbersFromPair(name);
                             //replaces $ with pair name without "_"
-                            string tempHistName = "M$Chi2bcg";
+                            string tempHistName = "M$Chi2bcgMIXEDTOF";
                             tempPairName = name;
                             tempPairName = tempPairName.erase(find(tempPairName.begin(), tempPairName.end(), '_')-tempPairName.begin(), 1);
                             tempHistName.replace(find(tempHistName.begin(), tempHistName.end(), '$')-tempHistName.begin(), 1, tempPairName);
@@ -303,9 +320,64 @@ int main(int argc, char** argv){
                 }
             }
 
+            //loop for particles for NORMALTOF
+            for(long unsigned int i = 0; i<vector_Track_positive.size(); i++){
+                for(long unsigned int j = 0; j<vector_Track_negative.size(); j++){
+                    //chi2
+                    for(size_t pos = 0; pos<nParticlesExtended; pos++){
+                        for(size_t neg = 0; neg<nParticlesExtended; neg++){
+                            tempPairName = particleNicks[pos]+"_"+particleNicks[neg];
+                            chi2Map[tempPairName] = getChi2(vector_Track_positive[i], vector_Track_negative[j], pos, neg, sigmaMap[tempPairName]);
+                        }
+                    }
+                    //filling 
+                    for(auto const& name:pairNames){
+                        if(almostAllChi2(chi2Map, name, 9)){
+                            vector_Track_positive_normal_TOF[name].push_back(vector_Track_positive[i]);
+                            vector_Track_negative_normal_TOF[name].push_back(vector_Track_negative[j]);
+                        }
+                    }
+                }
+            }
+            //mixing old and new tracks
+            for(auto const& name:pairNames){
+                //previous + , current -
+                for(long unsigned int i = 0; i<previous_vector_Track_positive_normal_TOF[name].size(); i++){
+                    for(long unsigned int j = 0; j<vector_Track_negative_normal_TOF[name].size(); j++){
+                        auto pair = extractExtendedParticlesNumbersFromPair(name);
+                        //replaces $ with pair name without "_"
+                        string tempHistName = "M$Chi2bcgNORMALTOF";
+                        tempPairName = name;
+                        tempPairName = tempPairName.erase(find(tempPairName.begin(), tempPairName.end(), '_')-tempPairName.begin(), 1);
+                        tempHistName.replace(find(tempHistName.begin(), tempHistName.end(), '$')-tempHistName.begin(), 1, tempPairName);
+                        //calculates mass to fill
+                        previous_vector_Track_positive_normal_TOF[name][i]->getLorentzVector(positive_track, particleMassExtended[pair.first]);
+                        vector_Track_negative_normal_TOF[name][j]->getLorentzVector(negative_track, particleMassExtended[pair.second]);
+                        mass = (positive_track+negative_track).M();
+                        insideprocessing.Fill(tempHistName.c_str(), mass);
+                    }
+                }
+                //current + , previous -
+                for(long unsigned int i = 0; i<vector_Track_positive_normal_TOF[name].size(); i++){
+                    for(long unsigned int j = 0; j<previous_vector_Track_negative_normal_TOF[name].size(); j++){
+                        auto pair = extractExtendedParticlesNumbersFromPair(name);
+                        //replaces $ with pair name without "_"
+                        string tempHistName = "M$Chi2bcgNORMALTOF";
+                        tempPairName = name;
+                        tempPairName = tempPairName.erase(find(tempPairName.begin(), tempPairName.end(), '_')-tempPairName.begin(), 1);
+                        tempHistName.replace(find(tempHistName.begin(), tempHistName.end(), '$')-tempHistName.begin(), 1, tempPairName);
+                        //calculates mass to fill
+                        vector_Track_positive_normal_TOF[name][i]->getLorentzVector(positive_track, particleMassExtended[pair.first]);
+                        previous_vector_Track_negative_normal_TOF[name][j]->getLorentzVector(negative_track, particleMassExtended[pair.second]);
+                        mass = (positive_track+negative_track).M();
+                        insideprocessing.Fill(tempHistName.c_str(), mass);
+                    }
+                }
+            }
+
             //moving "current" pairs to "previous" storage if non-empty
             //and filling the current storage
-            //positive
+            //MIXEDTOF and NOTOF
             for(auto&& i:previous_vector_Track_positive){
                 delete i;
             }
@@ -338,6 +410,50 @@ int main(int argc, char** argv){
                     previous_vector_Track_negative.back()->setNSigmasTPC(static_cast<StUPCTrack::Part>(part), vector_Track_negative[j]->getNSigmasTPC(static_cast<StUPCTrack::Part>(part)));
                 }
             }
+            //NORMALTOF
+            //positive
+            for(auto&& name:pairNames){
+                //removing previous pointers
+                for(auto&& i:previous_vector_Track_positive_normal_TOF[name]){
+                    delete i;
+                }
+                previous_vector_Track_positive_normal_TOF[name].clear();
+                //adding pointers to current
+                for(long unsigned int i = 0; i<vector_Track_positive_normal_TOF[name].size(); i++){
+                    //copying empty track
+                    previous_vector_Track_positive_normal_TOF[name].push_back(new StUPCTrack());
+                    //setting needed values
+                    vector_Track_positive_normal_TOF[name][i]->getPtEtaPhi(pt, eta, phi);
+                    previous_vector_Track_positive_normal_TOF[name].back()->setPtEtaPhi(pt, eta, phi);
+                    previous_vector_Track_positive_normal_TOF[name].back()->setTofPathLength(vector_Track_positive_normal_TOF[name][i]->getTofPathLength());
+                    previous_vector_Track_positive_normal_TOF[name].back()->setTofTime(vector_Track_positive_normal_TOF[name][i]->getTofTime());
+                    for(size_t part = 0; part<nParticlesExtended; part++){
+                        previous_vector_Track_positive_normal_TOF[name].back()->setNSigmasTPC(static_cast<StUPCTrack::Part>(part), vector_Track_positive_normal_TOF[name][i]->getNSigmasTPC(static_cast<StUPCTrack::Part>(part)));
+                    }
+                }
+            }
+            //negative
+            for(auto&& name:pairNames){
+                //removing previous pointers
+                for(auto&& i:previous_vector_Track_negative_normal_TOF[name]){
+                    delete i;
+                }
+                previous_vector_Track_negative_normal_TOF[name].clear();
+                //adding pointers to current
+                for(long unsigned int i = 0; i<vector_Track_negative_normal_TOF[name].size(); i++){
+                    //copying empty track
+                    previous_vector_Track_negative_normal_TOF[name].push_back(new StUPCTrack());
+                    //setting needed values
+                    vector_Track_negative_normal_TOF[name][i]->getPtEtaPhi(pt, eta, phi);
+                    previous_vector_Track_negative_normal_TOF[name].back()->setPtEtaPhi(pt, eta, phi);
+                    previous_vector_Track_negative_normal_TOF[name].back()->setTofPathLength(vector_Track_negative_normal_TOF[name][i]->getTofPathLength());
+                    previous_vector_Track_negative_normal_TOF[name].back()->setTofTime(vector_Track_negative_normal_TOF[name][i]->getTofTime());
+                    for(size_t part = 0; part<nParticlesExtended; part++){
+                        previous_vector_Track_negative_normal_TOF[name].back()->setNSigmasTPC(static_cast<StUPCTrack::Part>(part), vector_Track_negative_normal_TOF[name][i]->getNSigmasTPC(static_cast<StUPCTrack::Part>(part)));
+                    }
+                }
+            }
+
 
             //event loop finish
         }
@@ -407,6 +523,10 @@ double getMass(StUPCTrack* assumed, StUPCTrack* calculated, double massAssumed){
 
 std::pair<int, int> extractExtendedParticlesNumbersFromPair(std::string pairName){
     int first = find(particleNicks, particleNicks+nParticlesExtended, pairName.substr(0, find(pairName.begin(), pairName.end(), '_')-pairName.begin()))-particleNicks;
-    int second = find(particleNicks, particleNicks+nParticlesExtended, pairName.substr(find(pairName.begin(), pairName.end(), '_')-pairName.begin())+1)-particleNicks;
+    int second = find(particleNicks, particleNicks+nParticlesExtended, pairName.substr(find(pairName.begin(), pairName.end(), '_')-pairName.begin()+1))-particleNicks;
+    if(first>3 or second>3){
+        printf("%s %d %d\n", pairName.c_str(), first, second);
+        throw;
+    }
     return std::pair<int, int>(first, second);
 }
