@@ -15,6 +15,9 @@
 #include "TParticlePDG.h"
 #include "StRPEvent.h"
 
+//my stuff
+#include "ProcessingOutsideLoop.h"
+
 using namespace std;
 
 const int triggerID[] = { 570209, 570219, 570229, 570701, 570702, 570703, 570704, 570705, 
@@ -148,6 +151,45 @@ double M2TOF(StUPCTrack* track1, StUPCTrack* track2){
     double C = pow(deltaT, 4)-2*pow(deltaT, 2)*(L1*L1+L2*L2)+pow(L1*L1-L2*L2, 2);
     double m2TOF = (-B+sqrt(B*B-4*A*C))/2/A;
     return m2TOF;
+}
+
+void getCategoryHistograms(ProcessingOutsideLoop& out, vector<string> pairs, std::string nameAfterChi2 = ""){
+    // vector of pairs of (category_name, bin_constrans_vector)
+    std::vector<std::pair<std::string, std::vector<double>>> allCategories;
+    //reading categories and splitting into name and value
+    std::ifstream infile("STAR-Analysis/Inclusive_Analysis/star-upc/src/PhD_deg_analysis/Differential_crossection_values.txt");
+    std::string line, buf;
+    while(std::getline(infile, line)){
+        std::stringstream ss(line);
+        std::string category = "";
+        std::vector<double> values = {};
+        bool isFirst = true;
+        while(ss>>buf){
+            if(isFirst){
+                category = buf;
+                isFirst = false;
+            } else{
+                values.push_back(atof(buf.c_str()));
+            }
+        }
+        //erasing ":" after the category
+        if(category.find(':')!=std::string::npos){
+            category.erase(category.end()-1);
+        }
+        allCategories.push_back(std::pair<std::string, std::vector<double>>(category, values));
+    }
+    //creating histograms corresponding to the categories
+    for(size_t i = 0; i<pairs.size(); i++){
+        double binMin = out.GetPointer1D(("M"+pairs[i]+"Chi2"+nameAfterChi2).c_str())->GetXaxis()->GetXmin();
+        double binMax = out.GetPointer1D(("M"+pairs[i]+"Chi2"+nameAfterChi2).c_str())->GetXaxis()->GetXmax();
+        int binNumber = out.GetPointer1D(("M"+pairs[i]+"Chi2"+nameAfterChi2).c_str())->GetXaxis()->GetNbins();
+        string axisTitle = out.GetPointer1D(("M"+pairs[i]+"Chi2"+nameAfterChi2).c_str())->GetXaxis()->GetTitle();
+        for(size_t j = 0; j<allCategories.size(); j++){
+            string name = "M"+pairs[i]+"Chi2"+nameAfterChi2+allCategories[j].first;
+            string title = pairs[i]+" "+allCategories[j].first+";"+axisTitle+";"+allCategories[j].first;
+            out.AddHistogram(TH2D(name.c_str(), title.c_str(), binNumber, binMin, binMax, allCategories[j].second.size()-1, allCategories[j].second.data()));
+        }
+    }
 }
 
 #endif

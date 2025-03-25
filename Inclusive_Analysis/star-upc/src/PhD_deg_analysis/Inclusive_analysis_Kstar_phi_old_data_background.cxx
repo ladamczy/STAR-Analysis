@@ -85,6 +85,9 @@ int main(int argc, char** argv){
     outsideprocessing.AddHistogram(TH1D("MKKChi2bcgNOTOF", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 100, 0.9, 2.4));
     outsideprocessing.AddHistogram(TH1D("MpipiChi2bcgNOTOF", ";m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 120, 0.2, 1.4));
     outsideprocessing.AddHistogram(TH1D("MppChi2bcgNOTOF", ";m_{p^{+}p^{-}} [GeV];Number of pairs", 100, 1.5, 3.5));
+    //adding mass histograms grouped by category
+    std::vector<std::string> pairTab = { "Kpi", "piK", "ppi", "pip", "KK", "pipi", "pp" };
+    getCategoryHistograms(outsideprocessing, pairTab, "bcgNORMALTOF");
     //file with sigma values:
     ifstream sigmaFile;
     string line;
@@ -354,7 +357,11 @@ int main(int argc, char** argv){
                         previous_vector_Track_positive_normal_TOF[name][i]->getLorentzVector(positive_track, particleMassExtended[pair.first]);
                         vector_Track_negative_normal_TOF[name][j]->getLorentzVector(negative_track, particleMassExtended[pair.second]);
                         mass = (positive_track+negative_track).M();
+                        eta = (positive_track+negative_track).Eta();
+                        pt = (positive_track+negative_track).Pt();
                         insideprocessing.Fill(tempHistName.c_str(), mass);
+                        insideprocessing.Fill((tempHistName+"eta").c_str(), mass, eta);
+                        insideprocessing.Fill((tempHistName+"pT").c_str(), mass, pt);
                     }
                 }
                 //current + , previous -
@@ -370,7 +377,11 @@ int main(int argc, char** argv){
                         vector_Track_positive_normal_TOF[name][i]->getLorentzVector(positive_track, particleMassExtended[pair.first]);
                         previous_vector_Track_negative_normal_TOF[name][j]->getLorentzVector(negative_track, particleMassExtended[pair.second]);
                         mass = (positive_track+negative_track).M();
+                        eta = (positive_track+negative_track).Eta();
+                        pt = (positive_track+negative_track).Pt();
                         insideprocessing.Fill(tempHistName.c_str(), mass);
+                        insideprocessing.Fill((tempHistName+"eta").c_str(), mass, eta);
+                        insideprocessing.Fill((tempHistName+"pT").c_str(), mass, pt);
                     }
                 }
             }

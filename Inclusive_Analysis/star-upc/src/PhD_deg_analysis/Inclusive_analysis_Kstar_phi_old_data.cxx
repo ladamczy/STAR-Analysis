@@ -1,5 +1,6 @@
 //cpp headers
 #include <map>
+#include <fstream>
 
 //ROOT headers
 #include <ROOT/TThreadedObject.hxx>
@@ -77,6 +78,7 @@ int main(int argc, char** argv){
     //chi2 tests
     outsideprocessing.AddHistogram(TH2D("chi2pipivsKpi1", ";#pi^{+}#pi^{-};K^{+}#pi^{-}", 100, 0, 100, 100, 0, 100));
     //mass histograms
+    std::vector<std::string> pairTab = { "Kpi", "piK", "ppi", "pip", "KK", "pipi", "pp" };
     outsideprocessing.AddHistogram(TH1D("MKpiChi2", ";m_{K^{+}#pi^{-}} [GeV];Number of pairs", 100, 0.5, 2.0));
     outsideprocessing.AddHistogram(TH1D("MpiKChi2", ";m_{#pi^{+}K^{-}} [GeV];Number of pairs", 100, 0.5, 2.0));
     outsideprocessing.AddHistogram(TH1D("MppiChi2", ";m_{p^{+}#pi^{-}} [GeV];Number of pairs", 100, 1.0, 2.5));
@@ -84,6 +86,8 @@ int main(int argc, char** argv){
     outsideprocessing.AddHistogram(TH1D("MKKChi2", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 100, 0.9, 2.4));
     outsideprocessing.AddHistogram(TH1D("MpipiChi2", ";m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 120, 0.2, 1.4));
     outsideprocessing.AddHistogram(TH1D("MppChi2", ";m_{p^{+}p^{-}} [GeV];Number of pairs", 100, 1.5, 3.5));
+    //adding mass histograms grouped by category
+    getCategoryHistograms(outsideprocessing, pairTab);
 
     //processing
     //defining TreeProcessor
@@ -108,7 +112,7 @@ int main(int argc, char** argv){
         StUPCTrack* tempTrack;
         TLorentzVector positive_track;
         TLorentzVector negative_track;
-        double mass, chi2pipi, chi2Kpi;
+        double mass, chi2pipi, chi2Kpi, eta, pT;
         map<string, double> chi2Map;
         bool isdEdxOk, isTOFOk;
         string tempPairName;
@@ -214,43 +218,59 @@ int main(int argc, char** argv){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Kaon]);
                         vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
                         mass = (positive_track+negative_track).M();
+                        eta = (positive_track+negative_track).Eta();
+                        pT = (positive_track+negative_track).Pt();
                         insideprocessing.Fill("MKpiChi2", mass);
+                        insideprocessing.Fill("MKpiChi2eta", mass, eta);
+                        insideprocessing.Fill("MKpiChi2pT", mass, pT);
                     }
                     if(almostAllChi2(chi2Map, "pi_K", 9)){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
                         vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Kaon]);
                         mass = (positive_track+negative_track).M();
                         insideprocessing.Fill("MpiKChi2", mass);
+                        insideprocessing.Fill("MpiKChi2eta", mass, eta);
+                        insideprocessing.Fill("MpiKChi2pT", mass, pT);
                     }
                     if(almostAllChi2(chi2Map, "p_pi", 9)){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Proton]);
                         vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
                         mass = (positive_track+negative_track).M();
                         insideprocessing.Fill("MppiChi2", mass);
+                        insideprocessing.Fill("MppiChi2eta", mass, eta);
+                        insideprocessing.Fill("MppiChi2pT", mass, pT);
                     }
                     if(almostAllChi2(chi2Map, "pi_p", 9)){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
                         vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Proton]);
                         mass = (positive_track+negative_track).M();
                         insideprocessing.Fill("MpipChi2", mass);
+                        insideprocessing.Fill("MpipChi2eta", mass, eta);
+                        insideprocessing.Fill("MpipChi2pT", mass, pT);
                     }
                     if(almostAllChi2(chi2Map, "K_K", 9)){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Kaon]);
                         vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Kaon]);
                         mass = (positive_track+negative_track).M();
                         insideprocessing.Fill("MKKChi2", mass);
+                        insideprocessing.Fill("MKKChi2eta", mass, eta);
+                        insideprocessing.Fill("MKKChi2pT", mass, pT);
                     }
                     if(almostAllChi2(chi2Map, "pi_pi", 9)){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
                         vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
                         mass = (positive_track+negative_track).M();
                         insideprocessing.Fill("MpipiChi2", mass);
+                        insideprocessing.Fill("MpipiChi2eta", mass, eta);
+                        insideprocessing.Fill("MpipiChi2pT", mass, pT);
                     }
                     if(almostAllChi2(chi2Map, "p_p", 9)){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Proton]);
                         vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Proton]);
                         mass = (positive_track+negative_track).M();
                         insideprocessing.Fill("MppChi2", mass);
+                        insideprocessing.Fill("MppChi2eta", mass, eta);
+                        insideprocessing.Fill("MppChi2pT", mass, pT);
                     }
                 }
             }
