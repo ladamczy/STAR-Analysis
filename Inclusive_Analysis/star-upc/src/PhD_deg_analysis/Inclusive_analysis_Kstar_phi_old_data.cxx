@@ -84,19 +84,6 @@ int main(int argc, char** argv){
     outsideprocessing.AddHistogram(TH1D("MKKChi2", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 100, 0.9, 2.4));
     outsideprocessing.AddHistogram(TH1D("MpipiChi2", ";m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 120, 0.2, 1.4));
     outsideprocessing.AddHistogram(TH1D("MppChi2", ";m_{p^{+}p^{-}} [GeV];Number of pairs", 100, 1.5, 3.5));
-    //test of mass measuring
-    string pairTab[] = { "Kpi", "piK", "ppi", "pip", "KK", "pipi", "pp" };
-    for(size_t i = 0; i<7; i++){
-        outsideprocessing.AddHistogram(TH1D(("M"+pairTab[i]+"AssumedFirst").c_str(), ";m [GeV];Number of particles", 100, 0.0, 1.0));
-        outsideprocessing.AddHistogram(TH1D(("M"+pairTab[i]+"AssumedSecond").c_str(), ";m [GeV];Number of particles", 100, 0.0, 1.0));
-        double lowerMass = outsideprocessing.GetPointer1D(("M"+pairTab[i]+"Chi2").c_str())->GetXaxis()->GetXmin();
-        double upperMass = outsideprocessing.GetPointer1D(("M"+pairTab[i]+"Chi2").c_str())->GetXaxis()->GetXmax();
-        string axisTitle = outsideprocessing.GetPointer1D(("M"+pairTab[i]+"Chi2").c_str())->GetXaxis()->GetTitle();
-        outsideprocessing.AddHistogram(TH1D(("M"+pairTab[i]+"Chi2AndMassAssumedFirst").c_str(), (";"+axisTitle+";Number of pairs").c_str(), 100, lowerMass, upperMass));
-        outsideprocessing.AddHistogram(TH1D(("M"+pairTab[i]+"Chi2AndMassAssumedSecond").c_str(), (";"+axisTitle+";Number of pairs").c_str(), 100, lowerMass, upperMass));
-        outsideprocessing.AddHistogram(TH1D(("M"+pairTab[i]+"Chi2AndMassAssumedFirstDifference").c_str(), (";"+axisTitle+";Number of pairs").c_str(), 100, lowerMass, upperMass));
-        outsideprocessing.AddHistogram(TH1D(("M"+pairTab[i]+"Chi2AndMassAssumedSecondDifference").c_str(), (";"+axisTitle+";Number of pairs").c_str(), 100, lowerMass, upperMass));
-    }
 
     //processing
     //defining TreeProcessor
@@ -125,7 +112,6 @@ int main(int argc, char** argv){
         map<string, double> chi2Map;
         bool isdEdxOk, isTOFOk;
         string tempPairName;
-        double testmass;
 
         //actual loop
         while(myReader.Next()){
@@ -229,77 +215,42 @@ int main(int argc, char** argv){
                         vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
                         mass = (positive_track+negative_track).M();
                         insideprocessing.Fill("MKpiChi2", mass);
-                        //tests of mass assumption
-                        testmass = getMass(vector_Track_positive[i], vector_Track_negative[j], particleMass[Kaon]);
-                        insideprocessing.Fill("MKpiAssumedFirst", testmass);
-                        testmass = getMass(vector_Track_negative[j], vector_Track_positive[i], particleMass[Pion]);
-                        insideprocessing.Fill("MKpiAssumedSecond", testmass);
                     }
                     if(almostAllChi2(chi2Map, "pi_K", 9)){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
                         vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Kaon]);
                         mass = (positive_track+negative_track).M();
                         insideprocessing.Fill("MpiKChi2", mass);
-                        //tests of mass assumption
-                        testmass = getMass(vector_Track_positive[i], vector_Track_negative[j], particleMass[Pion]);
-                        insideprocessing.Fill("MpiKAssumedFirst", testmass);
-                        testmass = getMass(vector_Track_negative[j], vector_Track_positive[i], particleMass[Kaon]);
-                        insideprocessing.Fill("MpiKAssumedSecond", testmass);
                     }
                     if(almostAllChi2(chi2Map, "p_pi", 9)){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Proton]);
                         vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
                         mass = (positive_track+negative_track).M();
                         insideprocessing.Fill("MppiChi2", mass);
-                        //tests of mass assumption
-                        testmass = getMass(vector_Track_positive[i], vector_Track_negative[j], particleMass[Proton]);
-                        insideprocessing.Fill("MppiAssumedFirst", testmass);
-                        testmass = getMass(vector_Track_negative[j], vector_Track_positive[i], particleMass[Pion]);
-                        insideprocessing.Fill("MppiAssumedSecond", testmass);
                     }
                     if(almostAllChi2(chi2Map, "pi_p", 9)){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
                         vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Proton]);
                         mass = (positive_track+negative_track).M();
                         insideprocessing.Fill("MpipChi2", mass);
-                        //tests of mass assumption
-                        testmass = getMass(vector_Track_positive[i], vector_Track_negative[j], particleMass[Pion]);
-                        insideprocessing.Fill("MpipAssumedFirst", testmass);
-                        testmass = getMass(vector_Track_negative[j], vector_Track_positive[i], particleMass[Proton]);
-                        insideprocessing.Fill("MpipAssumedSecond", testmass);
                     }
                     if(almostAllChi2(chi2Map, "K_K", 9)){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Kaon]);
                         vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Kaon]);
                         mass = (positive_track+negative_track).M();
                         insideprocessing.Fill("MKKChi2", mass);
-                        //tests of mass assumption
-                        testmass = getMass(vector_Track_positive[i], vector_Track_negative[j], particleMass[Kaon]);
-                        insideprocessing.Fill("MKKAssumedFirst", testmass);
-                        testmass = getMass(vector_Track_negative[j], vector_Track_positive[i], particleMass[Kaon]);
-                        insideprocessing.Fill("MKKAssumedSecond", testmass);
                     }
                     if(almostAllChi2(chi2Map, "pi_pi", 9)){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
                         vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
                         mass = (positive_track+negative_track).M();
                         insideprocessing.Fill("MpipiChi2", mass);
-                        //tests of mass assumption
-                        testmass = getMass(vector_Track_positive[i], vector_Track_negative[j], particleMass[Pion]);
-                        insideprocessing.Fill("MpipiAssumedFirst", testmass);
-                        testmass = getMass(vector_Track_negative[j], vector_Track_positive[i], particleMass[Pion]);
-                        insideprocessing.Fill("MpipiAssumedSecond", testmass);
                     }
                     if(almostAllChi2(chi2Map, "p_p", 9)){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Proton]);
                         vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Proton]);
                         mass = (positive_track+negative_track).M();
                         insideprocessing.Fill("MppChi2", mass);
-                        //tests of mass assumption
-                        testmass = getMass(vector_Track_positive[i], vector_Track_negative[j], particleMass[Proton]);
-                        insideprocessing.Fill("MppAssumedFirst", testmass);
-                        testmass = getMass(vector_Track_negative[j], vector_Track_positive[i], particleMass[Proton]);
-                        insideprocessing.Fill("MppAssumedSecond", testmass);
                     }
                 }
             }
