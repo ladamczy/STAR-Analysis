@@ -1,6 +1,8 @@
 // Stdlib header file for input and output.
 #include <iostream>
 #include <cstring>
+#include <fstream>
+#include <sstream>
 
 // ROOT, for histogramming.
 #include "TH1.h"
@@ -10,6 +12,7 @@
 #include "THStack.h"
 #include "TCanvas.h"
 #include "TStyle.h"
+#include "TF1.h"
 
 #include "MyStyles.h"
 
@@ -50,6 +53,76 @@ int main(int argc, char const* argv[]){
     TH1D* MKKChi2bcg = (TH1D*)inputbcg->Get(("MKKChi2bcg"+background).c_str());
     TH1D* MpipiChi2bcg = (TH1D*)inputbcg->Get(("MpipiChi2bcg"+background).c_str());
     TH1D* MppChi2bcg = (TH1D*)inputbcg->Get(("MppChi2bcg"+background).c_str());
+    //getting NORMALTOF diffractive background and signal
+    // std::vector<std::string> pairTab = { "Kpi", "piK", "ppi", "pip", "KK", "pipi", "pp" };
+    // std::vector<double> bcgRegion = { 1.0, 1.0, 1.1, 1.1, 1.1, 0.2, 2.4 };
+    std::vector<std::string> pairTab = { "Kpi", "piK", "KK" };
+    std::vector<double> bcgRegion = { 1.0, 1.0, 1.1 };
+    //creating list of categories
+    std::vector<std::string> allCategories;
+    std::ifstream infile("STAR-Analysis/Inclusive_Analysis/star-upc/src/PhD_deg_analysis/Differential_crossection_values.txt");
+    std::string line, buf;
+    while(std::getline(infile, line)){
+        std::stringstream ss(line);
+        ss>>buf;
+        //erasing ":" after the category
+        if(buf.find(':')!=std::string::npos){
+            buf.erase(buf.end()-1);
+        }
+        allCategories.push_back(buf);
+    }
+    //filling vectors of background and signal
+    std::vector<TH2D*> background_vector, signal_vector;
+    std::vector<TH1D*> result_vector;
+    std::string tempSignalName = "M$Chi2";
+    std::string tempBackgroundName = "M$Chi2bcgNORMALTOF";
+    std::string tempHistName;
+    for(auto&& pair:pairTab){
+        for(auto&& category:allCategories){
+            //signal
+            tempHistName = tempSignalName;
+            tempHistName.replace(find(tempHistName.begin(), tempHistName.end(), '$')-tempHistName.begin(), 1, pair);
+            signal_vector.push_back((TH2D*)input->Get((tempHistName+category).c_str()));
+            //result, but uses signal template
+            result_vector.push_back(new TH1D((tempHistName+"Result"+category).c_str(), (pair+" "+category).c_str(), signal_vector.back()->GetNbinsY(), signal_vector.back()->GetYaxis()->GetXmin(), signal_vector.back()->GetYaxis()->GetXmax()));
+            //background
+            tempHistName = tempBackgroundName;
+            tempHistName.replace(find(tempHistName.begin(), tempHistName.end(), '$')-tempHistName.begin(), 1, pair);
+            background_vector.push_back((TH2D*)inputbcg->Get((tempHistName+category).c_str()));
+        }
+    }
+    //fitting function
+    TF1* fitFunc = new TF1("fitFunc", "breitwigner+pol1(3)", 0.8, 1.0);
+    //substracting one from another
+    //fitting the difference
+    //and filling the result
+    for(size_t i = 0; i<pairTab.size(); i++){
+        for(size_t j = 0; j<allCategories.size(); j++){
+            TH2D* bcg_pointer = background_vector[i*allCategories.size()+j];
+            TH2D* sig_pointer = signal_vector[i*allCategories.size()+j];
+            for(size_t k = 0; k<sig_pointer->GetNbinsY(); k++){
+                //getting a slice and removing background
+                TH1D* bcg_slice = bcg_pointer->ProjectionX("_px", k+1, k+1, "e");
+                TH1D* sig_slice = sig_pointer->ProjectionX("_px", k+1, k+1, "e");
+                int bcg_bin = bcg_slice->FindBin(bcgRegion[i]);
+                if(sig_slice->Integral(bcg_bin, -1)==0||bcg_slice->Integral(bcg_bin, -1)==0){
+                    result_vector[i*allCategories.size()+j]->SetBinContent(k+1, TMath::QuietNaN());
+                    result_vector[i*allCategories.size()+j]->SetBinError(k+1, TMath::QuietNaN());
+                    continue;
+                }
+                bcg_slice->Scale(sig_slice->Integral(bcg_bin, -1)/bcg_slice->Integral(bcg_bin, -1));
+                sig_slice->Add(bcg_slice, -1.);
+                //fitting and filling result
+                double max_center = sig_slice->GetBinCenter(sig_slice->GetMaximumBin());
+                fitFunc->SetParameters(100., 0.1, max_center, 0., 0.);
+                fitFunc->SetRange(max_center-0.1, max_center+0.1);
+                sig_slice->Fit(fitFunc, "R");
+                sig_slice->Draw();
+                result_vector[i*allCategories.size()+j]->SetBinContent(k+1, fitFunc->GetParameter(0));
+                result_vector[i*allCategories.size()+j]->SetBinError(k+1, fitFunc->GetParError(0));
+            }
+        }
+    }
 
     std::string folderWithDiagonal = std::string(argv[3]);
     if(folderWithDiagonal[folderWithDiagonal.size()-1]!='/'){
@@ -98,7 +171,12 @@ int main(int argc, char const* argv[]){
     draw_and_save(MKKChi2bcg, folderWithDiagonal, "MKKbcg", "K^{+}K^{-} background");
     draw_and_save(MpipiChi2bcg, folderWithDiagonal, "Mpipibcg", "#pi^{+}#pi^{-} background");
     draw_and_save(MppChi2bcg, folderWithDiagonal, "Mppbcg", "p^{+}p^{-} background");
-
+    //fits
+    for(size_t i = 0; i<pairTab.size(); i++){
+        for(size_t j = 0; j<allCategories.size(); j++){
+            draw_and_save(result_vector[i*allCategories.size()+j], "~/star-upc/", "M"+pairTab[i]+allCategories[j], pairTab[i]+" "+allCategories[j]+";"+allCategories[j]+";entries");
+        }
+    }
     return 0;
 }
 
