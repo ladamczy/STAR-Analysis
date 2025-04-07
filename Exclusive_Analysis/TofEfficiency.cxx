@@ -1,7 +1,7 @@
 #include <iostream>
 #include <string>    
 #include <utility>
-#include <sstream> //
+#include <sstream> 
 #include <algorithm> 
 #include <stdio.h> 
 #include <stdlib.h> 
@@ -67,7 +67,6 @@ using namespace std;
 
 // Function prototype for finding protons
 void FindProtons(bool isMC, StRPEvent *rpEvt, StUPCEvent *upcEvt, TLorentzVector & proton1, TLorentzVector & proton2);
-
 
 int main(int argc, char** argv)  
 {
@@ -252,6 +251,17 @@ int main(int argc, char** argv)
         HistKaonFillProbeWithTofPosProbeMass.push_back(histPosW);
         HistKaonFillProbeWithTofNegProbeMass.push_back(histNegW);
     }
+   
+    // Histograms for truth-matched tag and probe analysis
+    TH1D* HistKaonMassProbeWithTof_TruePions = new TH1D("HistKaonMassProbeWithTof_TruePions", "; m_{#pi^{+}#pi^{-}}^{probe} [GeV]; # events", 60, 0.44, 0.56);
+    TH1D* HistKaonMassProbeWithoutTof_TruePions = new TH1D("HistKaonMassProbeWithoutTof_TruePions", "; m_{#pi^{+}#pi^{-}}^{tag} [GeV]; # events", 60, 0.44, 0.56);
+
+    TH1D* HistPionPtWithTof_TruePions = new TH1D("HistPionPtWithTof_TruePions", "; p_{T} [GeV]; true pions with TOF", nBinsPt-1, binsPt);
+    TH1D* HistPionPtWithoutTof_TruePions = new TH1D("HistPionPtWithoutTof_TruePions", "; p_{T} [GeV]; true pions without TOF", nBinsPt-1, binsPt);
+
+    TH1D* HistPionEtaWithTof_TruePions = new TH1D("HistPionEtaWithTof_TruePions", "; #eta; true pions with TOF", nBinsEta-1, binsEta);
+    TH1D* HistPionEtaWithoutTof_TruePions = new TH1D("HistPionEtaWithoutTof_TruePions", "; #eta; true pions without TOF", nBinsEta-1, binsEta);
+
 
     //cut flow histograms
     TH1D* HistEventCutFlow = new TH1D("HistEventCutFlow", ";Cut;Events", 5, 0, 5);
@@ -460,11 +470,42 @@ int main(int argc, char** argv)
             continue;
         }*/
         // ============================
-        // Tag-and-Probe Analysis
+        // Tag-and-Probe Analysis + matching tracks with true MC
         // ============================
 
         StUPCTrack const * track1;
         StUPCTrack const * track2;
+
+        // For MC data, extract true pions
+        vector<TParticle*> vTruePions;
+        vector<TLorentzVector> vTruePionVectors;
+        
+        // For MC data, check if tracks are true pions
+        if (isMC == 1) {
+            // Extract and filter true pions
+            for (int k = 0; k < upcEvt->getNumberOfMCParticles(); k++) {
+                TParticle* particle = upcEvt->getMCParticle(k);
+                if (particle->GetPDG()->PdgCode() == 211 || particle->GetPDG()->PdgCode() == -211) {
+                    // Apply the same vertex and kinematic cuts as in the truth analysis
+                    TLorentzVector pion;
+                    pion.SetPxPyPzE(particle->Px(), particle->Py(), particle->Pz(), particle->Energy());
+                    double pT = sqrt(pow(particle->Px(), 2) + pow(particle->Py(), 2));
+                    double eta = pion.Eta();
+                    
+                    TLorentzVector productionVertex;
+                    particle->ProductionVertex(productionVertex);
+                    double truthVertexR = sqrt(pow(productionVertex.X(), 2) + pow(productionVertex.Y(), 2));
+                    double truthVertexZ = productionVertex.Z();
+                    
+                    // Apply cuts on the production vertex
+                    if (abs(truthVertexZ) <= 80 && truthVertexR <= 3.0 && pT >= 0.2 && abs(eta) <= 0.9) {
+                        vTruePions.push_back(particle);
+                        vTruePionVectors.push_back(pion);
+                    }
+                }
+            }
+        }
+
         // Pair tracks and apply additional cuts
         for (int i = 0; i<tracksWithSmallDca.size(); i++) // pęta po trackach dobrej jakości
 		{
@@ -474,6 +515,48 @@ int main(int argc, char** argv)
                 {
                     track1 = tracksWithSmallDca[i];
                     track2 = tracksWithSmallDca[j];
+
+                    bool isTrack1TruePion = false;
+                    bool isTrack2TruePion = false;
+
+                    // For MC data, check if tracks are true pions using the same matching approach as the truth analysis
+                    if (isMC == 1 && !vTruePions.empty()) {
+                        // Match track1 to true pions
+                        vector<double> distr1;
+                        TLorentzVector track1Vector;
+                        track1->getLorentzVector(track1Vector, massPion);
+                        
+                        for (const auto& truePion : vTruePionVectors) {
+                            double r = track1Vector.DeltaR(truePion);
+                            distr1.push_back(r);
+                        }
+                        
+                        if (!distr1.empty()) {
+                            auto it1 = std::min_element(distr1.begin(), distr1.end());
+                            int index1 = std::distance(distr1.begin(), it1);
+                            if (distr1[index1] < 0.15) {
+                                isTrack1TruePion = true;
+                            }
+                        }
+                        
+                        // Match track2 to true pions
+                        vector<double> distr2;
+                        TLorentzVector track2Vector;
+                        track2->getLorentzVector(track2Vector, massPion);
+                        
+                        for (const auto& truePion : vTruePionVectors) {
+                            double r = track2Vector.DeltaR(truePion);
+                            distr2.push_back(r);
+                        }
+                        
+                        if (!distr2.empty()) {
+                            auto it2 = std::min_element(distr2.begin(), distr2.end());
+                            int index2 = std::distance(distr2.begin(), it2);
+                            if (distr2[index2] < 0.15) {
+                                isTrack2TruePion = true;
+                            }
+                        }
+                    }
                     bool hasTofHitTrack1 = false;
                     bool hasTofHitTrack2 = false;
                     // Check if tracks have TOF hits
@@ -538,6 +621,17 @@ int main(int argc, char** argv)
                                 HistKaonMassProbeWithTof->Fill(kaon.m());
                                 HistKaonMassProbeWithTof->Fill(kaon.m());
 
+                                // If both tracks are true pions, fill the truth-matched histograms
+                                if (isMC == 1 && isTrack1TruePion && isTrack2TruePion) {
+                                    HistKaonMassProbeWithTof_TruePions->Fill(kaon.m());
+                                    
+                                    // Fill pT and eta histograms for true pions with TOF
+                                    HistPionPtWithTof_TruePions->Fill(track1->getPt());
+                                    HistPionPtWithTof_TruePions->Fill(track2->getPt());
+                                    HistPionEtaWithTof_TruePions->Fill(track1->getEta());
+                                    HistPionEtaWithTof_TruePions->Fill(track2->getEta());
+                                }
+
                                 StUPCTrack const * tagWTof1 = track1;
                                 StUPCTrack const * probeWTof1 = track2;  
 
@@ -594,6 +688,20 @@ int main(int argc, char** argv)
                                 {
                                     tagWoTof = track2;
                                     probeWoTof = track1;
+                                }
+
+                                // Check if tag and probe are true pions (for MC only)
+                                if (isMC == 1) {
+                                    bool isTagTruePion = (tagWoTof == track1) ? isTrack1TruePion : isTrack2TruePion;
+                                    bool isProbeTruePion = (probeWoTof == track1) ? isTrack1TruePion : isTrack2TruePion;
+                                    
+                                    if (isTagTruePion && isProbeTruePion) {
+                                        HistKaonMassProbeWithoutTof_TruePions->Fill(kaon.m());
+                                        
+                                        // Fill pT and eta histograms for the probe track (without TOF) if it's a true pion
+                                        HistPionPtWithoutTof_TruePions->Fill(probeWoTof->getPt());
+                                        HistPionEtaWithoutTof_TruePions->Fill(probeWoTof->getEta());
+                                    }
                                 }
 
                                 for (int i = 0; i <nBinsPt-1; i++)
@@ -696,24 +804,31 @@ int main(int argc, char** argv)
     HistKaonEtaProbeWithTofNegProbeMassMC->Write();
     HistKaonEtaProbeWithTofPosProbeMassMC->Write();*/
 
+    HistKaonMassProbeWithTof_TruePions->Write();
+    HistKaonMassProbeWithoutTof_TruePions->Write();
+    HistPionPtWithTof_TruePions->Write();
+    HistPionPtWithoutTof_TruePions->Write();
+    HistPionEtaWithTof_TruePions->Write();
+    HistPionEtaWithoutTof_TruePions->Write();
+
     HistPionPtWithTofMC->Write();
     HistPionEtaWithTofMC->Write();
     HistPionPtWithoutTofMC->Write();
     HistPionEtaWithoutTofMC->Write();
-    // At the end of the event processing, add these histograms to the output file
+
     HistTruePionPt->Write();
     HistTruePionEta->Write();
     HistTruePionWithTofPt->Write();
     HistTruePionWithTofEta->Write();
     
-    // Optional: Calculate and save efficiency histograms
-    TH1D* HistTofEfficiencyVsPt = new TH1D("HistTofEfficiencyVsPt", "; p_{T} [GeV]; TOF Efficiency", nBinsPt-1, binsPt);
-    HistTofEfficiencyVsPt->Divide(HistTruePionWithTofPt, HistTruePionPt, 1, 1, "B");
-    HistTofEfficiencyVsPt->Write();
-    
-    TH1D* HistTofEfficiencyVsEta = new TH1D("HistTofEfficiencyVsEta", "; #eta; TOF Efficiency", nBinsEta-1, binsEta);
-    HistTofEfficiencyVsEta->Divide(HistTruePionWithTofEta, HistTruePionEta, 1, 1, "B");
-    HistTofEfficiencyVsEta->Write();        
+    // calculate and write efficiency histograms for true pions in tag and probe
+    TH1D* HistTagProbeEfficiencyVsPt = new TH1D("HistTagProbeEfficiencyVsPt", "; p_{T} [GeV]; Tag & Probe TOF Efficiency", nBinsPt-1, binsPt);
+    HistTagProbeEfficiencyVsPt->Divide(HistPionPtWithTof_TruePions, HistPionPtWithoutTof_TruePions, 1, 1, "B");
+    HistTagProbeEfficiencyVsPt->Write();
+
+    TH1D* HistTagProbeEfficiencyVsEta = new TH1D("HistTagProbeEfficiencyVsEta", "; #eta; Tag & Probe TOF Efficiency", nBinsEta-1, binsEta);
+    HistTagProbeEfficiencyVsEta->Divide(HistPionEtaWithTof_TruePions, HistPionEtaWithoutTof_TruePions, 1, 1, "B");
+    HistTagProbeEfficiencyVsEta->Write();    
 
     /*for (int i = 0; i < HistKaonPtProbeWithoutTofPosProbeMass.size(); i++)
     {
@@ -742,5 +857,4 @@ int main(int argc, char** argv)
 
     return 0;
 }
-
 
