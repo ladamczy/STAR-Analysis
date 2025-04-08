@@ -228,6 +228,8 @@ int main(int argc, char** argv){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
                         vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Kaon]);
                         mass = (positive_track+negative_track).M();
+                        eta = (positive_track+negative_track).Eta();
+                        pT = (positive_track+negative_track).Pt();
                         insideprocessing.Fill("MpiKChi2", mass);
                         insideprocessing.Fill("MpiKChi2eta", mass, eta);
                         insideprocessing.Fill("MpiKChi2pT", mass, pT);
@@ -236,6 +238,8 @@ int main(int argc, char** argv){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Proton]);
                         vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
                         mass = (positive_track+negative_track).M();
+                        eta = (positive_track+negative_track).Eta();
+                        pT = (positive_track+negative_track).Pt();
                         insideprocessing.Fill("MppiChi2", mass);
                         insideprocessing.Fill("MppiChi2eta", mass, eta);
                         insideprocessing.Fill("MppiChi2pT", mass, pT);
@@ -244,6 +248,8 @@ int main(int argc, char** argv){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
                         vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Proton]);
                         mass = (positive_track+negative_track).M();
+                        eta = (positive_track+negative_track).Eta();
+                        pT = (positive_track+negative_track).Pt();
                         insideprocessing.Fill("MpipChi2", mass);
                         insideprocessing.Fill("MpipChi2eta", mass, eta);
                         insideprocessing.Fill("MpipChi2pT", mass, pT);
@@ -252,6 +258,8 @@ int main(int argc, char** argv){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Kaon]);
                         vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Kaon]);
                         mass = (positive_track+negative_track).M();
+                        eta = (positive_track+negative_track).Eta();
+                        pT = (positive_track+negative_track).Pt();
                         insideprocessing.Fill("MKKChi2", mass);
                         insideprocessing.Fill("MKKChi2eta", mass, eta);
                         insideprocessing.Fill("MKKChi2pT", mass, pT);
@@ -260,6 +268,8 @@ int main(int argc, char** argv){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
                         vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
                         mass = (positive_track+negative_track).M();
+                        eta = (positive_track+negative_track).Eta();
+                        pT = (positive_track+negative_track).Pt();
                         insideprocessing.Fill("MpipiChi2", mass);
                         insideprocessing.Fill("MpipiChi2eta", mass, eta);
                         insideprocessing.Fill("MpipiChi2pT", mass, pT);
@@ -268,6 +278,8 @@ int main(int argc, char** argv){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Proton]);
                         vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Proton]);
                         mass = (positive_track+negative_track).M();
+                        eta = (positive_track+negative_track).Eta();
+                        pT = (positive_track+negative_track).Pt();
                         insideprocessing.Fill("MppChi2", mass);
                         insideprocessing.Fill("MppChi2eta", mass, eta);
                         insideprocessing.Fill("MppChi2pT", mass, pT);
