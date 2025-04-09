@@ -13,14 +13,21 @@
 #include "TCanvas.h"
 #include "TStyle.h"
 #include "TF1.h"
+#include "TApplication.h"
 
 #include "MyStyles.h"
 
-void draw_and_save(TH1D* data, std::string folderWithDiagonal, std::string name, std::string title);
+void draw_and_save(TH1D* data, std::string folderWithDiagonal, std::string name, std::string title, std::string options = "");
 void draw_and_save_minus_background(TH1D* data, TH1D* bcg, std::string folderWithDiagonal, std::string name, std::string title, double bcg_region);
+void differential_crossection_fit(TH1D* slice, TF1* fitting_function_signal, TF1* fitting_function_bcg, double& param_value, double& param_error);
 
-int main(int argc, char const* argv[]){
-    TFile* input = TFile::Open(argv[1]);
+int main(int argc, char* argv[]){
+    //something used so that the histograms would draw
+    //https://stackoverflow.com/questions/30932725/painting-a-tcanvas-to-the-screen-in-a-compiled-root-cern-application
+    TApplication theApp("App", &argc, argv);
+    argv = theApp.Argv();
+
+    TFile* input = TFile::Open(static_cast<const char*>(argv[1]));
 
     //getting histograms out
     TH1D* pairInfo = (TH1D*)input->Get("pairInfo");
@@ -41,7 +48,7 @@ int main(int argc, char const* argv[]){
     MppChi2
     */
 
-    TFile* inputbcg = TFile::Open(argv[2]);
+    TFile* inputbcg = TFile::Open(static_cast<const char*>(argv[2]));
 
     //getting background histograms out
     //MIXEDTOF, NORMALTOF, NOTOF
@@ -58,6 +65,7 @@ int main(int argc, char const* argv[]){
     // std::vector<double> bcgRegion = { 1.0, 1.0, 1.1, 1.1, 1.1, 0.2, 2.4 };
     std::vector<std::string> pairTab = { "Kpi", "piK", "KK" };
     std::vector<double> bcgRegion = { 1.0, 1.0, 1.1 };
+    std::vector<double> fitCutoffRegion = { 1.5, 1.5, 2.0 };
     //creating list of categories
     std::vector<std::string> allCategories;
     std::ifstream infile("STAR-Analysis/Inclusive_Analysis/star-upc/src/PhD_deg_analysis/Differential_crossection_values.txt");
@@ -91,8 +99,9 @@ int main(int argc, char const* argv[]){
             background_vector.push_back((TH2D*)inputbcg->Get((tempHistName+category).c_str()));
         }
     }
-    //fitting function
-    TF1* fitFunc = new TF1("fitFunc", "breitwigner+pol1(3)", 0.8, 1.0);
+    //fitting functions
+    TF1* fit_func_sig = new TF1("fit_func_sig", "breitwigner", 0.8, 1.0);
+    TF1* fit_func_bcg = new TF1("fit_func_bcg", "pol1", 0.8, 1.0);
     //substracting one from another
     //fitting the difference
     //and filling the result
@@ -114,17 +123,26 @@ int main(int argc, char const* argv[]){
                 sig_slice->Add(bcg_slice, -1.);
                 //fitting and filling result
                 double max_center = sig_slice->GetBinCenter(sig_slice->GetMaximumBin());
-                fitFunc->SetParameters(100., 0.1, max_center, 0., 0.);
-                fitFunc->SetRange(max_center-0.1, max_center+0.1);
-                sig_slice->Fit(fitFunc, "R");
-                sig_slice->Draw();
-                result_vector[i*allCategories.size()+j]->SetBinContent(k+1, fitFunc->GetParameter(0));
-                result_vector[i*allCategories.size()+j]->SetBinError(k+1, fitFunc->GetParError(0));
+                fit_func_sig->SetParameters(2.3, max_center, 0.03);
+                fit_func_sig->SetRange(max_center-0.25, sig_slice->GetXaxis()->GetXmax());
+                fit_func_bcg->SetParameters(0., 0.);
+                fit_func_bcg->SetRange(max_center-0.25, sig_slice->GetXaxis()->GetXmax());
+                double par_value, par_error;
+                std::string newTitle = std::string(sig_slice->GetTitle())+" ";
+                newTitle += std::to_string(sig_pointer->GetYaxis()->GetBinLowEdge(k+1))+" - ";
+                newTitle += std::to_string(sig_pointer->GetYaxis()->GetBinUpEdge(k+1));
+                sig_slice->SetTitle(newTitle.c_str());
+                differential_crossection_fit(sig_slice, fit_func_sig, fit_func_bcg, par_value, par_error);
+                double bin_width = result_vector[i*allCategories.size()+j]->GetBinWidth(k+1);
+                par_value *= bin_width;
+                par_error *= bin_width;
+                result_vector[i*allCategories.size()+j]->SetBinContent(k+1, par_value);
+                result_vector[i*allCategories.size()+j]->SetBinError(k+1, par_error);
             }
         }
     }
 
-    std::string folderWithDiagonal = std::string(argv[3]);
+    std::string folderWithDiagonal = std::string(static_cast<const char*>(argv[3]));
     if(folderWithDiagonal[folderWithDiagonal.size()-1]!='/'){
         folderWithDiagonal += "/";
     }
@@ -174,20 +192,21 @@ int main(int argc, char const* argv[]){
     //fits
     for(size_t i = 0; i<pairTab.size(); i++){
         for(size_t j = 0; j<allCategories.size(); j++){
-            draw_and_save(result_vector[i*allCategories.size()+j], "~/star-upc/", "M"+pairTab[i]+allCategories[j], pairTab[i]+" "+allCategories[j]+";"+allCategories[j]+";entries");
+            draw_and_save(result_vector[i*allCategories.size()+j], "~/star-upc/", "M"+pairTab[i]+allCategories[j], pairTab[i]+" "+allCategories[j]+";"+allCategories[j]+";entries", "e");
         }
     }
+    theApp.Run();
     return 0;
 }
 
-void draw_and_save(TH1D* data, std::string folderWithDiagonal, std::string name, std::string title){
+void draw_and_save(TH1D* data, std::string folderWithDiagonal, std::string name, std::string title, std::string options){
     MyStyles styleLibrary;
     TStyle tempStyle = styleLibrary.Hist2DQuarterSize(true);
     tempStyle.cd();
     gROOT->ForceStyle();
     TCanvas* resultCanvas = new TCanvas("resultCanvas", "resultCanvas", 4000, 2400);
     //TODO: add fitting
-    data->Draw("hist");
+    data->Draw(options.c_str());
     resultCanvas->UseCurrentStyle();
     data->SetMinimum(0);
     data->SetMarkerStyle(kFullCircle);
@@ -214,4 +233,109 @@ void draw_and_save_minus_background(TH1D* data, TH1D* bcg, std::string folderWit
     data->SetTitle(title.c_str());
 
     resultCanvas->SaveAs((folderWithDiagonal+name+".pdf").c_str());
+}
+
+void differential_crossection_fit(TH1D* slice, TF1* fitting_function_signal, TF1* fitting_function_bcg, double& param_value, double& param_error){
+    //setting up the functions
+    TCanvas* result = new TCanvas("result", "result", 1600, 800);
+    gStyle->SetOptStat(0);
+    int signalparams, bcgparams, totalparams;
+    double rangemin, rangemax;
+    signalparams = fitting_function_signal->GetNpar();
+    bcgparams = fitting_function_bcg->GetNpar();
+    totalparams = signalparams+bcgparams;
+    fitting_function_signal->GetRange(rangemin, rangemax);
+    auto fitting_function_sum = [&](double* x, double* par){
+        return fitting_function_signal->EvalPar(x, par)+fitting_function_bcg->EvalPar(x, par+signalparams);
+    };
+    TF1* fitting_function_total = new TF1("fitting_function_total", fitting_function_sum, rangemin, rangemax, totalparams);
+    //old data, the base of drawing
+    slice->SetMarkerStyle(kFullCircle);
+    slice->SetMarkerColor(kBlue);
+    slice->SetLineColor(kBlue+2);
+    //setting beginning params for function
+    Double_t params[totalparams];
+    fitting_function_signal->GetParameters(params);
+    fitting_function_bcg->GetParameters(params+signalparams);
+    fitting_function_total->SetParameters(params);
+    fitting_function_bcg->SetLineStyle(3);
+    fitting_function_bcg->SetLineWidth(3);
+    fitting_function_signal->SetLineStyle(3);
+    fitting_function_signal->SetLineWidth(3);
+    fitting_function_total->SetNpx(1000);
+    //fitting and drawing
+    slice->Fit(fitting_function_total, "0BR");
+    slice->DrawCopy("E", "NewDataNewTracks");
+    fitting_function_signal->SetParameters(fitting_function_total->GetParameters());
+    fitting_function_signal->SetParErrors(fitting_function_total->GetParErrors());
+    fitting_function_bcg->SetParameters(fitting_function_total->GetParameters()+signalparams);
+    TF1* fitting_function_total_COPY = fitting_function_total->DrawCopy("CSAME");
+    TF1* fitting_function_bcg_COPY = fitting_function_bcg->DrawCopy("CSAME");
+    TF1* fitting_function_signal_COPY = fitting_function_signal->DrawCopy("CSAME");
+    gPad->Update();
+
+    //interactive part
+    std::cout<<"Enter which parameter and how much change"<<std::endl;
+    std::cout<<"Writing \"abs\" before just sets the parameter"<<std::endl;
+    std::cout<<"Or write \"fit\" to fit"<<std::endl;
+    std::cout<<"Or write \"zero\" if there is no data suitable to fit"<<std::endl;
+    std::cout<<"Or press \"Enter\" if everything ok"<<std::endl;
+    std::string response;
+    //needed to read whole line, not just until first space
+    std::getline(std::cin, response);
+    while(response.size()!=0&&response.find("zero")==std::string::npos){
+        //fitting/changing part
+        if(response.find("fit")!=std::string::npos){
+            fitting_function_total->SetParameters(fitting_function_total_COPY->GetParameters());
+            slice->Fit(fitting_function_total, "0BR");
+            printf("Chi2 = %f, ndof = %d\n", fitting_function_total->GetChisquare(), fitting_function_total->GetNDF());
+            fitting_function_total_COPY->SetParameters(fitting_function_total->GetParameters());
+            fitting_function_bcg_COPY->SetParameters(fitting_function_total->GetParameters()+signalparams);
+            fitting_function_signal_COPY->SetParameters(fitting_function_total->GetParameters());
+            fitting_function_signal_COPY->SetParErrors(fitting_function_total->GetParErrors());
+        } else if(response.find("zero")!=std::string::npos){
+            fitting_function_signal_COPY->SetParameter(0, 0);
+            fitting_function_signal_COPY->SetParError(0, 0);
+        } else{
+            int coeff_number;
+            double change, relative;
+            if(response.find("abs")==std::string::npos){
+                relative = 1.;
+                sscanf(response.c_str(), "%d%lf", &coeff_number, &change);
+            } else{
+                relative = 0.;
+                sscanf(response.c_str(), "abs %d%lf", &coeff_number, &change);
+            }
+            fitting_function_total_COPY->SetParameter(coeff_number, fitting_function_total_COPY->GetParameter(coeff_number)*relative+change);
+            if(coeff_number>=signalparams)
+                fitting_function_bcg_COPY->SetParameter(coeff_number-signalparams, fitting_function_bcg_COPY->GetParameter(coeff_number-signalparams)*relative+change);
+            else
+                fitting_function_signal_COPY->SetParameter(coeff_number, fitting_function_signal_COPY->GetParameter(coeff_number)*relative+change);
+        }
+        //drawing part
+        fitting_function_total_COPY->Draw("CSAME");
+        fitting_function_bcg_COPY->Draw("CSAME");
+        fitting_function_signal_COPY->Draw("CSAME");
+        gPad->Update();
+        //interactive part
+        std::cout<<"Enter which parameter and how much change"<<std::endl;
+        std::cout<<"Writing \"abs\" before just sets the parameter"<<std::endl;
+        std::cout<<"Or write \"fit\" to fit"<<std::endl;
+        std::cout<<"Or write \"zero\" if there is no data suitable to fit"<<std::endl;
+        std::cout<<"Or press \"Enter\" if everything ok"<<std::endl;
+        //needed to read whole line, not just until first space
+        std::getline(std::cin, response);
+    }
+    //adding to the result histogram
+    if(response.find("zero")!=std::string::npos){
+        param_value = 0.;
+        param_error = 0.;
+    } else{
+        param_value = fitting_function_signal_COPY->GetParameter(0)/slice->GetXaxis()->GetBinWidth(0);
+        param_error = fitting_function_signal_COPY->GetParError(0)/slice->GetXaxis()->GetBinWidth(0);
+    }
+    printf("Accepted current parameters\n");
+    //on last loop close the TCanvas
+    result->Close();
+    gStyle->SetOptStat(1);
 }

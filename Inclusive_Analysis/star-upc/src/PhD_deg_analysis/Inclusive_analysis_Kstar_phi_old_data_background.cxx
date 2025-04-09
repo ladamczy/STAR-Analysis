@@ -62,29 +62,29 @@ int main(int argc, char** argv){
     //histograms
     ProcessingOutsideLoop outsideprocessing;
     //mass histograms with TOF for mixed-events pairs
-    outsideprocessing.AddHistogram(TH1D("MKpiChi2bcgMIXEDTOF", ";m_{K^{+}#pi^{-}} [GeV];Number of pairs", 100, 0.5, 2.0));
-    outsideprocessing.AddHistogram(TH1D("MpiKChi2bcgMIXEDTOF", ";m_{#pi^{+}K^{-}} [GeV];Number of pairs", 100, 0.5, 2.0));
-    outsideprocessing.AddHistogram(TH1D("MppiChi2bcgMIXEDTOF", ";m_{p^{+}#pi^{-}} [GeV];Number of pairs", 100, 1.0, 2.5));
-    outsideprocessing.AddHistogram(TH1D("MpipChi2bcgMIXEDTOF", ";m_{#pi^{+}p^{-}} [GeV];Number of pairs", 100, 1.0, 2.5));
-    outsideprocessing.AddHistogram(TH1D("MKKChi2bcgMIXEDTOF", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 100, 0.9, 2.4));
-    outsideprocessing.AddHistogram(TH1D("MpipiChi2bcgMIXEDTOF", ";m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 120, 0.2, 1.4));
-    outsideprocessing.AddHistogram(TH1D("MppChi2bcgMIXEDTOF", ";m_{p^{+}p^{-}} [GeV];Number of pairs", 100, 1.5, 3.5));
+    outsideprocessing.AddHistogram(TH1D("MKpiChi2bcgMIXEDTOF", ";m_{K^{+}#pi^{-}} [GeV];Number of pairs", 50, 0.5, 2.0));
+    outsideprocessing.AddHistogram(TH1D("MpiKChi2bcgMIXEDTOF", ";m_{#pi^{+}K^{-}} [GeV];Number of pairs", 50, 0.5, 2.0));
+    outsideprocessing.AddHistogram(TH1D("MppiChi2bcgMIXEDTOF", ";m_{p^{+}#pi^{-}} [GeV];Number of pairs", 50, 1.0, 2.5));
+    outsideprocessing.AddHistogram(TH1D("MpipChi2bcgMIXEDTOF", ";m_{#pi^{+}p^{-}} [GeV];Number of pairs", 50, 1.0, 2.5));
+    outsideprocessing.AddHistogram(TH1D("MKKChi2bcgMIXEDTOF", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 50, 0.9, 2.4));
+    outsideprocessing.AddHistogram(TH1D("MpipiChi2bcgMIXEDTOF", ";m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 60, 0.2, 1.4));
+    outsideprocessing.AddHistogram(TH1D("MppChi2bcgMIXEDTOF", ";m_{p^{+}p^{-}} [GeV];Number of pairs", 50, 1.5, 3.5));
     //mass histograms with TOF first and mixing event pairs after
-    outsideprocessing.AddHistogram(TH1D("MKpiChi2bcgNORMALTOF", ";m_{K^{+}#pi^{-}} [GeV];Number of pairs", 100, 0.5, 2.0));
-    outsideprocessing.AddHistogram(TH1D("MpiKChi2bcgNORMALTOF", ";m_{#pi^{+}K^{-}} [GeV];Number of pairs", 100, 0.5, 2.0));
-    outsideprocessing.AddHistogram(TH1D("MppiChi2bcgNORMALTOF", ";m_{p^{+}#pi^{-}} [GeV];Number of pairs", 100, 1.0, 2.5));
-    outsideprocessing.AddHistogram(TH1D("MpipChi2bcgNORMALTOF", ";m_{#pi^{+}p^{-}} [GeV];Number of pairs", 100, 1.0, 2.5));
-    outsideprocessing.AddHistogram(TH1D("MKKChi2bcgNORMALTOF", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 100, 0.9, 2.4));
-    outsideprocessing.AddHistogram(TH1D("MpipiChi2bcgNORMALTOF", ";m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 120, 0.2, 1.4));
-    outsideprocessing.AddHistogram(TH1D("MppChi2bcgNORMALTOF", ";m_{p^{+}p^{-}} [GeV];Number of pairs", 100, 1.5, 3.5));
+    outsideprocessing.AddHistogram(TH1D("MKpiChi2bcgNORMALTOF", ";m_{K^{+}#pi^{-}} [GeV];Number of pairs", 50, 0.5, 2.0));
+    outsideprocessing.AddHistogram(TH1D("MpiKChi2bcgNORMALTOF", ";m_{#pi^{+}K^{-}} [GeV];Number of pairs", 50, 0.5, 2.0));
+    outsideprocessing.AddHistogram(TH1D("MppiChi2bcgNORMALTOF", ";m_{p^{+}#pi^{-}} [GeV];Number of pairs", 50, 1.0, 2.5));
+    outsideprocessing.AddHistogram(TH1D("MpipChi2bcgNORMALTOF", ";m_{#pi^{+}p^{-}} [GeV];Number of pairs", 50, 1.0, 2.5));
+    outsideprocessing.AddHistogram(TH1D("MKKChi2bcgNORMALTOF", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 50, 0.9, 2.4));
+    outsideprocessing.AddHistogram(TH1D("MpipiChi2bcgNORMALTOF", ";m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 60, 0.2, 1.4));
+    outsideprocessing.AddHistogram(TH1D("MppChi2bcgNORMALTOF", ";m_{p^{+}p^{-}} [GeV];Number of pairs", 50, 1.5, 3.5));
     //mass histograms without TOF
-    outsideprocessing.AddHistogram(TH1D("MKpiChi2bcgNOTOF", ";m_{K^{+}#pi^{-}} [GeV];Number of pairs", 100, 0.5, 2.0));
-    outsideprocessing.AddHistogram(TH1D("MpiKChi2bcgNOTOF", ";m_{#pi^{+}K^{-}} [GeV];Number of pairs", 100, 0.5, 2.0));
-    outsideprocessing.AddHistogram(TH1D("MppiChi2bcgNOTOF", ";m_{p^{+}#pi^{-}} [GeV];Number of pairs", 100, 1.0, 2.5));
-    outsideprocessing.AddHistogram(TH1D("MpipChi2bcgNOTOF", ";m_{#pi^{+}p^{-}} [GeV];Number of pairs", 100, 1.0, 2.5));
-    outsideprocessing.AddHistogram(TH1D("MKKChi2bcgNOTOF", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 100, 0.9, 2.4));
-    outsideprocessing.AddHistogram(TH1D("MpipiChi2bcgNOTOF", ";m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 120, 0.2, 1.4));
-    outsideprocessing.AddHistogram(TH1D("MppChi2bcgNOTOF", ";m_{p^{+}p^{-}} [GeV];Number of pairs", 100, 1.5, 3.5));
+    outsideprocessing.AddHistogram(TH1D("MKpiChi2bcgNOTOF", ";m_{K^{+}#pi^{-}} [GeV];Number of pairs", 50, 0.5, 2.0));
+    outsideprocessing.AddHistogram(TH1D("MpiKChi2bcgNOTOF", ";m_{#pi^{+}K^{-}} [GeV];Number of pairs", 50, 0.5, 2.0));
+    outsideprocessing.AddHistogram(TH1D("MppiChi2bcgNOTOF", ";m_{p^{+}#pi^{-}} [GeV];Number of pairs", 50, 1.0, 2.5));
+    outsideprocessing.AddHistogram(TH1D("MpipChi2bcgNOTOF", ";m_{#pi^{+}p^{-}} [GeV];Number of pairs", 50, 1.0, 2.5));
+    outsideprocessing.AddHistogram(TH1D("MKKChi2bcgNOTOF", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 50, 0.9, 2.4));
+    outsideprocessing.AddHistogram(TH1D("MpipiChi2bcgNOTOF", ";m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 60, 0.2, 1.4));
+    outsideprocessing.AddHistogram(TH1D("MppChi2bcgNOTOF", ";m_{p^{+}p^{-}} [GeV];Number of pairs", 50, 1.5, 3.5));
     //adding mass histograms grouped by category
     std::vector<std::string> pairTab = { "Kpi", "piK", "ppi", "pip", "KK", "pipi", "pp" };
     getCategoryHistograms(outsideprocessing, pairTab, "bcgNORMALTOF");
