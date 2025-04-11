@@ -83,7 +83,7 @@ int main(int argc, char* argv[]){
     std::vector<TH2D*> background_vector, signal_vector;
     std::vector<TH1D*> result_vector;
     std::string tempSignalName = "M$Chi2";
-    std::string tempBackgroundName = "M$Chi2bcgNORMALTOF";
+    std::string tempBackgroundName = "M$Chi2bcgTOF";
     std::string tempHistName;
     for(auto&& pair:pairTab){
         for(auto&& category:allCategories){
@@ -109,7 +109,7 @@ int main(int argc, char* argv[]){
         for(size_t j = 0; j<allCategories.size(); j++){
             TH2D* bcg_pointer = background_vector[i*allCategories.size()+j];
             TH2D* sig_pointer = signal_vector[i*allCategories.size()+j];
-            for(size_t k = 0; k<sig_pointer->GetNbinsY(); k++){
+            for(Int_t k = 0; k<sig_pointer->GetNbinsY(); k++){
                 //getting a slice and removing background
                 TH1D* bcg_slice = bcg_pointer->ProjectionX("_px", k+1, k+1, "e");
                 TH1D* sig_slice = sig_pointer->ProjectionX("_px", k+1, k+1, "e");
