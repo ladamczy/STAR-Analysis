@@ -51,21 +51,20 @@ int main(int argc, char* argv[]){
     TFile* inputbcg = TFile::Open(static_cast<const char*>(argv[2]));
 
     //getting background histograms out
-    //MIXEDTOF, NORMALTOF, NOTOF
-    std::string background = "NORMALTOF";
-    TH1D* MKpiChi2bcg = (TH1D*)inputbcg->Get(("MKpiChi2bcg"+background).c_str());
-    TH1D* MpiKChi2bcg = (TH1D*)inputbcg->Get(("MpiKChi2bcg"+background).c_str());
-    TH1D* MppiChi2bcg = (TH1D*)inputbcg->Get(("MppiChi2bcg"+background).c_str());
-    TH1D* MpipChi2bcg = (TH1D*)inputbcg->Get(("MpipChi2bcg"+background).c_str());
-    TH1D* MKKChi2bcg = (TH1D*)inputbcg->Get(("MKKChi2bcg"+background).c_str());
-    TH1D* MpipiChi2bcg = (TH1D*)inputbcg->Get(("MpipiChi2bcg"+background).c_str());
-    TH1D* MppChi2bcg = (TH1D*)inputbcg->Get(("MppChi2bcg"+background).c_str());
-    //getting NORMALTOF diffractive background and signal
+    TH1D* MKpiChi2bcg = (TH1D*)inputbcg->Get("MKpiChi2bcg");
+    TH1D* MpiKChi2bcg = (TH1D*)inputbcg->Get("MpiKChi2bcg");
+    TH1D* MppiChi2bcg = (TH1D*)inputbcg->Get("MppiChi2bcg");
+    TH1D* MpipChi2bcg = (TH1D*)inputbcg->Get("MpipChi2bcg");
+    TH1D* MKKChi2bcg = (TH1D*)inputbcg->Get("MKKChi2bcg");
+    TH1D* MpipiChi2bcg = (TH1D*)inputbcg->Get("MpipiChi2bcg");
+    TH1D* MppChi2bcg = (TH1D*)inputbcg->Get("MppChi2bcg");
+    //getting diffractive background and signal
     // std::vector<std::string> pairTab = { "Kpi", "piK", "ppi", "pip", "KK", "pipi", "pp" };
     // std::vector<double> bcgRegion = { 1.0, 1.0, 1.1, 1.1, 1.1, 0.2, 2.4 };
     std::vector<std::string> pairTab = { "Kpi", "piK", "KK" };
     std::vector<double> bcgRegion = { 1.0, 1.0, 1.1 };
-    std::vector<double> fitCutoffRegion = { 1.5, 1.5, 2.0 };
+    std::vector<double> fitMaximum = { 0.892, 0.892, 1.02 };
+    std::vector<double> fitWidth = { 0.05, 0.05, 0.004 };//50 MeV for K*(892), 4 MeV for phi(1020)
     //creating list of categories
     std::vector<std::string> allCategories;
     std::ifstream infile("STAR-Analysis/Inclusive_Analysis/star-upc/src/PhD_deg_analysis/Differential_crossection_values.txt");
@@ -122,11 +121,13 @@ int main(int argc, char* argv[]){
                 bcg_slice->Scale(sig_slice->Integral(bcg_bin, -1)/bcg_slice->Integral(bcg_bin, -1));
                 sig_slice->Add(bcg_slice, -1.);
                 //fitting and filling result
-                double max_center = sig_slice->GetBinCenter(sig_slice->GetMaximumBin());
-                fit_func_sig->SetParameters(2.3, max_center, 0.03);
-                fit_func_sig->SetRange(max_center-0.25, sig_slice->GetXaxis()->GetXmax());
+                fit_func_sig->SetParameters(2.3, fitMaximum[i], fitWidth[i]);
+                fit_func_sig->SetParLimits(0, 0, 1e9);
+                fit_func_sig->SetParLimits(1, fitMaximum[i]-fitWidth[i]*5, fitMaximum[i]+fitWidth[i]*5);
+                fit_func_sig->SetParLimits(2, 0, fitWidth[i]*10);
+                fit_func_sig->SetRange(fitMaximum[i]-fitWidth[i]*5, sig_slice->GetXaxis()->GetXmax());
                 fit_func_bcg->SetParameters(0., 0.);
-                fit_func_bcg->SetRange(max_center-0.25, sig_slice->GetXaxis()->GetXmax());
+                fit_func_bcg->SetRange(fitMaximum[i]-fitWidth[i]*5, sig_slice->GetXaxis()->GetXmax());
                 double par_value, par_error;
                 std::string newTitle = std::string(sig_slice->GetTitle())+" ";
                 newTitle += std::to_string(sig_pointer->GetYaxis()->GetBinLowEdge(k+1))+" - ";
