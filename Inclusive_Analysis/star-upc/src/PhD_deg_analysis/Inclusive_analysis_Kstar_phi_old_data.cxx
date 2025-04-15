@@ -88,6 +88,13 @@ int main(int argc, char** argv){
     outsideprocessing.AddHistogram(TH1D("MppChi2", ";m_{p^{+}p^{-}} [GeV];Number of pairs", 50, 1.5, 3.5));
     //adding mass histograms grouped by category
     getCategoryHistograms(outsideprocessing, pairTab);
+    //eta-phi histograms
+    outsideprocessing.AddHistogram(TH2D("EtaPhi_KpiChi2plus", ";#eta;#phi [rad]", 50, -0.7, 0.7, 50, -TMath::Pi(), TMath::Pi()));
+    outsideprocessing.AddHistogram(TH2D("EtaPhi_KpiChi2minus", ";#eta;#phi [rad]", 50, -0.7, 0.7, 50, -TMath::Pi(), TMath::Pi()));
+    outsideprocessing.AddHistogram(TH2D("EtaPhi_piKChi2plus", ";#eta;#phi [rad]", 50, -0.7, 0.7, 50, -TMath::Pi(), TMath::Pi()));
+    outsideprocessing.AddHistogram(TH2D("EtaPhi_piKChi2minus", ";#eta;#phi [rad]", 50, -0.7, 0.7, 50, -TMath::Pi(), TMath::Pi()));
+    outsideprocessing.AddHistogram(TH2D("EtaPhi_KKChi2plus", ";#eta;#phi [rad]", 50, -0.7, 0.7, 50, -TMath::Pi(), TMath::Pi()));
+    outsideprocessing.AddHistogram(TH2D("EtaPhi_KKChi2minus", ";#eta;#phi [rad]", 50, -0.7, 0.7, 50, -TMath::Pi(), TMath::Pi()));
 
     //processing
     //defining TreeProcessor
@@ -223,6 +230,8 @@ int main(int argc, char** argv){
                         insideprocessing.Fill("MKpiChi2", mass);
                         insideprocessing.Fill("MKpiChi2eta", mass, eta);
                         insideprocessing.Fill("MKpiChi2pT", mass, pT);
+                        insideprocessing.Fill("EtaPhi_KpiChi2plus", vector_Track_positive[i]->getEta(), vector_Track_positive[i]->getPhi());
+                        insideprocessing.Fill("EtaPhi_KpiChi2minus", vector_Track_negative[j]->getEta(), vector_Track_negative[j]->getPhi());
                     }
                     if(almostAllChi2(chi2Map, "pi_K", 9)){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
@@ -233,6 +242,8 @@ int main(int argc, char** argv){
                         insideprocessing.Fill("MpiKChi2", mass);
                         insideprocessing.Fill("MpiKChi2eta", mass, eta);
                         insideprocessing.Fill("MpiKChi2pT", mass, pT);
+                        insideprocessing.Fill("EtaPhi_piKChi2plus", vector_Track_positive[i]->getEta(), vector_Track_positive[i]->getPhi());
+                        insideprocessing.Fill("EtaPhi_piKChi2minus", vector_Track_negative[j]->getEta(), vector_Track_negative[j]->getPhi());
                     }
                     if(almostAllChi2(chi2Map, "p_pi", 9)){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Proton]);
@@ -263,6 +274,8 @@ int main(int argc, char** argv){
                         insideprocessing.Fill("MKKChi2", mass);
                         insideprocessing.Fill("MKKChi2eta", mass, eta);
                         insideprocessing.Fill("MKKChi2pT", mass, pT);
+                        insideprocessing.Fill("EtaPhi_KKChi2plus", vector_Track_positive[i]->getEta(), vector_Track_positive[i]->getPhi());
+                        insideprocessing.Fill("EtaPhi_KKChi2minus", vector_Track_negative[j]->getEta(), vector_Track_negative[j]->getPhi());
                     }
                     if(almostAllChi2(chi2Map, "pi_pi", 9)){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
