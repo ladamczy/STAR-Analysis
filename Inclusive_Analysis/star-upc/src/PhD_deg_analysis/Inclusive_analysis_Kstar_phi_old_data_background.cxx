@@ -92,6 +92,7 @@ int main(int argc, char** argv){
 
     //other things
     int eventsProcessed = 0;
+    int previousEventsMemorised = 3;
 
     //defining processing function
     auto myFunction = [&](TTreeReader& myReader){
@@ -106,12 +107,15 @@ int main(int argc, char** argv){
         //helpful variables
         std::vector<StUPCTrack*> vector_Track_positive = {};
         std::vector<StUPCTrack*> vector_Track_negative = {};
-        std::vector<StUPCTrack*> previous_vector_Track_positive = {};
-        std::vector<StUPCTrack*> previous_vector_Track_negative = {};
-        map<string, std::vector<StUPCTrack*>> vector_Track_positive_normal_TOF = {};
-        map<string, std::vector<StUPCTrack*>> vector_Track_negative_normal_TOF = {};
-        map<string, std::vector<StUPCTrack*>> previous_vector_Track_positive_normal_TOF = {};
-        map<string, std::vector<StUPCTrack*>> previous_vector_Track_negative_normal_TOF = {};
+        map<string, std::vector<StUPCTrack*>> vector_Track_positive_TOF = {};
+        map<string, std::vector<StUPCTrack*>> vector_Track_negative_TOF = {};
+        std::vector<map<string, std::vector<StUPCTrack*>>> previous_vector_Tracks_positive_TOF = {};
+        std::vector<map<string, std::vector<StUPCTrack*>>> previous_vector_Tracks_negative_TOF = {};
+        for(int i = 0; i<previousEventsMemorised; i++){
+            previous_vector_Tracks_positive_TOF.emplace_back();
+            previous_vector_Tracks_negative_TOF.emplace_back();
+        }
+
         StUPCTrack* tempTrack;
         TLorentzVector positive_track;
         TLorentzVector negative_track;
@@ -132,8 +136,8 @@ int main(int argc, char** argv){
             vector_Track_negative.clear();
             for(auto&& name:pairNames){
                 //removing previous pointers without removing their memory, because it is already invalidated
-                vector_Track_positive_normal_TOF[name].clear();
-                vector_Track_negative_normal_TOF[name].clear();
+                vector_Track_positive_TOF[name].clear();
+                vector_Track_negative_TOF[name].clear();
             }
 
             //cause I want to see what's going on
@@ -204,106 +208,147 @@ int main(int argc, char** argv){
                     //filling 
                     for(auto const& name:pairNames){
                         if(almostAllChi2(chi2Map, name, 9)){
-                            vector_Track_positive_normal_TOF[name].push_back(vector_Track_positive[i]);
-                            vector_Track_negative_normal_TOF[name].push_back(vector_Track_negative[j]);
+                            vector_Track_positive_TOF[name].push_back(vector_Track_positive[i]);
+                            vector_Track_negative_TOF[name].push_back(vector_Track_negative[j]);
                         }
                     }
                 }
             }
             //mixing old and new tracks
-            for(auto const& name:pairNames){
-                //previous + , current -
-                for(long unsigned int i = 0; i<previous_vector_Track_positive_normal_TOF[name].size(); i++){
-                    for(long unsigned int j = 0; j<vector_Track_negative_normal_TOF[name].size(); j++){
-                        auto pair = extractExtendedParticlesNumbersFromPair(name);
-                        //replaces $ with pair name without "_"
-                        string tempHistName = "M$Chi2bcgTOF";
-                        tempPairName = name;
-                        tempPairName = tempPairName.erase(find(tempPairName.begin(), tempPairName.end(), '_')-tempPairName.begin(), 1);
-                        tempHistName.replace(find(tempHistName.begin(), tempHistName.end(), '$')-tempHistName.begin(), 1, tempPairName);
-                        //calculates mass to fill
-                        previous_vector_Track_positive_normal_TOF[name][i]->getLorentzVector(positive_track, particleMassExtended[pair.first]);
-                        vector_Track_negative_normal_TOF[name][j]->getLorentzVector(negative_track, particleMassExtended[pair.second]);
-                        mass = (positive_track+negative_track).M();
-                        eta = (positive_track+negative_track).Eta();
-                        pt = (positive_track+negative_track).Pt();
-                        insideprocessing.Fill(tempHistName.c_str(), mass);
-                        insideprocessing.Fill((tempHistName+"eta").c_str(), mass, eta);
-                        insideprocessing.Fill((tempHistName+"pT").c_str(), mass, pt);
+            for(int prev_event = 0; prev_event<previousEventsMemorised; prev_event++){
+                //from oldest to newest
+                for(auto const& name:pairNames){
+                    //previous + , current -
+                    for(long unsigned int i = 0; i<previous_vector_Tracks_positive_TOF[prev_event][name].size(); i++){
+                        for(long unsigned int j = 0; j<vector_Track_negative_TOF[name].size(); j++){
+                            auto pair = extractExtendedParticlesNumbersFromPair(name);
+                            //replaces $ with pair name without "_"
+                            string tempHistName = "M$Chi2bcgTOF";
+                            tempPairName = name;
+                            tempPairName = tempPairName.erase(find(tempPairName.begin(), tempPairName.end(), '_')-tempPairName.begin(), 1);
+                            tempHistName.replace(find(tempHistName.begin(), tempHistName.end(), '$')-tempHistName.begin(), 1, tempPairName);
+                            //calculates mass to fill
+                            previous_vector_Tracks_positive_TOF[prev_event][name][i]->getLorentzVector(positive_track, particleMassExtended[pair.first]);
+                            vector_Track_negative_TOF[name][j]->getLorentzVector(negative_track, particleMassExtended[pair.second]);
+                            mass = (positive_track+negative_track).M();
+                            eta = (positive_track+negative_track).Eta();
+                            pt = (positive_track+negative_track).Pt();
+                            insideprocessing.Fill(tempHistName.c_str(), mass);
+                            insideprocessing.Fill((tempHistName+"eta").c_str(), mass, eta);
+                            insideprocessing.Fill((tempHistName+"pT").c_str(), mass, pt);
+                        }
                     }
-                }
-                //current + , previous -
-                for(long unsigned int i = 0; i<vector_Track_positive_normal_TOF[name].size(); i++){
-                    for(long unsigned int j = 0; j<previous_vector_Track_negative_normal_TOF[name].size(); j++){
-                        auto pair = extractExtendedParticlesNumbersFromPair(name);
-                        //replaces $ with pair name without "_"
-                        string tempHistName = "M$Chi2bcgTOF";
-                        tempPairName = name;
-                        tempPairName = tempPairName.erase(find(tempPairName.begin(), tempPairName.end(), '_')-tempPairName.begin(), 1);
-                        tempHistName.replace(find(tempHistName.begin(), tempHistName.end(), '$')-tempHistName.begin(), 1, tempPairName);
-                        //calculates mass to fill
-                        vector_Track_positive_normal_TOF[name][i]->getLorentzVector(positive_track, particleMassExtended[pair.first]);
-                        previous_vector_Track_negative_normal_TOF[name][j]->getLorentzVector(negative_track, particleMassExtended[pair.second]);
-                        mass = (positive_track+negative_track).M();
-                        eta = (positive_track+negative_track).Eta();
-                        pt = (positive_track+negative_track).Pt();
-                        insideprocessing.Fill(tempHistName.c_str(), mass);
-                        insideprocessing.Fill((tempHistName+"eta").c_str(), mass, eta);
-                        insideprocessing.Fill((tempHistName+"pT").c_str(), mass, pt);
+                    //current + , previous -
+                    for(long unsigned int i = 0; i<vector_Track_positive_TOF[name].size(); i++){
+                        for(long unsigned int j = 0; j<previous_vector_Tracks_negative_TOF[prev_event][name].size(); j++){
+                            auto pair = extractExtendedParticlesNumbersFromPair(name);
+                            //replaces $ with pair name without "_"
+                            string tempHistName = "M$Chi2bcgTOF";
+                            tempPairName = name;
+                            tempPairName = tempPairName.erase(find(tempPairName.begin(), tempPairName.end(), '_')-tempPairName.begin(), 1);
+                            tempHistName.replace(find(tempHistName.begin(), tempHistName.end(), '$')-tempHistName.begin(), 1, tempPairName);
+                            //calculates mass to fill
+                            vector_Track_positive_TOF[name][i]->getLorentzVector(positive_track, particleMassExtended[pair.first]);
+                            previous_vector_Tracks_negative_TOF[prev_event][name][j]->getLorentzVector(negative_track, particleMassExtended[pair.second]);
+                            mass = (positive_track+negative_track).M();
+                            eta = (positive_track+negative_track).Eta();
+                            pt = (positive_track+negative_track).Pt();
+                            insideprocessing.Fill(tempHistName.c_str(), mass);
+                            insideprocessing.Fill((tempHistName+"eta").c_str(), mass, eta);
+                            insideprocessing.Fill((tempHistName+"pT").c_str(), mass, pt);
+                        }
                     }
                 }
             }
 
             //moving "current" pairs to "previous" storage if non-empty
             //and filling the current storage
-            //if there is no good tracks in current event, there is no need to delete the old ones
             //positive
             for(auto&& name:pairNames){
                 //if there is no good tracks in current event, there is no need to delete the old ones
-                if(vector_Track_positive_normal_TOF[name].size()==0){
+                if(vector_Track_positive_TOF[name].size()==0){
                     continue;
                 }
-                //removing previous pointers
-                for(auto&& i:previous_vector_Track_positive_normal_TOF[name]){
+                //removing pointers from the oldest one
+                for(auto&& i:previous_vector_Tracks_positive_TOF[0][name]){
                     delete i;
                 }
-                previous_vector_Track_positive_normal_TOF[name].clear();
-                //adding pointers to current
-                for(long unsigned int i = 0; i<vector_Track_positive_normal_TOF[name].size(); i++){
-                    //copying empty track
-                    previous_vector_Track_positive_normal_TOF[name].push_back(new StUPCTrack());
-                    //setting needed values
-                    vector_Track_positive_normal_TOF[name][i]->getPtEtaPhi(pt, eta, phi);
-                    previous_vector_Track_positive_normal_TOF[name].back()->setPtEtaPhi(pt, eta, phi);
-                    previous_vector_Track_positive_normal_TOF[name].back()->setTofPathLength(vector_Track_positive_normal_TOF[name][i]->getTofPathLength());
-                    previous_vector_Track_positive_normal_TOF[name].back()->setTofTime(vector_Track_positive_normal_TOF[name][i]->getTofTime());
+                previous_vector_Tracks_positive_TOF[0][name].clear();
+                //reverse bunny-hopping from the last one to the second-newest one
+                //prev_event points to the one written to 
+                for(int prev_event = 0; prev_event<previousEventsMemorised-1; prev_event++){
+                    //copying empty track & setting needed values
+                    for(long unsigned int i = 0; i<previous_vector_Tracks_positive_TOF[prev_event+1][name].size(); i++){
+                        previous_vector_Tracks_positive_TOF[prev_event][name].push_back(new StUPCTrack());
+                        previous_vector_Tracks_positive_TOF[prev_event+1][name][i]->getPtEtaPhi(pt, eta, phi);
+                        previous_vector_Tracks_positive_TOF[prev_event][name].back()->setPtEtaPhi(pt, eta, phi);
+                        previous_vector_Tracks_positive_TOF[prev_event][name].back()->setTofPathLength(previous_vector_Tracks_positive_TOF[prev_event+1][name][i]->getTofPathLength());
+                        previous_vector_Tracks_positive_TOF[prev_event][name].back()->setTofTime(previous_vector_Tracks_positive_TOF[prev_event+1][name][i]->getTofTime());
+                        for(size_t part = 0; part<nParticlesExtended; part++){
+                            previous_vector_Tracks_positive_TOF[prev_event][name].back()->setNSigmasTPC(static_cast<StUPCTrack::Part>(part), previous_vector_Tracks_positive_TOF[prev_event+1][name][i]->getNSigmasTPC(static_cast<StUPCTrack::Part>(part)));
+                        }
+                    }
+                    //clearing the currently moved one
+                    for(auto&& i:previous_vector_Tracks_positive_TOF[prev_event+1][name]){
+                        delete i;
+                    }
+                    previous_vector_Tracks_positive_TOF[prev_event+1][name].clear();
+                }
+                //moving the last one back with only the important parts filled
+                for(long unsigned int i = 0; i<vector_Track_positive_TOF[name].size(); i++){
+                    //copying empty track & setting needed values
+                    previous_vector_Tracks_positive_TOF[previousEventsMemorised-1][name].push_back(new StUPCTrack());
+                    vector_Track_positive_TOF[name][i]->getPtEtaPhi(pt, eta, phi);
+                    previous_vector_Tracks_positive_TOF[previousEventsMemorised-1][name].back()->setPtEtaPhi(pt, eta, phi);
+                    previous_vector_Tracks_positive_TOF[previousEventsMemorised-1][name].back()->setTofPathLength(vector_Track_positive_TOF[name][i]->getTofPathLength());
+                    previous_vector_Tracks_positive_TOF[previousEventsMemorised-1][name].back()->setTofTime(vector_Track_positive_TOF[name][i]->getTofTime());
                     for(size_t part = 0; part<nParticlesExtended; part++){
-                        previous_vector_Track_positive_normal_TOF[name].back()->setNSigmasTPC(static_cast<StUPCTrack::Part>(part), vector_Track_positive_normal_TOF[name][i]->getNSigmasTPC(static_cast<StUPCTrack::Part>(part)));
+                        previous_vector_Tracks_positive_TOF[previousEventsMemorised-1][name].back()->setNSigmasTPC(static_cast<StUPCTrack::Part>(part), vector_Track_positive_TOF[name][i]->getNSigmasTPC(static_cast<StUPCTrack::Part>(part)));
                     }
                 }
             }
             //negative
             for(auto&& name:pairNames){
                 //if there is no good tracks in current event, there is no need to delete the old ones
-                if(vector_Track_negative_normal_TOF[name].size()==0){
+                if(vector_Track_negative_TOF[name].size()==0){
                     continue;
                 }
-                //removing previous pointers
-                for(auto&& i:previous_vector_Track_negative_normal_TOF[name]){
+                //removing pointers from the oldest one
+                for(auto&& i:previous_vector_Tracks_negative_TOF[0][name]){
                     delete i;
                 }
-                previous_vector_Track_negative_normal_TOF[name].clear();
-                //adding pointers to current
-                for(long unsigned int i = 0; i<vector_Track_negative_normal_TOF[name].size(); i++){
+                previous_vector_Tracks_negative_TOF[0][name].clear();
+                //reverse bunny-hopping from the last one to the second-newest one
+                //prev_event points to the one written to 
+                for(int prev_event = 0; prev_event<previousEventsMemorised-1; prev_event++){
+                    for(long unsigned int i = 0; i<previous_vector_Tracks_negative_TOF[prev_event+1][name].size(); i++){
+                        //copying empty track & setting needed values
+                        previous_vector_Tracks_negative_TOF[prev_event][name].push_back(new StUPCTrack());
+                        previous_vector_Tracks_negative_TOF[prev_event+1][name][i]->getPtEtaPhi(pt, eta, phi);
+                        previous_vector_Tracks_negative_TOF[prev_event][name].back()->setPtEtaPhi(pt, eta, phi);
+                        previous_vector_Tracks_negative_TOF[prev_event][name].back()->setTofPathLength(previous_vector_Tracks_negative_TOF[prev_event+1][name][i]->getTofPathLength());
+                        previous_vector_Tracks_negative_TOF[prev_event][name].back()->setTofTime(previous_vector_Tracks_negative_TOF[prev_event+1][name][i]->getTofTime());
+                        for(size_t part = 0; part<nParticlesExtended; part++){
+                            previous_vector_Tracks_negative_TOF[prev_event][name].back()->setNSigmasTPC(static_cast<StUPCTrack::Part>(part), previous_vector_Tracks_negative_TOF[prev_event+1][name][i]->getNSigmasTPC(static_cast<StUPCTrack::Part>(part)));
+                        }
+                    }
+                    //clearing the currently moved one
+                    for(auto&& i:previous_vector_Tracks_negative_TOF[prev_event+1][name]){
+                        delete i;
+                    }
+                    previous_vector_Tracks_negative_TOF[prev_event+1][name].clear();
+                }
+                //moving the last one back with only the important parts filled
+                for(long unsigned int i = 0; i<vector_Track_negative_TOF[name].size(); i++){
                     //copying empty track
-                    previous_vector_Track_negative_normal_TOF[name].push_back(new StUPCTrack());
+                    previous_vector_Tracks_negative_TOF[previousEventsMemorised-1][name].push_back(new StUPCTrack());
                     //setting needed values
-                    vector_Track_negative_normal_TOF[name][i]->getPtEtaPhi(pt, eta, phi);
-                    previous_vector_Track_negative_normal_TOF[name].back()->setPtEtaPhi(pt, eta, phi);
-                    previous_vector_Track_negative_normal_TOF[name].back()->setTofPathLength(vector_Track_negative_normal_TOF[name][i]->getTofPathLength());
-                    previous_vector_Track_negative_normal_TOF[name].back()->setTofTime(vector_Track_negative_normal_TOF[name][i]->getTofTime());
+                    vector_Track_negative_TOF[name][i]->getPtEtaPhi(pt, eta, phi);
+                    previous_vector_Tracks_negative_TOF[previousEventsMemorised-1][name].back()->setPtEtaPhi(pt, eta, phi);
+                    previous_vector_Tracks_negative_TOF[previousEventsMemorised-1][name].back()->setTofPathLength(vector_Track_negative_TOF[name][i]->getTofPathLength());
+                    previous_vector_Tracks_negative_TOF[previousEventsMemorised-1][name].back()->setTofTime(vector_Track_negative_TOF[name][i]->getTofTime());
                     for(size_t part = 0; part<nParticlesExtended; part++){
-                        previous_vector_Track_negative_normal_TOF[name].back()->setNSigmasTPC(static_cast<StUPCTrack::Part>(part), vector_Track_negative_normal_TOF[name][i]->getNSigmasTPC(static_cast<StUPCTrack::Part>(part)));
+                        previous_vector_Tracks_negative_TOF[previousEventsMemorised-1][name].back()->setNSigmasTPC(static_cast<StUPCTrack::Part>(part), vector_Track_negative_TOF[name][i]->getNSigmasTPC(static_cast<StUPCTrack::Part>(part)));
                     }
                 }
             }
