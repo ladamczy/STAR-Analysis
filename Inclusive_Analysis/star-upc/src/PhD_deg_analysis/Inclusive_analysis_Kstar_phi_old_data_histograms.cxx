@@ -108,18 +108,13 @@ int main(int argc, char* argv[]){
         for(size_t j = 0; j<allCategories.size(); j++){
             TH2D* bcg_pointer = background_vector[i*allCategories.size()+j];
             TH2D* sig_pointer = signal_vector[i*allCategories.size()+j];
+            //background fitting moved from binned to overall sum
+            //background still removed like that
+            int bcg_bin = bcg_pointer->GetXaxis()->FindBin(bcgRegion[i]);
+            bcg_pointer->Scale(sig_pointer->Integral(bcg_bin, -1, 0, -1)/bcg_pointer->Integral(bcg_bin, -1, 0, -1));
+            sig_pointer->Add(bcg_pointer, -1.);
             for(Int_t k = 0; k<sig_pointer->GetNbinsY(); k++){
-                //getting a slice and removing background
-                TH1D* bcg_slice = bcg_pointer->ProjectionX("_px", k+1, k+1, "e");
                 TH1D* sig_slice = sig_pointer->ProjectionX("_px", k+1, k+1, "e");
-                int bcg_bin = bcg_slice->FindBin(bcgRegion[i]);
-                if(sig_slice->Integral(bcg_bin, -1)==0||bcg_slice->Integral(bcg_bin, -1)==0){
-                    result_vector[i*allCategories.size()+j]->SetBinContent(k+1, TMath::QuietNaN());
-                    result_vector[i*allCategories.size()+j]->SetBinError(k+1, TMath::QuietNaN());
-                    continue;
-                }
-                bcg_slice->Scale(sig_slice->Integral(bcg_bin, -1)/bcg_slice->Integral(bcg_bin, -1));
-                sig_slice->Add(bcg_slice, -1.);
                 //fitting and filling result
                 fit_func_sig->SetParameters(2.3, fitMaximum[i], fitWidth[i]);
                 fit_func_sig->SetParLimits(0, 0, 1e9);
