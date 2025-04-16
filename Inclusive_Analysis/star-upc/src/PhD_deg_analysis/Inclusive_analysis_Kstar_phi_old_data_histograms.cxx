@@ -51,20 +51,21 @@ int main(int argc, char* argv[]){
     TFile* inputbcg = TFile::Open(static_cast<const char*>(argv[2]));
 
     //getting background histograms out
-    TH1D* MKpiChi2bcg = (TH1D*)inputbcg->Get("MKpiChi2bcg");
-    TH1D* MpiKChi2bcg = (TH1D*)inputbcg->Get("MpiKChi2bcg");
-    TH1D* MppiChi2bcg = (TH1D*)inputbcg->Get("MppiChi2bcg");
-    TH1D* MpipChi2bcg = (TH1D*)inputbcg->Get("MpipChi2bcg");
-    TH1D* MKKChi2bcg = (TH1D*)inputbcg->Get("MKKChi2bcg");
-    TH1D* MpipiChi2bcg = (TH1D*)inputbcg->Get("MpipiChi2bcg");
-    TH1D* MppChi2bcg = (TH1D*)inputbcg->Get("MppChi2bcg");
+    TH1D* MKpiChi2bcg = (TH1D*)inputbcg->Get("MKpiChi2bcgTOF");
+    TH1D* MpiKChi2bcg = (TH1D*)inputbcg->Get("MpiKChi2bcgTOF");
+    TH1D* MppiChi2bcg = (TH1D*)inputbcg->Get("MppiChi2bcgTOF");
+    TH1D* MpipChi2bcg = (TH1D*)inputbcg->Get("MpipChi2bcgTOF");
+    TH1D* MKKChi2bcg = (TH1D*)inputbcg->Get("MKKChi2bcgTOF");
+    TH1D* MpipiChi2bcg = (TH1D*)inputbcg->Get("MpipiChi2bcgTOF");
+    TH1D* MppChi2bcg = (TH1D*)inputbcg->Get("MppChi2bcgTOF");
     //getting diffractive background and signal
     // std::vector<std::string> pairTab = { "Kpi", "piK", "ppi", "pip", "KK", "pipi", "pp" };
     // std::vector<double> bcgRegion = { 1.0, 1.0, 1.1, 1.1, 1.1, 0.2, 2.4 };
     std::vector<std::string> pairTab = { "Kpi", "piK", "KK" };
     std::vector<double> bcgRegion = { 1.0, 1.0, 1.1 };
     std::vector<double> fitMaximum = { 0.892, 0.892, 1.02 };
-    std::vector<double> fitWidth = { 0.05, 0.05, 0.004 };//50 MeV for K*(892), 4 MeV for phi(1020)
+    std::vector<double> fitWidth = { 0.0514, 0.0514, 0.004 };//51.4 MeV for K*(892), 4.43 MeV for phi(1020)
+    bool fixWidthsInPlace = true;
     //creating list of categories
     std::vector<std::string> allCategories;
     std::ifstream infile("STAR-Analysis/Inclusive_Analysis/star-upc/src/PhD_deg_analysis/Differential_crossection_values.txt");
@@ -113,18 +114,27 @@ int main(int argc, char* argv[]){
             int bcg_bin = bcg_pointer->GetXaxis()->FindBin(bcgRegion[i]);
             bcg_pointer->Scale(sig_pointer->Integral(bcg_bin, -1, 0, -1)/bcg_pointer->Integral(bcg_bin, -1, 0, -1));
             sig_pointer->Add(bcg_pointer, -1.);
+            //for keeping title
+            std::string baseOfTitle;
             for(Int_t k = 0; k<sig_pointer->GetNbinsY(); k++){
                 TH1D* sig_slice = sig_pointer->ProjectionX("_px", k+1, k+1, "e");
                 //fitting and filling result
                 fit_func_sig->SetParameters(2.3, fitMaximum[i], fitWidth[i]);
                 fit_func_sig->SetParLimits(0, 0, 1e9);
                 fit_func_sig->SetParLimits(1, fitMaximum[i]-fitWidth[i]*5, fitMaximum[i]+fitWidth[i]*5);
-                fit_func_sig->SetParLimits(2, 0, fitWidth[i]*10);
-                fit_func_sig->SetRange(fitMaximum[i]-fitWidth[i]*5, sig_slice->GetXaxis()->GetXmax());
+                if(fixWidthsInPlace){
+                    fit_func_sig->FixParameter(2, fitWidth[i]);
+                } else{
+                    fit_func_sig->SetParLimits(2, 0, fitWidth[i]*10);
+                }
+                fit_func_sig->SetRange(fitMaximum[i]-std::max(fitWidth[i]*5, 0.1), sig_slice->GetXaxis()->GetXmax());
                 fit_func_bcg->SetParameters(0., 0.);
-                fit_func_bcg->SetRange(fitMaximum[i]-fitWidth[i]*5, sig_slice->GetXaxis()->GetXmax());
+                fit_func_bcg->SetRange(fitMaximum[i]-std::max(fitWidth[i]*5, 0.1), sig_slice->GetXaxis()->GetXmax());
                 double par_value, par_error;
-                std::string newTitle = std::string(sig_slice->GetTitle())+" ";
+                if(k==0){
+                    baseOfTitle = std::string(sig_slice->GetTitle())+" ";
+                }
+                std::string newTitle = baseOfTitle;
                 newTitle += std::to_string(sig_pointer->GetYaxis()->GetBinLowEdge(k+1))+" - ";
                 newTitle += std::to_string(sig_pointer->GetYaxis()->GetBinUpEdge(k+1));
                 sig_slice->SetTitle(newTitle.c_str());
@@ -219,8 +229,12 @@ void draw_and_save_minus_background(TH1D* data, TH1D* bcg, std::string folderWit
     gROOT->ForceStyle();
     TCanvas* resultCanvas = new TCanvas("resultCanvas", "resultCanvas", 4000, 2400);
     int bcg_bin = data->FindBin(bcg_region);
-    bcg->Scale(data->Integral(bcg_bin, -1)/bcg->Integral(bcg_bin, -1));
-    data->Add(bcg, -1.);
+    if(data->Integral(bcg_bin, -1)==0 or bcg->Integral(bcg_bin, -1)){
+        data->SetTitle((std::string(data->GetTitle())+" no background  removed").c_str());
+    } else{
+        bcg->Scale(data->Integral(bcg_bin, -1)/bcg->Integral(bcg_bin, -1));
+        data->Add(bcg, -1.);
+    }
     data->Draw("e");
     resultCanvas->UseCurrentStyle();
     data->SetMarkerStyle(kFullCircle);
@@ -245,6 +259,19 @@ void differential_crossection_fit(TH1D* slice, TF1* fitting_function_signal, TF1
         return fitting_function_signal->EvalPar(x, par)+fitting_function_bcg->EvalPar(x, par+signalparams);
     };
     TF1* fitting_function_total = new TF1("fitting_function_total", fitting_function_sum, rangemin, rangemax, totalparams);
+    double lowlim, highlim;
+    for(int i = 0; i<signalparams; i++){
+        fitting_function_signal->GetParLimits(i, lowlim, highlim);
+        if(lowlim==highlim&&lowlim*highlim!=0){
+            fitting_function_total->FixParameter(i, lowlim);
+        }
+    }
+    for(int i = 0; i<bcgparams; i++){
+        fitting_function_bcg->GetParLimits(i, lowlim, highlim);
+        if(lowlim==highlim&&lowlim*highlim!=0){
+            fitting_function_total->FixParameter(i+signalparams, lowlim);
+        }
+    }
     //old data, the base of drawing
     slice->SetMarkerStyle(kFullCircle);
     slice->SetMarkerColor(kBlue);
@@ -258,6 +285,7 @@ void differential_crossection_fit(TH1D* slice, TF1* fitting_function_signal, TF1
     fitting_function_bcg->SetLineWidth(3);
     fitting_function_signal->SetLineStyle(3);
     fitting_function_signal->SetLineWidth(3);
+    fitting_function_signal->SetNpx(1000);
     fitting_function_total->SetNpx(1000);
     //fitting and drawing
     slice->Fit(fitting_function_total, "0BR");
