@@ -77,7 +77,7 @@ int main(int argc, char** argv)
     double massProton = 938.272 / 1000.0; // Mass of proton in GeV
 
     //cut constants
-    const double kDeltaRCut = 0.15;  //0.15
+    const double kDeltaRCut = 0.3;  //0.15
 
     // Open input file containing paths to data files
     ifstream inputFilePathList(argv[1]);
@@ -103,7 +103,7 @@ int main(int argc, char** argv)
     static StRPEvent *correctedRpEvent = nullptr; // Pointer to corrected RP event
 
     // Load offset file for corrections (if applicable)
-    //LoadOffsetFile("../data/OffSetsCorrectionsRun17.list", mCorrection);
+    LoadOffsetFile("../data/OffSetsCorrectionsRun17.list", mCorrection);
 
     // Set branch addresses for UPC event and check if it's MC
     chain->SetBranchAddress("mUPCEvent", &upcEvt);
@@ -956,5 +956,4 @@ int main(int argc, char** argv)
 
     return 0;
 }
-
 
