@@ -1,4 +1,4 @@
-#include <iostream>
+#include <iostream>  //tag and probe for true
 #include <string>    
 #include <utility>
 #include <sstream> 
@@ -76,6 +76,9 @@ int main(int argc, char** argv)
     double beamEnergy = 254.867; // Beam energy in GeV
     double massProton = 938.272 / 1000.0; // Mass of proton in GeV
 
+    //cut constants
+    const double kDeltaRCut = 0.15;  //0.15
+
     // Open input file containing paths to data files
     ifstream inputFilePathList(argv[1]);
     if (!inputFilePathList) 
@@ -100,7 +103,7 @@ int main(int argc, char** argv)
     static StRPEvent *correctedRpEvent = nullptr; // Pointer to corrected RP event
 
     // Load offset file for corrections (if applicable)
-    LoadOffsetFile("../data/OffSetsCorrectionsRun17.list", mCorrection);
+    //LoadOffsetFile("../data/OffSetsCorrectionsRun17.list", mCorrection);
 
     // Set branch addresses for UPC event and check if it's MC
     chain->SetBranchAddress("mUPCEvent", &upcEvt);
@@ -161,46 +164,46 @@ int main(int argc, char** argv)
     TH1D* HistKaonMassProbeWithTof = new TH1D("HistKaonMassProbeWithTof", "; m_{#pi^{+}#pi^{-}}^{probe} [GeV]; # events", 60 ,0.44, 0.56);
 
     TH1D* HistKaonMassProbeWithoutTofPosProbe = new TH1D("HistKaonMassProbeWithoutTofPosProbe", "; m_{#pi^{+}#pi^{-}} [GeV]; events", 60, 0.44, 0.56);
-    TH1D* HistKaonMassProbeWithoutTofNegProbe = new TH1D("HistKaonMassProbeWithoutTofNegProbe", "; m_{#pi^{+}#pi^{-}} [GeV]; events", 60, 0.44, 0.56);
+    //TH1D* HistKaonMassProbeWithoutTofNegProbe = new TH1D("HistKaonMassProbeWithoutTofNegProbe", "; m_{#pi^{+}#pi^{-}} [GeV]; events", 60, 0.44, 0.56);
     TH1D* HistKaonMassProbeWithTofPosProbe = new TH1D("HistKaonMassProbeWithTofPosProbe", "; m_{#pi^{+}#pi^{-}} [GeV]; events", 60, 0.44, 0.56);
-    TH1D* HistKaonMassProbeWithTofNegProbe = new TH1D("HistKaonMassProbeWithTofNegProbe", "; m_{#pi^{+}#pi^{-}} [GeV]; events", 60, 0.44, 0.56);
+    //TH1D* HistKaonMassProbeWithTofNegProbe = new TH1D("HistKaonMassProbeWithTofNegProbe", "; m_{#pi^{+}#pi^{-}} [GeV]; events", 60, 0.44, 0.56);
  
     TH1D* HistKaonPtProbeWithoutTofPosProbe = new TH1D("HistKaonPtProbeWithoutTofPosProbe", "; p_{T} [GeV]; events",nBinsPt-1, binsPt);
-    TH1D* HistKaonPtProbeWithoutTofNegProbe = new TH1D("HistKaonPtProbeWithoutTofNegProbe", "; P_{T} [GeV]; events", nBinsPt-1, binsPt);
+    //TH1D* HistKaonPtProbeWithoutTofNegProbe = new TH1D("HistKaonPtProbeWithoutTofNegProbe", "; P_{T} [GeV]; events", nBinsPt-1, binsPt);
     TH1D* HistKaonPtProbeWithTofPosProbe = new TH1D("HistKaonPtProbeWithTofPosProbe", "; p_{T} [GeV]; events", nBinsPt-1, binsPt);
-    TH1D* HistKaonPtProbeWithTofNegProbe = new TH1D("HistKaonPtProbeWithTofNegProbe", "; p_{T} [GeV]; events", nBinsPt-1, binsPt);
+    //TH1D* HistKaonPtProbeWithTofNegProbe = new TH1D("HistKaonPtProbeWithTofNegProbe", "; p_{T} [GeV]; events", nBinsPt-1, binsPt);
  
     TH1D* HistKaonEtaProbeWithoutTofPosProbe = new TH1D("HistKaonEtaProbeWithoutTofPosProbe", "positive probe w/o TOF; #eta ; events",nBinsEta-1, binsEta);
-    TH1D* HistKaonEtaProbeWithoutTofNegProbe = new TH1D("HistKaonEtaProbeWithoutTofNegProbe", "negative probe w/o TOF; #eta ; events",nBinsEta-1, binsEta);
+    //TH1D* HistKaonEtaProbeWithoutTofNegProbe = new TH1D("HistKaonEtaProbeWithoutTofNegProbe", "negative probe w/o TOF; #eta ; events",nBinsEta-1, binsEta);
     TH1D* HistKaonEtaProbeWithTofPosProbe = new TH1D("HistKaonEtaProbeWithTofPosProbe", "positive probe w/ TOF; #eta ; events",nBinsEta-1, binsEta);
-    TH1D* HistKaonEtaProbeWithTofNegProbe = new TH1D("HistKaonEtaProbeWithTofNegProbe", "negative probe w/ TOF; #eta ; events",nBinsEta-1, binsEta);
+    //TH1D* HistKaonEtaProbeWithTofNegProbe = new TH1D("HistKaonEtaProbeWithTofNegProbe", "negative probe w/ TOF; #eta ; events",nBinsEta-1, binsEta);
 
 
     vector <TH1D*> HistKaonPtProbeWithoutTofPosProbeMass;
-    vector <TH1D*> HistKaonPtProbeWithoutTofNegProbeMass;
+    //vector <TH1D*> HistKaonPtProbeWithoutTofNegProbeMass;
     vector <TH1D*> HistKaonPtProbeWithTofPosProbeMass;
-    vector <TH1D*> HistKaonPtProbeWithTofNegProbeMass;
+    //vector <TH1D*> HistKaonPtProbeWithTofNegProbeMass;
 
     vector <TH1D*> HistKaonEtaProbeWithoutTofPosProbeMass;
-    vector <TH1D*> HistKaonEtaProbeWithoutTofNegProbeMass;
+    //vector <TH1D*> HistKaonEtaProbeWithoutTofNegProbeMass;
     vector <TH1D*> HistKaonEtaProbeWithTofPosProbeMass;
-    vector <TH1D*> HistKaonEtaProbeWithTofNegProbeMass;
+    //vector <TH1D*> HistKaonEtaProbeWithTofNegProbeMass;
 
 
     vector <TH1D*> HistKaonFillProbeWithoutTofPosProbeMass;
-    vector <TH1D*> HistKaonFillProbeWithoutTofNegProbeMass;
+    //vector <TH1D*> HistKaonFillProbeWithoutTofNegProbeMass;
     vector <TH1D*> HistKaonFillProbeWithTofPosProbeMass;
-    vector <TH1D*> HistKaonFillProbeWithTofNegProbeMass;
+    //vector <TH1D*> HistKaonFillProbeWithTofNegProbeMass;
 
     TH1D* HistKaonPtProbeWithoutTofPosProbeMassMC = new TH1D("HistKaonPtProbeWithoutTofPosProbeMassMC", "", 60, 0.44, 0.56);
-    TH1D* HistKaonPtProbeWithoutTofNegProbeMassMC = new TH1D("HistKaonPtProbeWithoutTofNegProbeMassMC","",  60, 0.44, 0.56);
+    //TH1D* HistKaonPtProbeWithoutTofNegProbeMassMC = new TH1D("HistKaonPtProbeWithoutTofNegProbeMassMC","",  60, 0.44, 0.56);
     TH1D* HistKaonPtProbeWithTofPosProbeMassMC = new TH1D("HistKaonPtProbeWithTofPosProbeMassMC","", 60, 0.44, 0.56);
-    TH1D* HistKaonPtProbeWithTofNegProbeMassMC = new TH1D("HistKaonPtProbeWithTofNegProbeMassMC", "",60, 0.44, 0.56);
+    //TH1D* HistKaonPtProbeWithTofNegProbeMassMC = new TH1D("HistKaonPtProbeWithTofNegProbeMassMC", "",60, 0.44, 0.56);
 
     TH1D* HistKaonEtaProbeWithoutTofPosProbeMassMC = new TH1D("HistKaonEtaProbeWithoutTofPosProbeMassMC", "", 60, 0.44, 0.56);
-    TH1D* HistKaonEtaProbeWithoutTofNegProbeMassMC = new TH1D("HistKaonEtaProbeWithoutTofNegProbeMassMC","",  60, 0.44, 0.56);
+    //TH1D* HistKaonEtaProbeWithoutTofNegProbeMassMC = new TH1D("HistKaonEtaProbeWithoutTofNegProbeMassMC","",  60, 0.44, 0.56);
     TH1D* HistKaonEtaProbeWithTofPosProbeMassMC = new TH1D("HistKaonEtaProbeWithTofPosProbeMassMC","", 60, 0.44, 0.56);
-    TH1D* HistKaonEtaProbeWithTofNegProbeMassMC = new TH1D("HistKaonEtaProbeWithTofNegProbeMassMC", "",60, 0.44, 0.56);
+    //TH1D* HistKaonEtaProbeWithTofNegProbeMassMC = new TH1D("HistKaonEtaProbeWithTofNegProbeMassMC", "",60, 0.44, 0.56);
 
     TH1D* HistPionPtWithTofMC = new TH1D("HistPionPtWithTofMC", "; p_{T} [GeV]; events",nBinsPt-1, binsPt);
     TH1D* HistPionPtWithoutTofMC = new TH1D("HistPionPtWithoutTofMC", "; P_{T} [GeV]; events", nBinsPt-1, binsPt);
@@ -218,38 +221,38 @@ int main(int argc, char** argv)
     for (int i = 0; i < nBinsPt-1; ++i) 
     {
         TH1D* histPosWo = new TH1D(Form("HistKaonPtProbeWithoutTofPosProbeMass%d", i), Form("HistKaonPtProbeWithoutTofPosProbeMass %d", i), 60, 0.44, 0.56);
-        TH1D* histNegWo = new TH1D(Form("HistKaonPtProbeWithoutTofNegProbeMass%d", i), Form("HistKaonPtProbeWithoutTofNegProbeMass %d", i), 60, 0.44, 0.56);
+        //TH1D* histNegWo = new TH1D(Form("HistKaonPtProbeWithoutTofNegProbeMass%d", i), Form("HistKaonPtProbeWithoutTofNegProbeMass %d", i), 60, 0.44, 0.56);
         TH1D* histPosW = new TH1D(Form("HistKaonPtProbeWithTofPosProbeMass%d", i), Form("HistKaonPtProbeWithTofPosProbeMass %d", i), 60, 0.44, 0.56);
-        TH1D* histNegW = new TH1D(Form("HistKaonPtProbeWithTofNegProbeMass%d", i), Form("HistKaonPtProbeWithTofNegProbeMass %d", i), 60, 0.44, 0.56);
+        //TH1D* histNegW = new TH1D(Form("HistKaonPtProbeWithTofNegProbeMass%d", i), Form("HistKaonPtProbeWithTofNegProbeMass %d", i), 60, 0.44, 0.56);
         HistKaonPtProbeWithoutTofPosProbeMass.push_back(histPosWo);
-        HistKaonPtProbeWithoutTofNegProbeMass.push_back(histNegWo);
+        //HistKaonPtProbeWithoutTofNegProbeMass.push_back(histNegWo);
         HistKaonPtProbeWithTofPosProbeMass.push_back(histPosW);
-        HistKaonPtProbeWithTofNegProbeMass.push_back(histNegW);
+        //HistKaonPtProbeWithTofNegProbeMass.push_back(histNegW);
     }
 
     for (int i = 0; i < nBinsEta-1; ++i) 
     {
         TH1D* histPosWo = new TH1D(Form("HistKaonEtaProbeWithoutTofPosProbeMass%d", i), Form("HistKaonEtaProbeWithoutTofPosProbeMass %d", i), 60, 0.44, 0.56);
-        TH1D* histNegWo = new TH1D(Form("HistKaonEtaProbeWithoutTofNegProbeMass%d", i), Form("HistKaonEtaProbeWithoutTofNegProbeMass %d", i), 60, 0.44, 0.56);
+        //TH1D* histNegWo = new TH1D(Form("HistKaonEtaProbeWithoutTofNegProbeMass%d", i), Form("HistKaonEtaProbeWithoutTofNegProbeMass %d", i), 60, 0.44, 0.56);
         TH1D* histPosW = new TH1D(Form("HistKaonEtaProbeWithTofPosProbeMass%d", i), Form("HistKaonEtaProbeWithTofPosProbeMass %d", i), 60, 0.44, 0.56);
-        TH1D* histNegW = new TH1D(Form("HistKaonEtaProbeWithTofNegProbeMass%d", i), Form("HistKaonEtaProbeWithTofNegProbeMass %d", i), 60, 0.44, 0.56);
+        //TH1D* histNegW = new TH1D(Form("HistKaonEtaProbeWithTofNegProbeMass%d", i), Form("HistKaonEtaProbeWithTofNegProbeMass %d", i), 60, 0.44, 0.56);
         HistKaonEtaProbeWithoutTofPosProbeMass.push_back(histPosWo);
-        HistKaonEtaProbeWithoutTofNegProbeMass.push_back(histNegWo);
+        //HistKaonEtaProbeWithoutTofNegProbeMass.push_back(histNegWo);
         HistKaonEtaProbeWithTofPosProbeMass.push_back(histPosW);
-        HistKaonEtaProbeWithTofNegProbeMass.push_back(histNegW);
+        //HistKaonEtaProbeWithTofNegProbeMass.push_back(histNegW);
     }
 
     
     for (int i = 0; i < nBinsFill; ++i) 
     {
         TH1D* histPosWo = new TH1D(Form("HistKaonFillProbeWithoutTofPosProbeMass%d", i), Form("HistKaonFillProbeWithoutTofPosProbeMass %d", i), 60, 0.44, 0.56);
-        TH1D* histNegWo = new TH1D(Form("HistKaonFillProbeWithoutTofNegProbeMass%d", i), Form("HistKaonFillProbeWithoutTofNegProbeMass %d", i), 60, 0.44, 0.56);
+        //TH1D* histNegWo = new TH1D(Form("HistKaonFillProbeWithoutTofNegProbeMass%d", i), Form("HistKaonFillProbeWithoutTofNegProbeMass %d", i), 60, 0.44, 0.56);
         TH1D* histPosW = new TH1D(Form("HistKaonFillProbeWithTofPosProbeMass%d", i), Form("HistKaonFillProbeWithTofPosProbeMass %d", i), 60, 0.44, 0.56);
-        TH1D* histNegW = new TH1D(Form("HistKaonFillProbeWithTofNegProbeMass%d", i), Form("HistKaonFillProbeWithTofNegProbeMass %d", i), 60, 0.44, 0.56);
+        //TH1D* histNegW = new TH1D(Form("HistKaonFillProbeWithTofNegProbeMass%d", i), Form("HistKaonFillProbeWithTofNegProbeMass %d", i), 60, 0.44, 0.56);
         HistKaonFillProbeWithoutTofPosProbeMass.push_back(histPosWo);
-        HistKaonFillProbeWithoutTofNegProbeMass.push_back(histNegWo);
+        //HistKaonFillProbeWithoutTofNegProbeMass.push_back(histNegWo);
         HistKaonFillProbeWithTofPosProbeMass.push_back(histPosW);
-        HistKaonFillProbeWithTofNegProbeMass.push_back(histNegW);
+        //HistKaonFillProbeWithTofNegProbeMass.push_back(histNegW);
     }
    
     // Histograms for truth-matched tag and probe analysis
@@ -262,7 +265,45 @@ int main(int argc, char** argv)
     TH1D* HistPionEtaWithTof_TruePions = new TH1D("HistPionEtaWithTof_TruePions", "; #eta; true pions with TOF", nBinsEta-1, binsEta);
     TH1D* HistPionEtaWithoutTof_TruePions = new TH1D("HistPionEtaWithoutTof_TruePions", "; #eta; true pions without TOF", nBinsEta-1, binsEta);
 
+    // True pion probe mass histograms (binned in pT and η)
+    vector<TH1D*> HistKaonPtProbeWithTof_TruePionsMass;
+    vector<TH1D*> HistKaonPtProbeWithoutTof_TruePionsMass;
+    vector<TH1D*> HistKaonEtaProbeWithTof_TruePionsMass;
+    vector<TH1D*> HistKaonEtaProbeWithoutTof_TruePionsMass;
 
+    //histograms for true pions analysis
+    // Histograms to store kaon mass for true pions in different pT bins
+    vector <TH1D*> HistKaonPtTruePionWithTofMass;
+    vector <TH1D*> HistKaonPtTruePionWithoutTofMass;
+
+    // Histograms to store kaon mass for true pions in different eta bins
+    vector <TH1D*> HistKaonEtaTruePionWithTofMass;
+    vector <TH1D*> HistKaonEtaTruePionWithoutTofMass;
+
+    // Initialize the histograms
+    for (int i = 0; i < nBinsPt-1; ++i) {
+        TH1D* histWithTof = new TH1D(Form("HistKaonPtTruePionWithTofMass%d", i), 
+                                Form("Kaon Mass (True Pions) with TOF, %.2f < p_{T} < %.2f GeV", binsPt[i], binsPt[i+1]), 
+                                60, 0.44, 0.56);
+        TH1D* histWithoutTof = new TH1D(Form("HistKaonPtTruePionWithoutTofMass%d", i), 
+                                    Form("Kaon Mass (True Pions) without TOF, %.2f < p_{T} < %.2f GeV", binsPt[i], binsPt[i+1]), 
+                                    60, 0.44, 0.56);
+        HistKaonPtTruePionWithTofMass.push_back(histWithTof);
+        HistKaonPtTruePionWithoutTofMass.push_back(histWithoutTof);
+    }
+
+    for (int i = 0; i < nBinsEta-1; ++i) {
+        TH1D* histWithTof = new TH1D(Form("HistKaonEtaTruePionWithTofMass%d", i), 
+                                Form("Kaon Mass (True Pions) with TOF, %.2f < #eta < %.2f", binsEta[i], binsEta[i+1]), 
+                                60, 0.44, 0.56);
+        TH1D* histWithoutTof = new TH1D(Form("HistKaonEtaTruePionWithoutTofMass%d", i), 
+                                    Form("Kaon Mass (True Pions) without TOF, %.2f < #eta < %.2f", binsEta[i], binsEta[i+1]), 
+                                    60, 0.44, 0.56);
+        HistKaonEtaTruePionWithTofMass.push_back(histWithTof);
+        HistKaonEtaTruePionWithoutTofMass.push_back(histWithoutTof);
+    }
+
+    
     //cut flow histograms
     TH1D* HistEventCutFlow = new TH1D("HistEventCutFlow", ";Cut;Events", 5, 0, 5);
     HistEventCutFlow->GetXaxis()->SetBinLabel(1, "All Events");
@@ -344,7 +385,7 @@ int main(int argc, char** argv)
                 if ( (abs(upcEvt->getTrack(i)->getEta()) <= 0.9) and (upcEvt->getTrack(i)->getPt() >= 0.2) and (upcEvt->getTrack(i)->getNhitsFit() >= 20) and upcEvt->getTrack(i)->getFlag(StUPCTrack::kV0) )
                 {
                     tracksWithSmallDca.push_back(upcEvt->getTrack(i));
-                    if(upcEvt->getTrack(i)->getFlag(StUPCTrack::kTof));
+                    if(upcEvt->getTrack(i)->getFlag(StUPCTrack::kTof))
                     {
                         tracksWithTofHit.push_back(upcEvt->getTrack(i));
                     } 
@@ -356,7 +397,7 @@ int main(int argc, char** argv)
                 {
                     tracksWithSmallDca.push_back(upcEvt->getTrack(i));
                     tracksForTrueLevel.push_back(upcEvt->getTrack(i));
-                    if(upcEvt->getTrack(i)->getFlag(StUPCTrack::kTof));
+                    if(upcEvt->getTrack(i)->getFlag(StUPCTrack::kTof))
                     {
                         tracksWithTofHit.push_back(upcEvt->getTrack(i));
                     } 
@@ -429,7 +470,7 @@ int main(int argc, char** argv)
                 int index = std::distance(distr.begin(), it); // odpowiedni indeks
                 //cout << "Best match ΔR: " << distr[index] << endl;                
 
-                if (distr[index] < 0.15) // jeżeli odległość mniejsza niż .15 - akceptujemy przypadek
+                if (distr[index] < kDeltaRCut) // jeżeli odległość mniejsza niż .15 - akceptujemy przypadek
                 {  
                     if (matchedTPCpions[index]->getFlag(StUPCTrack::kTof)) // podział TOF nie TOF
                     {
@@ -516,6 +557,10 @@ int main(int argc, char** argv)
                     track1 = tracksWithSmallDca[i];
                     track2 = tracksWithSmallDca[j];
 
+                    bool hasTofHitTrack1 = false;
+                    bool hasTofHitTrack2 = false;
+
+                    // Check if the tracks are TOF-matched with true pions
                     bool isTrack1TruePion = false;
                     bool isTrack2TruePion = false;
 
@@ -534,7 +579,7 @@ int main(int argc, char** argv)
                         if (!distr1.empty()) {
                             auto it1 = std::min_element(distr1.begin(), distr1.end());
                             int index1 = std::distance(distr1.begin(), it1);
-                            if (distr1[index1] < 0.15) {
+                            if (distr1[index1] < kDeltaRCut) {
                                 isTrack1TruePion = true;
                             }
                         }
@@ -552,13 +597,12 @@ int main(int argc, char** argv)
                         if (!distr2.empty()) {
                             auto it2 = std::min_element(distr2.begin(), distr2.end());
                             int index2 = std::distance(distr2.begin(), it2);
-                            if (distr2[index2] < 0.15) {
+                            if (distr2[index2] < kDeltaRCut) {
                                 isTrack2TruePion = true;
                             }
                         }
                     }
-                    bool hasTofHitTrack1 = false;
-                    bool hasTofHitTrack2 = false;
+                    
                     // Check if tracks have TOF hits
                     if (track1->getFlag(StUPCTrack::kTof))
                     {
@@ -619,18 +663,6 @@ int main(int argc, char** argv)
                             if (int(hasTofHitTrack1) + int(hasTofHitTrack2) == 2)
                             {  
                                 HistKaonMassProbeWithTof->Fill(kaon.m());
-                                HistKaonMassProbeWithTof->Fill(kaon.m());
-
-                                // If both tracks are true pions, fill the truth-matched histograms
-                                if (isMC == 1 && isTrack1TruePion && isTrack2TruePion) {
-                                    HistKaonMassProbeWithTof_TruePions->Fill(kaon.m());
-                                    
-                                    // Fill pT and eta histograms for true pions with TOF
-                                    HistPionPtWithTof_TruePions->Fill(track1->getPt());
-                                    HistPionPtWithTof_TruePions->Fill(track2->getPt());
-                                    HistPionEtaWithTof_TruePions->Fill(track1->getEta());
-                                    HistPionEtaWithTof_TruePions->Fill(track2->getEta());
-                                }
 
                                 StUPCTrack const * tagWTof1 = track1;
                                 StUPCTrack const * probeWTof1 = track2;  
@@ -670,10 +702,41 @@ int main(int argc, char** argv)
                                         HistKaonEtaProbeWithTofPosProbeMass[i]->Fill(kaon.m());
                                     }
                                 }
-                                    HistKaonFillProbeWithTofPosProbeMass[nextFill]->Fill(kaon.m());           
+                                    HistKaonFillProbeWithTofPosProbeMass[nextFill]->Fill(kaon.m()); 
+                                
+                                // If both tracks are true pions, fill the truth-matched histograms
+                                if (isMC == 1 && isTrack1TruePion && isTrack2TruePion) {
+                                    HistKaonMassProbeWithTof_TruePions->Fill(kaon.m());
+                                    
+                                    // Fill pT and eta histograms for true pions with TOF
+                                    HistPionPtWithTof_TruePions->Fill(track1->getPt());
+                                    HistPionPtWithTof_TruePions->Fill(track2->getPt());
+                                    HistPionEtaWithTof_TruePions->Fill(track1->getEta());
+                                    HistPionEtaWithTof_TruePions->Fill(track2->getEta());
+
+                                    // Fill pT-binned histograms
+                                    for (int i = 0; i < nBinsPt-1; i++) {
+                                        if (track1->getPt() >= binsPt[i] && track1->getPt() < binsPt[i+1]) {
+                                            HistKaonPtTruePionWithTofMass[i]->Fill(kaon.m());
+                                        }
+                                        if (track2->getPt() >= binsPt[i] && track2->getPt() < binsPt[i+1]) {
+                                            HistKaonPtTruePionWithTofMass[i]->Fill(kaon.m());
+                                        }
+                                    }
+                                    
+                                    // Fill eta-binned histograms
+                                    for (int i = 0; i < nBinsEta-1; i++) {
+                                        if (track1->getEta() >= binsEta[i] && track1->getEta() < binsEta[i+1]) {
+                                            HistKaonEtaTruePionWithTofMass[i]->Fill(kaon.m());
+                                        }
+                                        if (track2->getEta() >= binsEta[i] && track2->getEta() < binsEta[i+1]) {
+                                            HistKaonEtaTruePionWithTofMass[i]->Fill(kaon.m());
+                                        }
+                                    }
+                                }   
                             }
-                            
-                            else
+                           
+                            else     // without ToF
                             {
                                 HistKaonMassProbeWithoutTof->Fill(kaon.m());
                                 StUPCTrack const * tagWoTof;
@@ -690,19 +753,6 @@ int main(int argc, char** argv)
                                     probeWoTof = track1;
                                 }
 
-                                // Check if tag and probe are true pions (for MC only)
-                                if (isMC == 1) {
-                                    bool isTagTruePion = (tagWoTof == track1) ? isTrack1TruePion : isTrack2TruePion;
-                                    bool isProbeTruePion = (probeWoTof == track1) ? isTrack1TruePion : isTrack2TruePion;
-                                    
-                                    if (isTagTruePion && isProbeTruePion) {
-                                        HistKaonMassProbeWithoutTof_TruePions->Fill(kaon.m());
-                                        
-                                        // Fill pT and eta histograms for the probe track (without TOF) if it's a true pion
-                                        HistPionPtWithoutTof_TruePions->Fill(probeWoTof->getPt());
-                                        HistPionEtaWithoutTof_TruePions->Fill(probeWoTof->getEta());
-                                    }
-                                }
 
                                 for (int i = 0; i <nBinsPt-1; i++)
                                 {
@@ -721,7 +771,47 @@ int main(int argc, char** argv)
                                 }
                 
                                 HistKaonFillProbeWithoutTofPosProbeMass[nextFill]->Fill(kaon.m());       
-                            
+
+                                // Check if tag and probe are true pions (for MC only)
+                                if (isMC == 1 && int(hasTofHitTrack1) + int(hasTofHitTrack2) == 1) {
+                                    StUPCTrack const * tagTrack;
+                                    StUPCTrack const * probeTrack;
+                                    bool isTagTruePion = false;
+                                    bool isProbeTruePion = false;
+                                    
+                                    if (hasTofHitTrack1) {
+                                        tagTrack = track1;
+                                        probeTrack = track2;
+                                        isTagTruePion = isTrack1TruePion;
+                                        isProbeTruePion = isTrack2TruePion;
+                                    } else {
+                                        tagTrack = track2;
+                                        probeTrack = track1;
+                                        isTagTruePion = isTrack2TruePion;
+                                        isProbeTruePion = isTrack1TruePion;
+                                    }
+                                    if (isTagTruePion && isProbeTruePion) {
+                                        HistKaonMassProbeWithoutTof_TruePions->Fill(kaon.m());
+                                        
+                                        // Fill pT and eta histograms for the probe track (without TOF) if it's a true pion
+                                        HistPionPtWithoutTof_TruePions->Fill(probeWoTof->getPt());
+                                        HistPionEtaWithoutTof_TruePions->Fill(probeWoTof->getEta());
+                                    
+                                        // Fill pT-binned histograms for the probe track
+                                        for (int i = 0; i < nBinsPt-1; i++) {
+                                            if (probeTrack->getPt() >= binsPt[i] && probeTrack->getPt() < binsPt[i+1]) {
+                                                HistKaonPtTruePionWithoutTofMass[i]->Fill(kaon.m());
+                                            }
+                                        }
+                                        
+                                        // Fill eta-binned histograms for the probe track
+                                        for (int i = 0; i < nBinsEta-1; i++) {
+                                            if (probeTrack->getEta() >= binsEta[i] && probeTrack->getEta() < binsEta[i+1]) {
+                                                HistKaonEtaTruePionWithoutTofMass[i]->Fill(kaon.m());
+                                            }
+                                        }
+                                    }
+                                }                           
                             }
                         }
                     }
@@ -741,7 +831,7 @@ int main(int argc, char** argv)
             HistTrackCutFlow->Fill(0);
 
             // Track cut flow: |eta| < 0.9
-            if (abs(track->getEta()) > 0.9)
+            if (abs(track->getEta()) < 0.9)
             {
                 HistTrackCutFlow->Fill(1);
                 // Track cut flow: pT > 0.2 GeV
@@ -774,35 +864,72 @@ int main(int argc, char** argv)
     // Write histograms to output file
     TFile *outfile = TFile::Open(argv[2], "recreate");
 
-    /*HistEventCutFlow->Write();
+    HistEventCutFlow->Write();
     HistTrackCutFlow->Write();
 
     HistKaonMassProbeWithTof->Write();
     HistKaonMassProbeWithoutTof->Write();
-
+    
     HistKaonMassProbeWithoutTofPosProbe->Write();
-    HistKaonMassProbeWithoutTofNegProbe->Write();
+    //HistKaonMassProbeWithoutTofNegProbe->Write();
     HistKaonMassProbeWithTofPosProbe->Write();
-    HistKaonMassProbeWithTofNegProbe->Write();
+    //HistKaonMassProbeWithTofNegProbe->Write();
 
     HistKaonPtProbeWithoutTofPosProbe->Write();
-    HistKaonPtProbeWithoutTofNegProbe->Write();
+    //HistKaonPtProbeWithoutTofNegProbe->Write();
     HistKaonPtProbeWithTofPosProbe->Write();
-    HistKaonPtProbeWithTofNegProbe->Write();
+    //HistKaonPtProbeWithTofNegProbe->Write();
     HistKaonEtaProbeWithoutTofPosProbe->Write();
-    HistKaonEtaProbeWithoutTofNegProbe->Write();
+    //HistKaonEtaProbeWithoutTofNegProbe->Write();
     HistKaonEtaProbeWithTofPosProbe->Write();
-    HistKaonEtaProbeWithTofNegProbe->Write();
+    //HistKaonEtaProbeWithTofNegProbe->Write();
 
-    HistKaonPtProbeWithoutTofNegProbeMassMC->Write();
+    //HistKaonPtProbeWithoutTofNegProbeMassMC->Write();
     HistKaonPtProbeWithoutTofPosProbeMassMC->Write();
-    HistKaonPtProbeWithTofNegProbeMassMC->Write();
+    //HistKaonPtProbeWithTofNegProbeMassMC->Write();
     HistKaonPtProbeWithTofPosProbeMassMC->Write();
 
-    HistKaonEtaProbeWithoutTofNegProbeMassMC->Write();
+    //HistKaonEtaProbeWithoutTofNegProbeMassMC->Write();
     HistKaonEtaProbeWithoutTofPosProbeMassMC->Write();
-    HistKaonEtaProbeWithTofNegProbeMassMC->Write();
-    HistKaonEtaProbeWithTofPosProbeMassMC->Write();*/
+    //HistKaonEtaProbeWithTofNegProbeMassMC->Write();
+    HistKaonEtaProbeWithTofPosProbeMassMC->Write();/**/
+
+    HistPionPtWithTofMC->Write();
+    HistPionEtaWithTofMC->Write();
+    HistPionPtWithoutTofMC->Write();
+    HistPionEtaWithoutTofMC->Write();
+        
+    // calculate and write efficiency histograms for true pions in tag and probe
+    TH1D* HistTagProbeEfficiencyVsPt = new TH1D("HistTagProbeEfficiencyVsPt", "; p_{T} [GeV]; Tag & Probe TOF Efficiency", nBinsPt-1, binsPt);
+    HistTagProbeEfficiencyVsPt->Divide(HistPionPtWithTof_TruePions, HistPionPtWithoutTof_TruePions, 1, 1, "B");
+    //HistTagProbeEfficiencyVsPt->Write();
+
+    TH1D* HistTagProbeEfficiencyVsEta = new TH1D("HistTagProbeEfficiencyVsEta", "; #eta; Tag & Probe TOF Efficiency", nBinsEta-1, binsEta);
+    HistTagProbeEfficiencyVsEta->Divide(HistPionEtaWithTof_TruePions, HistPionEtaWithoutTof_TruePions, 1, 1, "B");
+    //HistTagProbeEfficiencyVsEta->Write();    
+
+    for (int i = 0; i < HistKaonPtProbeWithoutTofPosProbeMass.size(); i++)
+    {
+        HistKaonPtProbeWithoutTofPosProbeMass[i]->Write();
+        //HistKaonPtProbeWithoutTofNegProbeMass[i]->Write();
+        HistKaonPtProbeWithTofPosProbeMass[i]->Write();
+        //HistKaonPtProbeWithTofNegProbeMass[i]->Write();
+    }
+    for (int i = 0; i < HistKaonEtaProbeWithoutTofPosProbeMass.size(); i++)
+    {
+        HistKaonEtaProbeWithoutTofPosProbeMass[i]->Write();
+        //HistKaonEtaProbeWithoutTofNegProbeMass[i]->Write();
+        HistKaonEtaProbeWithTofPosProbeMass[i]->Write();
+        //HistKaonEtaProbeWithTofNegProbeMass[i]->Write();
+    }
+
+    for (int i = 0; i < HistKaonFillProbeWithoutTofPosProbeMass.size(); i++)
+    {
+        HistKaonFillProbeWithoutTofPosProbeMass[i]->Write();
+        //HistKaonFillProbeWithoutTofNegProbeMass[i]->Write();
+        HistKaonFillProbeWithTofPosProbeMass[i]->Write();
+        //HistKaonFillProbeWithTofNegProbeMass[i]->Write();
+    }/**/
 
     HistKaonMassProbeWithTof_TruePions->Write();
     HistKaonMassProbeWithoutTof_TruePions->Write();
@@ -811,50 +938,23 @@ int main(int argc, char** argv)
     HistPionEtaWithTof_TruePions->Write();
     HistPionEtaWithoutTof_TruePions->Write();
 
-    HistPionPtWithTofMC->Write();
-    HistPionEtaWithTofMC->Write();
-    HistPionPtWithoutTofMC->Write();
-    HistPionEtaWithoutTofMC->Write();
-
     HistTruePionPt->Write();
     HistTruePionEta->Write();
     HistTruePionWithTofPt->Write();
     HistTruePionWithTofEta->Write();
-    
-    // calculate and write efficiency histograms for true pions in tag and probe
-    TH1D* HistTagProbeEfficiencyVsPt = new TH1D("HistTagProbeEfficiencyVsPt", "; p_{T} [GeV]; Tag & Probe TOF Efficiency", nBinsPt-1, binsPt);
-    HistTagProbeEfficiencyVsPt->Divide(HistPionPtWithTof_TruePions, HistPionPtWithoutTof_TruePions, 1, 1, "B");
-    HistTagProbeEfficiencyVsPt->Write();
-
-    TH1D* HistTagProbeEfficiencyVsEta = new TH1D("HistTagProbeEfficiencyVsEta", "; #eta; Tag & Probe TOF Efficiency", nBinsEta-1, binsEta);
-    HistTagProbeEfficiencyVsEta->Divide(HistPionEtaWithTof_TruePions, HistPionEtaWithoutTof_TruePions, 1, 1, "B");
-    HistTagProbeEfficiencyVsEta->Write();    
-
-    /*for (int i = 0; i < HistKaonPtProbeWithoutTofPosProbeMass.size(); i++)
-    {
-        HistKaonPtProbeWithoutTofPosProbeMass[i]->Write();
-        HistKaonPtProbeWithoutTofNegProbeMass[i]->Write();
-        HistKaonPtProbeWithTofPosProbeMass[i]->Write();
-        HistKaonPtProbeWithTofNegProbeMass[i]->Write();
+    // Write true pions histograms for different pT bins
+    for (int i = 0; i < HistKaonPtTruePionWithTofMass.size(); i++) {
+        HistKaonPtTruePionWithTofMass[i]->Write();
+        HistKaonPtTruePionWithoutTofMass[i]->Write();
     }
-    for (int i = 0; i < HistKaonEtaProbeWithoutTofPosProbeMass.size(); i++)
-    {
-        HistKaonEtaProbeWithoutTofPosProbeMass[i]->Write();
-        HistKaonEtaProbeWithoutTofNegProbeMass[i]->Write();
-        HistKaonEtaProbeWithTofPosProbeMass[i]->Write();
-        HistKaonEtaProbeWithTofNegProbeMass[i]->Write();
+    // Write true pions histograms for different eta bins
+    for (int i = 0; i < HistKaonEtaTruePionWithTofMass.size(); i++) {
+        HistKaonEtaTruePionWithTofMass[i]->Write();
+        HistKaonEtaTruePionWithoutTofMass[i]->Write();
     }
-
-    for (int i = 0; i < HistKaonFillProbeWithoutTofPosProbeMass.size(); i++)
-    {
-        HistKaonFillProbeWithoutTofPosProbeMass[i]->Write();
-        HistKaonFillProbeWithoutTofNegProbeMass[i]->Write();
-        HistKaonFillProbeWithTofPosProbeMass[i]->Write();
-        HistKaonFillProbeWithTofNegProbeMass[i]->Write();
-    }*/
-
     outfile->Close();
 
     return 0;
 }
+
 
