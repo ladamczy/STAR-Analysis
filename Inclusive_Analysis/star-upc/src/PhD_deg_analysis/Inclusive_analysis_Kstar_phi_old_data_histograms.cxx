@@ -19,7 +19,7 @@
 
 void draw_and_save(TH1D* data, std::string folderWithDiagonal, std::string name, std::string title, std::string options = "");
 void draw_and_save_minus_background(TH1D* data, TH1D* bcg, std::string folderWithDiagonal, std::string name, std::string title, double bcg_region);
-void differential_crossection_fit(TH1D* slice, TF1* fitting_function_signal, TF1* fitting_function_bcg, double& param_value, double& param_error);
+void differential_crossection_fit(TPad* pad, TH1D* slice, TF1* fitting_function_signal, TF1* fitting_function_bcg, double& param_value, double& param_error);
 
 int main(int argc, char* argv[]){
     //something used so that the histograms would draw
@@ -105,6 +105,7 @@ int main(int argc, char* argv[]){
     //substracting one from another
     //fitting the difference
     //and filling the result
+    TCanvas* result = new TCanvas("result", "result", 1600, 800);
     for(size_t i = 0; i<pairTab.size(); i++){
         for(size_t j = 0; j<allCategories.size(); j++){
             TH2D* bcg_pointer = background_vector[i*allCategories.size()+j];
@@ -119,7 +120,7 @@ int main(int argc, char* argv[]){
             for(Int_t k = 0; k<sig_pointer->GetNbinsY(); k++){
                 TH1D* sig_slice = sig_pointer->ProjectionX("_px", k+1, k+1, "e");
                 //fitting and filling result
-                fit_func_sig->SetParameters(2.3, fitMaximum[i], fitWidth[i]);
+                fit_func_sig->SetParameters(6., fitMaximum[i], fitWidth[i]);
                 fit_func_sig->SetParLimits(0, 0, 1e9);
                 fit_func_sig->SetParLimits(1, fitMaximum[i]-fitWidth[i]*5, fitMaximum[i]+fitWidth[i]*5);
                 if(fixWidthsInPlace){
@@ -138,7 +139,7 @@ int main(int argc, char* argv[]){
                 newTitle += std::to_string(sig_pointer->GetYaxis()->GetBinLowEdge(k+1))+" - ";
                 newTitle += std::to_string(sig_pointer->GetYaxis()->GetBinUpEdge(k+1));
                 sig_slice->SetTitle(newTitle.c_str());
-                differential_crossection_fit(sig_slice, fit_func_sig, fit_func_bcg, par_value, par_error);
+                differential_crossection_fit(result, sig_slice, fit_func_sig, fit_func_bcg, par_value, par_error);
                 double bin_width = result_vector[i*allCategories.size()+j]->GetBinWidth(k+1);
                 par_value *= bin_width;
                 par_error *= bin_width;
@@ -147,6 +148,7 @@ int main(int argc, char* argv[]){
             }
         }
     }
+    result->Close();
 
     std::string folderWithDiagonal = std::string(static_cast<const char*>(argv[3]));
     if(folderWithDiagonal[folderWithDiagonal.size()-1]!='/'){
@@ -245,9 +247,9 @@ void draw_and_save_minus_background(TH1D* data, TH1D* bcg, std::string folderWit
     resultCanvas->SaveAs((folderWithDiagonal+name+".pdf").c_str());
 }
 
-void differential_crossection_fit(TH1D* slice, TF1* fitting_function_signal, TF1* fitting_function_bcg, double& param_value, double& param_error){
+void differential_crossection_fit(TPad* pad, TH1D* slice, TF1* fitting_function_signal, TF1* fitting_function_bcg, double& param_value, double& param_error){
     //setting up the functions
-    TCanvas* result = new TCanvas("result", "result", 1600, 800);
+    gROOT->SetSelectedPad(pad);
     gStyle->SetOptStat(0);
     int signalparams, bcgparams, totalparams;
     double rangemin, rangemax;
@@ -360,6 +362,6 @@ void differential_crossection_fit(TH1D* slice, TF1* fitting_function_signal, TF1
     }
     printf("Accepted current parameters\n");
     //on last loop close the TCanvas
-    result->Close();
     gStyle->SetOptStat(1);
+    pad->Clear();
 }
