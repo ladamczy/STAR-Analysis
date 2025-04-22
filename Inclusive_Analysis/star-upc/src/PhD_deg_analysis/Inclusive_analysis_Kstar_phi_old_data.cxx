@@ -102,6 +102,8 @@ int main(int argc, char** argv){
     outsideprocessing.AddHistogram(TH2D("EtaPhi_piKChi2minus_lowres", ";#eta;#phi [rad]", 14, -0.7, 0.7, 8, -TMath::Pi(), TMath::Pi()));
     outsideprocessing.AddHistogram(TH2D("EtaPhi_KKChi2plus_lowres", ";#eta;#phi [rad]", 14, -0.7, 0.7, 8, -TMath::Pi(), TMath::Pi()));
     outsideprocessing.AddHistogram(TH2D("EtaPhi_KKChi2minus_lowres", ";#eta;#phi [rad]", 14, -0.7, 0.7, 8, -TMath::Pi(), TMath::Pi()));
+    outsideprocessing.AddHistogram(TH2D("EtaPhi_pipiChi2plus_lowres", ";#eta;#phi [rad]", 14, -0.7, 0.7, 8, -TMath::Pi(), TMath::Pi()));
+    outsideprocessing.AddHistogram(TH2D("EtaPhi_pipiChi2minus_lowres", ";#eta;#phi [rad]", 14, -0.7, 0.7, 8, -TMath::Pi(), TMath::Pi()));
 
     //processing
     //defining TreeProcessor
@@ -299,6 +301,8 @@ int main(int argc, char** argv){
                         insideprocessing.Fill("MpipiChi2", mass);
                         insideprocessing.Fill("MpipiChi2eta", mass, eta);
                         insideprocessing.Fill("MpipiChi2pT", mass, pT);
+                        insideprocessing.Fill("EtaPhi_pipiChi2plus_lowres", vector_Track_positive[i]->getEta(), vector_Track_positive[i]->getPhi());
+                        insideprocessing.Fill("EtaPhi_pipiChi2minus_lowres", vector_Track_negative[j]->getEta(), vector_Track_negative[j]->getPhi());
                     }
                     if(almostAllChi2(chi2Map, "p_p", 9)){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Proton]);
