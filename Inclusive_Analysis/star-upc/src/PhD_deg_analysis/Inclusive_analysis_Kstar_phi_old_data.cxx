@@ -16,6 +16,7 @@
 #include "StUPCBemcCluster.h"
 #include "StUPCVertex.h"
 #include "StUPCTofHit.h"
+#include "StPicoPhysicalHelix.h"
 
 //my headers
 #include "UsefulThings.h"
@@ -39,6 +40,7 @@ string particleNicks[nParticlesExtended] = { "e", "pi", "K", "p" };
 double getChi2(StUPCTrack* positive, StUPCTrack* negative, int positiveId, int negativeId, double sigmaT);
 bool almostAllChi2(map<string, double> chi2Map, string exception, double limit);
 double getMass(StUPCTrack* assumed, StUPCTrack* calculated, double massAssumed);
+void getTPCSector(StUPCEvent* event, StUPCTrack* track, double& eta, double& phi);
 
 int main(int argc, char** argv){
 
@@ -104,6 +106,15 @@ int main(int argc, char** argv){
     outsideprocessing.AddHistogram(TH2D("EtaPhi_KKChi2minus_lowres", ";#eta;#phi [rad]", 14, -0.7, 0.7, 8, -TMath::Pi(), TMath::Pi()));
     outsideprocessing.AddHistogram(TH2D("EtaPhi_pipiChi2plus_lowres", ";#eta;#phi [rad]", 14, -0.7, 0.7, 8, -TMath::Pi(), TMath::Pi()));
     outsideprocessing.AddHistogram(TH2D("EtaPhi_pipiChi2minus_lowres", ";#eta;#phi [rad]", 14, -0.7, 0.7, 8, -TMath::Pi(), TMath::Pi()));
+    //tpc sector tests
+    outsideprocessing.AddHistogram(TH3D("Sector_KpiChi2plus", ";fill;#eta;#phi [rad]", 1, 0, 1, 2, -0.7, 0.7, 12, -TMath::Pi(), TMath::Pi()));
+    outsideprocessing.AddHistogram(TH3D("Sector_KpiChi2minus", ";fill;#eta;#phi [rad]", 1, 0, 1, 2, -0.7, 0.7, 12, -TMath::Pi(), TMath::Pi()));
+    outsideprocessing.AddHistogram(TH3D("Sector_piKChi2plus", ";fill;#eta;#phi [rad]", 1, 0, 1, 2, -0.7, 0.7, 12, -TMath::Pi(), TMath::Pi()));
+    outsideprocessing.AddHistogram(TH3D("Sector_piKChi2minus", ";fill;#eta;#phi [rad]", 1, 0, 1, 2, -0.7, 0.7, 12, -TMath::Pi(), TMath::Pi()));
+    outsideprocessing.AddHistogram(TH3D("Sector_KKChi2plus", ";fill;#eta;#phi [rad]", 1, 0, 1, 2, -0.7, 0.7, 12, -TMath::Pi(), TMath::Pi()));
+    outsideprocessing.AddHistogram(TH3D("Sector_KKChi2minus", ";fill;#eta;#phi [rad]", 1, 0, 1, 2, -0.7, 0.7, 12, -TMath::Pi(), TMath::Pi()));
+    outsideprocessing.AddHistogram(TH3D("Sector_pipiChi2plus", ";fill;#eta;#phi [rad]", 1, 0, 1, 2, -0.7, 0.7, 12, -TMath::Pi(), TMath::Pi()));
+    outsideprocessing.AddHistogram(TH3D("Sector_pipiChi2minus", ";fill;#eta;#phi [rad]", 1, 0, 1, 2, -0.7, 0.7, 12, -TMath::Pi(), TMath::Pi()));
 
     //processing
     //defining TreeProcessor
@@ -128,7 +139,7 @@ int main(int argc, char** argv){
         StUPCTrack* tempTrack;
         TLorentzVector positive_track;
         TLorentzVector negative_track;
-        double mass, chi2pipi, chi2Kpi, eta, pT;
+        double mass, chi2pipi, chi2Kpi, eta, pT, phi;
         map<string, double> chi2Map;
         bool isdEdxOk, isTOFOk;
         string tempPairName;
@@ -243,6 +254,10 @@ int main(int argc, char** argv){
                         insideprocessing.Fill("EtaPhi_KpiChi2minus", vector_Track_negative[j]->getEta(), vector_Track_negative[j]->getPhi());
                         insideprocessing.Fill("EtaPhi_KpiChi2plus_lowres", vector_Track_positive[i]->getEta(), vector_Track_positive[i]->getPhi());
                         insideprocessing.Fill("EtaPhi_KpiChi2minus_lowres", vector_Track_negative[j]->getEta(), vector_Track_negative[j]->getPhi());
+                        getTPCSector(tempUPCpointer, vector_Track_positive[i], eta, phi);
+                        insideprocessing.Fill("Sector_KpiChi2plus", to_string(tempUPCpointer->getFillNumber()).c_str(), eta, phi, 1.0);
+                        getTPCSector(tempUPCpointer, vector_Track_negative[j], eta, phi);
+                        insideprocessing.Fill("Sector_KpiChi2minus", to_string(tempUPCpointer->getFillNumber()).c_str(), eta, phi, 1.0);
                     }
                     if(almostAllChi2(chi2Map, "pi_K", 9)){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
@@ -257,6 +272,10 @@ int main(int argc, char** argv){
                         insideprocessing.Fill("EtaPhi_piKChi2minus", vector_Track_negative[j]->getEta(), vector_Track_negative[j]->getPhi());
                         insideprocessing.Fill("EtaPhi_piKChi2plus_lowres", vector_Track_positive[i]->getEta(), vector_Track_positive[i]->getPhi());
                         insideprocessing.Fill("EtaPhi_piKChi2minus_lowres", vector_Track_negative[j]->getEta(), vector_Track_negative[j]->getPhi());
+                        getTPCSector(tempUPCpointer, vector_Track_positive[i], eta, phi);
+                        insideprocessing.Fill("Sector_piKChi2plus", to_string(tempUPCpointer->getFillNumber()).c_str(), eta, phi, 1.0);
+                        getTPCSector(tempUPCpointer, vector_Track_negative[j], eta, phi);
+                        insideprocessing.Fill("Sector_piKChi2minus", to_string(tempUPCpointer->getFillNumber()).c_str(), eta, phi, 1.0);
                     }
                     if(almostAllChi2(chi2Map, "p_pi", 9)){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Proton]);
@@ -291,6 +310,10 @@ int main(int argc, char** argv){
                         insideprocessing.Fill("EtaPhi_KKChi2minus", vector_Track_negative[j]->getEta(), vector_Track_negative[j]->getPhi());
                         insideprocessing.Fill("EtaPhi_KKChi2plus_lowres", vector_Track_positive[i]->getEta(), vector_Track_positive[i]->getPhi());
                         insideprocessing.Fill("EtaPhi_KKChi2minus_lowres", vector_Track_negative[j]->getEta(), vector_Track_negative[j]->getPhi());
+                        getTPCSector(tempUPCpointer, vector_Track_positive[i], eta, phi);
+                        insideprocessing.Fill("Sector_KKChi2plus", to_string(tempUPCpointer->getFillNumber()).c_str(), eta, phi, 1.0);
+                        getTPCSector(tempUPCpointer, vector_Track_negative[j], eta, phi);
+                        insideprocessing.Fill("Sector_KKChi2minus", to_string(tempUPCpointer->getFillNumber()).c_str(), eta, phi, 1.0);
                     }
                     if(almostAllChi2(chi2Map, "pi_pi", 9)){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
@@ -303,6 +326,10 @@ int main(int argc, char** argv){
                         insideprocessing.Fill("MpipiChi2pT", mass, pT);
                         insideprocessing.Fill("EtaPhi_pipiChi2plus_lowres", vector_Track_positive[i]->getEta(), vector_Track_positive[i]->getPhi());
                         insideprocessing.Fill("EtaPhi_pipiChi2minus_lowres", vector_Track_negative[j]->getEta(), vector_Track_negative[j]->getPhi());
+                        getTPCSector(tempUPCpointer, vector_Track_positive[i], eta, phi);
+                        insideprocessing.Fill("Sector_pipiChi2plus", to_string(tempUPCpointer->getFillNumber()).c_str(), eta, phi, 1.0);
+                        getTPCSector(tempUPCpointer, vector_Track_negative[j], eta, phi);
+                        insideprocessing.Fill("Sector_pipiChi2minus", to_string(tempUPCpointer->getFillNumber()).c_str(), eta, phi, 1.0);
                     }
                     if(almostAllChi2(chi2Map, "p_p", 9)){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Proton]);
@@ -324,7 +351,16 @@ int main(int argc, char** argv){
 
     TreeProc.Process(myFunction);
 
+    //merging and tidying up
     outsideprocessing.Merge();
+    outsideprocessing.GetPointerAfterMerge3D("Sector_KpiChi2plus")->LabelsDeflate();
+    outsideprocessing.GetPointerAfterMerge3D("Sector_KpiChi2minus")->LabelsDeflate();
+    outsideprocessing.GetPointerAfterMerge3D("Sector_piKChi2plus")->LabelsDeflate();
+    outsideprocessing.GetPointerAfterMerge3D("Sector_piKChi2minus")->LabelsDeflate();
+    outsideprocessing.GetPointerAfterMerge3D("Sector_KKChi2plus")->LabelsDeflate();
+    outsideprocessing.GetPointerAfterMerge3D("Sector_KKChi2minus")->LabelsDeflate();
+    outsideprocessing.GetPointerAfterMerge3D("Sector_pipiChi2plus")->LabelsDeflate();
+    outsideprocessing.GetPointerAfterMerge3D("Sector_pipiChi2minus")->LabelsDeflate();
 
     //setting up a tree & output file
     string path = string(argv[0]);
@@ -379,4 +415,13 @@ double getMass(StUPCTrack* assumed, StUPCTrack* calculated, double massAssumed){
     TVector3 momentum;
     calculated->getMomentum(momentum);
     return momentum.Mag()*sqrt(intermediateSquareRoot*intermediateSquareRoot-1);
+}
+
+void getTPCSector(StUPCEvent* event, StUPCTrack* track, double& eta, double& phi){
+    TVector3 momentum;
+    track->getMomentum(momentum);
+    StPicoPhysicalHelix helix(momentum, track->getOrigin(), event->getMagneticField()*kilogauss, track->getCharge());
+    helix.moveOrigin(helix.pathLength(200.*centimeter).first);
+    eta = helix.origin().Eta();
+    phi = helix.origin().Phi();
 }
