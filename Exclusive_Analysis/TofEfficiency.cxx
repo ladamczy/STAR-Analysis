@@ -160,13 +160,58 @@ int main(int argc, char** argv)
      
     //the code explicitly pairs tracks with opposite charges, hence change PosProbe to BothProbe: just a suggestion
 
-    TH1D* HistKaonMassProbeWithoutTof = new TH1D("HistKaonMassProbeWithoutTof", "; m_{#pi^{+}#pi^{-}}^{tag} [GeV]; # events",60 ,0.44, 0.56);  
-    TH1D* HistKaonMassProbeWithTof = new TH1D("HistKaonMassProbeWithTof", "; m_{#pi^{+}#pi^{-}}^{probe} [GeV]; # events", 60 ,0.44, 0.56);
+    // a variable bin width histogram for kaon mass
+    // Original uniform bin histogram:
+    // TH1D* HistKaonMassProbeWithoutTof = new TH1D("HistKaonMassProbeWithoutTof", "; m_{#pi^{+}#pi^{-}}^{tag} [GeV]; # events",60 ,0.44, 0.56);
 
-    TH1D* HistKaonMassProbeWithoutTofPosProbe = new TH1D("HistKaonMassProbeWithoutTofPosProbe", "; m_{#pi^{+}#pi^{-}} [GeV]; events", 60, 0.44, 0.56);
-    //TH1D* HistKaonMassProbeWithoutTofNegProbe = new TH1D("HistKaonMassProbeWithoutTofNegProbe", "; m_{#pi^{+}#pi^{-}} [GeV]; events", 60, 0.44, 0.56);
-    TH1D* HistKaonMassProbeWithTofPosProbe = new TH1D("HistKaonMassProbeWithTofPosProbe", "; m_{#pi^{+}#pi^{-}} [GeV]; events", 60, 0.44, 0.56);
-    //TH1D* HistKaonMassProbeWithTofNegProbe = new TH1D("HistKaonMassProbeWithTofNegProbe", "; m_{#pi^{+}#pi^{-}} [GeV]; events", 60, 0.44, 0.56);
+    // Define the bin edges with variable width
+    const int nBins = 60;
+    double binEdges[nBins+1];
+
+    // Define regions
+    double minRange = 0.44;
+    double maxRange = 0.56;
+    double centralValue = 0.5; // Approximate kaon mass
+    double centralRegionMin = 0.49;
+    double centralRegionMax = 0.51;
+
+    // Creating bin edges with 3 regions:
+    // 1. Wider bins from 0.44 to 0.49 (coarse resolution)
+    // 2. Finer bins from 0.49 to 0.51 (high resolution around kaon mass)
+    // 3. Wider bins from 0.51 to 0.56 (coarse resolution)
+
+    // Region 1: Coarse bins (0.44 to 0.49)
+    int nBinsRegion1 = 15;
+    double widthRegion1 = (centralRegionMin - minRange) / nBinsRegion1;
+    for (int i = 0; i <= nBinsRegion1; i++) {
+        binEdges[i] = minRange + i * widthRegion1;
+    }
+
+    // Region 2: Fine bins (0.49 to 0.51)
+    int nBinsRegion2 = 30;
+    double widthRegion2 = (centralRegionMax - centralRegionMin) / nBinsRegion2;
+    for (int i = 0; i < nBinsRegion2; i++) {
+        binEdges[nBinsRegion1 + i + 1] = centralRegionMin + i * widthRegion2;
+    }
+
+    // Region 3: Coarse bins (0.51 to 0.56)
+    int nBinsRegion3 = nBins - nBinsRegion1 - nBinsRegion2;
+    double widthRegion3 = (maxRange - centralRegionMax) / nBinsRegion3;
+    for (int i = 0; i < nBinsRegion3; i++) {
+        binEdges[nBinsRegion1 + nBinsRegion2 + i + 1] = centralRegionMax + i * widthRegion3;
+    }
+
+    //the last bin edge is exactly at the maximum range
+    binEdges[nBins] = maxRange;
+
+
+    TH1D* HistKaonMassProbeWithoutTof = new TH1D("HistKaonMassProbeWithoutTof", "; m_{#pi^{+}#pi^{-}}^{tag} [GeV]; # events", nBins, binEdges);  
+    TH1D* HistKaonMassProbeWithTof = new TH1D("HistKaonMassProbeWithTof", "; m_{#pi^{+}#pi^{-}}^{probe} [GeV]; # events", nBins, binEdges);
+
+    TH1D* HistKaonMassProbeWithoutTofPosProbe = new TH1D("HistKaonMassProbeWithoutTofPosProbe", "; m_{#pi^{+}#pi^{-}} [GeV]; events", nBins, binEdges);
+    //TH1D* HistKaonMassProbeWithoutTofNegProbe = new TH1D("HistKaonMassProbeWithoutTofNegProbe", "; m_{#pi^{+}#pi^{-}} [GeV]; events", nBins, binEdges);
+    TH1D* HistKaonMassProbeWithTofPosProbe = new TH1D("HistKaonMassProbeWithTofPosProbe", "; m_{#pi^{+}#pi^{-}} [GeV]; events", nBins, binEdges);
+    //TH1D* HistKaonMassProbeWithTofNegProbe = new TH1D("HistKaonMassProbeWithTofNegProbe", "; m_{#pi^{+}#pi^{-}} [GeV]; events", nBins, binEdges);
  
     TH1D* HistKaonPtProbeWithoutTofPosProbe = new TH1D("HistKaonPtProbeWithoutTofPosProbe", "; p_{T} [GeV]; events",nBinsPt-1, binsPt);
     //TH1D* HistKaonPtProbeWithoutTofNegProbe = new TH1D("HistKaonPtProbeWithoutTofNegProbe", "; P_{T} [GeV]; events", nBinsPt-1, binsPt);
@@ -195,15 +240,15 @@ int main(int argc, char** argv)
     vector <TH1D*> HistKaonFillProbeWithTofPosProbeMass;
     //vector <TH1D*> HistKaonFillProbeWithTofNegProbeMass;
 
-    TH1D* HistKaonPtProbeWithoutTofPosProbeMassMC = new TH1D("HistKaonPtProbeWithoutTofPosProbeMassMC", "", 60, 0.44, 0.56);
-    //TH1D* HistKaonPtProbeWithoutTofNegProbeMassMC = new TH1D("HistKaonPtProbeWithoutTofNegProbeMassMC","",  60, 0.44, 0.56);
-    TH1D* HistKaonPtProbeWithTofPosProbeMassMC = new TH1D("HistKaonPtProbeWithTofPosProbeMassMC","", 60, 0.44, 0.56);
-    //TH1D* HistKaonPtProbeWithTofNegProbeMassMC = new TH1D("HistKaonPtProbeWithTofNegProbeMassMC", "",60, 0.44, 0.56);
+    TH1D* HistKaonPtProbeWithoutTofPosProbeMassMC = new TH1D("HistKaonPtProbeWithoutTofPosProbeMassMC", "", nBins, binEdges);
+    //TH1D* HistKaonPtProbeWithoutTofNegProbeMassMC = new TH1D("HistKaonPtProbeWithoutTofNegProbeMassMC","",  nBins, binEdges);
+    TH1D* HistKaonPtProbeWithTofPosProbeMassMC = new TH1D("HistKaonPtProbeWithTofPosProbeMassMC","", nBins, binEdges);
+    //TH1D* HistKaonPtProbeWithTofNegProbeMassMC = new TH1D("HistKaonPtProbeWithTofNegProbeMassMC", "",nBins, binEdges);
 
-    TH1D* HistKaonEtaProbeWithoutTofPosProbeMassMC = new TH1D("HistKaonEtaProbeWithoutTofPosProbeMassMC", "", 60, 0.44, 0.56);
-    //TH1D* HistKaonEtaProbeWithoutTofNegProbeMassMC = new TH1D("HistKaonEtaProbeWithoutTofNegProbeMassMC","",  60, 0.44, 0.56);
-    TH1D* HistKaonEtaProbeWithTofPosProbeMassMC = new TH1D("HistKaonEtaProbeWithTofPosProbeMassMC","", 60, 0.44, 0.56);
-    //TH1D* HistKaonEtaProbeWithTofNegProbeMassMC = new TH1D("HistKaonEtaProbeWithTofNegProbeMassMC", "",60, 0.44, 0.56);
+    TH1D* HistKaonEtaProbeWithoutTofPosProbeMassMC = new TH1D("HistKaonEtaProbeWithoutTofPosProbeMassMC", "", nBins, binEdges);
+    //TH1D* HistKaonEtaProbeWithoutTofNegProbeMassMC = new TH1D("HistKaonEtaProbeWithoutTofNegProbeMassMC","",  nBins, binEdges);
+    TH1D* HistKaonEtaProbeWithTofPosProbeMassMC = new TH1D("HistKaonEtaProbeWithTofPosProbeMassMC","", nBins, binEdges);
+    //TH1D* HistKaonEtaProbeWithTofNegProbeMassMC = new TH1D("HistKaonEtaProbeWithTofNegProbeMassMC", "",nBins, binEdges);
 
     TH1D* HistPionPtWithTofMC = new TH1D("HistPionPtWithTofMC", "; p_{T} [GeV]; events",nBinsPt-1, binsPt);
     TH1D* HistPionPtWithoutTofMC = new TH1D("HistPionPtWithoutTofMC", "; P_{T} [GeV]; events", nBinsPt-1, binsPt);
@@ -220,10 +265,10 @@ int main(int argc, char** argv)
     
     for (int i = 0; i < nBinsPt-1; ++i) 
     {
-        TH1D* histPosWo = new TH1D(Form("HistKaonPtProbeWithoutTofPosProbeMass%d", i), Form("HistKaonPtProbeWithoutTofPosProbeMass %d", i), 60, 0.44, 0.56);
-        //TH1D* histNegWo = new TH1D(Form("HistKaonPtProbeWithoutTofNegProbeMass%d", i), Form("HistKaonPtProbeWithoutTofNegProbeMass %d", i), 60, 0.44, 0.56);
-        TH1D* histPosW = new TH1D(Form("HistKaonPtProbeWithTofPosProbeMass%d", i), Form("HistKaonPtProbeWithTofPosProbeMass %d", i), 60, 0.44, 0.56);
-        //TH1D* histNegW = new TH1D(Form("HistKaonPtProbeWithTofNegProbeMass%d", i), Form("HistKaonPtProbeWithTofNegProbeMass %d", i), 60, 0.44, 0.56);
+        TH1D* histPosWo = new TH1D(Form("HistKaonPtProbeWithoutTofPosProbeMass%d", i), Form("HistKaonPtProbeWithoutTofPosProbeMass %d", i), nBins, binEdges);
+        //TH1D* histNegWo = new TH1D(Form("HistKaonPtProbeWithoutTofNegProbeMass%d", i), Form("HistKaonPtProbeWithoutTofNegProbeMass %d", i), nBins, binEdges);
+        TH1D* histPosW = new TH1D(Form("HistKaonPtProbeWithTofPosProbeMass%d", i), Form("HistKaonPtProbeWithTofPosProbeMass %d", i), nBins, binEdges);
+        //TH1D* histNegW = new TH1D(Form("HistKaonPtProbeWithTofNegProbeMass%d", i), Form("HistKaonPtProbeWithTofNegProbeMass %d", i), nBins, binEdges);
         HistKaonPtProbeWithoutTofPosProbeMass.push_back(histPosWo);
         //HistKaonPtProbeWithoutTofNegProbeMass.push_back(histNegWo);
         HistKaonPtProbeWithTofPosProbeMass.push_back(histPosW);
@@ -232,10 +277,10 @@ int main(int argc, char** argv)
 
     for (int i = 0; i < nBinsEta-1; ++i) 
     {
-        TH1D* histPosWo = new TH1D(Form("HistKaonEtaProbeWithoutTofPosProbeMass%d", i), Form("HistKaonEtaProbeWithoutTofPosProbeMass %d", i), 60, 0.44, 0.56);
-        //TH1D* histNegWo = new TH1D(Form("HistKaonEtaProbeWithoutTofNegProbeMass%d", i), Form("HistKaonEtaProbeWithoutTofNegProbeMass %d", i), 60, 0.44, 0.56);
-        TH1D* histPosW = new TH1D(Form("HistKaonEtaProbeWithTofPosProbeMass%d", i), Form("HistKaonEtaProbeWithTofPosProbeMass %d", i), 60, 0.44, 0.56);
-        //TH1D* histNegW = new TH1D(Form("HistKaonEtaProbeWithTofNegProbeMass%d", i), Form("HistKaonEtaProbeWithTofNegProbeMass %d", i), 60, 0.44, 0.56);
+        TH1D* histPosWo = new TH1D(Form("HistKaonEtaProbeWithoutTofPosProbeMass%d", i), Form("HistKaonEtaProbeWithoutTofPosProbeMass %d", i), nBins, binEdges);
+        //TH1D* histNegWo = new TH1D(Form("HistKaonEtaProbeWithoutTofNegProbeMass%d", i), Form("HistKaonEtaProbeWithoutTofNegProbeMass %d", i), nBins, binEdges);
+        TH1D* histPosW = new TH1D(Form("HistKaonEtaProbeWithTofPosProbeMass%d", i), Form("HistKaonEtaProbeWithTofPosProbeMass %d", i), nBins, binEdges);
+        //TH1D* histNegW = new TH1D(Form("HistKaonEtaProbeWithTofNegProbeMass%d", i), Form("HistKaonEtaProbeWithTofNegProbeMass %d", i), nBins, binEdges);
         HistKaonEtaProbeWithoutTofPosProbeMass.push_back(histPosWo);
         //HistKaonEtaProbeWithoutTofNegProbeMass.push_back(histNegWo);
         HistKaonEtaProbeWithTofPosProbeMass.push_back(histPosW);
@@ -245,10 +290,10 @@ int main(int argc, char** argv)
     
     for (int i = 0; i < nBinsFill; ++i) 
     {
-        TH1D* histPosWo = new TH1D(Form("HistKaonFillProbeWithoutTofPosProbeMass%d", i), Form("HistKaonFillProbeWithoutTofPosProbeMass %d", i), 60, 0.44, 0.56);
-        //TH1D* histNegWo = new TH1D(Form("HistKaonFillProbeWithoutTofNegProbeMass%d", i), Form("HistKaonFillProbeWithoutTofNegProbeMass %d", i), 60, 0.44, 0.56);
-        TH1D* histPosW = new TH1D(Form("HistKaonFillProbeWithTofPosProbeMass%d", i), Form("HistKaonFillProbeWithTofPosProbeMass %d", i), 60, 0.44, 0.56);
-        //TH1D* histNegW = new TH1D(Form("HistKaonFillProbeWithTofNegProbeMass%d", i), Form("HistKaonFillProbeWithTofNegProbeMass %d", i), 60, 0.44, 0.56);
+        TH1D* histPosWo = new TH1D(Form("HistKaonFillProbeWithoutTofPosProbeMass%d", i), Form("HistKaonFillProbeWithoutTofPosProbeMass %d", i), nBins, binEdges);
+        //TH1D* histNegWo = new TH1D(Form("HistKaonFillProbeWithoutTofNegProbeMass%d", i), Form("HistKaonFillProbeWithoutTofNegProbeMass %d", i), nBins, binEdges);
+        TH1D* histPosW = new TH1D(Form("HistKaonFillProbeWithTofPosProbeMass%d", i), Form("HistKaonFillProbeWithTofPosProbeMass %d", i), nBins, binEdges);
+        //TH1D* histNegW = new TH1D(Form("HistKaonFillProbeWithTofNegProbeMass%d", i), Form("HistKaonFillProbeWithTofNegProbeMass %d", i), nBins, binEdges);
         HistKaonFillProbeWithoutTofPosProbeMass.push_back(histPosWo);
         //HistKaonFillProbeWithoutTofNegProbeMass.push_back(histNegWo);
         HistKaonFillProbeWithTofPosProbeMass.push_back(histPosW);
@@ -256,8 +301,8 @@ int main(int argc, char** argv)
     }
    
     // Histograms for truth-matched tag and probe analysis
-    TH1D* HistKaonMassProbeWithTof_TruePions = new TH1D("HistKaonMassProbeWithTof_TruePions", "; m_{#pi^{+}#pi^{-}}^{probe} [GeV]; # events", 60, 0.44, 0.56);
-    TH1D* HistKaonMassProbeWithoutTof_TruePions = new TH1D("HistKaonMassProbeWithoutTof_TruePions", "; m_{#pi^{+}#pi^{-}}^{tag} [GeV]; # events", 60, 0.44, 0.56);
+    TH1D* HistKaonMassProbeWithTof_TruePions = new TH1D("HistKaonMassProbeWithTof_TruePions", "; m_{#pi^{+}#pi^{-}}^{probe} [GeV]; # events", nBins, binEdges);
+    TH1D* HistKaonMassProbeWithoutTof_TruePions = new TH1D("HistKaonMassProbeWithoutTof_TruePions", "; m_{#pi^{+}#pi^{-}}^{tag} [GeV]; # events", nBins, binEdges);
 
     TH1D* HistPionPtWithTof_TruePions = new TH1D("HistPionPtWithTof_TruePions", "; p_{T} [GeV]; true pions with TOF", nBinsPt-1, binsPt);
     TH1D* HistPionPtWithoutTof_TruePions = new TH1D("HistPionPtWithoutTof_TruePions", "; p_{T} [GeV]; true pions without TOF", nBinsPt-1, binsPt);
@@ -284,10 +329,10 @@ int main(int argc, char** argv)
     for (int i = 0; i < nBinsPt-1; ++i) {
         TH1D* histWithTof = new TH1D(Form("HistKaonPtTruePionWithTofMass%d", i), 
                                 Form("Kaon Mass (True Pions) with TOF, %.2f < p_{T} < %.2f GeV", binsPt[i], binsPt[i+1]), 
-                                60, 0.44, 0.56);
+                                nBins, binEdges);
         TH1D* histWithoutTof = new TH1D(Form("HistKaonPtTruePionWithoutTofMass%d", i), 
                                     Form("Kaon Mass (True Pions) without TOF, %.2f < p_{T} < %.2f GeV", binsPt[i], binsPt[i+1]), 
-                                    60, 0.44, 0.56);
+                                    nBins, binEdges);
         HistKaonPtTruePionWithTofMass.push_back(histWithTof);
         HistKaonPtTruePionWithoutTofMass.push_back(histWithoutTof);
     }
@@ -295,10 +340,10 @@ int main(int argc, char** argv)
     for (int i = 0; i < nBinsEta-1; ++i) {
         TH1D* histWithTof = new TH1D(Form("HistKaonEtaTruePionWithTofMass%d", i), 
                                 Form("Kaon Mass (True Pions) with TOF, %.2f < #eta < %.2f", binsEta[i], binsEta[i+1]), 
-                                60, 0.44, 0.56);
+                                nBins, binEdges);
         TH1D* histWithoutTof = new TH1D(Form("HistKaonEtaTruePionWithoutTofMass%d", i), 
                                     Form("Kaon Mass (True Pions) without TOF, %.2f < #eta < %.2f", binsEta[i], binsEta[i+1]), 
-                                    60, 0.44, 0.56);
+                                    nBins, binEdges);
         HistKaonEtaTruePionWithTofMass.push_back(histWithTof);
         HistKaonEtaTruePionWithoutTofMass.push_back(histWithoutTof);
     }

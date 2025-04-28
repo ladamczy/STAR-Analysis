@@ -141,7 +141,7 @@ double FitHistogramAndGetYield(TH1* hist, TF1* &fitFunc,
             case kVoigt: nParams = 6; break;
         }
         
-        fitFunc = new TF1(funcName, CombinedFunction, 0.46, 0.54, nParams);
+        fitFunc = new TF1(funcName, CombinedFunction,  0.46, 0.54, nParams);
         
         // Set parameter names and initial values based on fit function type
         switch(gSelectedFitFunc) {
@@ -184,7 +184,7 @@ double FitHistogramAndGetYield(TH1* hist, TF1* &fitFunc,
     switch(gSelectedFitFunc) {
         case kCrystalBall: {
             TString cbName = Form("crystalBall_%s", suffix.c_str());
-            signalFunc = new TF1(cbName, CrystalBall, 0.46, 0.54, 5);
+            signalFunc = new TF1(cbName, CrystalBall,  0.46, 0.54, 5);
             for (int i = 0; i < 5; i++) {
                 signalFunc->SetParameter(i, fitFunc->GetParameter(i));
             }
@@ -192,7 +192,7 @@ double FitHistogramAndGetYield(TH1* hist, TF1* &fitFunc,
         }
         case kGaussian: {
             TString gaussName = Form("gaussian_%s", suffix.c_str());
-            signalFunc = new TF1(gaussName, Gaussian, 0.46, 0.54, 3);
+            signalFunc = new TF1(gaussName, Gaussian,  0.46, 0.54, 3);
             for (int i = 0; i < 3; i++) {
                 signalFunc->SetParameter(i, fitFunc->GetParameter(i));
             }
@@ -200,7 +200,7 @@ double FitHistogramAndGetYield(TH1* hist, TF1* &fitFunc,
         }
         case kVoigt: {
             TString voigtName = Form("voigt_%s", suffix.c_str());
-            signalFunc = new TF1(voigtName, VoigtFunction, 0.46, 0.54, 4);
+            signalFunc = new TF1(voigtName, VoigtFunction,  0.46, 0.54, 4);
             for (int i = 0; i < 4; i++) {
                 signalFunc->SetParameter(i, fitFunc->GetParameter(i));
             }
@@ -215,7 +215,7 @@ double FitHistogramAndGetYield(TH1* hist, TF1* &fitFunc,
 
     // Create background component
     TString polyName = Form("poly_%s", suffix.c_str());
-    TF1* poly = new TF1(polyName, "pol1", 0.46, 0.54);
+    TF1* poly = new TF1(polyName, "pol1",  0.46, 0.54);
     
     switch(gSelectedFitFunc) {
         case kCrystalBall:
@@ -250,13 +250,13 @@ void DrawParameterBlock(double xStart, double yStart,
     TF1* fitFunc, const char* title) {
     TLatex *text = new TLatex();
     text->SetNDC();
-    text->SetTextSize(0.035);
+    text->SetTextSize(0.03);
     text->SetTextFont(42);
     text->SetTextColor(kBlue);
 
     // Format parameter strings
     auto formatParam = [](const char* name, double val, double err) {
-        return Form("%s = %.3f #pm %.3f", name, val, err);
+        return Form("%s = %.4f #pm %.4f", name, val, err);
     };
 
     // Title
@@ -323,7 +323,7 @@ double FitHistogramPairAndGetEfficiency(TH1* histWith, TH1* histWithout,
             case kVoigt: nParams = 6; break;
         }
         
-        fitWith = new TF1(funcNameWith, CombinedFunction, 0.46, 0.54, nParams);
+        fitWith = new TF1(funcNameWith, CombinedFunction,  0.46, 0.54, nParams);
         
         // Set parameter names and initial values based on fit function type
         switch(gSelectedFitFunc) {
@@ -334,6 +334,7 @@ double FitHistogramPairAndGetEfficiency(TH1* histWith, TH1* histWithout,
                 fitWith->SetParLimits(0, 0, histWith->GetMaximum() * 2);
                 fitWith->SetParLimits(1, 0.49, 0.506);
                 fitWith->SetParLimits(2, 0.001, 0.01);
+                //fitWith->FixParameter(2, 0.0030);// specific value
                 fitWith->SetParLimits(3, 0.1, 10.0);
                 fitWith->SetParLimits(4, 1.0, 10.0);
                 break;
@@ -345,6 +346,7 @@ double FitHistogramPairAndGetEfficiency(TH1* histWith, TH1* histWithout,
                 fitWith->SetParLimits(0, 0, histWith->GetMaximum() * 2);
                 fitWith->SetParLimits(1, 0.49, 0.506);
                 fitWith->SetParLimits(2, 0.001, 0.01);
+                //fitWith->FixParameter(2, 0.0030);// specific value
                 break;
                 
             case kVoigt:
@@ -354,6 +356,7 @@ double FitHistogramPairAndGetEfficiency(TH1* histWith, TH1* histWithout,
                 fitWith->SetParLimits(0, 0, histWith->GetMaximum() * 2);
                 fitWith->SetParLimits(1, 0.49, 0.506);
                 fitWith->SetParLimits(2, 0.001, 0.01);
+                //fitWith->FixParameter(2, 0.0030);// specific value
                 fitWith->SetParLimits(3, 0.0001, 0.005);
                 break;
         }
@@ -373,7 +376,7 @@ double FitHistogramPairAndGetEfficiency(TH1* histWith, TH1* histWithout,
             case kVoigt: nParams = 6; break;
         }
         
-        fitWithout = new TF1(funcNameWithout, CombinedFunction, 0.46, 0.54, nParams);
+        fitWithout = new TF1(funcNameWithout, CombinedFunction,  0.46, 0.54, nParams);
         
         // Set parameters based on fit function type
         switch(gSelectedFitFunc) {
@@ -415,6 +418,9 @@ double FitHistogramPairAndGetEfficiency(TH1* histWith, TH1* histWithout,
         }
 
         fitWithout->SetParLimits(0, 0, histWithout->GetMaximum() * 2); //norm
+        //if no fixing anything 
+        //fitWithout->SetParLimits(1, 0.49, 0.506);  
+        //fitWithout->SetParLimits(2, 0.001, 0.01);    
 
         bool fixMean = false; // true or false, depending on requirement
 
@@ -425,6 +431,7 @@ double FitHistogramPairAndGetEfficiency(TH1* histWith, TH1* histWithout,
         } else {
             // Fix sigma and set mean limits
             fitWithout->FixParameter(2, fitWith->GetParameter(2)); // Fix sigma (par 2)
+            //fitWithout->FixParameter(2, 0.0030);// specific value
             fitWithout->SetParLimits(1, 0.49, 0.506);             // Set mean (par 1) limits
         }
 
@@ -455,13 +462,13 @@ double FitHistogramPairAndGetEfficiency(TH1* histWith, TH1* histWithout,
     switch(gSelectedFitFunc) {
         case kCrystalBall: {
             TString cbNameWith = Form("crystalBallWith_%s", suffix.c_str());
-            signalWith = new TF1(cbNameWith, CrystalBall, 0.46, 0.54, 5);
+            signalWith = new TF1(cbNameWith, CrystalBall,  0.46, 0.54, 5);
             for (int i = 0; i < 5; i++) {
                 signalWith->SetParameter(i, fitWith->GetParameter(i));
             }
             
             TString cbNameWithout = Form("crystalBallWithout_%s", suffix.c_str());
-            signalWithout = new TF1(cbNameWithout, CrystalBall, 0.46, 0.54, 5);
+            signalWithout = new TF1(cbNameWithout, CrystalBall,  0.46, 0.54, 5);
             for (int i = 0; i < 5; i++) {
                 signalWithout->SetParameter(i, fitWithout->GetParameter(i));
             }
@@ -470,13 +477,13 @@ double FitHistogramPairAndGetEfficiency(TH1* histWith, TH1* histWithout,
         
         case kGaussian: {
             TString gaussNameWith = Form("gaussianWith_%s", suffix.c_str());
-            signalWith = new TF1(gaussNameWith, Gaussian, 0.46, 0.54, 3);
+            signalWith = new TF1(gaussNameWith, Gaussian,  0.46, 0.54, 3);
             for (int i = 0; i < 3; i++) {
                 signalWith->SetParameter(i, fitWith->GetParameter(i));
             }
             
             TString gaussNameWithout = Form("gaussianWithout_%s", suffix.c_str());
-            signalWithout = new TF1(gaussNameWithout, Gaussian, 0.46, 0.54, 3);
+            signalWithout = new TF1(gaussNameWithout, Gaussian,  0.46, 0.54, 3);
             for (int i = 0; i < 3; i++) {
                 signalWithout->SetParameter(i, fitWithout->GetParameter(i));
             }
@@ -485,13 +492,13 @@ double FitHistogramPairAndGetEfficiency(TH1* histWith, TH1* histWithout,
         
         case kVoigt: {
             TString voigtNameWith = Form("voigtWith_%s", suffix.c_str());
-            signalWith = new TF1(voigtNameWith, VoigtFunction, 0.46, 0.54, 4);
+            signalWith = new TF1(voigtNameWith, VoigtFunction,  0.46, 0.54, 4);
             for (int i = 0; i < 4; i++) {
                 signalWith->SetParameter(i, fitWith->GetParameter(i));
             }
             
             TString voigtNameWithout = Form("voigtWithout_%s", suffix.c_str());
-            signalWithout = new TF1(voigtNameWithout, VoigtFunction, 0.46, 0.54, 4);
+            signalWithout = new TF1(voigtNameWithout, VoigtFunction,  0.46, 0.54, 4);
             for (int i = 0; i < 4; i++) {
                 signalWithout->SetParameter(i, fitWithout->GetParameter(i));
             }
@@ -506,10 +513,10 @@ double FitHistogramPairAndGetEfficiency(TH1* histWith, TH1* histWithout,
 
     // Create background components
     TString polyNameWith = Form("polyWith_%s", suffix.c_str());
-    TF1* polyWith = new TF1(polyNameWith, "pol1", 0.46, 0.54);
+    TF1* polyWith = new TF1(polyNameWith, "pol1",  0.46, 0.54);
     
     TString polyNameWithout = Form("polyWithout_%s", suffix.c_str());
-    TF1* polyWithout = new TF1(polyNameWithout, "pol1", 0.46, 0.54);
+    TF1* polyWithout = new TF1(polyNameWithout, "pol1",  0.46, 0.54);
     
     switch(gSelectedFitFunc) {
         case kCrystalBall:
@@ -708,7 +715,7 @@ void Plot_TofEfficiency(const char* fitType = "Gaussian") {  //Gaussian//empty f
     canvas->SetBottomMargin(0.15);
 
     // Eta plots
-    canvas->Print("plots/TofEff_eta_thesis_MC_GS_0.3_v2.pdf[");
+    canvas->Print("plots/TofEff_eta_thesis_MC_CS_0.3_v2.pdf[");
     for (int i = 0; i < 6; i++) {
         CreateSinglePlot(canvas, etaWithoutTof[i], etaWithTof[i], etaTitles[i]);
         fixedParamText->DrawLatex(0.18, 0.7, Form("#splitline{%s fixed}{Fit with: %s distribution}",fixvar[0],fitfunction[0]));
@@ -716,12 +723,12 @@ void Plot_TofEfficiency(const char* fitType = "Gaussian") {  //Gaussian//empty f
         Double_t x_max = etaWithoutTof[i]->GetBinCenter(hist_max);
         Double_t y_max = etaWithoutTof[i]->GetBinContent(hist_max);   
         Tl.DrawLatex(0.51, y_max + 10, Form("#scale[0.6]{matching threshold < %.2f}", thresholdIndex));
-        canvas->Print("plots/TofEff_eta_thesis_MC_GS_0.3_v2.pdf");
+        canvas->Print("plots/TofEff_eta_thesis_MC_CS_0.3_v2.pdf");
     }
-    canvas->Print("plots/TofEff_eta_thesis_MC_GS_0.3_v2.pdf]");
+    canvas->Print("plots/TofEff_eta_thesis_MC_CS_0.3_v2.pdf]");
 
     // pT plots
-    canvas->Print("plots/TofEff_pt_thesis_MC_GS_0.3_v2.pdf[");
+    canvas->Print("plots/TofEff_pt_thesis_MC_CS_0.3_v2.pdf[");
     for (int i = 0; i < 6; i++) {
         CreateSinglePlot(canvas, ptWithoutTof[i], ptWithTof[i], ptTitles[i]);
         fixedParamText->DrawLatex(0.18, 0.7, Form("#splitline{%s fixed}{Fit with: %s distribution}",fixvar[0],fitfunction[0]));
@@ -729,19 +736,9 @@ void Plot_TofEfficiency(const char* fitType = "Gaussian") {  //Gaussian//empty f
         Double_t x_max = ptWithoutTof[i]->GetBinCenter(hist_max);
         Double_t y_max = ptWithoutTof[i]->GetBinContent(hist_max);   
         Tl.DrawLatex(0.51, y_max + 10, Form("#scale[0.6]{matching threshold < %.2f}", thresholdIndex));
-        canvas->Print("plots/TofEff_pt_thesis_MC_GS_0.3_v2.pdf");
+        canvas->Print("plots/TofEff_pt_thesis_MC_CS_0.3_v2.pdf");
     }
-    canvas->Print("plots/TofEff_pt_thesis_MC_GS_0.3_v2.pdf]");
-
-    // true plots  
-    CreateSinglePlot(canvas, HistKaonMassProbeWithoutTof_TruePions, HistKaonMassProbeWithTof_TruePions, some[0]);
-    HistKaonMassProbeWithoutTof_TruePions->GetYaxis()->SetRangeUser(-20, 150);
-    int hist_max = HistKaonMassProbeWithoutTof_TruePions->GetMaximumBin();
-    Double_t x_max = HistKaonMassProbeWithoutTof_TruePions->GetBinCenter(hist_max);
-    Double_t y_max = HistKaonMassProbeWithoutTof_TruePions->GetBinContent(hist_max);   
-    Tl.DrawLatex(0.51, y_max + 10, Form("#scale[0.6]{matching threshold < %.2f}", thresholdIndex));
-    fixedParamText->DrawLatex(0.18, 0.7, Form("#splitline{%s fixed}{Fit with: %s distribution}",fixvar[0],fitfunction[0]));
-    canvas->Print("plots/TofEff_true_thesis_MC_GS_0.3_v2.png"); 
+    canvas->Print("plots/TofEff_pt_thesis_MC_CS_0.3_v2.pdf]");
 
     // tag and probe plots  
     CreateSinglePlot(canvas, HistKaonMassProbeWithoutTof, HistKaonMassProbeWithTof, some[1]);
@@ -751,10 +748,21 @@ void Plot_TofEfficiency(const char* fitType = "Gaussian") {  //Gaussian//empty f
     Double_t y_max2 = HistKaonMassProbeWithTof->GetBinContent(hist_max2); 
     Tl.DrawLatex(0.51, y_max2 + 50, Form("#scale[0.6]{matching threshold < %.2f}", thresholdIndex));   
     fixedParamText->DrawLatex(0.18, 0.7, Form("#splitline{%s fixed}{Fit with: %s distribution}",fixvar[0],fitfunction[0]));
-    canvas->Print("plots/TofEff_tagNprobe_thesis_MC_GS_0.3_v2.png"); 
+    canvas->Print("plots/TofEff_tagNprobe_thesis_MC_CS_0.3_v2.png");
 
+    
+    // true plots  
+    CreateSinglePlot(canvas, HistKaonMassProbeWithoutTof_TruePions, HistKaonMassProbeWithTof_TruePions, some[0]);
+    HistKaonMassProbeWithoutTof_TruePions->GetYaxis()->SetRangeUser(-20, 150);
+    int hist_max = HistKaonMassProbeWithoutTof_TruePions->GetMaximumBin();
+    Double_t x_max = HistKaonMassProbeWithoutTof_TruePions->GetBinCenter(hist_max);
+    Double_t y_max = HistKaonMassProbeWithoutTof_TruePions->GetBinContent(hist_max);   
+    Tl.DrawLatex(0.51, y_max + 10, Form("#scale[0.6]{matching threshold < %.2f}", thresholdIndex));
+    fixedParamText->DrawLatex(0.18, 0.7, Form("#splitline{%s fixed}{Fit with: %s distribution}",fixvar[0],fitfunction[0]));
+    canvas->Print("plots/TofEff_true_thesis_MC_CS_0.3_v2.png"); 
+    
     // True Eta plots
-    canvas->Print("plots/TofEff_true_eta_thesis_MC_GS_0.3_v2.pdf[");
+    canvas->Print("plots/TofEff_true_eta_thesis_MC_CS_0.3_v2.pdf[");
     for (int i = 0; i < 6; i++) {
         CreateSinglePlot(canvas, etaWithoutTof_true[i], etaWithTof_true[i], etaTitles[i]);
         fixedParamText->DrawLatex(0.18, 0.7, Form("#splitline{%s fixed}{Fit with: %s distribution}",fixvar[0],fitfunction[0]));
@@ -762,12 +770,12 @@ void Plot_TofEfficiency(const char* fitType = "Gaussian") {  //Gaussian//empty f
         Double_t x_max = etaWithoutTof_true[i]->GetBinCenter(hist_max);
         Double_t y_max = etaWithoutTof_true[i]->GetBinContent(hist_max);   
         Tl.DrawLatex(0.51, y_max + 10, Form("#scale[0.6]{matching threshold < %.2f}", thresholdIndex));
-        canvas->Print("plots/TofEff_true_eta_thesis_MC_GS_0.3_v2.pdf");
+        canvas->Print("plots/TofEff_true_eta_thesis_MC_CS_0.3_v2.pdf");
     }
-    canvas->Print("plots/TofEff_true_eta_thesis_MC_GS_0.3_v2.pdf]");
+    canvas->Print("plots/TofEff_true_eta_thesis_MC_CS_0.3_v2.pdf]");
 
     // True pT plots
-    canvas->Print("plots/TofEff_true_pt_thesis_MC_GS_0.3_v2.pdf[");
+    canvas->Print("plots/TofEff_true_pt_thesis_MC_CS_0.3_v2.pdf[");
     for (int i = 0; i < 6; i++) {
         CreateSinglePlot(canvas, ptWithoutTof_true[i], ptWithTof_true[i], ptTitles[i]);
         fixedParamText->DrawLatex(0.18, 0.7, Form("#splitline{%s fixed}{Fit with: %s distribution}",fixvar[0],fitfunction[0]));
@@ -775,9 +783,9 @@ void Plot_TofEfficiency(const char* fitType = "Gaussian") {  //Gaussian//empty f
         Double_t x_max = ptWithoutTof_true[i]->GetBinCenter(hist_max);
         Double_t y_max = ptWithoutTof_true[i]->GetBinContent(hist_max);   
         Tl.DrawLatex(0.51, y_max + 10, Form("#scale[0.6]{matching threshold < %.2f}", thresholdIndex));
-        canvas->Print("plots/TofEff_true_pt_thesis_MC_GS_0.3_v2.pdf");
+        canvas->Print("plots/TofEff_true_pt_thesis_MC_CS_0.3_v2.pdf");
     }
-    canvas->Print("plots/TofEff_true_pt_thesis_MC_GS_0.3_v2.pdf]");
+    canvas->Print("plots/TofEff_true_pt_thesis_MC_CS_0.3_v2.pdf]");
 
 
     double etaBins[7] = {-0.9, -0.6, -0.3, 0.0, 0.3, 0.6, 0.9}; // Use your actual bin edges
@@ -868,7 +876,7 @@ void Plot_TofEfficiency(const char* fitType = "Gaussian") {  //Gaussian//empty f
     //graphEta->GetYaxis()->SetTitle("Efficiency");
     //graphEta->Draw("APE"); 
     Tl.DrawLatex(-0.8,0.1, Form("#splitline{%s fixed}{Fit with: %s distribution}",fixvar[0],fitfunction[0]));
-    canvas->Print("plots/TofEff_summary_eta_thesis_MC_GS_0.3_v2.png");
+    canvas->Print("plots/TofEff_summary_eta_thesis_MC_CS_0.3_v2.png");
 
     canvas->Clear();
     effVsPt->SetMinimum(0);
@@ -892,7 +900,7 @@ void Plot_TofEfficiency(const char* fitType = "Gaussian") {  //Gaussian//empty f
     //graphPt->GetYaxis()->SetTitle("Efficiency");
     //graphPt->Draw("APE"); 
     Tl.DrawLatex(0.25,0.1, Form("#splitline{%s fixed}{Fit with: %s distribution}",fixvar[0],fitfunction[0]));
-    canvas->Print("plots/TofEff_summary_pt_thesis_MC_GS_0.3_v2.png");
+    canvas->Print("plots/TofEff_summary_pt_thesis_MC_CS_0.3_v2.png");
 
     delete canvas;
     delete effVsEta;
