@@ -102,7 +102,7 @@ int main(int argc, char** argv)
     static StUPCEvent *upcEvt = nullptr; // Pointer to UPC event
     static StRPEvent *correctedRpEvent = nullptr; // Pointer to corrected RP event
 
-    // Load offset file for corrections (if applicable)
+    // Load offset file for corrections (not applicable)
     LoadOffsetFile("../data/OffSetsCorrectionsRun17.list", mCorrection);
 
     // Set branch addresses for UPC event and check if it's MC
@@ -165,36 +165,33 @@ int main(int argc, char** argv)
     // TH1D* HistKaonMassProbeWithoutTof = new TH1D("HistKaonMassProbeWithoutTof", "; m_{#pi^{+}#pi^{-}}^{tag} [GeV]; # events",60 ,0.44, 0.56);
 
     // Define the bin edges with variable width
-    const int nBins = 60;
+    const int nBins = 60;//60;
+    int nBinsRegion1 = 20; // twice the number of bins in region 1
+    int nBinsRegion2 = 10;
     double binEdges[nBins+1];
 
     // Define regions
     double minRange = 0.44;
-    double maxRange = 0.56;
+    double maxRange = 0.54;
     double centralValue = 0.5; // Approximate kaon mass
     double centralRegionMin = 0.49;
-    double centralRegionMax = 0.51;
+    double centralRegionMax = 0.50;
 
     // Creating bin edges with 3 regions:
-    // 1. Wider bins from 0.44 to 0.49 (coarse resolution)
-    // 2. Finer bins from 0.49 to 0.51 (high resolution around kaon mass)
-    // 3. Wider bins from 0.51 to 0.56 (coarse resolution)
 
-    // Region 1: Coarse bins (0.44 to 0.49)
-    int nBinsRegion1 = 15;
+    // Region 1: Coarse bins (0.44 to 0.48)    
     double widthRegion1 = (centralRegionMin - minRange) / nBinsRegion1;
     for (int i = 0; i <= nBinsRegion1; i++) {
         binEdges[i] = minRange + i * widthRegion1;
     }
 
-    // Region 2: Fine bins (0.49 to 0.51)
-    int nBinsRegion2 = 30;
+    // Region 2: Fine bins (0.48 to 0.52)   
     double widthRegion2 = (centralRegionMax - centralRegionMin) / nBinsRegion2;
     for (int i = 0; i < nBinsRegion2; i++) {
         binEdges[nBinsRegion1 + i + 1] = centralRegionMin + i * widthRegion2;
     }
 
-    // Region 3: Coarse bins (0.51 to 0.56)
+    // Region 3: Coarse bins (0.52 to 0.56)
     int nBinsRegion3 = nBins - nBinsRegion1 - nBinsRegion2;
     double widthRegion3 = (maxRange - centralRegionMax) / nBinsRegion3;
     for (int i = 0; i < nBinsRegion3; i++) {
@@ -955,6 +952,9 @@ int main(int argc, char** argv)
 
     for (int i = 0; i < HistKaonPtProbeWithoutTofPosProbeMass.size(); i++)
     {
+        //HistKaonPtTruePionWithTofMass[i]->Scale(1.0, "width");
+        //HistKaonPtTruePionWithoutTofMass[i]->Scale(1.0, "width");
+        
         HistKaonPtProbeWithoutTofPosProbeMass[i]->Write();
         //HistKaonPtProbeWithoutTofNegProbeMass[i]->Write();
         HistKaonPtProbeWithTofPosProbeMass[i]->Write();
@@ -962,6 +962,9 @@ int main(int argc, char** argv)
     }
     for (int i = 0; i < HistKaonEtaProbeWithoutTofPosProbeMass.size(); i++)
     {
+        //HistKaonEtaProbeWithoutTofPosProbeMass[i]->Scale(1.0, "width");
+        //HistKaonEtaProbeWithTofPosProbeMass[i]->Scale(1.0, "width");
+    
         HistKaonEtaProbeWithoutTofPosProbeMass[i]->Write();
         //HistKaonEtaProbeWithoutTofNegProbeMass[i]->Write();
         HistKaonEtaProbeWithTofPosProbeMass[i]->Write();
@@ -976,8 +979,14 @@ int main(int argc, char** argv)
         //HistKaonFillProbeWithTofNegProbeMass[i]->Write();
     }/**/
 
+    
+
+    //HistKaonMassProbeWithTof_TruePions->Scale(1.0, "width");
+    //HistKaonMassProbeWithoutTof_TruePions->Scale(1.0, "width");
+    
     HistKaonMassProbeWithTof_TruePions->Write();
     HistKaonMassProbeWithoutTof_TruePions->Write();
+
     HistPionPtWithTof_TruePions->Write();
     HistPionPtWithoutTof_TruePions->Write();
     HistPionEtaWithTof_TruePions->Write();
@@ -989,11 +998,15 @@ int main(int argc, char** argv)
     HistTruePionWithTofEta->Write();
     // Write true pions histograms for different pT bins
     for (int i = 0; i < HistKaonPtTruePionWithTofMass.size(); i++) {
+        //HistKaonPtTruePionWithTofMass[i]->Scale(1.0, "width");
+        //HistKaonPtTruePionWithoutTofMass[i]->Scale(1.0, "width");
         HistKaonPtTruePionWithTofMass[i]->Write();
         HistKaonPtTruePionWithoutTofMass[i]->Write();
     }
     // Write true pions histograms for different eta bins
     for (int i = 0; i < HistKaonEtaTruePionWithTofMass.size(); i++) {
+        //HistKaonEtaTruePionWithTofMass[i]->Scale(1.0, "width");
+        //HistKaonEtaTruePionWithoutTofMass[i]->Scale(1.0, "width");
         HistKaonEtaTruePionWithTofMass[i]->Write();
         HistKaonEtaTruePionWithoutTofMass[i]->Write();
     }
