@@ -166,16 +166,16 @@ int main(int argc, char** argv)
 
     // Define the bin edges with variable width
     const int nBins = 60;//60;
-    int nBinsRegion1 = 20; // twice the number of bins in region 1
-    int nBinsRegion2 = 10;
+    int nBinsRegion1 = 15; // twice the number of bins in region 1
+    int nBinsRegion2 = 30;
     double binEdges[nBins+1];
 
     // Define regions
     double minRange = 0.44;
     double maxRange = 0.54;
-    double centralValue = 0.5; // Approximate kaon mass
-    double centralRegionMin = 0.49;
-    double centralRegionMax = 0.50;
+    //double centralValue = 0.5; // Approximate kaon mass
+    double centralRegionMin = 0.485;
+    double centralRegionMax = 0.51;
 
     // Creating bin edges with 3 regions:
 
