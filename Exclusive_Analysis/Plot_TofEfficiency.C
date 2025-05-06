@@ -39,10 +39,10 @@ void SetHistogramStyle(TH1* hist, const char* title,
     hist->GetXaxis()->SetNdivisions(6);
     hist->GetYaxis()->SetNdivisions(6);
     hist->GetXaxis()->SetRangeUser(0.45, 0.55);    
-    int b_max = hist->GetMaximumBin();
+    int b_max = hist->FindBin(0.495);//GetMaximumBin();
     Double_t x_max = hist->GetBinCenter(b_max);
     Double_t y_max = hist->GetBinContent(b_max); 
-    hist->GetYaxis()->SetRangeUser(x_max-2, y_max*1.8);
+    hist->GetYaxis()->SetRangeUser(x_max, y_max*2.5); //(0,100000);//
     hist->GetXaxis()->SetTitle("m_{#pi^{+}#pi^{-}} [GeV/c^{2}]");
     hist->GetYaxis()->SetTitle("N_{K}");
 
@@ -56,7 +56,7 @@ void SetHistogramStyle(TH1* hist, const char* title,
 
 void SetHistogramStyle2(TH1* hist, int markerColor) {
     hist->SetMinimum(0);
-    hist->SetMaximum(1);
+    hist->SetMaximum(1.1);
     hist->SetMarkerStyle(20);
     hist->SetMarkerSize(3);
     hist->SetLineWidth(3);
@@ -187,8 +187,8 @@ double FitHistogramPairAndGetEfficiency(TH1* histWith, TH1* histWithout,
     bool useFixedParams = false) {
     
     // Set fit range based on flag
-    double f1 = useTightRange ? 0.485 : 0.48;
-    double f2 = useTightRange ? 0.505 : 0.52;  
+    double f1 = useTightRange ? 0.485 : 0.46;
+    double f2 = useTightRange ? 0.505 : 0.53;  
 
     // First fit the "with TOF" histogram
     if (!fitWith) {
@@ -319,6 +319,7 @@ void ExtractTagAndProbeParameters(TH1* histWith, TH1* histWithout) {
     std::cout << "Mean (mu): " << gFixedMean << std::endl;
     std::cout << "Sigma: " << gFixedSigma << std::endl;
 }
+
 void CreateSinglePlot(TCanvas* canvas, TH1* histWithout, TH1* histWith, 
     const char* title, bool useTightRange = false, 
     bool useFixedParams = false) {
@@ -373,28 +374,60 @@ void CreateSinglePlot(TCanvas* canvas, TH1* histWithout, TH1* histWith,
     effText->DrawLatex(0.38, 0.17, Form("#color[6]{Efficiency = %.1f%%}", efficiency * 100));
 }
 
-void Plot_TofEfficiency() {
-    const char* fitfunction[] = {"Gaussian"}; 
-    const char* fixvar[] = {"#sigma & #mu"};
-    double thresholdIndex = 0.3;
+
+    
+const char* etaTitles[] = {
+    "#eta [-0.9 to -0.6]",
+    "#eta [-0.6 to -0.3]",
+    "#eta [-0.3 to 0.0]",
+    "#eta [0.0 to 0.3]",
+    "#eta [0.3 to 0.6]",
+    "#eta [0.6 to 0.9]"
+};
+
+const char* ptTitles[] = {
+    "p_{T} [0.2 to 0.3 GeV]",
+    "p_{T} [0.3 to 0.4 GeV]",
+    "p_{T} [0.4 to 0.5 GeV]",
+    "p_{T} [0.5 to 0.6 GeV]",
+    "p_{T} [0.6 to 0.8 GeV]",
+    "p_{T} [0.8 to 1.2 GeV]"
+};
+
+const char* some[] = {"True pion matching",
+    "Tag and Probe without true pion matching",
+    "Tag and Probe for the data"};
+
+const char* fitfunction[] = {"Gaussian"}; 
+const char* fixvar[] = {"#sigma & #mu"};
+double thresholdIndex = 0.3;  
+
+// Latex for text
+TLatex Tl;
+Tl.SetTextAlign(10);
+Tl.SetTextSize(0.05);
+
+TLatex *fixedParamText = new TLatex();
+fixedParamText->SetNDC();
+fixedParamText->SetTextSize(0.035);
+fixedParamText->SetTextFont(42);
+fixedParamText->SetTextColor(kViolet+3);
+ 
+double etaBins[7] = {-0.9, -0.6, -0.3, 0.0, 0.3, 0.6, 0.9};
+double ptBins[7] = {0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1.2};
+
+// Summary plots
+TH1D* effVsEta = new TH1D("effVsEta", "TOF Efficiency vs #eta;#eta;Efficiency", 6, etaBins);
+TH1D* effVsPt = new TH1D("effVsPt", "TOF Efficiency vs p_{T};p_{T} [GeV/c];Efficiency", 6, ptBins);
+
+void Plot_MC(){   
     
     // Root style settings
     gStyle->SetOptStat(0);
     gStyle->SetPalette(kBird);
-
-    // Latex for text
-    TLatex Tl;
-    Tl.SetTextAlign(10);
-    Tl.SetTextSize(0.05);
-
-    TLatex *fixedParamText = new TLatex();
-    fixedParamText->SetNDC();
-    fixedParamText->SetTextSize(0.035);
-    fixedParamText->SetTextFont(42);
-    fixedParamText->SetTextColor(kViolet+3);
     
     // Open input file
-    TFile* rootFile = TFile::Open("InputData/tofeff_withRP_0.3_v2.root");
+    TFile* rootFile = TFile::Open("InputData/tofeff_withRP_0.3_v3.root");
     if (!rootFile || rootFile->IsZombie()) {
         std::cerr << "Error opening MC input file" << std::endl;
         return;
@@ -403,7 +436,9 @@ void Plot_TofEfficiency() {
     // Get histograms
     TH1* HistKaonMassProbeWithoutTof = (TH1D*)rootFile->Get("HistKaonMassProbeWithoutTof;1");
     TH1* HistKaonMassProbeWithTof = (TH1D*)rootFile->Get("HistKaonMassProbeWithTof;1");
-    
+     
+    HistKaonMassProbeWithoutTof->Scale(1.0, "width");
+    HistKaonMassProbeWithTof->Scale(1.0, "width");
     std::vector<TH1*> etaWithTof(6), etaWithoutTof(6);
     std::vector<TH1*> ptWithTof(6), ptWithoutTof(6);
 
@@ -418,27 +453,13 @@ void Plot_TofEfficiency() {
             rootFile->Close();
             return;
         }
-    }
-    
-    const char* etaTitles[] = {
-        "#eta [-0.9 to -0.6]",
-        "#eta [-0.6 to -0.3]",
-        "#eta [-0.3 to 0.0]",
-        "#eta [0.0 to 0.3]",
-        "#eta [0.3 to 0.6]",
-        "#eta [0.6 to 0.9]"
-    };
 
-    const char* ptTitles[] = {
-        "p_{T} [0.2 to 0.3 GeV]",
-        "p_{T} [0.3 to 0.4 GeV]",
-        "p_{T} [0.4 to 0.5 GeV]",
-        "p_{T} [0.5 to 0.6 GeV]",
-        "p_{T} [0.6 to 0.8 GeV]",
-        "p_{T} [0.8 to 1.2 GeV]"
-    };
-    
-    const char* some[] = {"Tag and Probe"};
+        etaWithTof[i]->Scale(1.0, "width");
+        etaWithoutTof[i]->Scale(1.0, "width");
+        ptWithTof[i]->Scale(1.0, "width");
+        ptWithoutTof[i]->Scale(1.0, "width");
+
+    }
 
     TCanvas* canvas = new TCanvas("canvas", "TOF Efficiency", 1500, 1048);
     canvas->SetLeftMargin(0.13);
@@ -450,20 +471,20 @@ void Plot_TofEfficiency() {
     // First fit the tag and probe histograms to extract the parameters
     //CreateSinglePlot(canvas, HistKaonMassProbeWithoutTof, HistKaonMassProbeWithTof, some[0], false);
     // tag and probe plots  
-    CreateSinglePlot(canvas, HistKaonMassProbeWithoutTof, HistKaonMassProbeWithTof, some[0], false);
-    HistKaonMassProbeWithTof->GetYaxis()->SetRangeUser(-20, 150); 
+    CreateSinglePlot(canvas, HistKaonMassProbeWithoutTof, HistKaonMassProbeWithTof, some[1], false);
+    //HistKaonMassProbeWithTof->GetYaxis()->SetRangeUser(-20, 150); 
     int hist_max2 = HistKaonMassProbeWithTof->GetMaximumBin();
     Double_t x_max2 = HistKaonMassProbeWithTof->GetBinCenter(hist_max2);
     Double_t y_max2 = HistKaonMassProbeWithTof->GetBinContent(hist_max2); 
     Tl.DrawLatex(0.51, y_max2 + 50, Form("#scale[0.6]{matching threshold < %.2f}", thresholdIndex));   
     fixedParamText->DrawLatex(0.18, 0.7, Form("#splitline{%s fixed}{Fit with: %s distribution}",fixvar[0],fitfunction[0]));
-    canvas->Print("plots/TofEff_tagNprobe_thesis_MC_GS_0.3_v2.png");
+    canvas->Print("plots/TofEff_tagNprobe_thesis_MC_GS_0.3_v3.png");
     
-     // Extract and store the parameters
+    // Extract and store the parameters
     ExtractTagAndProbeParameters(HistKaonMassProbeWithTof, HistKaonMassProbeWithoutTof);
 
     // Eta plots
-    canvas->Print("plots/TofEff_eta_thesis_MC_GS_0.3_v2.pdf[");
+    canvas->Print("plots/TofEff_eta_thesis_MC_GS_0.3_v3.pdf[");
     for (int i = 0; i < 6; i++) {
         CreateSinglePlot(canvas, etaWithoutTof[i], etaWithTof[i], etaTitles[i], false, true);
         fixedParamText->DrawLatex(0.18, 0.7, Form("#splitline{%s fixed}{Fit with: %s distribution}",fixvar[0],fitfunction[0]));
@@ -471,12 +492,12 @@ void Plot_TofEfficiency() {
         Double_t x_max = etaWithoutTof[i]->GetBinCenter(hist_max);
         Double_t y_max = etaWithoutTof[i]->GetBinContent(hist_max);   
         Tl.DrawLatex(0.51, y_max + 10, Form("#scale[0.6]{matching threshold < %.2f}", thresholdIndex));
-        canvas->Print("plots/TofEff_eta_thesis_MC_GS_0.3_v2.pdf");
+        canvas->Print("plots/TofEff_eta_thesis_MC_GS_0.3_v3.pdf");
     }
-    canvas->Print("plots/TofEff_eta_thesis_MC_GS_0.3_v2.pdf]");
+    canvas->Print("plots/TofEff_eta_thesis_MC_GS_0.3_v3.pdf]");
 
     // pT plots
-    canvas->Print("plots/TofEff_pt_thesis_MC_GS_0.3_v2.pdf[");
+    canvas->Print("plots/TofEff_pt_thesis_MC_GS_0.3_v3.pdf[");
     for (int i = 0; i < 6; i++) {
         CreateSinglePlot(canvas, ptWithoutTof[i], ptWithTof[i], ptTitles[i], false, true);
         fixedParamText->DrawLatex(0.18, 0.7, Form("#splitline{%s fixed}{Fit with: %s distribution}",fixvar[0],fitfunction[0]));
@@ -484,17 +505,10 @@ void Plot_TofEfficiency() {
         Double_t x_max = ptWithoutTof[i]->GetBinCenter(hist_max);
         Double_t y_max = ptWithoutTof[i]->GetBinContent(hist_max);   
         Tl.DrawLatex(0.51, y_max + 10, Form("#scale[0.6]{matching threshold < %.2f}", thresholdIndex));
-        canvas->Print("plots/TofEff_pt_thesis_MC_GS_0.3_v2.pdf");
+        canvas->Print("plots/TofEff_pt_thesis_MC_GS_0.3_v3.pdf");
     }
-    canvas->Print("plots/TofEff_pt_thesis_MC_GS_0.3_v2.pdf]");
-    
-    double etaBins[7] = {-0.9, -0.6, -0.3, 0.0, 0.3, 0.6, 0.9};
-    double ptBins[7] = {0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1.2};
-
-    // Summary plots
-    TH1D* effVsEta = new TH1D("effVsEta", "TOF Efficiency vs #eta;#eta;Efficiency", 6, etaBins);
-    TH1D* effVsPt = new TH1D("effVsPt", "TOF Efficiency vs p_{T};p_{T} [GeV/c];Efficiency", 6, ptBins);
-
+    canvas->Print("plots/TofEff_pt_thesis_MC_GS_0.3_v3.pdf]");
+   
     for (int i = 0; i < 6; i++) {
         TF1 *fitEtaWith = nullptr, *fitEtaWithout = nullptr;
         TF1 *fitPtWith = nullptr, *fitPtWithout = nullptr;
@@ -531,6 +545,296 @@ void Plot_TofEfficiency() {
         delete fitPtWithout;
     }
         
+   
+    delete canvas;
+    //delete effVsEta;
+    //delete effVsPt;
+    rootFile->Close();
+}
+
+// Summary plots
+TH1D* effVsEta_data = new TH1D("effVsEta_data", "TOF Efficiency vs #eta;#eta;Efficiency", 6, etaBins);
+TH1D* effVsPt_data = new TH1D("effVsPt_data", "TOF Efficiency vs p_{T};p_{T} [GeV/c];Efficiency", 6, ptBins);
+
+void Plot_data(){
+        
+    // Root style settings
+    gStyle->SetOptStat(0);
+    gStyle->SetPalette(kBird);
+
+   
+    // Open input file
+    TFile* rootFile = TFile::Open("InputData/tofeff_data_0.3_v3.root");
+    if (!rootFile || rootFile->IsZombie()) {
+        std::cerr << "Error opening MC input file" << std::endl;
+        return;
+    }
+    
+    // Get histograms
+    TH1* HistKaonMassProbeWithoutTof_data = (TH1D*)rootFile->Get("HistKaonMassProbeWithoutTof;1");
+    TH1* HistKaonMassProbeWithTof_data = (TH1D*)rootFile->Get("HistKaonMassProbeWithTof;1");
+     
+    HistKaonMassProbeWithoutTof_data->Scale(1.0, "width");
+    HistKaonMassProbeWithTof_data->Scale(1.0, "width");
+
+    std::vector<TH1*> etaWithTof_data(6), etaWithoutTof_data(6);
+    std::vector<TH1*> ptWithTof_data(6), ptWithoutTof_data(6);
+
+    for (int i = 0; i < 6; i++) {
+        etaWithTof_data[i] = static_cast<TH1*>(rootFile->Get(Form("HistKaonEtaProbeWithTofPosProbeMass%d;1", i)));
+        etaWithoutTof_data[i] = static_cast<TH1*>(rootFile->Get(Form("HistKaonEtaProbeWithoutTofPosProbeMass%d;1", i)));
+        ptWithTof_data[i] = static_cast<TH1*>(rootFile->Get(Form("HistKaonPtProbeWithTofPosProbeMass%d;1", i)));
+        ptWithoutTof_data[i] = static_cast<TH1*>(rootFile->Get(Form("HistKaonPtProbeWithoutTofPosProbeMass%d;1", i)));
+        
+        if (!etaWithTof_data[i] || !etaWithoutTof_data[i] || !ptWithTof_data[i] || !ptWithoutTof_data[i]) {
+            std::cerr << "Missing histogram for index " << i << std::endl;
+            rootFile->Close();
+            return;
+        }
+
+        etaWithTof_data[i]->Scale(1.0, "width");
+        etaWithoutTof_data[i]->Scale(1.0, "width");
+        ptWithTof_data[i]->Scale(1.0, "width");
+        ptWithoutTof_data[i]->Scale(1.0, "width");
+
+    }
+
+    TCanvas* canvas = new TCanvas("canvas", "TOF Efficiency", 1500, 1048);
+    canvas->SetLeftMargin(0.13);
+    canvas->SetRightMargin(0.19);
+    canvas->SetTopMargin(0.10);
+    canvas->SetBottomMargin(0.15);
+
+
+    // tag and probe plots  
+    CreateSinglePlot(canvas, HistKaonMassProbeWithoutTof_data, HistKaonMassProbeWithTof_data, some[2], false);
+    //HistKaonMassProbeWithTof_data->GetYaxis()->SetRangeUser(-20, 150); 
+    int hist_max2 = HistKaonMassProbeWithTof_data->GetMaximumBin();
+    Double_t x_max2 = HistKaonMassProbeWithTof_data->GetBinCenter(hist_max2);
+    Double_t y_max2 = HistKaonMassProbeWithTof_data->GetBinContent(hist_max2); 
+    Tl.DrawLatex(0.51, y_max2 + 50, Form("#scale[0.6]{matching threshold < %.2f}", thresholdIndex));   
+    fixedParamText->DrawLatex(0.18, 0.7, Form("#splitline{%s fixed}{Fit with: %s distribution}",fixvar[0],fitfunction[0]));
+    canvas->Print("plots/TofEff_tagNprobe_thesis_data_GS_0.3_v3.png");
+    
+    // Extract and store the parameters
+    ExtractTagAndProbeParameters(HistKaonMassProbeWithTof_data, HistKaonMassProbeWithoutTof_data);
+
+    // Eta plots
+    canvas->Print("plots/TofEff_eta_thesis_data_GS_0.3_v3.pdf[");
+    for (int i = 0; i < 6; i++) {
+        CreateSinglePlot(canvas, etaWithoutTof_data[i], etaWithTof_data[i], etaTitles[i], false, true);
+        fixedParamText->DrawLatex(0.18, 0.7, Form("#splitline{%s fixed}{Fit with: %s distribution}",fixvar[0],fitfunction[0]));
+        int hist_max = etaWithoutTof_data[i]->GetMaximumBin();
+        Double_t x_max = etaWithoutTof_data[i]->GetBinCenter(hist_max);
+        Double_t y_max = etaWithoutTof_data[i]->GetBinContent(hist_max);   
+        Tl.DrawLatex(0.51, y_max + 10, Form("#scale[0.6]{matching threshold < %.2f}", thresholdIndex));
+        canvas->Print("plots/TofEff_eta_thesis_data_GS_0.3_v3.pdf");
+    }
+    canvas->Print("plots/TofEff_eta_thesis_data_GS_0.3_v3.pdf]");
+
+    // pT plots
+    canvas->Print("plots/TofEff_pt_thesis_data_GS_0.3_v3.pdf[");
+    for (int i = 0; i < 6; i++) {
+        CreateSinglePlot(canvas, ptWithoutTof_data[i], ptWithTof_data[i], ptTitles[i], false, true);
+        fixedParamText->DrawLatex(0.18, 0.7, Form("#splitline{%s fixed}{Fit with: %s distribution}",fixvar[0],fitfunction[0]));
+        int hist_max = ptWithoutTof_data[i]->GetMaximumBin();
+        Double_t x_max = ptWithoutTof_data[i]->GetBinCenter(hist_max);
+        Double_t y_max = ptWithoutTof_data[i]->GetBinContent(hist_max);   
+        Tl.DrawLatex(0.51, y_max + 10, Form("#scale[0.6]{matching threshold < %.2f}", thresholdIndex));
+        canvas->Print("plots/TofEff_pt_thesis_data_GS_0.3_v3.pdf");
+    }
+    canvas->Print("plots/TofEff_pt_thesis_data_GS_0.3_v3.pdf]");
+   
+    for (int i = 0; i < 6; i++) {
+        TF1 *fitEtaWith = nullptr, *fitEtaWithout = nullptr;
+        TF1 *fitPtWith = nullptr, *fitPtWithout = nullptr;
+
+        // Calculate efficiency for eta bins with fixed parameters
+        double effEta = FitHistogramPairAndGetEfficiency(
+            etaWithTof_data[i], etaWithoutTof_data[i], 
+            fitEtaWith, fitEtaWithout,
+            Form("eta_%d", i), false, false, true // Pass true for useFixedParams
+        );
+
+        // Calculate efficiency for pt bins with fixed parameters
+        double effPt = FitHistogramPairAndGetEfficiency(
+            ptWithTof_data[i], ptWithoutTof_data[i], 
+            fitPtWith, fitPtWithout,
+            Form("pt_%d", i), false, false, true // Pass true for useFixedParams
+        );
+        
+        double yieldEtaWith = FitHistogramAndGetYield(etaWithTof_data[i], fitEtaWith, Form("eta_w_%d", i), false);
+        double yieldEtaWithout = FitHistogramAndGetYield(etaWithoutTof_data[i], fitEtaWithout, Form("eta_wo_%d", i), false);
+        double yieldPtWith = FitHistogramAndGetYield(ptWithTof_data[i], fitPtWith, Form("pt_w_%d", i), false);
+        double yieldPtWithout = FitHistogramAndGetYield(ptWithoutTof_data[i], fitPtWithout, Form("pt_wo_%d", i), false);
+
+        // Set bin content and errors for efficiency histograms
+        effVsEta_data->SetBinContent(i+1, effEta);
+        effVsEta_data->SetBinError(i+1, sqrt(effEta*(1-effEta)/(yieldEtaWith + yieldEtaWithout)));
+        effVsPt_data->SetBinContent(i+1, effPt);
+        effVsPt_data->SetBinError(i+1, sqrt(effPt*(1-effPt)/(yieldPtWith + yieldPtWithout)));
+
+        // Clean up
+        delete fitEtaWith;
+        delete fitEtaWithout;
+        delete fitPtWith;
+        delete fitPtWithout;
+    }
+        
+   
+    delete canvas;
+    //delete effVsEta_data;
+    //delete effVsPt_data;
+    rootFile->Close();
+}
+
+  
+TH1D* effVsEta_true = new TH1D("effVsEta_true", "TOF Efficiency vs #eta;#eta;Efficiency", 6, etaBins);
+TH1D* effVsPt_true = new TH1D("effVsPt_true", "TOF Efficiency vs p_{T};p_{T} [GeV/c];Efficiency", 6, ptBins);
+
+void Plot_true(){
+       
+    // Root style settings
+    gStyle->SetOptStat(0);
+    gStyle->SetPalette(kBird);
+     
+    // Open input file
+    TFile* rootFile = TFile::Open("InputData/tofeff_withRP_0.3_v3.root");
+    if (!rootFile || rootFile->IsZombie()) {
+        std::cerr << "Error opening MC input file" << std::endl;
+        return;
+    }
+    
+    // Get histograms
+    TH1* HistKaonMassProbeWithoutTof_true = (TH1D*)rootFile->Get("HistKaonMassProbeWithoutTof_TruePions;1");
+    TH1* HistKaonMassProbeWithTof_true = (TH1D*)rootFile->Get("HistKaonMassProbeWithTof_TruePions;1");
+     
+    HistKaonMassProbeWithoutTof_true->Scale(1.0, "width");
+    HistKaonMassProbeWithTof_true->Scale(1.0, "width");
+
+    std::vector<TH1*> etaWithTof_true(6), etaWithoutTof_true(6);
+    std::vector<TH1*> ptWithTof_true(6), ptWithoutTof_true(6);
+
+    for (int i = 0; i < 6; i++) {
+        etaWithTof_true[i] = static_cast<TH1*>(rootFile->Get(Form("HistKaonEtaTruePionWithTofMass%d;1", i)));
+        etaWithoutTof_true[i] = static_cast<TH1*>(rootFile->Get(Form("HistKaonEtaTruePionWithoutTofMass%d;1", i)));
+        ptWithTof_true[i] = static_cast<TH1*>(rootFile->Get(Form("HistKaonPtTruePionWithTofMass%d;1", i)));
+        ptWithoutTof_true[i] = static_cast<TH1*>(rootFile->Get(Form("HistKaonPtTruePionWithoutTofMass%d;1", i)));
+        
+        if (!etaWithTof_true[i] || !etaWithoutTof_true[i] || !ptWithTof_true[i] || !ptWithoutTof_true[i]) {
+            std::cerr << "Missing histogram for index " << i << std::endl;
+            rootFile->Close();
+            return;
+        }
+
+        etaWithTof_true[i]->Scale(1.0, "width");
+        etaWithoutTof_true[i]->Scale(1.0, "width");
+        ptWithTof_true[i]->Scale(1.0, "width");
+        ptWithoutTof_true[i]->Scale(1.0, "width");
+
+    }
+
+    TCanvas* canvas = new TCanvas("canvas", "TOF Efficiency", 1500, 1048);
+    canvas->SetLeftMargin(0.13);
+    canvas->SetRightMargin(0.19);
+    canvas->SetTopMargin(0.10);
+    canvas->SetBottomMargin(0.15);
+
+
+    // First fit the tag and probe histograms to extract the parameters
+    //CreateSinglePlot(canvas, HistKaonMassProbeWithoutTof_true, HistKaonMassProbeWithTof_true, some[0], false);
+    // tag and probe plots  
+    CreateSinglePlot(canvas, HistKaonMassProbeWithoutTof_true, HistKaonMassProbeWithTof_true, some[0], true);
+    //HistKaonMassProbeWithTof_true->GetYaxis()->SetRangeUser(-20, 150); 
+    int hist_max2 = HistKaonMassProbeWithTof_true->GetMaximumBin();
+    Double_t x_max2 = HistKaonMassProbeWithTof_true->GetBinCenter(hist_max2);
+    Double_t y_max2 = HistKaonMassProbeWithTof_true->GetBinContent(hist_max2); 
+    Tl.DrawLatex(0.51, y_max2 + 50, Form("#scale[0.6]{matching threshold < %.2f}", thresholdIndex));   
+    fixedParamText->DrawLatex(0.18, 0.7, Form("#splitline{%s fixed}{Fit with: %s distribution}",fixvar[0],fitfunction[0]));
+    canvas->Print("plots/TofEff_tagNprobe_thesis_true_GS_0.3_v3.png");
+    
+    // Extract and store the parameters
+    ExtractTagAndProbeParameters(HistKaonMassProbeWithTof_true, HistKaonMassProbeWithoutTof_true);
+
+    // Eta plots
+    canvas->Print("plots/TofEff_eta_thesis_true_GS_0.3_v3.pdf[");
+    for (int i = 0; i < 6; i++) {
+        CreateSinglePlot(canvas, etaWithoutTof_true[i], etaWithTof_true[i], etaTitles[i], true, true);
+        fixedParamText->DrawLatex(0.18, 0.7, Form("#splitline{%s fixed}{Fit with: %s distribution}",fixvar[0],fitfunction[0]));
+        int hist_max = etaWithoutTof_true[i]->GetMaximumBin();
+        Double_t x_max = etaWithoutTof_true[i]->GetBinCenter(hist_max);
+        Double_t y_max = etaWithoutTof_true[i]->GetBinContent(hist_max);   
+        Tl.DrawLatex(0.51, y_max + 10, Form("#scale[0.6]{matching threshold < %.2f}", thresholdIndex));
+        canvas->Print("plots/TofEff_eta_thesis_true_GS_0.3_v3.pdf");
+    }
+    canvas->Print("plots/TofEff_eta_thesis_true_GS_0.3_v3.pdf]");
+
+    // pT plots
+    canvas->Print("plots/TofEff_pt_thesis_true_GS_0.3_v3.pdf[");
+    for (int i = 0; i < 6; i++) {
+        CreateSinglePlot(canvas, ptWithoutTof_true[i], ptWithTof_true[i], ptTitles[i], true, true);
+        fixedParamText->DrawLatex(0.18, 0.7, Form("#splitline{%s fixed}{Fit with: %s distribution}",fixvar[0],fitfunction[0]));
+        int hist_max = ptWithoutTof_true[i]->GetMaximumBin();
+        Double_t x_max = ptWithoutTof_true[i]->GetBinCenter(hist_max);
+        Double_t y_max = ptWithoutTof_true[i]->GetBinContent(hist_max);   
+        Tl.DrawLatex(0.51, y_max + 10, Form("#scale[0.6]{matching threshold < %.2f}", thresholdIndex));
+        canvas->Print("plots/TofEff_pt_thesis_true_GS_0.3_v3.pdf");
+    }
+    canvas->Print("plots/TofEff_pt_thesis_true_GS_0.3_v3.pdf]");
+   
+    for (int i = 0; i < 6; i++) {
+        TF1 *fitEtaWith = nullptr, *fitEtaWithout = nullptr;
+        TF1 *fitPtWith = nullptr, *fitPtWithout = nullptr;
+
+        // Calculate efficiency for eta bins with fixed parameters
+        double effEta = FitHistogramPairAndGetEfficiency(
+            etaWithTof_true[i], etaWithoutTof_true[i], 
+            fitEtaWith, fitEtaWithout,
+            Form("eta_%d", i), false, false, true // Pass true for useFixedParams
+        );
+
+        // Calculate efficiency for pt bins with fixed parameters
+        double effPt = FitHistogramPairAndGetEfficiency(
+            ptWithTof_true[i], ptWithoutTof_true[i], 
+            fitPtWith, fitPtWithout,
+            Form("pt_%d", i), false, false, true // Pass true for useFixedParams
+        );
+        
+        double yieldEtaWith = FitHistogramAndGetYield(etaWithTof_true[i], fitEtaWith, Form("eta_w_%d", i), false);
+        double yieldEtaWithout = FitHistogramAndGetYield(etaWithoutTof_true[i], fitEtaWithout, Form("eta_wo_%d", i), false);
+        double yieldPtWith = FitHistogramAndGetYield(ptWithTof_true[i], fitPtWith, Form("pt_w_%d", i), false);
+        double yieldPtWithout = FitHistogramAndGetYield(ptWithoutTof_true[i], fitPtWithout, Form("pt_wo_%d", i), false);
+
+        // Set bin content and errors for efficiency histograms
+        effVsEta_true->SetBinContent(i+1, effEta);
+        effVsEta_true->SetBinError(i+1, sqrt(effEta*(1-effEta)/(yieldEtaWith + yieldEtaWithout)));
+        effVsPt_true->SetBinContent(i+1, effPt);
+        effVsPt_true->SetBinError(i+1, sqrt(effPt*(1-effPt)/(yieldPtWith + yieldPtWithout)));
+
+        // Clean up
+        delete fitEtaWith;
+        delete fitEtaWithout;
+        delete fitPtWith;
+        delete fitPtWithout;
+    }
+        
+   
+    delete canvas;
+    //delete effVsEta_true;
+    //delete effVsPt_true;
+    rootFile->Close();
+}
+
+
+void Plot_TofEfficiency() {
+
+    Plot_MC();
+
+    Plot_data();
+
+    Plot_true();
+
+    TCanvas* canvas = new TCanvas("canvas", "TOF Efficiency", 1500, 1048);
     // Draw summary plots
     canvas->Clear();
     canvas->SetLeftMargin(0.15);
@@ -540,27 +844,35 @@ void Plot_TofEfficiency() {
     canvas->SetFrameLineWidth(6);
     
     SetHistogramStyle2(effVsEta, kBlue);
-    effVsEta->Draw("PE");
+    SetHistogramStyle2(effVsEta_true, kRed);
+    SetHistogramStyle2(effVsEta_data, kGreen);
+    SetHistogramStyle2(effVsPt, kBlue);
+    SetHistogramStyle2(effVsPt_true, kRed);
+    SetHistogramStyle2(effVsPt_data, kGreen);
 
     TLegend* legend = new TLegend(0.72, 0.25, 0.9, 0.45);
     legend->SetBorderSize(0);
     legend->SetFillStyle(0);
     legend->AddEntry(effVsEta, "MC", "p");
-    legend->Draw();
+    legend->AddEntry(effVsEta_true, "True", "p");
+    legend->AddEntry(effVsEta_data, "Data", "p");
 
+    effVsEta->Draw("PE");
+    effVsEta_data->Draw("PE same");
+    effVsEta_true->Draw("PE same");
+    legend->Draw();
     Tl.DrawLatex(-0.8,0.1, Form("#splitline{%s fixed}{Fit with: %s distribution}",fixvar[0],fitfunction[0]));
-    canvas->Print("plots/TofEff_summary_eta_thesis_MC_GS_0.3_v2.png");
+    canvas->Print("plots/TofEff_summary_eta_thesis_MC_GS_0.3_v3.png");
 
     canvas->Clear();
     SetHistogramStyle2(effVsPt, kBlue);
     effVsPt->Draw("PE");
+    effVsPt_data->Draw("PE same");
+    effVsPt_true->Draw("PE same");
     legend->Draw();
     
     Tl.DrawLatex(0.25,0.1, Form("#splitline{%s fixed}{Fit with: %s distribution}",fixvar[0],fitfunction[0]));
-    canvas->Print("plots/TofEff_summary_pt_thesis_MC_GS_0.3_v2.png");
+    canvas->Print("plots/TofEff_summary_pt_thesis_MC_GS_0.3_v3.png");
 
-    delete canvas;
-    delete effVsEta;
-    delete effVsPt;
-    rootFile->Close();
+    
 }

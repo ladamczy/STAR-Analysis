@@ -163,43 +163,42 @@ int main(int argc, char** argv)
     // a variable bin width histogram for kaon mass
     // Original uniform bin histogram:
     // TH1D* HistKaonMassProbeWithoutTof = new TH1D("HistKaonMassProbeWithoutTof", "; m_{#pi^{+}#pi^{-}}^{tag} [GeV]; # events",60 ,0.44, 0.56);
-
     // Define the bin edges with variable width
-    const int nBins = 60;//60;
-    int nBinsRegion1 = 15; // twice the number of bins in region 1
+    const int nBins = 60;
+    int nBinsRegion1 = 15;
     int nBinsRegion2 = 30;
-    double binEdges[nBins+1];
+    int nBinsRegion3 = nBins - nBinsRegion1 - nBinsRegion2; // Should be 15
 
     // Define regions
     double minRange = 0.44;
     double maxRange = 0.54;
-    //double centralValue = 0.5; // Approximate kaon mass
     double centralRegionMin = 0.485;
     double centralRegionMax = 0.51;
 
-    // Creating bin edges with 3 regions:
+    // Array to hold bin edges (needs nBins+1 elements)
+    double binEdges[nBins+1];
 
-    // Region 1: Coarse bins (0.44 to 0.48)    
+    // Region 1: Coarse bins (0.44 to 0.485)
     double widthRegion1 = (centralRegionMin - minRange) / nBinsRegion1;
     for (int i = 0; i <= nBinsRegion1; i++) {
         binEdges[i] = minRange + i * widthRegion1;
     }
 
-    // Region 2: Fine bins (0.48 to 0.52)   
+    // Region 2: Fine bins (0.485 to 0.51)
     double widthRegion2 = (centralRegionMax - centralRegionMin) / nBinsRegion2;
-    for (int i = 0; i < nBinsRegion2; i++) {
-        binEdges[nBinsRegion1 + i + 1] = centralRegionMin + i * widthRegion2;
+    for (int i = 0; i <= nBinsRegion2; i++) {
+        // Skip first point to avoid duplication
+        if (i == 0) continue;
+        binEdges[nBinsRegion1 + i] = centralRegionMin + i * widthRegion2;
     }
 
-    // Region 3: Coarse bins (0.52 to 0.56)
-    int nBinsRegion3 = nBins - nBinsRegion1 - nBinsRegion2;
+    // Region 3: Coarse bins (0.51 to 0.54)
     double widthRegion3 = (maxRange - centralRegionMax) / nBinsRegion3;
-    for (int i = 0; i < nBinsRegion3; i++) {
-        binEdges[nBinsRegion1 + nBinsRegion2 + i + 1] = centralRegionMax + i * widthRegion3;
+    for (int i = 0; i <= nBinsRegion3; i++) {
+        // Skip first point to avoid duplication
+        if (i == 0) continue;
+        binEdges[nBinsRegion1 + nBinsRegion2 + i] = centralRegionMax + i * widthRegion3;
     }
-
-    //the last bin edge is exactly at the maximum range
-    binEdges[nBins] = maxRange;
 
 
     TH1D* HistKaonMassProbeWithoutTof = new TH1D("HistKaonMassProbeWithoutTof", "; m_{#pi^{+}#pi^{-}}^{tag} [GeV]; # events", nBins, binEdges);  
