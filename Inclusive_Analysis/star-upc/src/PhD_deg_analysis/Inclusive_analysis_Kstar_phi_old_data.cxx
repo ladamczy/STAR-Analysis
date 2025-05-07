@@ -255,9 +255,9 @@ int main(int argc, char** argv){
                         insideprocessing.Fill("EtaPhi_KpiChi2plus_lowres", vector_Track_positive[i]->getEta(), vector_Track_positive[i]->getPhi());
                         insideprocessing.Fill("EtaPhi_KpiChi2minus_lowres", vector_Track_negative[j]->getEta(), vector_Track_negative[j]->getPhi());
                         getTPCSector(tempUPCpointer, vector_Track_positive[i], eta, phi);
-                        insideprocessing.Fill("Sector_KpiChi2plus", to_string(tempUPCpointer->getFillNumber()).c_str(), eta, phi, 1.0);
+                        insideprocessing.Fill("Sector_KpiChi2plus", to_string(tempUPCpointer->getRunNumber()).c_str(), eta, phi, 1.0);
                         getTPCSector(tempUPCpointer, vector_Track_negative[j], eta, phi);
-                        insideprocessing.Fill("Sector_KpiChi2minus", to_string(tempUPCpointer->getFillNumber()).c_str(), eta, phi, 1.0);
+                        insideprocessing.Fill("Sector_KpiChi2minus", to_string(tempUPCpointer->getRunNumber()).c_str(), eta, phi, 1.0);
                     }
                     if(almostAllChi2(chi2Map, "pi_K", 9)){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
@@ -273,9 +273,9 @@ int main(int argc, char** argv){
                         insideprocessing.Fill("EtaPhi_piKChi2plus_lowres", vector_Track_positive[i]->getEta(), vector_Track_positive[i]->getPhi());
                         insideprocessing.Fill("EtaPhi_piKChi2minus_lowres", vector_Track_negative[j]->getEta(), vector_Track_negative[j]->getPhi());
                         getTPCSector(tempUPCpointer, vector_Track_positive[i], eta, phi);
-                        insideprocessing.Fill("Sector_piKChi2plus", to_string(tempUPCpointer->getFillNumber()).c_str(), eta, phi, 1.0);
+                        insideprocessing.Fill("Sector_piKChi2plus", to_string(tempUPCpointer->getRunNumber()).c_str(), eta, phi, 1.0);
                         getTPCSector(tempUPCpointer, vector_Track_negative[j], eta, phi);
-                        insideprocessing.Fill("Sector_piKChi2minus", to_string(tempUPCpointer->getFillNumber()).c_str(), eta, phi, 1.0);
+                        insideprocessing.Fill("Sector_piKChi2minus", to_string(tempUPCpointer->getRunNumber()).c_str(), eta, phi, 1.0);
                     }
                     if(almostAllChi2(chi2Map, "p_pi", 9)){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Proton]);
@@ -311,9 +311,9 @@ int main(int argc, char** argv){
                         insideprocessing.Fill("EtaPhi_KKChi2plus_lowres", vector_Track_positive[i]->getEta(), vector_Track_positive[i]->getPhi());
                         insideprocessing.Fill("EtaPhi_KKChi2minus_lowres", vector_Track_negative[j]->getEta(), vector_Track_negative[j]->getPhi());
                         getTPCSector(tempUPCpointer, vector_Track_positive[i], eta, phi);
-                        insideprocessing.Fill("Sector_KKChi2plus", to_string(tempUPCpointer->getFillNumber()).c_str(), eta, phi, 1.0);
+                        insideprocessing.Fill("Sector_KKChi2plus", to_string(tempUPCpointer->getRunNumber()).c_str(), eta, phi, 1.0);
                         getTPCSector(tempUPCpointer, vector_Track_negative[j], eta, phi);
-                        insideprocessing.Fill("Sector_KKChi2minus", to_string(tempUPCpointer->getFillNumber()).c_str(), eta, phi, 1.0);
+                        insideprocessing.Fill("Sector_KKChi2minus", to_string(tempUPCpointer->getRunNumber()).c_str(), eta, phi, 1.0);
                     }
                     if(almostAllChi2(chi2Map, "pi_pi", 9)){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
@@ -327,9 +327,9 @@ int main(int argc, char** argv){
                         insideprocessing.Fill("EtaPhi_pipiChi2plus_lowres", vector_Track_positive[i]->getEta(), vector_Track_positive[i]->getPhi());
                         insideprocessing.Fill("EtaPhi_pipiChi2minus_lowres", vector_Track_negative[j]->getEta(), vector_Track_negative[j]->getPhi());
                         getTPCSector(tempUPCpointer, vector_Track_positive[i], eta, phi);
-                        insideprocessing.Fill("Sector_pipiChi2plus", to_string(tempUPCpointer->getFillNumber()).c_str(), eta, phi, 1.0);
+                        insideprocessing.Fill("Sector_pipiChi2plus", to_string(tempUPCpointer->getRunNumber()).c_str(), eta, phi, 1.0);
                         getTPCSector(tempUPCpointer, vector_Track_negative[j], eta, phi);
-                        insideprocessing.Fill("Sector_pipiChi2minus", to_string(tempUPCpointer->getFillNumber()).c_str(), eta, phi, 1.0);
+                        insideprocessing.Fill("Sector_pipiChi2minus", to_string(tempUPCpointer->getRunNumber()).c_str(), eta, phi, 1.0);
                     }
                     if(almostAllChi2(chi2Map, "p_p", 9)){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Proton]);
@@ -362,6 +362,29 @@ int main(int argc, char** argv){
     outsideprocessing.GetPointerAfterMerge3D("Sector_pipiChi2plus")->LabelsDeflate();
     outsideprocessing.GetPointerAfterMerge3D("Sector_pipiChi2minus")->LabelsDeflate();
 
+    //setting and filling the run test histogram
+    TH1D Sector_filling_positive("Sector_filling_positive", ";fill;## of sectors", 100, 0, 1.0000000001);
+    TH1D Sector_filling_negative("Sector_filling_negative", ";fill;## of sectors", 100, 0, 1.0000000001);
+    for(int k = 1; k<=outsideprocessing.GetPointerAfterMerge3D("Sector_pipiChi2plus")->GetXaxis()->GetNbins(); k++){
+        outsideprocessing.GetPointerAfterMerge3D("Sector_pipiChi2plus")->GetXaxis()->SetRange(k, k);
+        outsideprocessing.GetPointerAfterMerge3D("Sector_pipiChi2minus")->GetXaxis()->SetRange(k, k);
+        TH1* sig_slice_positive = outsideprocessing.GetPointerAfterMerge3D("Sector_pipiChi2plus")->Project3D("yz");
+        TH1* sig_slice_negative = outsideprocessing.GetPointerAfterMerge3D("Sector_pipiChi2minus")->Project3D("yz");
+        double temp_max_positive = sig_slice_positive->GetMaximum();
+        double temp_max_negative = sig_slice_negative->GetMaximum();
+        if(temp_max_positive*temp_max_negative==0){
+            continue;
+        }
+        sig_slice_positive->Scale(1./temp_max_positive);
+        sig_slice_negative->Scale(1./temp_max_negative);
+        for(int xbin = 1; xbin<=sig_slice_positive->GetNbinsX(); xbin++){
+            for(int ybin = 1; ybin<=sig_slice_positive->GetNbinsY(); ybin++){
+                Sector_filling_positive.Fill(sig_slice_positive->GetBinContent(xbin, ybin));
+                Sector_filling_negative.Fill(sig_slice_negative->GetBinContent(xbin, ybin));
+            }
+        }
+    }
+
     //setting up a tree & output file
     string path = string(argv[0]);
     string outfileName;
@@ -372,7 +395,11 @@ int main(int argc, char** argv){
     }
     cout<<"Created output file "<<outfileName<<endl;
     TFile* outputFileHist = TFile::Open(outfileName.c_str(), "recreate");
+    //saving multicore histgrams and a special one
     outsideprocessing.SaveToFile(outputFileHist);
+    Sector_filling_positive.Write();
+    Sector_filling_negative.Write();
+
     outputFileHist->Close();
 
     return 0;
