@@ -255,9 +255,7 @@ int main(int argc, char** argv)
     // Create histograms for direct efficiency measurement
     TH1D* HistTruePionPt = new TH1D("HistTruePionPt", "; p_{T} [GeV]; All True Pions", nBinsPt-1, binsPt);
     TH1D* HistTruePionEta = new TH1D("HistTruePionEta", "; #eta ; All True Pions", nBinsEta-1, binsEta);
-    TH1D* HistTruePionWithTofPt = new TH1D("HistTruePionWithTofPt", "; p_{T} [GeV]; True Pions with TOF", nBinsPt-1, binsPt);
-    TH1D* HistTruePionWithTofEta = new TH1D("HistTruePionWithTofEta", "; #eta ; True Pions with TOF", nBinsEta-1, binsEta);
-
+   
     
     for (int i = 0; i < nBinsPt-1; ++i) 
     {
@@ -450,7 +448,7 @@ int main(int argc, char** argv)
         // ============================
         if (isMC==1) 
         {
-            //cout << "Processing MC truth section" << endl;
+            //cout << "Processing MC** truth section" << endl;
             //cout << "Number of MC particles: " << upcEvt->getNumberOfMCParticles() << endl;
 
            
@@ -462,8 +460,15 @@ int main(int argc, char** argv)
                 particle = upcEvt->getMCParticle(i);
                 if (particle->GetPDG()->PdgCode() == 211 or particle->GetPDG()->PdgCode() == -211)
                 {
-                    vPions.push_back(particle);
+                    vPions.push_back(particle);                    
                 }
+
+                //checking if the particle has mother information = it does
+                /*if (particle->GetMother(0) >= 0) {
+                    TParticle* mother = upcEvt->getMCParticle(particle->GetMother(0));
+                    cout << "Particle PDG: " << particle->GetPdgCode() 
+                         << " Mother PDG: " << mother->GetPdgCode() << endl;
+                }*/
             }
 
             TLorentzVector productionVertex; 
@@ -518,8 +523,6 @@ int main(int argc, char** argv)
                         HistPionPtWithTofMC->Fill(pT);
                         HistPionEtaWithTofMC->Fill(eta);
                         // Fill numerators
-                        HistTruePionWithTofPt->Fill(pT);
-                        HistTruePionWithTofEta->Fill(eta);
                     }
 
                     else
@@ -605,6 +608,10 @@ int main(int argc, char** argv)
                     bool isTrack1TruePion = false;
                     bool isTrack2TruePion = false;
 
+                    int mother1 = -1;
+                    int mother2 = -1;
+
+              
                     // For MC data, check if tracks are true pions using the same matching approach as the truth analysis
                     if (isMC == 1 && !vTruePions.empty()) {
                         // Match track1 to true pions
@@ -616,12 +623,14 @@ int main(int argc, char** argv)
                             double r = track1Vector.DeltaR(truePion);
                             distr1.push_back(r);
                         }
-                        
+                        int index1 = -1;
                         if (!distr1.empty()) {
                             auto it1 = std::min_element(distr1.begin(), distr1.end());
                             int index1 = std::distance(distr1.begin(), it1);
                             if (distr1[index1] < kDeltaRCut) {
                                 isTrack1TruePion = true;
+                                TParticle* truePion1 = vTruePions[index1];
+                                mother1 = truePion1->GetMother(0); // Get mother index
                             }
                         }
                         
@@ -635,13 +644,17 @@ int main(int argc, char** argv)
                             distr2.push_back(r);
                         }
                         
+                        int index2 = -1;
                         if (!distr2.empty()) {
                             auto it2 = std::min_element(distr2.begin(), distr2.end());
                             int index2 = std::distance(distr2.begin(), it2);
                             if (distr2[index2] < kDeltaRCut) {
                                 isTrack2TruePion = true;
+                                TParticle* truePion2 = vTruePions[index2];
+                                mother2 = truePion2->GetMother(0); // Get mother index
                             }
                         }
+                        
                     }
                     
                     // Check if tracks have TOF hits
@@ -745,8 +758,30 @@ int main(int argc, char** argv)
                                 }
                                     HistKaonFillProbeWithTofPosProbeMass[nextFill]->Fill(kaon.m()); 
                                 
-                                // If both tracks are true pions, fill the truth-matched histograms
+                                // If both tracks are true pions and have mother information, fill the truth-matched histograms
                                 if (isMC == 1 && isTrack1TruePion && isTrack2TruePion) {
+                                       
+                                    if (mother1 < 0 || mother2 < 0) {
+                                        continue; // Skip if either pion has no mother
+                                    }
+                                    
+                                    // Then check if they have the same mother
+                                    if (mother1 != mother2) {
+                                        continue; // Skip if pions have different mothers
+                                    }
+                                    
+                                    // Get the mother particle and check its PDG code
+                                    /*TParticle* motherParticle = upcEvt->getMCParticle(mother1);
+                                    if (!motherParticle) {
+                                        continue; // Skip if can't access mother particle
+                                    }
+                                    
+                                    // Check if mother is a K0 (PDG code: 311 for K0, 310 for K0_S)
+                                    int motherPdg = abs(motherParticle->GetPdgCode());
+                                    if (motherPdg != 311 && motherPdg != 310) {
+                                        continue; // Skip if mother is not a K0/K0_S
+                                    }*/
+                                    
                                     HistKaonMassProbeWithTof_TruePions->Fill(kaon.m());
                                     
                                     // Fill pT and eta histograms for true pions with TOF
@@ -933,26 +968,12 @@ int main(int argc, char** argv)
     //HistKaonEtaProbeWithoutTofNegProbeMassMC->Write();
     HistKaonEtaProbeWithoutTofPosProbeMassMC->Write();
     //HistKaonEtaProbeWithTofNegProbeMassMC->Write();
-    HistKaonEtaProbeWithTofPosProbeMassMC->Write();/**/
+    HistKaonEtaProbeWithTofPosProbeMassMC->Write();
 
-    HistPionPtWithTofMC->Write();
-    HistPionEtaWithTofMC->Write();
-    HistPionPtWithoutTofMC->Write();
-    HistPionEtaWithoutTofMC->Write();
-        
-    // calculate and write efficiency histograms for true pions in tag and probe
-    TH1D* HistTagProbeEfficiencyVsPt = new TH1D("HistTagProbeEfficiencyVsPt", "; p_{T} [GeV]; Tag & Probe TOF Efficiency", nBinsPt-1, binsPt);
-    HistTagProbeEfficiencyVsPt->Divide(HistPionPtWithTof_TruePions, HistPionPtWithoutTof_TruePions, 1, 1, "B");
-    //HistTagProbeEfficiencyVsPt->Write();
-
-    TH1D* HistTagProbeEfficiencyVsEta = new TH1D("HistTagProbeEfficiencyVsEta", "; #eta; Tag & Probe TOF Efficiency", nBinsEta-1, binsEta);
-    HistTagProbeEfficiencyVsEta->Divide(HistPionEtaWithTof_TruePions, HistPionEtaWithoutTof_TruePions, 1, 1, "B");
-    //HistTagProbeEfficiencyVsEta->Write();    
+    
 
     for (int i = 0; i < HistKaonPtProbeWithoutTofPosProbeMass.size(); i++)
     {
-        //HistKaonPtTruePionWithTofMass[i]->Scale(1.0, "width");
-        //HistKaonPtTruePionWithoutTofMass[i]->Scale(1.0, "width");
         
         HistKaonPtProbeWithoutTofPosProbeMass[i]->Write();
         //HistKaonPtProbeWithoutTofNegProbeMass[i]->Write();
@@ -961,8 +982,6 @@ int main(int argc, char** argv)
     }
     for (int i = 0; i < HistKaonEtaProbeWithoutTofPosProbeMass.size(); i++)
     {
-        //HistKaonEtaProbeWithoutTofPosProbeMass[i]->Scale(1.0, "width");
-        //HistKaonEtaProbeWithTofPosProbeMass[i]->Scale(1.0, "width");
     
         HistKaonEtaProbeWithoutTofPosProbeMass[i]->Write();
         //HistKaonEtaProbeWithoutTofNegProbeMass[i]->Write();
@@ -976,13 +995,13 @@ int main(int argc, char** argv)
         //HistKaonFillProbeWithoutTofNegProbeMass[i]->Write();
         HistKaonFillProbeWithTofPosProbeMass[i]->Write();
         //HistKaonFillProbeWithTofNegProbeMass[i]->Write();
-    }/**/
+    }
 
-    
+    HistPionPtWithTofMC->Write();
+    HistPionEtaWithTofMC->Write();
+    HistPionPtWithoutTofMC->Write();
+    HistPionEtaWithoutTofMC->Write(); 
 
-    //HistKaonMassProbeWithTof_TruePions->Scale(1.0, "width");
-    //HistKaonMassProbeWithoutTof_TruePions->Scale(1.0, "width");
-    
     HistKaonMassProbeWithTof_TruePions->Write();
     HistKaonMassProbeWithoutTof_TruePions->Write();
 
@@ -993,22 +1012,32 @@ int main(int argc, char** argv)
 
     HistTruePionPt->Write();
     HistTruePionEta->Write();
-    HistTruePionWithTofPt->Write();
-    HistTruePionWithTofEta->Write();
+
+    //For tag and probe efficiency:
+    // First create total histogram (TOF + non-TOF)
+    TH1D* HistTotalPions_TruePions = (TH1D*)HistPionPtWithTof_TruePions->Clone("HistTotalPions_TruePions");
+    HistTotalPions_TruePions->Add(HistPionPtWithoutTof_TruePions);
+    HistTotalPions_TruePions->Write();
+    
     // Write true pions histograms for different pT bins
     for (int i = 0; i < HistKaonPtTruePionWithTofMass.size(); i++) {
-        //HistKaonPtTruePionWithTofMass[i]->Scale(1.0, "width");
-        //HistKaonPtTruePionWithoutTofMass[i]->Scale(1.0, "width");
         HistKaonPtTruePionWithTofMass[i]->Write();
         HistKaonPtTruePionWithoutTofMass[i]->Write();
     }
     // Write true pions histograms for different eta bins
     for (int i = 0; i < HistKaonEtaTruePionWithTofMass.size(); i++) {
-        //HistKaonEtaTruePionWithTofMass[i]->Scale(1.0, "width");
-        //HistKaonEtaTruePionWithoutTofMass[i]->Scale(1.0, "width");
         HistKaonEtaTruePionWithTofMass[i]->Write();
         HistKaonEtaTruePionWithoutTofMass[i]->Write();
-    }
+    } 
+    // calculate and write efficiency histograms for true pions in tag and probe
+    TH1D* HistTagProbeEfficiencyVsPt = new TH1D("HistTagProbeEfficiencyVsPt", "; p_{T} [GeV]; Tag & Probe TOF Efficiency", nBinsPt-1, binsPt);
+    HistTagProbeEfficiencyVsPt->Divide(HistPionPtWithTof_TruePions, HistPionPtWithoutTof_TruePions, 1, 1, "B");
+    HistTagProbeEfficiencyVsPt->Write();
+
+    TH1D* HistTagProbeEfficiencyVsEta = new TH1D("HistTagProbeEfficiencyVsEta", "; #eta; Tag & Probe TOF Efficiency", nBinsEta-1, binsEta);
+    HistTagProbeEfficiencyVsEta->Divide(HistPionEtaWithTof_TruePions, HistPionEtaWithoutTof_TruePions, 1, 1, "B");
+    HistTagProbeEfficiencyVsEta->Write();   
+    
     outfile->Close();
 
     return 0;

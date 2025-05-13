@@ -42,7 +42,7 @@ void SetHistogramStyle(TH1* hist, const char* title,
     int b_max = hist->FindBin(0.495);//GetMaximumBin();
     Double_t x_max = hist->GetBinCenter(b_max);
     Double_t y_max = hist->GetBinContent(b_max); 
-    hist->GetYaxis()->SetRangeUser(x_max, y_max*2.5); //(0,100000);//
+    hist->GetYaxis()->SetRangeUser(x_max, y_max*2.9); //(0,100000);//
     hist->GetXaxis()->SetTitle("m_{#pi^{+}#pi^{-}} [GeV/c^{2}]");
     hist->GetYaxis()->SetTitle("N_{K}");
 
