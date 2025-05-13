@@ -261,12 +261,12 @@ int main(int argc, char* argv[]){
             gROOT->ForceStyle();
             TCanvas* resultCanvas = new TCanvas("resultCanvas", "resultCanvas", 4000, 2400);
             Chi2withbcg_vector[i*allCategories.size()+j]->SetMinimum(0.5);
-            Chi2withbcg_vector[i*allCategories.size()+j]->SetMaximum(2.0);
+            Chi2withbcg_vector[i*allCategories.size()+j]->SetMaximum(1.1*std::max(Chi2withbcg_vector[i*allCategories.size()+j]->GetMaximum(), Chi2withoutbcg_vector[i*allCategories.size()+j]->GetMaximum()));
             Chi2withbcg_vector[i*allCategories.size()+j]->Draw("hist");
-            resultCanvas->UseCurrentStyle();
-            Chi2withbcg_vector[i*allCategories.size()+j]->SetLineColor(kBlue);
-            Chi2withbcg_vector[i*allCategories.size()+j]->SetTitle((pairTab[i]+" "+allCategories[j]+";"+allCategories[j]+";#Chi^{2}").c_str());
             Chi2withoutbcg_vector[i*allCategories.size()+j]->Draw("hist same");
+            resultCanvas->UseCurrentStyle();
+            Chi2withbcg_vector[i*allCategories.size()+j]->SetTitle((pairTab[i]+" "+allCategories[j]+";"+allCategories[j]+";#Chi^{2}").c_str());
+            Chi2withbcg_vector[i*allCategories.size()+j]->SetLineColor(kBlue);
             Chi2withoutbcg_vector[i*allCategories.size()+j]->SetLineColor(kRed);
             resultCanvas->BuildLegend();
             resultCanvas->Update();
