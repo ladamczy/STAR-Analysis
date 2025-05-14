@@ -122,9 +122,9 @@ int main(int argc, char* argv[]){
             bcg_pointer->Scale(sig_pointer->Integral(bcg_bin, -1, 0, -1)/bcg_pointer->Integral(bcg_bin, -1, 0, -1));
             sig_pointer->Add(bcg_pointer, -1.);
             //for keeping title
-            std::string baseOfTitle;
+            std::string baseOfTitle = std::string(sig_pointer->GetTitle())+" ";
             for(Int_t k = 0; k<sig_pointer->GetNbinsY(); k++){
-                TH1D* sig_slice = sig_pointer->ProjectionX("_px", k+1, k+1, "e");
+                TH1D* sig_slice = sig_pointer->ProjectionX("_bcg", k+1, k+1, "e");
                 //fitting and filling result
                 fit_func_sig->SetParameters(6., fitMaximum[i], fitWidth[i]);
                 fit_func_sig->SetParLimits(0, 0, 1e9);
@@ -138,9 +138,6 @@ int main(int argc, char* argv[]){
                 fit_func_bcg->SetParameters(0., 0.);
                 fit_func_bcg->SetRange(fitMaximum[i]-std::max(fitWidth[i]*5, 0.1), sig_slice->GetXaxis()->GetXmax());
                 double par_value, par_error;
-                if(k==0){
-                    baseOfTitle = std::string(sig_slice->GetTitle())+" ";
-                }
                 std::string newTitle = baseOfTitle;
                 newTitle += std::to_string(sig_pointer->GetYaxis()->GetBinLowEdge(k+1))+" - ";
                 newTitle += std::to_string(sig_pointer->GetYaxis()->GetBinUpEdge(k+1));
@@ -169,9 +166,9 @@ int main(int argc, char* argv[]){
             bcg_pointer->Scale(sig_pointer->Integral(bcg_bin, -1, 0, -1)/bcg_pointer->Integral(bcg_bin, -1, 0, -1));
             sig_pointer->Add(bcg_pointer, -1.);
             //for keeping title
-            std::string baseOfTitle;
+            std::string baseOfTitle = std::string(sig_pointer->GetTitle())+" ";
             for(Int_t k = 0; k<sig_pointer->GetNbinsY(); k++){
-                TH1D* sig_slice = sig_pointer->ProjectionX("_px", k+1, k+1, "e");
+                TH1D* sig_slice = sig_pointer->ProjectionX("_nobcg", k+1, k+1, "e");
                 //fitting and filling result
                 fit_func_sig->SetParameters(6., fitMaximum[i], fitWidth[i]);
                 fit_func_sig->SetParLimits(0, 0, 1e9);
@@ -182,8 +179,8 @@ int main(int argc, char* argv[]){
                     fit_func_sig->SetParLimits(2, 0, fitWidth[i]*10);
                 }
                 fit_func_sig->SetRange(fitMaximum[i]-std::max(fitWidth[i]*5, 0.1), sig_slice->GetXaxis()->GetXmax());
+                fit_func_empty_bcg->SetRange(fitMaximum[i]-std::max(fitWidth[i]*5, 0.1), sig_slice->GetXaxis()->GetXmax());
                 double par_value, par_error;
-                //resetting the base title unnecessary
                 std::string newTitle = baseOfTitle;
                 newTitle += std::to_string(sig_pointer->GetYaxis()->GetBinLowEdge(k+1))+" - ";
                 newTitle += std::to_string(sig_pointer->GetYaxis()->GetBinUpEdge(k+1));
@@ -265,7 +262,7 @@ int main(int argc, char* argv[]){
             Chi2withbcg_vector[i*allCategories.size()+j]->Draw("hist");
             Chi2withoutbcg_vector[i*allCategories.size()+j]->Draw("hist same");
             resultCanvas->UseCurrentStyle();
-            Chi2withbcg_vector[i*allCategories.size()+j]->SetTitle((pairTab[i]+" "+allCategories[j]+";"+allCategories[j]+";#Chi^{2}").c_str());
+            Chi2withbcg_vector[i*allCategories.size()+j]->SetTitle((pairTab[i]+" "+allCategories[j]+";"+allCategories[j]+";#chi^{2}/ndf").c_str());
             Chi2withbcg_vector[i*allCategories.size()+j]->SetLineColor(kBlue);
             Chi2withoutbcg_vector[i*allCategories.size()+j]->SetLineColor(kRed);
             resultCanvas->BuildLegend();
