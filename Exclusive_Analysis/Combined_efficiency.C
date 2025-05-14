@@ -66,7 +66,7 @@ void Combined_efficiency() {
     TH1* HistPionEtaWithoutTofMC = (TH1D*)rootFile->Get("HistPionEtaWithoutTofMC;1"); 
     TH1* HistTruePionEta = (TH1D*)rootFile->Get("HistTruePionEta;1"); 
 
-    // Get other histograms that were in the original code
+    // Get other histograms 
     TH1* HistKaonMassProbeWithTof_TruePions = (TH1D*)rootFile->Get("HistKaonMassProbeWithTof_TruePions;1");
     TH1* HistKaonMassProbeWithoutTof_TruePions = (TH1D*)rootFile->Get("HistKaonMassProbeWithoutTof_TruePions;1");
     TH1* HistPionPtWithTof_TruePions = (TH1D*)rootFile->Get("HistPionPtWithTof_TruePions;1");
@@ -134,15 +134,23 @@ void Combined_efficiency() {
     gStyle->SetPalette(kBird);
     gStyle->SetOptStat(0);
 
+
+    // Latex for text
+    TLatex Tl;
+    Tl.SetTextAlign(10);
+    Tl.SetTextSize(0.05);
+
+
     // --- DRAW PT PLOTS ---
     TCanvas* c1 = new TCanvas("c1", "TOF Efficiency vs pT", 1800, 1300);
-
+   
     // Create upper pad for main histograms
     TPad* pad1_pt = new TPad("pad1_pt", "pad1_pt", 0, 0.3, 1, 1.0);
     pad1_pt->SetLeftMargin(0.15);
     pad1_pt->SetRightMargin(0.10);
     pad1_pt->SetTopMargin(0.10);
     pad1_pt->SetBottomMargin(0.0); // No bottom margin for upper pad
+    pad1_pt->SetFrameLineWidth(4);
     pad1_pt->Draw();
     
     // Create lower pad for efficiency
@@ -151,6 +159,7 @@ void Combined_efficiency() {
     pad2_pt->SetRightMargin(0.10);
     pad2_pt->SetTopMargin(0.0); // No top margin for lower pad
     pad2_pt->SetBottomMargin(0.38);
+    pad2_pt->SetFrameLineWidth(4);
     pad2_pt->Draw();
     
     // Draw main histograms in upper pad
@@ -197,6 +206,8 @@ void Combined_efficiency() {
     line_pt->SetLineColor(kRed);
     line_pt->SetLineStyle(2);
     //line_pt->Draw();
+    Tl.DrawLatex(1.1,0.8, "#scale[1.9]{Efficiency = N_{TOF matched}/ N_{True}}");
+   
     
     c1->Print("plots/TofEff_pT_analysis.png");
 
@@ -209,6 +220,7 @@ void Combined_efficiency() {
     pad1_eta->SetRightMargin(0.10);
     pad1_eta->SetTopMargin(0.10);
     pad1_eta->SetBottomMargin(0.0); // No bottom margin for upper pad
+    pad1_eta->SetFrameLineWidth(4);
     pad1_eta->Draw();
     
     // Create lower pad for efficiency
@@ -217,6 +229,7 @@ void Combined_efficiency() {
     pad2_eta->SetRightMargin(0.10);
     pad2_eta->SetTopMargin(0.0); // No top margin for lower pad
     pad2_eta->SetBottomMargin(0.38);
+    pad2_eta->SetFrameLineWidth(4);
     pad2_eta->Draw();
     
     // Draw main histograms in upper pad
@@ -265,6 +278,7 @@ void Combined_efficiency() {
     line_eta->SetLineColor(kRed);
     line_eta->SetLineStyle(2);
    // line_eta->Draw();
+    Tl.DrawLatex(0.2,0.8, "#scale[1.9]{Efficiency = N_{TOF matched}/ N_{True}}");
     
     c2->Print("plots/TofEff_eta_analysis.png");
 
