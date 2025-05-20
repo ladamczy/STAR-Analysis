@@ -206,7 +206,7 @@ int main(int argc, char** argv){
                 }
                 nOfGoodTracks++;
             }
-            insideprocessing.Fill("Sector_run_tracks_number", to_string(tempUPCpointer->getRunNumber()).c_str(), 1.0);
+            insideprocessing.Fill("Sector_run_tracks_number", to_string(tempUPCpointer->getRunNumber()).c_str(), nOfGoodTracks);
 
             //filling a chi2 map with keys for all the possibilities
             for(auto const& imap:sigmaMap){
@@ -346,12 +346,10 @@ int main(int argc, char** argv){
     outsideprocessing.GetPointerAfterMerge1D("Sector_run_tracks_number")->LabelsDeflate();
 
     //histogram of track numbers
-    TH1D Sector_track_number_histogram("Sector_track_number_histogram", ";# of tracks;# of runs", 100, 0, 5000);
-    TH1D Sector_track_number_histogram_small("Sector_track_number_histogram_small", ";# of tracks;# of runs", 100, 0, 1000);
+    TH1D Sector_track_number_histogram("Sector_track_number_histogram", ";# of tracks;# of runs", 100, 0, 10000);
     for(int k = 1; k<=outsideprocessing.GetPointerAfterMerge1D("Sector_run_tracks_number")->GetXaxis()->GetNbins(); k++){
         double number_of_tracks = outsideprocessing.GetPointerAfterMerge1D("Sector_run_tracks_number")->GetBinContent(k);
         Sector_track_number_histogram.Fill(number_of_tracks);
-        Sector_track_number_histogram_small.Fill(number_of_tracks);
     }
 
     //setting and filling the run test histogram
@@ -397,7 +395,6 @@ int main(int argc, char** argv){
     //saving multicore histgrams and a special one
     outsideprocessing.SaveToFile(outputFileHist);
     Sector_track_number_histogram.Write();
-    Sector_track_number_histogram_small.Write();
     Sector_filling_positive.Write();
     Sector_filling_negative.Write();
     Sector_filling_positive_bigger_runs.Write();
