@@ -106,7 +106,13 @@ int main(int argc, char* argv[]){
     }
     //fitting functions
     TF1* fit_func_sig = new TF1("fit_func_sig", "breitwigner", 0.8, 1.0);
-    TF1* fit_func_bcg = new TF1("fit_func_bcg", "pol1", 0.8, 1.0);
+    //backgrounds - one custom, with parameters p0, p1
+    //being values at ends (p2, p3)
+    auto custom_background = [&](double* x, double* p){
+        double a = (p[1]-p[0])/(p[3]-p[2]);
+        return a*(x[0]-p[2])+p[0];
+    };
+    TF1* fit_func_bcg = new TF1("fit_func_bcg", custom_background, 0.8, 1.0, 4);
     TF1* fit_func_empty_bcg = new TF1("fit_func_bcg", "0.", 0.8, 1.0);
     //substracting one from another
     //fitting the difference
@@ -135,8 +141,13 @@ int main(int argc, char* argv[]){
                     fit_func_sig->SetParLimits(2, 0, fitWidth[i]*10);
                 }
                 fit_func_sig->SetRange(fitMaximum[i]-std::max(fitWidth[i]*5, 0.1), sig_slice->GetXaxis()->GetXmax());
-                fit_func_bcg->SetParameters(0., 0.);
+                //custom setting background function - p2 & p3 are the ends of the range
                 fit_func_bcg->SetRange(fitMaximum[i]-std::max(fitWidth[i]*5, 0.1), sig_slice->GetXaxis()->GetXmax());
+                fit_func_bcg->SetParameters(0., 0., fit_func_bcg->GetXmin(), fit_func_bcg->GetXmax());
+                fit_func_bcg->FixParameter(2, fit_func_bcg->GetXmin());
+                fit_func_bcg->FixParameter(3, fit_func_bcg->GetXmax());
+                fit_func_bcg->SetParLimits(0, 0., 1e9);
+                fit_func_bcg->SetParLimits(1, 0., 1e9);
                 double par_value, par_error;
                 std::string newTitle = baseOfTitle;
                 newTitle += std::to_string(sig_pointer->GetYaxis()->GetBinLowEdge(k+1))+" - ";
@@ -335,12 +346,16 @@ std::pair<double, double> differential_crossection_fit(TPad* pad, TH1D* slice, T
         fitting_function_signal->GetParLimits(i, lowlim, highlim);
         if(lowlim==highlim&&lowlim*highlim!=0){
             fitting_function_total->FixParameter(i, lowlim);
+        } else{
+            fitting_function_total->SetParLimits(i, lowlim, highlim);
         }
     }
     for(int i = 0; i<bcgparams; i++){
         fitting_function_bcg->GetParLimits(i, lowlim, highlim);
         if(lowlim==highlim&&lowlim*highlim!=0){
             fitting_function_total->FixParameter(i+signalparams, lowlim);
+        } else{
+            fitting_function_total->SetParLimits(i+signalparams, lowlim, highlim);
         }
     }
     //old data, the base of drawing
@@ -383,7 +398,7 @@ std::pair<double, double> differential_crossection_fit(TPad* pad, TH1D* slice, T
         if(response.find("fit")!=std::string::npos){
             fitting_function_total->SetParameters(fitting_function_total_COPY->GetParameters());
             slice->Fit(fitting_function_total, "0BR");
-            printf("Chi2 = %f, ndof = %d\n", fitting_function_total->GetChisquare(), fitting_function_total->GetNDF());
+            printf("Chi2 from fit: %f, ndof = %d\n", fitting_function_total->GetChisquare(), fitting_function_total->GetNDF());
             fitting_function_total_COPY->SetParameters(fitting_function_total->GetParameters());
             fitting_function_bcg_COPY->SetParameters(fitting_function_total->GetParameters()+signalparams);
             fitting_function_signal_COPY->SetParameters(fitting_function_total->GetParameters());
@@ -413,6 +428,7 @@ std::pair<double, double> differential_crossection_fit(TPad* pad, TH1D* slice, T
         fitting_function_signal_COPY->Draw("CSAME");
         gPad->Update();
         //interactive part
+        std::cout<<"Chi2 after edit/fit: "<<slice->Chisquare(fitting_function_total_COPY, "R")<<", ndof: "<<fitting_function_total_COPY->GetNDF()<<std::endl;
         std::cout<<"Enter which parameter and how much change"<<std::endl;
         std::cout<<"Writing \"abs\" before just sets the parameter"<<std::endl;
         std::cout<<"Or write \"fit\" to fit"<<std::endl;

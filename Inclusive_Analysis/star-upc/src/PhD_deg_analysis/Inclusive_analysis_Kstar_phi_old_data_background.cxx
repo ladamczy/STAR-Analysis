@@ -92,7 +92,7 @@ int main(int argc, char** argv){
 
     //other things
     int eventsProcessed = 0;
-    int previousEventsMemorised = 3;
+    int previousEventsMemorised = 15;
 
     //defining processing function
     auto myFunction = [&](TTreeReader& myReader){
