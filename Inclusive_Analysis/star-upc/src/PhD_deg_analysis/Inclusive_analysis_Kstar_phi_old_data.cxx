@@ -357,6 +357,7 @@ int main(int argc, char** argv){
     TH1D Sector_filling_negative("Sector_filling_negative", ";fill;# of sectors", 100, 0, 1.0000000001);
     TH1D Sector_filling_positive_bigger_runs("Sector_filling_positive_bigger_runs", ";fill;# of sectors", 100, 0, 1.0000000001);
     TH1D Sector_filling_negative_bigger_runs("Sector_filling_negative_bigger_runs", ";fill;# of sectors", 100, 0, 1.0000000001);
+    TH1D Sector_max_tracks_with_empty_sector("Sector_max_tracks_with_empty_sector", ";max track number;runs", 100, 0, 100);
     int minimal_tracks_by_charge = 48; //so far chosen arbitrarily
     for(int k = 1; k<=outsideprocessing.GetPointerAfterMerge3D("Sector_pipiChi2plus")->GetXaxis()->GetNbins(); k++){
         outsideprocessing.GetPointerAfterMerge3D("Sector_pipiChi2plus")->GetXaxis()->SetRange(k, k);
@@ -370,6 +371,7 @@ int main(int argc, char** argv){
         }
         sig_slice_positive->Scale(1./temp_max_positive);
         sig_slice_negative->Scale(1./temp_max_negative);
+        bool runWasCheckedAndHasEmptySector = false;
         for(int xbin = 1; xbin<=sig_slice_positive->GetNbinsX(); xbin++){
             for(int ybin = 1; ybin<=sig_slice_positive->GetNbinsY(); ybin++){
                 Sector_filling_positive.Fill(sig_slice_positive->GetBinContent(xbin, ybin));
@@ -378,6 +380,11 @@ int main(int argc, char** argv){
                     Sector_filling_positive_bigger_runs.Fill(sig_slice_positive->GetBinContent(xbin, ybin));
                 if(sig_slice_negative->Integral()*temp_max_negative>=minimal_tracks_by_charge)
                     Sector_filling_negative_bigger_runs.Fill(sig_slice_negative->GetBinContent(xbin, ybin));
+                //checking if the run *has* empty sector
+                if(sig_slice_positive->GetBinContent(xbin, ybin)==0.&&sig_slice_negative->GetBinContent(xbin, ybin)==0.&&!runWasCheckedAndHasEmptySector){
+                    runWasCheckedAndHasEmptySector = true;
+                    Sector_max_tracks_with_empty_sector.Fill(temp_max_positive+temp_max_negative);
+                }
             }
         }
     }
@@ -399,6 +406,7 @@ int main(int argc, char** argv){
     Sector_filling_negative.Write();
     Sector_filling_positive_bigger_runs.Write();
     Sector_filling_negative_bigger_runs.Write();
+    Sector_max_tracks_with_empty_sector.Write();
 
     outputFileHist->Close();
 
