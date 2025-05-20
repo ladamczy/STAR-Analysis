@@ -140,11 +140,15 @@ int main(int argc, char** argv){
 
             //additional cuts that normally are used in only-RP-cuts examples
             //cause the data i used isn't properly filtered
+            //making sure i don't get garbage from zerobias trigger
+            if(tempUPCpointer->isTrigger(570704)){
+                continue;
+            }
             //at least 2 good tracks
             int nOfGoodTracks = 0;
             for(int i = 0; i<tempUPCpointer->getNumberOfTracks(); i++){
                 StUPCTrack* tmptrk = tempUPCpointer->getTrack(i);
-                if(tmptrk->getFlag(StUPCTrack::kTof)&&abs(tmptrk->getEta())<0.7&&tmptrk->getPt()>0.2){
+                if(tmptrk->getFlag(StUPCTrack::kTof)&&abs(tmptrk->getEta())<0.9&&tmptrk->getPt()>0.2){
                     nOfGoodTracks++;
                 }
             }
@@ -174,7 +178,7 @@ int main(int argc, char** argv){
                 if(!tempTrack->getFlag(StUPCTrack::kTof)){
                     continue;
                 }
-                if(tempTrack->getPt()<=0.2 or abs(tempTrack->getEta())>=0.7){
+                if(tempTrack->getPt()<=0.2 or abs(tempTrack->getEta())>=0.9){
                     continue;
                 }
                 if(tempTrack->getNhits()<=20){
