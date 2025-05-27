@@ -144,6 +144,10 @@ int main(int argc, char** argv){
             if(tempUPCpointer->isTrigger(570704)){
                 continue;
             }
+            //exactly one vertex
+            if(tempUPCpointer->getNumberOfVertices()!=1){
+                continue;
+            }
             //at least 2 good tracks
             int nOfGoodTracks = 0;
             for(int i = 0; i<tempUPCpointer->getNumberOfTracks(); i++){
@@ -153,10 +157,6 @@ int main(int argc, char** argv){
                 }
             }
             if(nOfGoodTracks<2){
-                continue;
-            }
-            //exactly one vertex
-            if(tempUPCpointer->getNumberOfVertices()!=1){
                 continue;
             }
 
