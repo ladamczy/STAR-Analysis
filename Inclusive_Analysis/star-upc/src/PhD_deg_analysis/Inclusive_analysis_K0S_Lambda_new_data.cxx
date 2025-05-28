@@ -122,6 +122,14 @@ int main(int argc, char** argv){
         bool isdEdxOk, isTOFOk, isWhicheverPrimary;
         string tempPairName;
 
+        //filling parInfo histogram in proper order
+        insideprocessing.Fill("pairInfo", "OK", 0.0);
+        insideprocessing.Fill("pairInfo", "TOF wrong, total", 0.0);
+        insideprocessing.Fill("pairInfo", "TOF wrong, Primary", 0.0);
+        insideprocessing.Fill("pairInfo", "TOF wrong, not Primary", 0.0);
+        insideprocessing.Fill("pairInfo", "dEdx wrong", 0.0);
+        insideprocessing.Fill("pairInfo", "Both wrong", 0.0);
+
         //actual loop
         while(myReader.Next()){
             //in a TTree, it *would* be constant, in TChain however not necessarily
@@ -214,7 +222,7 @@ int main(int argc, char** argv){
                     if(isdEdxOk&&isTOFOk){
                         insideprocessing.Fill("pairInfo", "OK", 1.0);
                     } else if(isdEdxOk&&!isTOFOk){
-                        insideprocessing.Fill("pairInfo", "TOF wrong", 1.0);
+                        insideprocessing.Fill("pairInfo", "TOF wrong, total", 1.0);
                         if(isWhicheverPrimary){
                             insideprocessing.Fill("pairInfo", "TOF wrong, Primary", 1.0);
                         } else{
@@ -325,6 +333,7 @@ int main(int argc, char** argv){
 
     //merging and tidying up
     outsideprocessing.Merge();
+    outsideprocessing.GetPointerAfterMerge1D("pairInfo")->LabelsDeflate();
 
     //setting up a tree & output file
     string path = string(argv[0]);
