@@ -13,6 +13,7 @@
 #include "TCanvas.h"
 #include "TStyle.h"
 #include "TF1.h"
+#include "TF1Convolution.h"
 #include "TApplication.h"
 
 #include "MyStyles.h"
@@ -38,6 +39,7 @@ int main(int argc, char* argv[]){
     TH1D* MKKChi2 = (TH1D*)input->Get("MKKChi2");
     TH1D* MpipiChi2 = (TH1D*)input->Get("MpipiChi2");
     TH1D* MppChi2 = (TH1D*)input->Get("MppChi2");
+    TH1D* MKKChi2Close = (TH1D*)input->Get("MKKChi2Close");
     /*
     MKpiChi2
     MpiKChi2
@@ -104,6 +106,25 @@ int main(int argc, char* argv[]){
             background_vector.push_back((TH2D*)inputbcg->Get((tempHistName+category).c_str()));
         }
     }
+
+    //###########################################################
+    //                FITTING
+    //###########################################################
+    TCanvas* result = new TCanvas("result", "result", 1600, 800);
+    //fitting ONCE the total m_KK
+    double par_value, par_error;
+    TF1Convolution conv_sig("breitwigner", "gausn", 0.8, 1.2);
+    conv_sig.SetNofPointsFFT(1000000);
+    TF1 fit_func_custom_sig("fit_func_custom_sig", conv_sig, 0.99, 1.05, 6);
+    TF1 fit_func_custom_bcg("fit_func_custom_bcg", "pol1", 0.99, 1.05);
+    fit_func_custom_sig.SetParameter(0, 9);
+    fit_func_custom_sig.SetParameter(1, 1.02);
+    fit_func_custom_sig.FixParameter(2, 0.00443);
+    fit_func_custom_sig.FixParameter(3, 1.);
+    fit_func_custom_sig.FixParameter(4, 0.);
+    fit_func_custom_sig.SetParameter(5, 0.0013);
+    differential_crossection_fit(result, MKKChi2Close, &fit_func_custom_sig, &fit_func_custom_bcg, par_value, par_error);
+
     //fitting functions
     TF1* fit_func_sig = new TF1("fit_func_sig", "breitwigner", 0.8, 1.0);
     //backgrounds - one custom, with parameters p0, p1
@@ -117,7 +138,6 @@ int main(int argc, char* argv[]){
     //substracting one from another
     //fitting the difference
     //and filling the result
-    TCanvas* result = new TCanvas("result", "result", 1600, 800);
     for(size_t i = 0; i<pairTab.size(); i++){
         for(size_t j = 0; j<allCategories.size(); j++){
             TH2D* bcg_pointer = background_vector[i*allCategories.size()+j];
@@ -205,13 +225,14 @@ int main(int argc, char* argv[]){
             }
         }
     }
-    result->Close();
 
+    //directory manipulation
     std::string folderWithDiagonal = std::string(static_cast<const char*>(argv[3]));
     if(folderWithDiagonal[folderWithDiagonal.size()-1]!='/'){
         folderWithDiagonal += "/";
     }
 
+    result->Close();
     gStyle->SetOptStat(0);
     gStyle->SetFrameLineWidth(2);
 
@@ -331,6 +352,7 @@ std::pair<double, double> differential_crossection_fit(TPad* pad, TH1D* slice, T
     //setting up the functions
     gROOT->SetSelectedPad(pad);
     gStyle->SetOptStat(0);
+    gStyle->SetHistMinimumZero();
     int signalparams, bcgparams, totalparams;
     double rangemin, rangemax;
     signalparams = fitting_function_signal->GetNpar();
