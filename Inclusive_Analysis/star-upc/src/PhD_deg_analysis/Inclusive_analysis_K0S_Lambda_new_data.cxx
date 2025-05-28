@@ -119,7 +119,7 @@ int main(int argc, char** argv){
         StUPCV0* tempParticle;
         double mass, chi2pipi, chi2Kpi, eta, pT;
         map<string, double> chi2Map;
-        bool isdEdxOk, isTOFOk;
+        bool isdEdxOk, isTOFOk, isWhicheverPrimary;
         string tempPairName;
 
         //actual loop
@@ -210,10 +210,16 @@ int main(int argc, char** argv){
                 for(long unsigned int j = 0; j<vector_Track_negative.size(); j++){
                     isdEdxOk = (vector_Track_positive[i]->getNhitsDEdx()>=15)&&(vector_Track_negative[j]->getNhitsDEdx()>=15);
                     isTOFOk = (vector_Track_positive[i]->getTofPathLength()>0)&&(vector_Track_positive[i]->getTofTime()>0)&&(vector_Track_negative[j]->getTofPathLength()>0)&&(vector_Track_negative[j]->getTofTime()>0);
+                    isWhicheverPrimary = vector_Track_positive[i]->getFlag(StUPCTrack::kPrimary)||vector_Track_negative[j]->getFlag(StUPCTrack::kPrimary);
                     if(isdEdxOk&&isTOFOk){
                         insideprocessing.Fill("pairInfo", "OK", 1.0);
                     } else if(isdEdxOk&&!isTOFOk){
                         insideprocessing.Fill("pairInfo", "TOF wrong", 1.0);
+                        if(isWhicheverPrimary){
+                            insideprocessing.Fill("pairInfo", "TOF wrong, Primary", 1.0);
+                        } else{
+                            insideprocessing.Fill("pairInfo", "TOF wrong, not Primary", 1.0);
+                        }
                         continue;
                     } else if(!isdEdxOk&&isTOFOk){
                         insideprocessing.Fill("pairInfo", "dEdx wrong", 1.0);
