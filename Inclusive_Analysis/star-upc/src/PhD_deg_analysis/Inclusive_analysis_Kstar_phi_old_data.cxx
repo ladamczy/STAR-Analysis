@@ -88,6 +88,10 @@ int main(int argc, char** argv){
     outsideprocessing.AddHistogram(TH1D("MKKChi2", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 50, 0.9, 2.4));
     outsideprocessing.AddHistogram(TH1D("MpipiChi2", ";m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 60, 0.2, 1.4));
     outsideprocessing.AddHistogram(TH1D("MppChi2", ";m_{p^{+}p^{-}} [GeV];Number of pairs", 50, 1.5, 3.5));
+    //closer histograms
+    outsideprocessing.AddHistogram(TH1D("MKKChi2Close", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 50, 0.9, 1.1));
+    outsideprocessing.AddHistogram(TH1D("MKpiChi2Close", ";m_{K^{+}#pi^{-}} [GeV];Number of pairs", 50, 0.7, 1.1));
+    outsideprocessing.AddHistogram(TH1D("MpiKChi2Close", ";m_{#pi^{+}K^{-}} [GeV];Number of pairs", 50, 0.7, 1.1));
     //adding mass histograms grouped by category
     getCategoryHistograms(outsideprocessing, pairTab);
     //eta-phi histograms
@@ -256,6 +260,7 @@ int main(int argc, char** argv){
                         eta = (positive_track+negative_track).Eta();
                         pT = (positive_track+negative_track).Pt();
                         insideprocessing.Fill("MKpiChi2", mass);
+                        insideprocessing.Fill("MKpiChi2Close", mass);
                         insideprocessing.Fill("MKpiChi2eta", mass, eta);
                         insideprocessing.Fill("MKpiChi2pT", mass, pT);
                         insideprocessing.Fill("EtaPhi_KpiChi2plus", vector_Track_positive[i]->getEta(), vector_Track_positive[i]->getPhi());
@@ -270,6 +275,7 @@ int main(int argc, char** argv){
                         eta = (positive_track+negative_track).Eta();
                         pT = (positive_track+negative_track).Pt();
                         insideprocessing.Fill("MpiKChi2", mass);
+                        insideprocessing.Fill("MpiKChi2Close", mass);
                         insideprocessing.Fill("MpiKChi2eta", mass, eta);
                         insideprocessing.Fill("MpiKChi2pT", mass, pT);
                         insideprocessing.Fill("EtaPhi_piKChi2plus", vector_Track_positive[i]->getEta(), vector_Track_positive[i]->getPhi());
@@ -304,6 +310,7 @@ int main(int argc, char** argv){
                         eta = (positive_track+negative_track).Eta();
                         pT = (positive_track+negative_track).Pt();
                         insideprocessing.Fill("MKKChi2", mass);
+                        insideprocessing.Fill("MKKChi2Close", mass);
                         insideprocessing.Fill("MKKChi2eta", mass, eta);
                         insideprocessing.Fill("MKKChi2pT", mass, pT);
                         insideprocessing.Fill("EtaPhi_KKChi2plus", vector_Track_positive[i]->getEta(), vector_Track_positive[i]->getPhi());
