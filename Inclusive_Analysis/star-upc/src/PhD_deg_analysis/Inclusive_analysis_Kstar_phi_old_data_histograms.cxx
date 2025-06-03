@@ -21,7 +21,7 @@
 
 void draw_and_save(TH1D* data, std::string folderWithDiagonal, std::string name, std::string title, std::string options = "");
 void draw_and_save_minus_background(TH1D* data, TH1D* bcg, std::string folderWithDiagonal, std::string name, std::string title, double bcg_region);
-std::pair<double, double> differential_crossection_fit(TPad* pad, TH1D* slice, TF1* fitting_function_signal, TF1* fitting_function_bcg, double& param_value, double& param_error);
+std::pair<double, double> differential_crossection_fit(TPad* pad, TH1D* slice, TF1* fitting_function_signal, TF1* fitting_function_bcg, double& param_value, double& param_error, std::string draw_full_path = "");
 
 int main(int argc, char* argv[]){
     //something used so that the histograms would draw
@@ -41,6 +41,8 @@ int main(int argc, char* argv[]){
     TH1D* MpipiChi2 = (TH1D*)input->Get("MpipiChi2");
     TH1D* MppChi2 = (TH1D*)input->Get("MppChi2");
     TH1D* MKKChi2Close = (TH1D*)input->Get("MKKChi2Close");
+    TH1D* MKpiChi2Close = (TH1D*)input->Get("MKpiChi2Close");
+    TH1D* MpiKChi2Close = (TH1D*)input->Get("MpiKChi2Close");
     /*
     MKpiChi2
     MpiKChi2
@@ -83,6 +85,12 @@ int main(int argc, char* argv[]){
         allCategories.push_back(buf);
     }
 
+    //directory manipulation
+    std::string folderWithDiagonal = std::string(static_cast<const char*>(argv[3]));
+    if(folderWithDiagonal[folderWithDiagonal.size()-1]!='/'){
+        folderWithDiagonal += "/";
+    }
+
     //filling vectors of background and signal
     //and Chi2 with and without the background
     std::vector<TH2D*> background_vector, signal_vector;
@@ -114,7 +122,7 @@ int main(int argc, char* argv[]){
     TCanvas* result = new TCanvas("result", "result", -1, 0, 1600, 900);
     //fitting ONCE the total m_KK
     double par_value, par_error;
-    TF1Convolution conv_sig("breitwigner", "gausn", 0.8, 1.2);
+    TF1Convolution conv_sig("breitwigner", "gausn", 0.5, 1.5); //extra range for all your convolution needs
     conv_sig.SetNofPointsFFT(10000);
     TF1 fit_func_custom_sig("fit_func_custom_sig", conv_sig, 0.99, 1.05, 6);
     TF1 fit_func_custom_bcg("fit_func_custom_bcg", "pol2", 0.99, 1.05);
@@ -124,8 +132,29 @@ int main(int argc, char* argv[]){
     fit_func_custom_sig.FixParameter(3, 1.);
     fit_func_custom_sig.FixParameter(4, 0.);
     fit_func_custom_sig.SetParameter(5, 0.0013);
-    differential_crossection_fit(result, MKKChi2Close, &fit_func_custom_sig, &fit_func_custom_bcg, par_value, par_error);
-    result->ModifiedUpdate();
+    fit_func_custom_sig.SetParNames("N_{BW}", "m_{0}", "#Gamma_{0,BW}", "N_{Gauss}", "m_{0, Gauss}", "#sigma_{Gauss}");
+    fit_func_custom_bcg.SetParNames("c", "b", "a");
+    differential_crossection_fit(result, MKKChi2Close, &fit_func_custom_sig, &fit_func_custom_bcg, par_value, par_error, folderWithDiagonal+"MKKwhole.pdf");
+    //fitting ONCE the total m_Kpi
+    fit_func_custom_sig.SetRange(0.7, 1.1);
+    fit_func_custom_bcg.SetRange(0.7, 1.1);
+    fit_func_custom_sig.SetParameter(0, 9);
+    fit_func_custom_sig.SetParameter(1, 0.892);
+    fit_func_custom_sig.FixParameter(2, 0.0514);
+    fit_func_custom_sig.FixParameter(3, 1.);
+    fit_func_custom_sig.FixParameter(4, 0.);
+    fit_func_custom_sig.SetParameter(5, 0.0013);
+    differential_crossection_fit(result, MKpiChi2Close, &fit_func_custom_sig, &fit_func_custom_bcg, par_value, par_error, folderWithDiagonal+"MKpiwhole.pdf");
+    //fitting ONCE the total m_piK
+    fit_func_custom_sig.SetRange(0.7, 1.1);
+    fit_func_custom_bcg.SetRange(0.7, 1.1);
+    fit_func_custom_sig.SetParameter(0, 9);
+    fit_func_custom_sig.SetParameter(1, 0.892);
+    fit_func_custom_sig.FixParameter(2, 0.0514);
+    fit_func_custom_sig.FixParameter(3, 1.);
+    fit_func_custom_sig.FixParameter(4, 0.);
+    fit_func_custom_sig.SetParameter(5, 0.0013);
+    differential_crossection_fit(result, MpiKChi2Close, &fit_func_custom_sig, &fit_func_custom_bcg, par_value, par_error, folderWithDiagonal+"MpiKwhole.pdf");
 
     //fitting functions
     TF1* fit_func_sig = new TF1("fit_func_sig", "breitwigner", 0.8, 1.0);
@@ -226,12 +255,6 @@ int main(int argc, char* argv[]){
                 Chi2withoutbcg_vector[i*allCategories.size()+j]->SetBinContent(k+1, chi2/ndf);
             }
         }
-    }
-
-    //directory manipulation
-    std::string folderWithDiagonal = std::string(static_cast<const char*>(argv[3]));
-    if(folderWithDiagonal[folderWithDiagonal.size()-1]!='/'){
-        folderWithDiagonal += "/";
     }
 
     result->Close();
@@ -350,16 +373,19 @@ void draw_and_save_minus_background(TH1D* data, TH1D* bcg, std::string folderWit
     resultCanvas->SaveAs((folderWithDiagonal+name+".pdf").c_str());
 }
 
-std::pair<double, double> differential_crossection_fit(TPad* pad, TH1D* slice, TF1* fitting_function_signal, TF1* fitting_function_bcg, double& param_value, double& param_error){
+std::pair<double, double> differential_crossection_fit(TPad* pad, TH1D* slice, TF1* fitting_function_signal, TF1* fitting_function_bcg, double& param_value, double& param_error, std::string draw_full_path){
     //setting up the functions
+    pad->Clear();
     gROOT->SetSelectedPad(pad);
     gStyle->SetOptStat(0);
     gStyle->SetHistMinimumZero();
     gStyle->SetOptFit();
     gStyle->SetStatBorderSize(0.);
-    gStyle->SetStatX(0.95);
+    gStyle->SetStatX(0.94);
     gStyle->SetStatY(0.89);
+    gStyle->SetStatW(0.18);
     gStyle->SetFitFormat("6.5g");
+    gStyle->SetStatColor(0);
     gPad->SetMargin(0.1, 0.05, 0.1, 0.1);
     int signalparams, bcgparams, totalparams;
     double rangemin, rangemax;
@@ -379,6 +405,9 @@ std::pair<double, double> differential_crossection_fit(TPad* pad, TH1D* slice, T
         } else{
             fitting_function_total->SetParLimits(i, lowlim, highlim);
         }
+        //if not default name (beginning with p), copy it
+        if(std::string(fitting_function_signal->GetParName(i))[0]!='p')
+            fitting_function_total->SetParName(i, fitting_function_signal->GetParName(i));
     }
     for(int i = 0; i<bcgparams; i++){
         fitting_function_bcg->GetParLimits(i, lowlim, highlim);
@@ -387,6 +416,9 @@ std::pair<double, double> differential_crossection_fit(TPad* pad, TH1D* slice, T
         } else{
             fitting_function_total->SetParLimits(i+signalparams, lowlim, highlim);
         }
+        //if not default name (beginning with p), copy it
+        if(std::string(fitting_function_bcg->GetParName(i))[0]!='p')
+            fitting_function_total->SetParName(i+signalparams, fitting_function_bcg->GetParName(i));
     }
     //old data, the base of drawing
     slice->SetMarkerStyle(kFullCircle);
@@ -477,8 +509,9 @@ std::pair<double, double> differential_crossection_fit(TPad* pad, TH1D* slice, T
         param_error = fitting_function_signal_COPY->GetParError(0)/slice->GetXaxis()->GetBinWidth(0);
     }
     printf("Accepted current parameters\n");
-    //on last loop close the TCanvas
+    if(draw_full_path.size()!=0){
+        pad->SaveAs(draw_full_path.c_str());
+    }
     gStyle->SetOptStat(1);
-    pad->Clear();
     return std::pair<double, double>(fitting_function_total->GetChisquare(), fitting_function_total->GetNDF());
 }
