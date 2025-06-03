@@ -7,6 +7,7 @@
 // ROOT, for histogramming.
 #include "TH1.h"
 #include "TH2.h"
+#include "TPaveStats.h"
 #include "TFile.h"
 #include "TEfficiency.h"
 #include "THStack.h"
@@ -110,13 +111,13 @@ int main(int argc, char* argv[]){
     //###########################################################
     //                FITTING
     //###########################################################
-    TCanvas* result = new TCanvas("result", "result", 1600, 800);
+    TCanvas* result = new TCanvas("result", "result", -1, 0, 1600, 900);
     //fitting ONCE the total m_KK
     double par_value, par_error;
     TF1Convolution conv_sig("breitwigner", "gausn", 0.8, 1.2);
-    conv_sig.SetNofPointsFFT(1000000);
+    conv_sig.SetNofPointsFFT(10000);
     TF1 fit_func_custom_sig("fit_func_custom_sig", conv_sig, 0.99, 1.05, 6);
-    TF1 fit_func_custom_bcg("fit_func_custom_bcg", "pol1", 0.99, 1.05);
+    TF1 fit_func_custom_bcg("fit_func_custom_bcg", "pol2", 0.99, 1.05);
     fit_func_custom_sig.SetParameter(0, 9);
     fit_func_custom_sig.SetParameter(1, 1.02);
     fit_func_custom_sig.FixParameter(2, 0.00443);
@@ -124,6 +125,7 @@ int main(int argc, char* argv[]){
     fit_func_custom_sig.FixParameter(4, 0.);
     fit_func_custom_sig.SetParameter(5, 0.0013);
     differential_crossection_fit(result, MKKChi2Close, &fit_func_custom_sig, &fit_func_custom_bcg, par_value, par_error);
+    result->ModifiedUpdate();
 
     //fitting functions
     TF1* fit_func_sig = new TF1("fit_func_sig", "breitwigner", 0.8, 1.0);
@@ -353,6 +355,12 @@ std::pair<double, double> differential_crossection_fit(TPad* pad, TH1D* slice, T
     gROOT->SetSelectedPad(pad);
     gStyle->SetOptStat(0);
     gStyle->SetHistMinimumZero();
+    gStyle->SetOptFit();
+    gStyle->SetStatBorderSize(0.);
+    gStyle->SetStatX(0.95);
+    gStyle->SetStatY(0.89);
+    gStyle->SetFitFormat("6.5g");
+    gPad->SetMargin(0.1, 0.05, 0.1, 0.1);
     int signalparams, bcgparams, totalparams;
     double rangemin, rangemax;
     signalparams = fitting_function_signal->GetNpar();
@@ -397,13 +405,14 @@ std::pair<double, double> differential_crossection_fit(TPad* pad, TH1D* slice, T
     fitting_function_total->SetNpx(1000);
     //fitting and drawing
     slice->Fit(fitting_function_total, "0BR");
-    slice->DrawCopy("E", "NewDataNewTracks");
+    slice->Draw("E");
     fitting_function_signal->SetParameters(fitting_function_total->GetParameters());
     fitting_function_signal->SetParErrors(fitting_function_total->GetParErrors());
     fitting_function_bcg->SetParameters(fitting_function_total->GetParameters()+signalparams);
     TF1* fitting_function_total_COPY = fitting_function_total->DrawCopy("CSAME");
     TF1* fitting_function_bcg_COPY = fitting_function_bcg->DrawCopy("CSAME");
     TF1* fitting_function_signal_COPY = fitting_function_signal->DrawCopy("CSAME");
+    //drawing prameters
     gPad->Update();
 
     //interactive part
