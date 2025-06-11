@@ -63,13 +63,13 @@ int main(int argc, char** argv){
     ProcessingOutsideLoop outsideprocessing;
     //mixing TOF between events proved to be a failure
     //mass histograms with TOF first and mixing event pairs after
-    outsideprocessing.AddHistogram(TH1D("MKpiChi2bcgTOF", ";m_{K^{+}#pi^{-}} [GeV];Number of pairs", 50, 0.5, 2.0));
-    outsideprocessing.AddHistogram(TH1D("MpiKChi2bcgTOF", ";m_{#pi^{+}K^{-}} [GeV];Number of pairs", 50, 0.5, 2.0));
-    outsideprocessing.AddHistogram(TH1D("MppiChi2bcgTOF", ";m_{p^{+}#pi^{-}} [GeV];Number of pairs", 50, 1.0, 2.5));
-    outsideprocessing.AddHistogram(TH1D("MpipChi2bcgTOF", ";m_{#pi^{+}p^{-}} [GeV];Number of pairs", 50, 1.0, 2.5));
-    outsideprocessing.AddHistogram(TH1D("MKKChi2bcgTOF", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 50, 0.9, 2.4));
-    outsideprocessing.AddHistogram(TH1D("MpipiChi2bcgTOF", ";m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 60, 0.2, 1.4));
-    outsideprocessing.AddHistogram(TH1D("MppChi2bcgTOF", ";m_{p^{+}p^{-}} [GeV];Number of pairs", 50, 1.5, 3.5));
+    outsideprocessing.AddHistogram(TH1D("MKpiChi2bcgTOF", ";m_{K^{+}#pi^{-}} [GeV];Number of pairs", 500, 0.5, 2.0));
+    outsideprocessing.AddHistogram(TH1D("MpiKChi2bcgTOF", ";m_{#pi^{+}K^{-}} [GeV];Number of pairs", 500, 0.5, 2.0));
+    outsideprocessing.AddHistogram(TH1D("MppiChi2bcgTOF", ";m_{p^{+}#pi^{-}} [GeV];Number of pairs", 500, 1.0, 2.5));
+    outsideprocessing.AddHistogram(TH1D("MpipChi2bcgTOF", ";m_{#pi^{+}p^{-}} [GeV];Number of pairs", 500, 1.0, 2.5));
+    outsideprocessing.AddHistogram(TH1D("MKKChi2bcgTOF", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 500, 0.9, 2.4));
+    outsideprocessing.AddHistogram(TH1D("MpipiChi2bcgTOF", ";m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 600, 0.2, 1.4));
+    outsideprocessing.AddHistogram(TH1D("MppChi2bcgTOF", ";m_{p^{+}p^{-}} [GeV];Number of pairs", 500, 1.5, 3.5));
     //adding mass histograms grouped by category
     std::vector<std::string> pairTab = { "Kpi", "piK", "ppi", "pip", "KK", "pipi", "pp" };
     getCategoryHistograms(outsideprocessing, pairTab, "bcgTOF");
