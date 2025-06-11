@@ -19,6 +19,7 @@
 
 #include "MyStyles.h"
 
+int GetFirstNonzeroBinNumber(TH1* input);
 void draw_and_save(TH1D* data, std::string folderWithDiagonal, std::string name, std::string title, std::string options = "");
 void draw_and_save_minus_background(TH1D* data, TH1D* bcg, std::string folderWithDiagonal, std::string name, std::string title, double bcg_region);
 std::pair<double, double> differential_crossection_fit(TPad* pad, TH1D* slice, TF1* fitting_function_signal, TF1* fitting_function_bcg, double& param_value, double& param_error, std::string draw_full_path = "");
@@ -70,7 +71,6 @@ int main(int argc, char* argv[]){
     std::vector<double> bcgRegion = { 1.0, 1.0, 1.1 };
     std::vector<double> fitMaximum = { 0.892, 0.892, 1.02 };
     std::vector<double> fitWidth = { 0.0514, 0.0514, 0.004 };//51.4 MeV for K*(892), 4.43 MeV for phi(1020)
-    bool fixWidthsInPlace = true;
     //creating list of categories
     std::vector<std::string> allCategories;
     std::ifstream infile("STAR-Analysis/Inclusive_Analysis/star-upc/src/PhD_deg_analysis/Differential_crossection_values.txt");
@@ -94,7 +94,7 @@ int main(int argc, char* argv[]){
     //filling vectors of background and signal
     //and Chi2 with and without the background
     std::vector<TH2D*> background_vector, signal_vector;
-    std::vector<TH1D*> result_vector, Chi2withbcg_vector, Chi2withoutbcg_vector;
+    std::vector<TH1D*> result_vector, result_vector_nobcgfit, result_vector_nobcgremoval, Chi2withbcg_vector, Chi2withoutbcg_vector, Chi2withoutremovingbcg_vector;
     std::string tempSignalName = "M$Chi2";
     std::string tempBackgroundName = "M$Chi2bcgTOF";
     std::string tempHistName;
@@ -104,15 +104,18 @@ int main(int argc, char* argv[]){
             tempHistName = tempSignalName;
             tempHistName.replace(find(tempHistName.begin(), tempHistName.end(), '$')-tempHistName.begin(), 1, pair);
             signal_vector.push_back((TH2D*)input->Get((tempHistName+category).c_str()));
-            //result, but uses signal template
-            result_vector.push_back(new TH1D((tempHistName+"Result"+category).c_str(), (pair+" "+category).c_str(), signal_vector.back()->GetNbinsY(), signal_vector.back()->GetYaxis()->GetXmin(), signal_vector.back()->GetYaxis()->GetXmax()));
-            //Chi2 comparison
-            Chi2withbcg_vector.push_back(new TH1D((tempHistName+"Chi2withbcg"+category).c_str(), (pair+" "+category+" bcg").c_str(), signal_vector.back()->GetNbinsY(), signal_vector.back()->GetYaxis()->GetXmin(), signal_vector.back()->GetYaxis()->GetXmax()));
-            Chi2withoutbcg_vector.push_back(new TH1D((tempHistName+"Chi2withoutbcg"+category).c_str(), (pair+" "+category+" no bcg").c_str(), signal_vector.back()->GetNbinsY(), signal_vector.back()->GetYaxis()->GetXmin(), signal_vector.back()->GetYaxis()->GetXmax()));
             //background
             tempHistName = tempBackgroundName;
             tempHistName.replace(find(tempHistName.begin(), tempHistName.end(), '$')-tempHistName.begin(), 1, pair);
             background_vector.push_back((TH2D*)inputbcg->Get((tempHistName+category).c_str()));
+            //result, but uses signal template
+            result_vector.push_back(new TH1D((tempHistName+"Result"+category).c_str(), (pair+" "+category).c_str(), signal_vector.back()->GetNbinsY(), signal_vector.back()->GetYaxis()->GetXmin(), signal_vector.back()->GetYaxis()->GetXmax()));
+            result_vector_nobcgfit.push_back(new TH1D((tempHistName+"Result"+category).c_str(), (pair+" "+category).c_str(), signal_vector.back()->GetNbinsY(), signal_vector.back()->GetYaxis()->GetXmin(), signal_vector.back()->GetYaxis()->GetXmax()));
+            result_vector_nobcgremoval.push_back(new TH1D((tempHistName+"Result"+category).c_str(), (pair+" "+category).c_str(), signal_vector.back()->GetNbinsY(), signal_vector.back()->GetYaxis()->GetXmin(), signal_vector.back()->GetYaxis()->GetXmax()));
+            //Chi2 comparison
+            Chi2withbcg_vector.push_back(new TH1D((tempHistName+"Chi2withbcg"+category).c_str(), (pair+" "+category+" bcg").c_str(), signal_vector.back()->GetNbinsY(), signal_vector.back()->GetYaxis()->GetXmin(), signal_vector.back()->GetYaxis()->GetXmax()));
+            Chi2withoutbcg_vector.push_back(new TH1D((tempHistName+"Chi2withoutbcg"+category).c_str(), (pair+" "+category+" no fitted bcg").c_str(), signal_vector.back()->GetNbinsY(), signal_vector.back()->GetYaxis()->GetXmin(), signal_vector.back()->GetYaxis()->GetXmax()));
+            Chi2withoutremovingbcg_vector.push_back(new TH1D((tempHistName+"Chi2withoutremovingbcg"+category).c_str(), (pair+" "+category+" not removed bcg").c_str(), signal_vector.back()->GetNbinsY(), signal_vector.back()->GetYaxis()->GetXmin(), signal_vector.back()->GetYaxis()->GetXmax()));
         }
     }
 
@@ -132,7 +135,7 @@ int main(int argc, char* argv[]){
     fit_func_custom_sig.FixParameter(3, 1.);
     fit_func_custom_sig.FixParameter(4, 0.);
     fit_func_custom_sig.SetParameter(5, 0.0013);
-    fit_func_custom_sig.SetParNames("N_{BW}", "m_{0}", "#Gamma_{0,BW}", "N_{Gauss}", "m_{0, Gauss}", "#sigma_{Gauss}");
+    fit_func_custom_sig.SetParNames("N_{BW}", "m_{0}", "#Gamma_{0,BW}", "N_{Gauss}", "m_{0,Gauss}", "#sigma_{Gauss}");
     fit_func_custom_bcg.SetParNames("c", "b", "a");
     differential_crossection_fit(result, MKKChi2Close, &fit_func_custom_sig, &fit_func_custom_bcg, par_value, par_error, folderWithDiagonal+"MKKwhole.pdf");
     //fitting ONCE the total m_Kpi
@@ -161,18 +164,31 @@ int main(int argc, char* argv[]){
     //backgrounds - one custom, with parameters p0, p1
     //being values at ends (p2, p3)
     auto custom_background = [&](double* x, double* p){
-        double a = (p[1]-p[0])/(p[3]-p[2]);
-        return a*(x[0]-p[2])+p[0];
+        //fitting behaves weird with demand of p0 & p1 >0
+        //so p0 & p1 will actually be square roots of the end values
+        double a = (p[1]*p[1]-p[0]*p[0])/(p[3]-p[2]);
+        return a*(x[0]-p[2])+p[0]*p[0];
     };
     TF1* fit_func_bcg = new TF1("fit_func_bcg", custom_background, 0.8, 1.0, 4);
     TF1* fit_func_empty_bcg = new TF1("fit_func_bcg", "0.", 0.8, 1.0);
+    //custom backgroundfrom the paper
+    auto even_more_custom_background = [&](double* x, double* p){
+        double A = p[0];
+        double B = p[1];
+        double C = p[2];
+        double m = x[0];
+        double mK = 0.493677;
+        return (1-exp((2*mK-m)/C))*pow(m/(2*mK), A)+B*(m/(2*mK)-1);
+    };
+    TF1* fit_func_paper_bcg = new TF1("fit_func_paper_bcg", even_more_custom_background, 0.8, 1.0, 3);
+    TF1* fit_func_for_Kstar = new TF1("fit_func_for_Kstar", "pol2", 0.8, 1.0);
     //substracting one from another
     //fitting the difference
     //and filling the result
     for(size_t i = 0; i<pairTab.size(); i++){
         for(size_t j = 0; j<allCategories.size(); j++){
-            TH2D* bcg_pointer = background_vector[i*allCategories.size()+j];
-            TH2D* sig_pointer = signal_vector[i*allCategories.size()+j];
+            TH2D* bcg_pointer = (TH2D*)background_vector[i*allCategories.size()+j]->Clone();
+            TH2D* sig_pointer = (TH2D*)signal_vector[i*allCategories.size()+j]->Clone();
             //background fitting moved from binned to overall sum
             //background still removed like that
             int bcg_bin = bcg_pointer->GetXaxis()->FindBin(bcgRegion[i]);
@@ -183,22 +199,13 @@ int main(int argc, char* argv[]){
             for(Int_t k = 0; k<sig_pointer->GetNbinsY(); k++){
                 TH1D* sig_slice = sig_pointer->ProjectionX("_bcg", k+1, k+1, "e");
                 //fitting and filling result
-                fit_func_sig->SetParameters(6., fitMaximum[i], fitWidth[i]);
-                fit_func_sig->SetParLimits(0, 0, 1e9);
-                fit_func_sig->SetParLimits(1, fitMaximum[i]-fitWidth[i]*5, fitMaximum[i]+fitWidth[i]*5);
-                if(fixWidthsInPlace){
-                    fit_func_sig->FixParameter(2, fitWidth[i]);
-                } else{
-                    fit_func_sig->SetParLimits(2, 0, fitWidth[i]*10);
-                }
-                fit_func_sig->SetRange(fitMaximum[i]-std::max(fitWidth[i]*5, 0.1), sig_slice->GetXaxis()->GetXmax());
+                fit_func_sig->SetParameters(100., fitMaximum[i], fitWidth[i]);
+                fit_func_sig->SetRange(sig_slice->GetBinLowEdge(GetFirstNonzeroBinNumber(sig_slice)), 1.3);
                 //custom setting background function - p2 & p3 are the ends of the range
-                fit_func_bcg->SetRange(fitMaximum[i]-std::max(fitWidth[i]*5, 0.1), sig_slice->GetXaxis()->GetXmax());
+                fit_func_bcg->SetRange(sig_slice->GetBinLowEdge(GetFirstNonzeroBinNumber(sig_slice)), 1.3);
                 fit_func_bcg->SetParameters(0., 0., fit_func_bcg->GetXmin(), fit_func_bcg->GetXmax());
                 fit_func_bcg->FixParameter(2, fit_func_bcg->GetXmin());
                 fit_func_bcg->FixParameter(3, fit_func_bcg->GetXmax());
-                fit_func_bcg->SetParLimits(0, 0., 1e9);
-                fit_func_bcg->SetParLimits(1, 0., 1e9);
                 double par_value, par_error;
                 std::string newTitle = baseOfTitle;
                 newTitle += std::to_string(sig_pointer->GetYaxis()->GetBinLowEdge(k+1))+" - ";
@@ -220,8 +227,8 @@ int main(int argc, char* argv[]){
     //special fitting without the background
     for(size_t i = 0; i<pairTab.size(); i++){
         for(size_t j = 0; j<allCategories.size(); j++){
-            TH2D* bcg_pointer = background_vector[i*allCategories.size()+j];
-            TH2D* sig_pointer = signal_vector[i*allCategories.size()+j];
+            TH2D* bcg_pointer = (TH2D*)background_vector[i*allCategories.size()+j]->Clone();
+            TH2D* sig_pointer = (TH2D*)signal_vector[i*allCategories.size()+j]->Clone();
             //background fitting moved from binned to overall sum
             //background still removed like that
             int bcg_bin = bcg_pointer->GetXaxis()->FindBin(bcgRegion[i]);
@@ -232,16 +239,9 @@ int main(int argc, char* argv[]){
             for(Int_t k = 0; k<sig_pointer->GetNbinsY(); k++){
                 TH1D* sig_slice = sig_pointer->ProjectionX("_nobcg", k+1, k+1, "e");
                 //fitting and filling result
-                fit_func_sig->SetParameters(6., fitMaximum[i], fitWidth[i]);
-                fit_func_sig->SetParLimits(0, 0, 1e9);
-                fit_func_sig->SetParLimits(1, fitMaximum[i]-fitWidth[i]*5, fitMaximum[i]+fitWidth[i]*5);
-                if(fixWidthsInPlace){
-                    fit_func_sig->FixParameter(2, fitWidth[i]);
-                } else{
-                    fit_func_sig->SetParLimits(2, 0, fitWidth[i]*10);
-                }
-                fit_func_sig->SetRange(fitMaximum[i]-std::max(fitWidth[i]*5, 0.1), sig_slice->GetXaxis()->GetXmax());
-                fit_func_empty_bcg->SetRange(fitMaximum[i]-std::max(fitWidth[i]*5, 0.1), sig_slice->GetXaxis()->GetXmax());
+                fit_func_sig->SetParameters(100., fitMaximum[i], fitWidth[i]);
+                fit_func_sig->SetRange(sig_slice->GetBinLowEdge(GetFirstNonzeroBinNumber(sig_slice)), 1.3);
+                fit_func_empty_bcg->SetRange(sig_slice->GetBinLowEdge(GetFirstNonzeroBinNumber(sig_slice)), 1.3);
                 double par_value, par_error;
                 std::string newTitle = baseOfTitle;
                 newTitle += std::to_string(sig_pointer->GetYaxis()->GetBinLowEdge(k+1))+" - ";
@@ -252,7 +252,52 @@ int main(int argc, char* argv[]){
                 double chi2, ndf;
                 chi2 = tempPair.first;
                 ndf = tempPair.second;
+                double bin_width = result_vector_nobcgfit[i*allCategories.size()+j]->GetBinWidth(k+1);
+                par_value *= bin_width;
+                par_error *= bin_width;
+                result_vector_nobcgfit[i*allCategories.size()+j]->SetBinContent(k+1, par_value);
+                result_vector_nobcgfit[i*allCategories.size()+j]->SetBinError(k+1, par_error);
                 Chi2withoutbcg_vector[i*allCategories.size()+j]->SetBinContent(k+1, chi2/ndf);
+            }
+        }
+    }
+    //even more special fitting without removing the background
+    for(size_t i = 0; i<pairTab.size(); i++){
+        TF1* bcg_func;
+        //pol2 background for Kstar (0,1)
+        //custom for phi (2)
+        if(i!=2){
+            bcg_func = fit_func_for_Kstar;
+        } else if(i==2){
+            bcg_func = fit_func_paper_bcg;
+        }
+        //actual fitting
+        for(size_t j = 0; j<allCategories.size(); j++){
+            TH2D* sig_pointer = (TH2D*)signal_vector[i*allCategories.size()+j]->Clone();
+            //for keeping title
+            std::string baseOfTitle = std::string(sig_pointer->GetTitle())+" ";
+            for(Int_t k = 0; k<sig_pointer->GetNbinsY(); k++){
+                TH1D* sig_slice = sig_pointer->ProjectionX("_nobcg", k+1, k+1, "e");
+                //fitting and filling result
+                fit_func_sig->SetParameters(100., fitMaximum[i], fitWidth[i]);
+                fit_func_sig->SetRange(sig_slice->GetBinLowEdge(GetFirstNonzeroBinNumber(sig_slice)), 1.3);
+                bcg_func->SetRange(sig_slice->GetBinLowEdge(GetFirstNonzeroBinNumber(sig_slice)), 1.3);
+                double par_value, par_error;
+                std::string newTitle = baseOfTitle;
+                newTitle += std::to_string(sig_pointer->GetYaxis()->GetBinLowEdge(k+1))+" - ";
+                newTitle += std::to_string(sig_pointer->GetYaxis()->GetBinUpEdge(k+1));
+                newTitle += " NOT REMOVED BACKGROUND";
+                sig_slice->SetTitle(newTitle.c_str());
+                auto tempPair = differential_crossection_fit(result, sig_slice, fit_func_sig, bcg_func, par_value, par_error);
+                double chi2, ndf;
+                chi2 = tempPair.first;
+                ndf = tempPair.second;
+                double bin_width = result_vector_nobcgremoval[i*allCategories.size()+j]->GetBinWidth(k+1);
+                par_value *= bin_width;
+                par_error *= bin_width;
+                result_vector_nobcgremoval[i*allCategories.size()+j]->SetBinContent(k+1, par_value);
+                result_vector_nobcgremoval[i*allCategories.size()+j]->SetBinError(k+1, par_error);
+                Chi2withoutremovingbcg_vector[i*allCategories.size()+j]->SetBinContent(k+1, chi2/ndf);
             }
         }
     }
@@ -304,6 +349,8 @@ int main(int argc, char* argv[]){
     for(size_t i = 0; i<pairTab.size(); i++){
         for(size_t j = 0; j<allCategories.size(); j++){
             draw_and_save(result_vector[i*allCategories.size()+j], "~/star-upc/", "M"+pairTab[i]+allCategories[j], pairTab[i]+" "+allCategories[j]+";"+allCategories[j]+";entries", "e");
+            draw_and_save(result_vector_nobcgfit[i*allCategories.size()+j], "~/star-upc/", "M"+pairTab[i]+allCategories[j]+"nobcgfit", pairTab[i]+" "+allCategories[j]+";"+allCategories[j]+";entries", "e");
+            draw_and_save(result_vector_nobcgremoval[i*allCategories.size()+j], "~/star-upc/", "M"+pairTab[i]+allCategories[j]+"nobcgremoval", pairTab[i]+" "+allCategories[j]+";"+allCategories[j]+";entries", "e");
         }
     }
     //Chi2 drawing
@@ -314,14 +361,16 @@ int main(int argc, char* argv[]){
             tempStyle.cd();
             gROOT->ForceStyle();
             TCanvas* resultCanvas = new TCanvas("resultCanvas", "resultCanvas", 4000, 2400);
-            Chi2withbcg_vector[i*allCategories.size()+j]->SetMinimum(0.5);
-            Chi2withbcg_vector[i*allCategories.size()+j]->SetMaximum(1.1*std::max(Chi2withbcg_vector[i*allCategories.size()+j]->GetMaximum(), Chi2withoutbcg_vector[i*allCategories.size()+j]->GetMaximum()));
+            Chi2withbcg_vector[i*allCategories.size()+j]->SetMinimum(0.);
+            Chi2withbcg_vector[i*allCategories.size()+j]->SetMaximum(1.1*std::max(std::max(Chi2withbcg_vector[i*allCategories.size()+j]->GetMaximum(), Chi2withoutbcg_vector[i*allCategories.size()+j]->GetMaximum()), Chi2withoutremovingbcg_vector[i*allCategories.size()+j]->GetMaximum()));
             Chi2withbcg_vector[i*allCategories.size()+j]->Draw("hist");
             Chi2withoutbcg_vector[i*allCategories.size()+j]->Draw("hist same");
+            Chi2withoutremovingbcg_vector[i*allCategories.size()+j]->Draw("hist same");
             resultCanvas->UseCurrentStyle();
             Chi2withbcg_vector[i*allCategories.size()+j]->SetTitle((pairTab[i]+" "+allCategories[j]+";"+allCategories[j]+";#chi^{2}/ndf").c_str());
             Chi2withbcg_vector[i*allCategories.size()+j]->SetLineColor(kBlue);
             Chi2withoutbcg_vector[i*allCategories.size()+j]->SetLineColor(kRed);
+            Chi2withoutremovingbcg_vector[i*allCategories.size()+j]->SetLineColor(kGreen+2);
             resultCanvas->BuildLegend();
             resultCanvas->Update();
             resultCanvas->SaveAs(("~/star-upc/M"+pairTab[i]+allCategories[j]+"Chi2.pdf").c_str());
@@ -331,6 +380,14 @@ int main(int argc, char* argv[]){
     //the end
     theApp.Run();
     return 0;
+}
+
+int GetFirstNonzeroBinNumber(TH1* input){
+    for(int i = 1; i<=input->GetNbinsX(); i++){
+        if(input->GetBinContent(i)!=0.0)
+            return i;
+    }
+    return -1;
 }
 
 void draw_and_save(TH1D* data, std::string folderWithDiagonal, std::string name, std::string title, std::string options){
@@ -505,7 +562,9 @@ std::pair<double, double> differential_crossection_fit(TPad* pad, TH1D* slice, T
         param_value = 0.;
         param_error = 0.;
     } else{
-        param_value = fitting_function_signal_COPY->GetParameter(0)/slice->GetXaxis()->GetBinWidth(0);
+        //absolute value needed because of sometimes negative width
+        //andthe constant gets flipped sign too
+        param_value = abs(fitting_function_signal_COPY->GetParameter(0)/slice->GetXaxis()->GetBinWidth(0));
         param_error = fitting_function_signal_COPY->GetParError(0)/slice->GetXaxis()->GetBinWidth(0);
     }
     printf("Accepted current parameters\n");
