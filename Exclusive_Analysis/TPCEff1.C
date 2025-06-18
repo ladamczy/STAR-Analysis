@@ -410,7 +410,7 @@ public:
 };
 
 void TPCEff1() {
-  std::cout << "Starting CheckAnything.C" << std::endl;
+  std::cout << "Starting TPC efficiency for etaPhiEfficiency_16_01_19_delta015_twoRuns" << std::endl;
   
   EfficiencyChecker checker;
   
@@ -446,6 +446,6 @@ void TPCEff1() {
   // Debug: Compare bin content with interpolation
   checker.DebugEfficiencyValues();
   
-  std::cout << "CheckAnything.C completed successfully" << std::endl;
+  std::cout << "TPC efficiency for etaPhiEfficiency_16_01_19_delta015_twoRuns completed successfully" << std::endl;
   
 }
