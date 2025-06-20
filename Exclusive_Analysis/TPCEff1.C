@@ -243,17 +243,18 @@ public:
       projPt->SetStats(0);
       
       // Check if we need to normalize
-      if(projPt->GetMaximum() > 1.1) {
+      if(projPt->GetMaximum() > 1.05) {
         std::cout << "Note: pT Histogram for " << particleNames[i] << " appears to need normalization." << std::endl;
         std::cout << "  Maximum value: " << projPt->GetMaximum() << std::endl;
         
-        // Normalize to have values between 0 and 1 if larger than 1.1
-        if(projPt->GetMaximum() > 10.0) {
-          // Calculate scale factor based on max or use predetermined scale factor
-          double scaleFactor = 1.0 / projPt->GetMaximum();
-          projPt->Scale(scaleFactor);
-          std::cout << "  Applied scaling factor: " << scaleFactor << std::endl;
-        }
+        // Calculate number of integrated bins
+        int nBinsX = hist->GetXaxis()->FindBin(80.0) - hist->GetXaxis()->FindBin(-80.0) + 1;
+        int nBinsZ = hist->GetZaxis()->FindBin(0.9) - hist->GetZaxis()->FindBin(-0.9) + 1;
+        int totalIntegratedBins = nBinsX * nBinsZ;
+
+        // Scale to get average instead of sum
+        projPt->Scale(1.0 / totalIntegratedBins);
+        std::cout << "  Applied scaling to average over " << totalIntegratedBins << " bins." << std::endl;
       }
       
       projPt->GetYaxis()->SetRangeUser(0.0, 1.1);  // Adjusted for proper efficiency range
@@ -281,15 +282,18 @@ public:
       projEta->SetStats(0);
       
       // Normalize if needed
-      if(projEta->GetMaximum() > 1.1) {
+      if(projEta->GetMaximum() > 1.05) {
         std::cout << "Note: Eta Histogram for " << particleNames[i] << " appears to need normalization." << std::endl;
-        std::cout << "  Maximum value: " << projEta->GetMaximum() << std::endl;
-        
-        if(projEta->GetMaximum() > 10.0) {
-          double scaleFactor = 1.0 / projEta->GetMaximum();
-          projEta->Scale(scaleFactor);
-          std::cout << "  Applied scaling factor: " << scaleFactor << std::endl;
-        }
+        std::cout << "  Maximum value: " << projEta->GetMaximum() << std::endl;  
+      
+        // Calculate number of integrated bins
+        int nBinsX = hist->GetXaxis()->FindBin(80.0) - hist->GetXaxis()->FindBin(-80.0) + 1;
+        int nBinsY = hist->GetYaxis()->FindBin(2.0) - hist->GetYaxis()->FindBin(0.0) + 1;
+        int totalIntegratedBins = nBinsX * nBinsY;
+
+        // Scale to get average instead of sum
+        projEta->Scale(1.0 / totalIntegratedBins);
+        std::cout << "  Applied scaling to average over " << totalIntegratedBins << " bins." << std::endl;
       }
       
       projEta->GetYaxis()->SetRangeUser(0.0, 1.1);
@@ -302,35 +306,38 @@ public:
       canvasZ->cd(i+1);
       
       // Efficiency projection vs z-vertex
-      TH1D* projZ = hist->ProjectionX(Form("projZ_%d", i), 
+      TH1D* projVerZ = hist->ProjectionX(Form("projVerZ_%d", i), 
                                     hist->GetYaxis()->FindBin(0.0),    // pt bin
                                     hist->GetYaxis()->FindBin(2.0),    // pt bin
                                     hist->GetZaxis()->FindBin(-0.9),   // eta bin
                                     hist->GetZaxis()->FindBin(0.9));   // eta bin
       
-      projZ->SetTitle(Form("%s Efficiency vs Vtx_{z} (0.0 < p_{T} < 2.0 GeV/c, |#eta| < 0.9)", particleNames[i]));
-      projZ->GetXaxis()->SetTitle("Vtx_{z} (cm)");
-      projZ->GetYaxis()->SetTitle("Efficiency");
-      projZ->SetLineColor(colors[i]);
-      projZ->SetLineWidth(2);
-      projZ->SetStats(0);
+      projVerZ->SetTitle(Form("%s Efficiency vs Vtx_{z} (0.0 < p_{T} < 2.0 GeV/c, |#eta| < 0.9)", particleNames[i]));
+      projVerZ->GetXaxis()->SetTitle("Vtx_{z} (cm)");
+      projVerZ->GetYaxis()->SetTitle("Efficiency");
+      projVerZ->SetLineColor(colors[i]);
+      projVerZ->SetLineWidth(2);
+      projVerZ->SetStats(0);
       
       // Normalize if needed
-      if(projZ->GetMaximum() > 1.1) {
+      if(projVerZ->GetMaximum() > 1.05) {
         std::cout << "Note: Z-Vertex Histogram for " << particleNames[i] << " appears to need normalization." << std::endl;
-        std::cout << "  Maximum value: " << projZ->GetMaximum() << std::endl;
+        std::cout << "  Maximum value: " << projVerZ->GetMaximum() << std::endl;
         
-        if(projZ->GetMaximum() > 10.0) {
-          double scaleFactor = 1.0 / projZ->GetMaximum();
-          projZ->Scale(scaleFactor);
-          std::cout << "  Applied scaling factor: " << scaleFactor << std::endl;
-        }
+        // Calculate number of integrated bins
+        int nBinsY = hist->GetYaxis()->FindBin(2.0) - hist->GetYaxis()->FindBin(0.0) + 1;
+        int nBinsZ = hist->GetZaxis()->FindBin(0.9) - hist->GetZaxis()->FindBin(-0.9) + 1;
+        int totalIntegratedBins = nBinsY * nBinsZ;
+
+        // Scale to get average instead of sum
+        projVerZ->Scale(1.0 / totalIntegratedBins);
+        std::cout << "  Applied scaling to average over " << totalIntegratedBins << " bins." << std::endl;
       }
       
-      projZ->GetYaxis()->SetRangeUser(0.0, 1.1);
-      projZ->GetXaxis()->SetRangeUser(-90.5, 90.5);  // Focus on reasonable z-vertex range
-      projZ->SetMarkerColor(colors[i]);
-      projZ->Draw("HIST P");
+      projVerZ->GetYaxis()->SetRangeUser(0.0, 1.1);
+      projVerZ->GetXaxis()->SetRangeUser(-90.5, 90.5);  // Focus on reasonable z-vertex range
+      projVerZ->SetMarkerColor(colors[i]);
+      projVerZ->Draw("HIST P");
     }
     
     // Save all canvases
@@ -416,7 +423,7 @@ void TPCEff1() {
   
   // Try to find the histogram file
   const char* filePaths[] = {
-    "/home/sbhosale/Work/STAR-Analysis/share/etaPhiEfficiency_16_01_19_delta015_twoRuns.root"
+    "../share/etaPhiEfficiency_16_01_19_delta015_twoRuns.root"
   };
   
   bool loaded = false;
