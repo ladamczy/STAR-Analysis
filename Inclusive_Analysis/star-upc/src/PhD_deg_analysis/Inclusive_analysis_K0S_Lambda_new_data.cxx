@@ -92,6 +92,8 @@ int main(int argc, char** argv){
     outsideprocessing.AddHistogram(TH1D("MppChi2", ";m_{p^{+}p^{-}} [GeV];Number of pairs", 50, 1.5, 3.5));
     //adding mass histograms grouped by category
     getCategoryHistograms(outsideprocessing, pairTab);
+    //adding TOF data test
+    outsideprocessing.AddHistogram(TH2D("trackInfo", "TOF data;;", 0, 0, 0, 0, 0, 0));
 
     //processing
     //defining TreeProcessor
@@ -113,6 +115,7 @@ int main(int argc, char** argv){
         //helpful variables
         std::vector<StUPCTrack*> vector_Track_positive;
         std::vector<StUPCTrack*> vector_Track_negative;
+        std::vector<string> TOFlength, TOFtime;
         StUPCTrack* tempTrack;
         double beamValues[4];
         TVector3 vertexPrimary;
@@ -122,13 +125,16 @@ int main(int argc, char** argv){
         bool isdEdxOk, isTOFOk, isWhicheverPrimary;
         string tempPairName;
 
-        //filling parInfo histogram in proper order
+        //filling pairInfo & trackInfo histograms in proper order
         insideprocessing.Fill("pairInfo", "OK", 0.0);
         insideprocessing.Fill("pairInfo", "TOF wrong, total", 0.0);
         insideprocessing.Fill("pairInfo", "TOF wrong, Primary", 0.0);
         insideprocessing.Fill("pairInfo", "TOF wrong, not Primary", 0.0);
         insideprocessing.Fill("pairInfo", "dEdx wrong", 0.0);
         insideprocessing.Fill("pairInfo", "Both wrong", 0.0);
+        insideprocessing.Fill("trackInfo", "TOF length > 0", "TOF time > 0", 0.0);
+        insideprocessing.Fill("trackInfo", "TOF length = 0", "TOF time = 0", 0.0);
+        insideprocessing.Fill("trackInfo", "TOF length < 0", "TOF time < 0", 0.0);
 
         //actual loop
         while(myReader.Next()){
@@ -198,7 +204,32 @@ int main(int argc, char** argv){
                     vector_Track_negative.push_back(tempTrack);
                 }
                 nOfGoodTracks++;
+                //test if the track has TOF info
+                //length
+                if(tempTrack->getTofPathLength()>0){
+                    TOFlength.push_back("TOF length > 0");
+                } else if(tempTrack->getTofPathLength()==0){
+                    TOFlength.push_back("TOF length = 0");
+                } else if(tempTrack->getTofPathLength()<0){
+                    TOFlength.push_back("TOF length < 0");
+                }
+                //time
+                if(tempTrack->getTofTime()>0){
+                    TOFtime.push_back("TOF time > 0");
+                } else if(tempTrack->getTofTime()==0){
+                    TOFtime.push_back("TOF time = 0");
+                } else if(tempTrack->getTofTime()<0){
+                    TOFtime.push_back("TOF time < 0");
+                }
             }
+            if(nOfGoodTracks>=2){
+                //saving
+                for(size_t i = 0; i<TOFlength.size(); i++){
+                    insideprocessing.Fill("trackInfo", TOFlength[i].c_str(), TOFtime[i].c_str(), 1.0);
+                }
+            }
+            TOFlength.clear();
+            TOFtime.clear();
 
             //filling a chi2 map with keys for all the possibilities
             for(auto const& imap:sigmaMap){
@@ -334,6 +365,8 @@ int main(int argc, char** argv){
     //merging and tidying up
     outsideprocessing.Merge();
     outsideprocessing.GetPointerAfterMerge1D("pairInfo")->LabelsDeflate();
+    outsideprocessing.GetPointerAfterMerge2D("trackInfo")->LabelsDeflate("X");
+    outsideprocessing.GetPointerAfterMerge2D("trackInfo")->LabelsDeflate("Y");
 
     //setting up a tree & output file
     string path = string(argv[0]);
