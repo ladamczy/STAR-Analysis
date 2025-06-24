@@ -199,7 +199,7 @@ int main(int argc, char* argv[]){
             for(Int_t k = 0; k<sig_pointer->GetNbinsY(); k++){
                 TH1D* sig_slice = sig_pointer->ProjectionX("_bcg", k+1, k+1, "e");
                 //fitting and filling result
-                fit_func_sig->SetParameters(100., fitMaximum[i], fitWidth[i]);
+                fit_func_sig->SetParameters(10., fitMaximum[i], fitWidth[i]);
                 fit_func_sig->SetRange(sig_slice->GetBinLowEdge(GetFirstNonzeroBinNumber(sig_slice)), 1.3);
                 //custom setting background function - p2 & p3 are the ends of the range
                 fit_func_bcg->SetRange(sig_slice->GetBinLowEdge(GetFirstNonzeroBinNumber(sig_slice)), 1.3);
@@ -239,7 +239,7 @@ int main(int argc, char* argv[]){
             for(Int_t k = 0; k<sig_pointer->GetNbinsY(); k++){
                 TH1D* sig_slice = sig_pointer->ProjectionX("_nobcg", k+1, k+1, "e");
                 //fitting and filling result
-                fit_func_sig->SetParameters(100., fitMaximum[i], fitWidth[i]);
+                fit_func_sig->SetParameters(10., fitMaximum[i], fitWidth[i]);
                 fit_func_sig->SetRange(sig_slice->GetBinLowEdge(GetFirstNonzeroBinNumber(sig_slice)), 1.3);
                 fit_func_empty_bcg->SetRange(sig_slice->GetBinLowEdge(GetFirstNonzeroBinNumber(sig_slice)), 1.3);
                 double par_value, par_error;
@@ -268,8 +268,11 @@ int main(int argc, char* argv[]){
         //custom for phi (2)
         if(i!=2){
             bcg_func = fit_func_for_Kstar;
+            fit_func_sig->SetRange(0.7, 1.1);
+            bcg_func->SetRange(0.7, 1.1);
         } else if(i==2){
             bcg_func = fit_func_paper_bcg;
+            bcg_func->SetParameters(1, 1, 1);
         }
         //actual fitting
         for(size_t j = 0; j<allCategories.size(); j++){
@@ -279,9 +282,11 @@ int main(int argc, char* argv[]){
             for(Int_t k = 0; k<sig_pointer->GetNbinsY(); k++){
                 TH1D* sig_slice = sig_pointer->ProjectionX("_nobcg", k+1, k+1, "e");
                 //fitting and filling result
-                fit_func_sig->SetParameters(100., fitMaximum[i], fitWidth[i]);
-                fit_func_sig->SetRange(sig_slice->GetBinLowEdge(GetFirstNonzeroBinNumber(sig_slice)), 1.3);
-                bcg_func->SetRange(sig_slice->GetBinLowEdge(GetFirstNonzeroBinNumber(sig_slice)), 1.3);
+                fit_func_sig->SetParameters(10., fitMaximum[i], fitWidth[i]);
+                if(i==2){
+                    fit_func_sig->SetRange(sig_slice->GetBinLowEdge(GetFirstNonzeroBinNumber(sig_slice)), 1.2);
+                    bcg_func->SetRange(sig_slice->GetBinLowEdge(GetFirstNonzeroBinNumber(sig_slice)), 1.2);
+                }
                 double par_value, par_error;
                 std::string newTitle = baseOfTitle;
                 newTitle += std::to_string(sig_pointer->GetYaxis()->GetBinLowEdge(k+1))+" - ";
