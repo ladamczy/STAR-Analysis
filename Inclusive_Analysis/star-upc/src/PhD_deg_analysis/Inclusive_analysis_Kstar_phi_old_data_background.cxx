@@ -63,8 +63,8 @@ int main(int argc, char** argv){
     ProcessingOutsideLoop outsideprocessing;
     //mixing TOF between events proved to be a failure
     //mass histograms with TOF first and mixing event pairs after
-    outsideprocessing.AddHistogram(TH1D("MKpiChi2bcgTOF", ";m_{K^{+}#pi^{-}} [GeV];Number of pairs", 500, 0.5, 2.0));
-    outsideprocessing.AddHistogram(TH1D("MpiKChi2bcgTOF", ";m_{#pi^{+}K^{-}} [GeV];Number of pairs", 500, 0.5, 2.0));
+    outsideprocessing.AddHistogram(TH1D("MKpiChi2bcgTOF", ";m_{K^{+}#pi^{-}} [GeV];Number of pairs", 200, 0.5, 2.0));
+    outsideprocessing.AddHistogram(TH1D("MpiKChi2bcgTOF", ";m_{#pi^{+}K^{-}} [GeV];Number of pairs", 200, 0.5, 2.0));
     outsideprocessing.AddHistogram(TH1D("MppiChi2bcgTOF", ";m_{p^{+}#pi^{-}} [GeV];Number of pairs", 500, 1.0, 2.5));
     outsideprocessing.AddHistogram(TH1D("MpipChi2bcgTOF", ";m_{#pi^{+}p^{-}} [GeV];Number of pairs", 500, 1.0, 2.5));
     outsideprocessing.AddHistogram(TH1D("MKKChi2bcgTOF", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 500, 0.9, 2.4));
