@@ -95,6 +95,7 @@ int main(int argc, char** argv){
     //adding TOF data test
     outsideprocessing.AddHistogram(TH2D("trackInfo", "TOF data;;", 0, 0, 0, 0, 0, 0));
     outsideprocessing.AddHistogram(TH1D("TOFlength", "TOF track length;TOF length [cm];Number of tracks", 50, -100, 300));
+    outsideprocessing.AddHistogram(TH1D("TOFtime", "TOF time;TOF time [ns];Number of tracks", 70, -1e4, 6e4));
 
     //processing
     //defining TreeProcessor
@@ -117,7 +118,7 @@ int main(int argc, char** argv){
         std::vector<StUPCTrack*> vector_Track_positive;
         std::vector<StUPCTrack*> vector_Track_negative;
         std::vector<string> TOFlength, TOFtime;
-        std::vector<double> TOFlengthValue;
+        std::vector<double> TOFlengthValue, TOFtimeValue;
         StUPCTrack* tempTrack;
         double beamValues[4];
         TVector3 vertexPrimary;
@@ -224,6 +225,7 @@ int main(int argc, char** argv){
                 } else if(tempTrack->getTofTime()<0){
                     TOFtime.push_back("TOF time < 0");
                 }
+                TOFtimeValue.push_back(tempTrack->getTofTime());
             }
             if(nOfGoodTracks>=2){
                 //saving
@@ -232,11 +234,13 @@ int main(int argc, char** argv){
                 }
                 for(size_t i = 0; i<TOFlengthValue.size(); i++){
                     insideprocessing.Fill("TOFlength", TOFlengthValue[i]);
+                    insideprocessing.Fill("TOFtime", TOFtimeValue[i]);
                 }
             }
             TOFlength.clear();
             TOFtime.clear();
             TOFlengthValue.clear();
+            TOFtimeValue.clear();
 
             //filling a chi2 map with keys for all the possibilities
             for(auto const& imap:sigmaMap){
