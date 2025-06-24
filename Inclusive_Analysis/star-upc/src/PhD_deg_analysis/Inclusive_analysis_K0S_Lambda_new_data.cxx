@@ -94,8 +94,9 @@ int main(int argc, char** argv){
     getCategoryHistograms(outsideprocessing, pairTab);
     //adding TOF data test
     outsideprocessing.AddHistogram(TH2D("trackInfo", "TOF data;;", 0, 0, 0, 0, 0, 0));
-    outsideprocessing.AddHistogram(TH1D("TOFlength", "TOF track length;TOF length [cm];Number of tracks", 50, -100, 300));
+    outsideprocessing.AddHistogram(TH1D("TOFlength", "TOF track length;TOF length [cm];Number of tracks", 100, 0, 1000));
     outsideprocessing.AddHistogram(TH1D("TOFtime", "TOF time;TOF time [ns];Number of tracks", 70, -1e4, 6e4));
+    outsideprocessing.AddHistogram(TH1D("TOFtimePrecise", "TOF time;TOF time [ns];Number of tracks", 100, 0, 100));
 
     //processing
     //defining TreeProcessor
@@ -235,6 +236,7 @@ int main(int argc, char** argv){
                 for(size_t i = 0; i<TOFlengthValue.size(); i++){
                     insideprocessing.Fill("TOFlength", TOFlengthValue[i]);
                     insideprocessing.Fill("TOFtime", TOFtimeValue[i]);
+                    insideprocessing.Fill("TOFtimePrecise", TOFtimeValue[i]);
                 }
             }
             TOFlength.clear();
