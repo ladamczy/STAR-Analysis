@@ -119,6 +119,11 @@ int main(int argc, char* argv[]){
         }
     }
 
+    //for skipping
+    std::string wannaSkip;
+    bool skippedFitting = false;
+    bool skippedFittingNoBackground = false;
+    bool skippedFittingNotRemovedBackground = false;
     //###########################################################
     //                FITTING
     //###########################################################
@@ -129,6 +134,11 @@ int main(int argc, char* argv[]){
     conv_sig.SetNofPointsFFT(10000);
     TF1 fit_func_custom_sig("fit_func_custom_sig", conv_sig, 0.99, 1.05, 6);
     TF1 fit_func_custom_bcg("fit_func_custom_bcg", "pol2", 0.99, 1.05);
+    printf("If you want to skip the fitting of one-time things, write \"yes\"\n");
+    std::getline(std::cin, wannaSkip);
+    if(wannaSkip.find("yes")!=std::string::npos){
+        goto skipOneTimeFitting;
+    }
     fit_func_custom_sig.SetParameter(0, 9);
     fit_func_custom_sig.SetParameter(1, 1.02);
     fit_func_custom_sig.FixParameter(2, 0.00443);
@@ -158,6 +168,7 @@ int main(int argc, char* argv[]){
     fit_func_custom_sig.FixParameter(4, 0.);
     fit_func_custom_sig.SetParameter(5, 0.0013);
     differential_crossection_fit(result, MpiKChi2Close, &fit_func_custom_sig, &fit_func_custom_bcg, par_value, par_error, folderWithDiagonal+"MpiKwhole.pdf");
+skipOneTimeFitting:
 
     //fitting functions
     TF1* fit_func_sig = new TF1("fit_func_sig", "breitwigner", 0.8, 1.0);
@@ -185,6 +196,12 @@ int main(int argc, char* argv[]){
     //substracting one from another
     //fitting the difference
     //and filling the result
+    printf("If you want to skip the fitting, write \"yes\"\n");
+    std::getline(std::cin, wannaSkip);
+    if(wannaSkip.find("yes")!=std::string::npos){
+        skippedFitting = true;
+        goto fittingBackground;
+    }
     for(size_t i = 0; i<pairTab.size(); i++){
         for(size_t j = 0; j<allCategories.size(); j++){
             TH2D* bcg_pointer = (TH2D*)background_vector[i*allCategories.size()+j]->Clone();
@@ -224,7 +241,14 @@ int main(int argc, char* argv[]){
             }
         }
     }
+fittingBackground:
     //special fitting without the background
+    printf("If you want to skip the fitting (excluding background), write \"yes\"\n");
+    std::getline(std::cin, wannaSkip);
+    if(wannaSkip.find("yes")!=std::string::npos){
+        skippedFittingNoBackground = true;
+        goto notFittingBackground;
+    }
     for(size_t i = 0; i<pairTab.size(); i++){
         for(size_t j = 0; j<allCategories.size(); j++){
             TH2D* bcg_pointer = (TH2D*)background_vector[i*allCategories.size()+j]->Clone();
@@ -261,7 +285,14 @@ int main(int argc, char* argv[]){
             }
         }
     }
+notFittingBackground:
     //even more special fitting without removing the background
+    printf("If you want to skip the fitting without removing background, write \"yes\"\n");
+    std::getline(std::cin, wannaSkip);
+    if(wannaSkip.find("yes")!=std::string::npos){
+        skippedFittingNotRemovedBackground = true;
+        goto noBackground;
+    }
     for(size_t i = 0; i<pairTab.size(); i++){
         TF1* bcg_func;
         //pol2 background for Kstar (0,1)
@@ -306,6 +337,7 @@ int main(int argc, char* argv[]){
             }
         }
     }
+noBackground:
 
     result->Close();
     gStyle->SetOptStat(0);
@@ -353,9 +385,12 @@ int main(int argc, char* argv[]){
     //fits
     for(size_t i = 0; i<pairTab.size(); i++){
         for(size_t j = 0; j<allCategories.size(); j++){
-            draw_and_save(result_vector[i*allCategories.size()+j], "~/star-upc/", "M"+pairTab[i]+allCategories[j], pairTab[i]+" "+allCategories[j]+";"+allCategories[j]+";entries", "e");
-            draw_and_save(result_vector_nobcgfit[i*allCategories.size()+j], "~/star-upc/", "M"+pairTab[i]+allCategories[j]+"nobcgfit", pairTab[i]+" "+allCategories[j]+";"+allCategories[j]+";entries", "e");
-            draw_and_save(result_vector_nobcgremoval[i*allCategories.size()+j], "~/star-upc/", "M"+pairTab[i]+allCategories[j]+"nobcgremoval", pairTab[i]+" "+allCategories[j]+";"+allCategories[j]+";entries", "e");
+            if(!skippedFitting)
+                draw_and_save(result_vector[i*allCategories.size()+j], folderWithDiagonal, "M"+pairTab[i]+allCategories[j], pairTab[i]+" "+allCategories[j]+";"+allCategories[j]+";entries", "e");
+            if(!skippedFittingNoBackground)
+                draw_and_save(result_vector_nobcgfit[i*allCategories.size()+j], folderWithDiagonal, "M"+pairTab[i]+allCategories[j]+"nobcgfit", pairTab[i]+" "+allCategories[j]+";"+allCategories[j]+";entries", "e");
+            if(!skippedFittingNotRemovedBackground)
+                draw_and_save(result_vector_nobcgremoval[i*allCategories.size()+j], folderWithDiagonal, "M"+pairTab[i]+allCategories[j]+"nobcgremoval", pairTab[i]+" "+allCategories[j]+";"+allCategories[j]+";entries", "e");
         }
     }
     //Chi2 drawing
