@@ -413,7 +413,7 @@ noBackground:
             Chi2withoutremovingbcg_vector[i*allCategories.size()+j]->SetLineColor(kGreen+2);
             resultCanvas->BuildLegend();
             resultCanvas->Update();
-            resultCanvas->SaveAs(("~/star-upc/M"+pairTab[i]+allCategories[j]+"Chi2.pdf").c_str());
+            resultCanvas->SaveAs((folderWithDiagonal+"M"+pairTab[i]+allCategories[j]+"Chi2.pdf").c_str());
         }
     }
 
