@@ -16,13 +16,14 @@
 #include "TF1.h"
 #include "TF1Convolution.h"
 #include "TApplication.h"
+#include "TFitResult.h"
 
 #include "MyStyles.h"
 
 int GetFirstNonzeroBinNumber(TH1* input);
 void draw_and_save(TH1D* data, std::string folderWithDiagonal, std::string name, std::string title, std::string options = "");
 void draw_and_save_minus_background(TH1D* data, TH1D* bcg, std::string folderWithDiagonal, std::string name, std::string title, double bcg_region);
-std::pair<double, double> differential_crossection_fit(TPad* pad, TH1D* slice, TF1* fitting_function_signal, TF1* fitting_function_bcg, double& param_value, double& param_error, std::string draw_full_path = "");
+TFitResult differential_crossection_fit(TPad* pad, TH1D* slice, TF1* fitting_function_signal, TF1* fitting_function_bcg, std::string draw_full_path = "");
 
 int main(int argc, char* argv[]){
     //something used so that the histograms would draw
@@ -129,7 +130,6 @@ int main(int argc, char* argv[]){
     //###########################################################
     TCanvas* result = new TCanvas("result", "result", -1, 0, 1600, 900);
     //fitting ONCE the total m_KK
-    double par_value, par_error;
     TF1Convolution conv_sig("breitwigner", "gausn", 0.5, 1.5); //extra range for all your convolution needs
     conv_sig.SetNofPointsFFT(10000);
     TF1 fit_func_custom_sig("fit_func_custom_sig", conv_sig, 0.99, 1.05, 6);
@@ -147,7 +147,7 @@ int main(int argc, char* argv[]){
     fit_func_custom_sig.SetParameter(5, 0.0013);
     fit_func_custom_sig.SetParNames("N_{BW}", "m_{0}", "#Gamma_{0,BW}", "N_{Gauss}", "m_{0,Gauss}", "#sigma_{Gauss}");
     fit_func_custom_bcg.SetParNames("c", "b", "a");
-    differential_crossection_fit(result, MKKChi2Close, &fit_func_custom_sig, &fit_func_custom_bcg, par_value, par_error, folderWithDiagonal+"MKKwhole.pdf");
+    differential_crossection_fit(result, MKKChi2Close, &fit_func_custom_sig, &fit_func_custom_bcg, folderWithDiagonal+"MKKwhole.pdf");
     //fitting ONCE the total m_Kpi
     fit_func_custom_sig.SetRange(0.7, 1.1);
     fit_func_custom_bcg.SetRange(0.7, 1.1);
@@ -157,7 +157,7 @@ int main(int argc, char* argv[]){
     fit_func_custom_sig.FixParameter(3, 1.);
     fit_func_custom_sig.FixParameter(4, 0.);
     fit_func_custom_sig.SetParameter(5, 0.0013);
-    differential_crossection_fit(result, MKpiChi2Close, &fit_func_custom_sig, &fit_func_custom_bcg, par_value, par_error, folderWithDiagonal+"MKpiwhole.pdf");
+    differential_crossection_fit(result, MKpiChi2Close, &fit_func_custom_sig, &fit_func_custom_bcg, folderWithDiagonal+"MKpiwhole.pdf");
     //fitting ONCE the total m_piK
     fit_func_custom_sig.SetRange(0.7, 1.1);
     fit_func_custom_bcg.SetRange(0.7, 1.1);
@@ -167,7 +167,7 @@ int main(int argc, char* argv[]){
     fit_func_custom_sig.FixParameter(3, 1.);
     fit_func_custom_sig.FixParameter(4, 0.);
     fit_func_custom_sig.SetParameter(5, 0.0013);
-    differential_crossection_fit(result, MpiKChi2Close, &fit_func_custom_sig, &fit_func_custom_bcg, par_value, par_error, folderWithDiagonal+"MpiKwhole.pdf");
+    differential_crossection_fit(result, MpiKChi2Close, &fit_func_custom_sig, &fit_func_custom_bcg, folderWithDiagonal+"MpiKwhole.pdf");
 skipOneTimeFitting:
 
     //fitting functions
@@ -228,16 +228,18 @@ skipOneTimeFitting:
                 newTitle += std::to_string(sig_pointer->GetYaxis()->GetBinLowEdge(k+1))+" - ";
                 newTitle += std::to_string(sig_pointer->GetYaxis()->GetBinUpEdge(k+1));
                 sig_slice->SetTitle(newTitle.c_str());
-                auto tempPair = differential_crossection_fit(result, sig_slice, fit_func_sig, fit_func_bcg, par_value, par_error);
-                double chi2, ndf;
-                chi2 = tempPair.first;
-                ndf = tempPair.second;
-                double bin_width = result_vector[i*allCategories.size()+j]->GetBinWidth(k+1);
-                par_value *= bin_width;
-                par_error *= bin_width;
-                result_vector[i*allCategories.size()+j]->SetBinContent(k+1, par_value);
-                result_vector[i*allCategories.size()+j]->SetBinError(k+1, par_error);
-                Chi2withbcg_vector[i*allCategories.size()+j]->SetBinContent(k+1, chi2/ndf);
+                TFitResult tempResult = differential_crossection_fit(result, sig_slice, fit_func_sig, fit_func_bcg);
+                if(tempResult.Chi2()==0){
+                    result_vector[i*allCategories.size()+j]->SetBinContent(k+1, 0.);
+                    result_vector[i*allCategories.size()+j]->SetBinError(k+1, 0.);
+                } else{
+                    double bin_width = result_vector[i*allCategories.size()+j]->GetBinWidth(k+1);
+                    par_value = abs(tempResult.Parameter(0)/sig_slice->GetXaxis()->GetBinWidth(1)*bin_width);
+                    par_error = tempResult.ParError(0)/sig_slice->GetXaxis()->GetBinWidth(1)*bin_width;
+                    result_vector[i*allCategories.size()+j]->SetBinContent(k+1, par_value);
+                    result_vector[i*allCategories.size()+j]->SetBinError(k+1, par_error);
+                }
+                Chi2withbcg_vector[i*allCategories.size()+j]->SetBinContent(k+1, tempResult.Chi2()/tempResult.Ndf());
             }
         }
     }
@@ -272,16 +274,18 @@ fittingBackground:
                 newTitle += std::to_string(sig_pointer->GetYaxis()->GetBinUpEdge(k+1));
                 newTitle += " ZERO BACKGROUND";
                 sig_slice->SetTitle(newTitle.c_str());
-                auto tempPair = differential_crossection_fit(result, sig_slice, fit_func_sig, fit_func_empty_bcg, par_value, par_error);
-                double chi2, ndf;
-                chi2 = tempPair.first;
-                ndf = tempPair.second;
-                double bin_width = result_vector_nobcgfit[i*allCategories.size()+j]->GetBinWidth(k+1);
-                par_value *= bin_width;
-                par_error *= bin_width;
-                result_vector_nobcgfit[i*allCategories.size()+j]->SetBinContent(k+1, par_value);
-                result_vector_nobcgfit[i*allCategories.size()+j]->SetBinError(k+1, par_error);
-                Chi2withoutbcg_vector[i*allCategories.size()+j]->SetBinContent(k+1, chi2/ndf);
+                TFitResult tempResult = differential_crossection_fit(result, sig_slice, fit_func_sig, fit_func_empty_bcg);
+                if(tempResult.Chi2()==0){
+                    result_vector_nobcgfit[i*allCategories.size()+j]->SetBinContent(k+1, 0.);
+                    result_vector_nobcgfit[i*allCategories.size()+j]->SetBinError(k+1, 0.);
+                } else{
+                    double bin_width = result_vector_nobcgfit[i*allCategories.size()+j]->GetBinWidth(k+1);
+                    par_value = abs(tempResult.Parameter(0)/sig_slice->GetXaxis()->GetBinWidth(1)*bin_width);
+                    par_error = tempResult.ParError(0)/sig_slice->GetXaxis()->GetBinWidth(1)*bin_width;
+                    result_vector_nobcgfit[i*allCategories.size()+j]->SetBinContent(k+1, par_value);
+                    result_vector_nobcgfit[i*allCategories.size()+j]->SetBinError(k+1, par_error);
+                }
+                Chi2withoutbcg_vector[i*allCategories.size()+j]->SetBinContent(k+1, tempResult.Chi2()/tempResult.Ndf());
             }
         }
     }
@@ -324,16 +328,18 @@ notFittingBackground:
                 newTitle += std::to_string(sig_pointer->GetYaxis()->GetBinUpEdge(k+1));
                 newTitle += " NOT REMOVED BACKGROUND";
                 sig_slice->SetTitle(newTitle.c_str());
-                auto tempPair = differential_crossection_fit(result, sig_slice, fit_func_sig, bcg_func, par_value, par_error);
-                double chi2, ndf;
-                chi2 = tempPair.first;
-                ndf = tempPair.second;
-                double bin_width = result_vector_nobcgremoval[i*allCategories.size()+j]->GetBinWidth(k+1);
-                par_value *= bin_width;
-                par_error *= bin_width;
-                result_vector_nobcgremoval[i*allCategories.size()+j]->SetBinContent(k+1, par_value);
-                result_vector_nobcgremoval[i*allCategories.size()+j]->SetBinError(k+1, par_error);
-                Chi2withoutremovingbcg_vector[i*allCategories.size()+j]->SetBinContent(k+1, chi2/ndf);
+                TFitResult tempResult = differential_crossection_fit(result, sig_slice, fit_func_sig, bcg_func);
+                if(tempResult.Chi2()==0){
+                    result_vector_nobcgremoval[i*allCategories.size()+j]->SetBinContent(k+1, 0.);
+                    result_vector_nobcgremoval[i*allCategories.size()+j]->SetBinError(k+1, 0.);
+                } else{
+                    double bin_width = result_vector_nobcgremoval[i*allCategories.size()+j]->GetBinWidth(k+1);
+                    par_value = abs(tempResult.Parameter(0)/sig_slice->GetXaxis()->GetBinWidth(1)*bin_width);
+                    par_error = tempResult.ParError(0)/sig_slice->GetXaxis()->GetBinWidth(1)*bin_width;
+                    result_vector_nobcgremoval[i*allCategories.size()+j]->SetBinContent(k+1, par_value);
+                    result_vector_nobcgremoval[i*allCategories.size()+j]->SetBinError(k+1, par_error);
+                }
+                Chi2withoutremovingbcg_vector[i*allCategories.size()+j]->SetBinContent(k+1, tempResult.Chi2()/tempResult.Ndf());
             }
         }
     }
@@ -470,7 +476,7 @@ void draw_and_save_minus_background(TH1D* data, TH1D* bcg, std::string folderWit
     resultCanvas->SaveAs((folderWithDiagonal+name+".pdf").c_str());
 }
 
-std::pair<double, double> differential_crossection_fit(TPad* pad, TH1D* slice, TF1* fitting_function_signal, TF1* fitting_function_bcg, double& param_value, double& param_error, std::string draw_full_path){
+TFitResult differential_crossection_fit(TPad* pad, TH1D* slice, TF1* fitting_function_signal, TF1* fitting_function_bcg, std::string draw_full_path){
     //setting up the functions
     pad->Clear();
     gROOT->SetSelectedPad(pad);
@@ -484,6 +490,7 @@ std::pair<double, double> differential_crossection_fit(TPad* pad, TH1D* slice, T
     gStyle->SetFitFormat("6.5g");
     gStyle->SetStatColor(0);
     gPad->SetMargin(0.1, 0.05, 0.1, 0.1);
+    TFitResultPtr fitPointer;
     int signalparams, bcgparams, totalparams;
     double rangemin, rangemax;
     signalparams = fitting_function_signal->GetNpar();
@@ -533,7 +540,7 @@ std::pair<double, double> differential_crossection_fit(TPad* pad, TH1D* slice, T
     fitting_function_signal->SetNpx(1000);
     fitting_function_total->SetNpx(1000);
     //fitting and drawing
-    slice->Fit(fitting_function_total, "0BR");
+    fitPointer = slice->Fit(fitting_function_total, "0BRS");
     slice->Draw("E");
     fitting_function_signal->SetParameters(fitting_function_total->GetParameters());
     fitting_function_signal->SetParErrors(fitting_function_total->GetParErrors());
@@ -557,7 +564,7 @@ std::pair<double, double> differential_crossection_fit(TPad* pad, TH1D* slice, T
         //fitting/changing part
         if(response.find("fit")!=std::string::npos){
             fitting_function_total->SetParameters(fitting_function_total_COPY->GetParameters());
-            slice->Fit(fitting_function_total, "0BR");
+            fitPointer = slice->Fit(fitting_function_total, "0BRS");
             printf("Chi2 from fit: %f, ndof = %d\n", fitting_function_total->GetChisquare(), fitting_function_total->GetNDF());
             fitting_function_total_COPY->SetParameters(fitting_function_total->GetParameters());
             fitting_function_bcg_COPY->SetParameters(fitting_function_total->GetParameters()+signalparams);
@@ -597,20 +604,15 @@ std::pair<double, double> differential_crossection_fit(TPad* pad, TH1D* slice, T
         //needed to read whole line, not just until first space
         std::getline(std::cin, response);
     }
-    //adding to the result histogram
+    //if there is no particles to fit
+    //then chi2=0 is set as a sign
     if(response.find("zero")!=std::string::npos){
-        param_value = 0.;
-        param_error = 0.;
-    } else{
-        //absolute value needed because of sometimes negative width
-        //andthe constant gets flipped sign too
-        param_value = abs(fitting_function_signal_COPY->GetParameter(0)/slice->GetXaxis()->GetBinWidth(0));
-        param_error = fitting_function_signal_COPY->GetParError(0)/slice->GetXaxis()->GetBinWidth(0);
+        fitPointer.Get()->SetChi2AndNdf(0., 1.);
     }
     printf("Accepted current parameters\n");
     if(draw_full_path.size()!=0){
         pad->SaveAs(draw_full_path.c_str());
     }
     gStyle->SetOptStat(1);
-    return std::pair<double, double>(fitting_function_total->GetChisquare(), fitting_function_total->GetNDF());
+    return *(fitPointer.Get());
 }
