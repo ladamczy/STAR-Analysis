@@ -216,10 +216,17 @@ skipOneTimeFitting:
             for(Int_t k = 0; k<sig_pointer->GetNbinsY(); k++){
                 TH1D* sig_slice = sig_pointer->ProjectionX("_bcg", k+1, k+1, "e");
                 //fitting and filling result
+                //setting lower range for m0-3*gamma
+                //if lower bound is lower than m0-4*gamma
+                //and 2*width otherwise
+                double lower_range = fitMaximum[i]-3*fitWidth[i];
+                if(sig_slice->GetBinLowEdge(GetFirstNonzeroBinNumber(sig_slice))>fitMaximum[i]-4*fitWidth[i]){
+                    lower_range = fitMaximum[i]-2*fitWidth[i];
+                }
                 fit_func_sig->SetParameters(10., fitMaximum[i], fitWidth[i]);
-                fit_func_sig->SetRange(sig_slice->GetBinLowEdge(GetFirstNonzeroBinNumber(sig_slice)), 1.3);
+                fit_func_sig->SetRange(lower_range, 1.1);
                 //custom setting background function - p2 & p3 are the ends of the range
-                fit_func_bcg->SetRange(sig_slice->GetBinLowEdge(GetFirstNonzeroBinNumber(sig_slice)), 1.3);
+                fit_func_bcg->SetRange(lower_range, 1.1);
                 fit_func_bcg->SetParameters(0., 0., fit_func_bcg->GetXmin(), fit_func_bcg->GetXmax());
                 fit_func_bcg->FixParameter(2, fit_func_bcg->GetXmin());
                 fit_func_bcg->FixParameter(3, fit_func_bcg->GetXmax());
@@ -265,9 +272,16 @@ fittingBackground:
             for(Int_t k = 0; k<sig_pointer->GetNbinsY(); k++){
                 TH1D* sig_slice = sig_pointer->ProjectionX("_nobcg", k+1, k+1, "e");
                 //fitting and filling result
+                //setting lower range for m0-3*gamma
+                //if lower bound is lower than m0-4*gamma
+                //and 2*width otherwise
+                double lower_range = fitMaximum[i]-3*fitWidth[i];
+                if(sig_slice->GetBinLowEdge(GetFirstNonzeroBinNumber(sig_slice))>fitMaximum[i]-4*fitWidth[i]){
+                    lower_range = fitMaximum[i]-2*fitWidth[i];
+                }
                 fit_func_sig->SetParameters(10., fitMaximum[i], fitWidth[i]);
-                fit_func_sig->SetRange(sig_slice->GetBinLowEdge(GetFirstNonzeroBinNumber(sig_slice)), 1.3);
-                fit_func_empty_bcg->SetRange(sig_slice->GetBinLowEdge(GetFirstNonzeroBinNumber(sig_slice)), 1.3);
+                fit_func_sig->SetRange(lower_range, 1.1);
+                fit_func_empty_bcg->SetRange(lower_range, 1.1);
                 double par_value, par_error;
                 std::string newTitle = baseOfTitle;
                 newTitle += std::to_string(sig_pointer->GetYaxis()->GetBinLowEdge(k+1))+" - ";
@@ -303,11 +317,13 @@ notFittingBackground:
         //custom for phi (2)
         if(i!=2){
             bcg_func = fit_func_for_Kstar;
-            fit_func_sig->SetRange(0.7, 1.1);
-            bcg_func->SetRange(0.7, 1.1);
+            fit_func_sig->SetRange(0.75, 1.05);
+            bcg_func->SetRange(0.75, 1.05);
         } else if(i==2){
             bcg_func = fit_func_paper_bcg;
             bcg_func->SetParameters(1, 1, 1);
+            fit_func_sig->SetRange(1., 1.04);
+            bcg_func->SetRange(1., 1.04);
         }
         //actual fitting
         for(size_t j = 0; j<allCategories.size(); j++){
@@ -318,10 +334,6 @@ notFittingBackground:
                 TH1D* sig_slice = sig_pointer->ProjectionX("_nobcg", k+1, k+1, "e");
                 //fitting and filling result
                 fit_func_sig->SetParameters(10., fitMaximum[i], fitWidth[i]);
-                if(i==2){
-                    fit_func_sig->SetRange(sig_slice->GetBinLowEdge(GetFirstNonzeroBinNumber(sig_slice)), 1.2);
-                    bcg_func->SetRange(sig_slice->GetBinLowEdge(GetFirstNonzeroBinNumber(sig_slice)), 1.2);
-                }
                 double par_value, par_error;
                 std::string newTitle = baseOfTitle;
                 newTitle += std::to_string(sig_pointer->GetYaxis()->GetBinLowEdge(k+1))+" - ";
