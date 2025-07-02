@@ -616,15 +616,21 @@ TFitResult differential_crossection_fit(TPad* pad, TH1D* slice, TF1* fitting_fun
         //needed to read whole line, not just until first space
         std::getline(std::cin, response);
     }
-    //if there is no particles to fit
-    //then chi2=0 is set as a sign
-    if(response.find("zero")!=std::string::npos){
-        fitPointer.Get()->SetChi2AndNdf(0., 1.);
-    }
+    //finishing touches
     printf("Accepted current parameters\n");
     if(draw_full_path.size()!=0){
         pad->SaveAs(draw_full_path.c_str());
     }
     gStyle->SetOptStat(1);
+    //giving result
+    //if there is no particles to fit
+    //then chi2=0 is set as a sign
+    //there was a problem with zero data to fit ans TFitResultPtr not having... a result
+    //so this is workaround
+    if(response.find("zero")!=std::string::npos){
+        TFitResult zeroResult;
+        zeroResult.SetChi2AndNdf(0., 1.);
+        return zeroResult;
+    }
     return *(fitPointer.Get());
 }
