@@ -95,7 +95,9 @@ int main(int argc, char* argv[]){
     //filling vectors of background and signal
     //and Chi2 with and without the background
     std::vector<TH2D*> background_vector, signal_vector;
-    std::vector<TH1D*> result_vector, result_vector_nobcgfit, result_vector_nobcgremoval, Chi2withbcg_vector, Chi2withoutbcg_vector, Chi2withoutremovingbcg_vector;
+    std::vector<TH1D*> result_vector, result_vector_nobcgfit, result_vector_nobcgremoval;
+    std::vector<TH1D*> width_vector, width_vector_nobcgfit, width_vector_nobcgremoval;
+    std::vector<TH1D*> Chi2withbcg_vector, Chi2withoutbcg_vector, Chi2withoutremovingbcg_vector;
     std::string tempSignalName = "M$Chi2";
     std::string tempBackgroundName = "M$Chi2bcgTOF";
     std::string tempHistName;
@@ -113,6 +115,10 @@ int main(int argc, char* argv[]){
             result_vector.push_back(new TH1D((tempHistName+"Result"+category).c_str(), (pair+" "+category).c_str(), signal_vector.back()->GetNbinsY(), signal_vector.back()->GetYaxis()->GetXmin(), signal_vector.back()->GetYaxis()->GetXmax()));
             result_vector_nobcgfit.push_back(new TH1D((tempHistName+"Result"+category).c_str(), (pair+" "+category).c_str(), signal_vector.back()->GetNbinsY(), signal_vector.back()->GetYaxis()->GetXmin(), signal_vector.back()->GetYaxis()->GetXmax()));
             result_vector_nobcgremoval.push_back(new TH1D((tempHistName+"Result"+category).c_str(), (pair+" "+category).c_str(), signal_vector.back()->GetNbinsY(), signal_vector.back()->GetYaxis()->GetXmin(), signal_vector.back()->GetYaxis()->GetXmax()));
+            //width of the fits
+            width_vector.push_back(new TH1D((tempHistName+"Width"+category).c_str(), (pair+" "+category).c_str(), signal_vector.back()->GetNbinsY(), signal_vector.back()->GetYaxis()->GetXmin(), signal_vector.back()->GetYaxis()->GetXmax()));
+            width_vector_nobcgfit.push_back(new TH1D((tempHistName+"Width"+category).c_str(), (pair+" "+category).c_str(), signal_vector.back()->GetNbinsY(), signal_vector.back()->GetYaxis()->GetXmin(), signal_vector.back()->GetYaxis()->GetXmax()));
+            width_vector_nobcgremoval.push_back(new TH1D((tempHistName+"Width"+category).c_str(), (pair+" "+category).c_str(), signal_vector.back()->GetNbinsY(), signal_vector.back()->GetYaxis()->GetXmin(), signal_vector.back()->GetYaxis()->GetXmax()));
             //Chi2 comparison
             Chi2withbcg_vector.push_back(new TH1D((tempHistName+"Chi2withbcg"+category).c_str(), (pair+" "+category+" bcg").c_str(), signal_vector.back()->GetNbinsY(), signal_vector.back()->GetYaxis()->GetXmin(), signal_vector.back()->GetYaxis()->GetXmax()));
             Chi2withoutbcg_vector.push_back(new TH1D((tempHistName+"Chi2withoutbcg"+category).c_str(), (pair+" "+category+" no fitted bcg").c_str(), signal_vector.back()->GetNbinsY(), signal_vector.back()->GetYaxis()->GetXmin(), signal_vector.back()->GetYaxis()->GetXmax()));
@@ -239,12 +245,16 @@ skipOneTimeFitting:
                 if(tempResult.Chi2()==0){
                     result_vector[i*allCategories.size()+j]->SetBinContent(k+1, 0.);
                     result_vector[i*allCategories.size()+j]->SetBinError(k+1, 0.);
+                    width_vector[i*allCategories.size()+j]->SetBinContent(k+1, 0.);
+                    width_vector[i*allCategories.size()+j]->SetBinError(k+1, 0.);
                 } else{
                     double bin_width = result_vector[i*allCategories.size()+j]->GetBinWidth(k+1);
                     par_value = abs(tempResult.Parameter(0)/sig_slice->GetXaxis()->GetBinWidth(1)*bin_width);
                     par_error = tempResult.ParError(0)/sig_slice->GetXaxis()->GetBinWidth(1)*bin_width;
                     result_vector[i*allCategories.size()+j]->SetBinContent(k+1, par_value);
                     result_vector[i*allCategories.size()+j]->SetBinError(k+1, par_error);
+                    width_vector[i*allCategories.size()+j]->SetBinContent(k+1, tempResult.Parameter(2));
+                    width_vector[i*allCategories.size()+j]->SetBinError(k+1, tempResult.Error(2));
                 }
                 Chi2withbcg_vector[i*allCategories.size()+j]->SetBinContent(k+1, tempResult.Chi2()/tempResult.Ndf());
             }
@@ -292,12 +302,16 @@ fittingBackground:
                 if(tempResult.Chi2()==0){
                     result_vector_nobcgfit[i*allCategories.size()+j]->SetBinContent(k+1, 0.);
                     result_vector_nobcgfit[i*allCategories.size()+j]->SetBinError(k+1, 0.);
+                    width_vector_nobcgfit[i*allCategories.size()+j]->SetBinContent(k+1, 0.);
+                    width_vector_nobcgfit[i*allCategories.size()+j]->SetBinError(k+1, 0.);
                 } else{
                     double bin_width = result_vector_nobcgfit[i*allCategories.size()+j]->GetBinWidth(k+1);
                     par_value = abs(tempResult.Parameter(0)/sig_slice->GetXaxis()->GetBinWidth(1)*bin_width);
                     par_error = tempResult.ParError(0)/sig_slice->GetXaxis()->GetBinWidth(1)*bin_width;
                     result_vector_nobcgfit[i*allCategories.size()+j]->SetBinContent(k+1, par_value);
                     result_vector_nobcgfit[i*allCategories.size()+j]->SetBinError(k+1, par_error);
+                    width_vector_nobcgfit[i*allCategories.size()+j]->SetBinContent(k+1, tempResult.Parameter(2));
+                    width_vector_nobcgfit[i*allCategories.size()+j]->SetBinError(k+1, tempResult.Error(2));
                 }
                 Chi2withoutbcg_vector[i*allCategories.size()+j]->SetBinContent(k+1, tempResult.Chi2()/tempResult.Ndf());
             }
@@ -344,12 +358,16 @@ notFittingBackground:
                 if(tempResult.Chi2()==0){
                     result_vector_nobcgremoval[i*allCategories.size()+j]->SetBinContent(k+1, 0.);
                     result_vector_nobcgremoval[i*allCategories.size()+j]->SetBinError(k+1, 0.);
+                    width_vector_nobcgremoval[i*allCategories.size()+j]->SetBinContent(k+1, 0.);
+                    width_vector_nobcgremoval[i*allCategories.size()+j]->SetBinError(k+1, 0.);
                 } else{
                     double bin_width = result_vector_nobcgremoval[i*allCategories.size()+j]->GetBinWidth(k+1);
                     par_value = abs(tempResult.Parameter(0)/sig_slice->GetXaxis()->GetBinWidth(1)*bin_width);
                     par_error = tempResult.ParError(0)/sig_slice->GetXaxis()->GetBinWidth(1)*bin_width;
                     result_vector_nobcgremoval[i*allCategories.size()+j]->SetBinContent(k+1, par_value);
                     result_vector_nobcgremoval[i*allCategories.size()+j]->SetBinError(k+1, par_error);
+                    width_vector_nobcgremoval[i*allCategories.size()+j]->SetBinContent(k+1, tempResult.Parameter(2));
+                    width_vector_nobcgremoval[i*allCategories.size()+j]->SetBinError(k+1, tempResult.Error(2));
                 }
                 Chi2withoutremovingbcg_vector[i*allCategories.size()+j]->SetBinContent(k+1, tempResult.Chi2()/tempResult.Ndf());
             }
@@ -403,12 +421,18 @@ noBackground:
     //fits
     for(size_t i = 0; i<pairTab.size(); i++){
         for(size_t j = 0; j<allCategories.size(); j++){
-            if(!skippedFitting)
+            if(!skippedFitting){
                 draw_and_save(result_vector[i*allCategories.size()+j], folderWithDiagonal, "M"+pairTab[i]+allCategories[j], pairTab[i]+" "+allCategories[j]+";"+allCategories[j]+";entries", "e");
-            if(!skippedFittingNoBackground)
+                draw_and_save(width_vector[i*allCategories.size()+j], folderWithDiagonal, "M"+pairTab[i]+allCategories[j]+"Width", pairTab[i]+" "+allCategories[j]+";"+allCategories[j]+";entries", "e");
+            }
+            if(!skippedFittingNoBackground){
                 draw_and_save(result_vector_nobcgfit[i*allCategories.size()+j], folderWithDiagonal, "M"+pairTab[i]+allCategories[j]+"nobcgfit", pairTab[i]+" "+allCategories[j]+";"+allCategories[j]+";entries", "e");
-            if(!skippedFittingNotRemovedBackground)
+                draw_and_save(width_vector_nobcgfit[i*allCategories.size()+j], folderWithDiagonal, "M"+pairTab[i]+allCategories[j]+"Width"+"nobcgfit", pairTab[i]+" "+allCategories[j]+";"+allCategories[j]+";entries", "e");
+            }
+            if(!skippedFittingNotRemovedBackground){
                 draw_and_save(result_vector_nobcgremoval[i*allCategories.size()+j], folderWithDiagonal, "M"+pairTab[i]+allCategories[j]+"nobcgremoval", pairTab[i]+" "+allCategories[j]+";"+allCategories[j]+";entries", "e");
+                draw_and_save(width_vector_nobcgremoval[i*allCategories.size()+j], folderWithDiagonal, "M"+pairTab[i]+allCategories[j]+"Width"+"nobcgremoval", pairTab[i]+" "+allCategories[j]+";"+allCategories[j]+";entries", "e");
+            }
         }
     }
     //Chi2 drawing
