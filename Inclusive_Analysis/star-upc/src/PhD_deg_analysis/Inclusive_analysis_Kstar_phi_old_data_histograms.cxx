@@ -183,8 +183,11 @@ skipOneTimeFitting:
     auto custom_background = [&](double* x, double* p){
         //fitting behaves weird with demand of p0 & p1 >0
         //so p0 & p1 will actually be square roots of the end values
-        double a = (p[1]*p[1]-p[0]*p[0])/(p[3]-p[2]);
-        return a*(x[0]-p[2])+p[0]*p[0];
+        // double a = (p[1]*p[1]-p[0]*p[0])/(p[3]-p[2]);
+        // return a*(x[0]-p[2])+p[0]*p[0];
+        // it didn't work very well, going back to linear background
+        double a = (p[1]-p[0])/(p[3]-p[2]);
+        return a*(x[0]-p[2])+p[0];
     };
     TF1* fit_func_bcg = new TF1("fit_func_bcg", custom_background, 0.8, 1.0, 4);
     TF1* fit_func_empty_bcg = new TF1("fit_func_bcg", "0.", 0.8, 1.0);
