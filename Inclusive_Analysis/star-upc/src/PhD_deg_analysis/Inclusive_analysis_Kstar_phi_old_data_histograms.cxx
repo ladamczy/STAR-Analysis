@@ -201,7 +201,8 @@ skipOneTimeFitting:
         return (1-exp((2*mK-m)/C))*pow(m/(2*mK), A)+B*(m/(2*mK)-1);
     };
     TF1* fit_func_paper_bcg = new TF1("fit_func_paper_bcg", even_more_custom_background, 0.8, 1.0, 3);
-    TF1* fit_func_for_Kstar = new TF1("fit_func_for_Kstar", "pol2", 0.8, 1.0);
+    TF1* fit_func_for_Kstar = new TF1("fit_func_for_Kstar", "pol3", 0.8, 1.0);
+    TF1* fit_func_for_phi = new TF1("fit_func_for_phi", "pol2", 0.8, 1.0);
     //substracting one from another
     //fitting the difference
     //and filling the result
@@ -223,7 +224,7 @@ skipOneTimeFitting:
             //for keeping title
             std::string baseOfTitle = std::string(sig_pointer->GetTitle())+" ";
             for(Int_t k = 0; k<sig_pointer->GetNbinsY(); k++){
-                TH1D* sig_slice = sig_pointer->ProjectionX("_bcg", k+1, k+1, "e");
+                TH1D* sig_slice = sig_pointer->ProjectionX("_bcg", k+1, k+1, "e1");
                 //fitting and filling result
                 //setting lower range for m0-3*gamma
                 //if lower bound is lower than m0-4*gamma
@@ -283,7 +284,7 @@ fittingBackground:
             //for keeping title
             std::string baseOfTitle = std::string(sig_pointer->GetTitle())+" ";
             for(Int_t k = 0; k<sig_pointer->GetNbinsY(); k++){
-                TH1D* sig_slice = sig_pointer->ProjectionX("_nobcg", k+1, k+1, "e");
+                TH1D* sig_slice = sig_pointer->ProjectionX("_nobcg", k+1, k+1, "e1");
                 //fitting and filling result
                 //setting lower range for m0-3*gamma
                 //if lower bound is lower than m0-4*gamma
@@ -337,8 +338,9 @@ notFittingBackground:
             fit_func_sig->SetRange(0.75, 1.05);
             bcg_func->SetRange(0.75, 1.05);
         } else if(i==2){
-            bcg_func = fit_func_paper_bcg;
-            bcg_func->SetParameters(1, 1, 1);
+            // bcg_func = fit_func_paper_bcg;
+            // bcg_func->SetParameters(1, 1, 1);
+            bcg_func = fit_func_for_phi;
             fit_func_sig->SetRange(1., 1.04);
             bcg_func->SetRange(1., 1.04);
         }
@@ -348,9 +350,22 @@ notFittingBackground:
             //for keeping title
             std::string baseOfTitle = std::string(sig_pointer->GetTitle())+" ";
             for(Int_t k = 0; k<sig_pointer->GetNbinsY(); k++){
-                TH1D* sig_slice = sig_pointer->ProjectionX("_nobcg", k+1, k+1, "e");
-                //fitting and filling result
+                TH1D* sig_slice = sig_pointer->ProjectionX("_nobcg", k+1, k+1, "e1");
+                //if for the case of small tail
+                if(i!=2&&k==0&&j==0){
+                    fit_func_sig->SetRange(0.8, 1.05);
+                    bcg_func->SetRange(0.8, 1.05);
+                } else if(i!=2){
+                    fit_func_sig->SetRange(0.75, 1.05);
+                    bcg_func->SetRange(0.75, 1.05);
+                }
+                //prefitting linear background seed for  the polynomial
                 fit_func_sig->SetParameters(10., fitMaximum[i], fitWidth[i]);
+                double y1, y2;
+                y1 = sig_slice->GetBinContent(sig_slice->GetXaxis()->FindBin(0.8));
+                y2 = sig_slice->GetBinContent(sig_slice->GetXaxis()->FindBin(0.8));
+                bcg_func->SetParameters((y1+y2)/2, (y2-y1)/0.2, 0., 0.);
+                //fitting and filling result
                 double par_value, par_error;
                 std::string newTitle = baseOfTitle;
                 newTitle += std::to_string(sig_pointer->GetYaxis()->GetBinLowEdge(k+1))+" - ";
@@ -425,16 +440,16 @@ noBackground:
     for(size_t i = 0; i<pairTab.size(); i++){
         for(size_t j = 0; j<allCategories.size(); j++){
             if(!skippedFitting){
-                draw_and_save(result_vector[i*allCategories.size()+j], folderWithDiagonal, "M"+pairTab[i]+allCategories[j], pairTab[i]+" "+allCategories[j]+";"+allCategories[j]+";entries", "e");
-                draw_and_save(width_vector[i*allCategories.size()+j], folderWithDiagonal, "M"+pairTab[i]+allCategories[j]+"Width", pairTab[i]+" "+allCategories[j]+";"+allCategories[j]+";entries", "e");
+                draw_and_save(result_vector[i*allCategories.size()+j], folderWithDiagonal, "M"+pairTab[i]+allCategories[j], pairTab[i]+" "+allCategories[j]+";"+allCategories[j]+";entries", "e1");
+                draw_and_save(width_vector[i*allCategories.size()+j], folderWithDiagonal, "M"+pairTab[i]+allCategories[j]+"Width", pairTab[i]+" "+allCategories[j]+";"+allCategories[j]+";entries", "e1");
             }
             if(!skippedFittingNoBackground){
-                draw_and_save(result_vector_nobcgfit[i*allCategories.size()+j], folderWithDiagonal, "M"+pairTab[i]+allCategories[j]+"nobcgfit", pairTab[i]+" "+allCategories[j]+";"+allCategories[j]+";entries", "e");
-                draw_and_save(width_vector_nobcgfit[i*allCategories.size()+j], folderWithDiagonal, "M"+pairTab[i]+allCategories[j]+"Width"+"nobcgfit", pairTab[i]+" "+allCategories[j]+";"+allCategories[j]+";entries", "e");
+                draw_and_save(result_vector_nobcgfit[i*allCategories.size()+j], folderWithDiagonal, "M"+pairTab[i]+allCategories[j]+"nobcgfit", pairTab[i]+" "+allCategories[j]+";"+allCategories[j]+";entries", "e1");
+                draw_and_save(width_vector_nobcgfit[i*allCategories.size()+j], folderWithDiagonal, "M"+pairTab[i]+allCategories[j]+"Width"+"nobcgfit", pairTab[i]+" "+allCategories[j]+";"+allCategories[j]+";entries", "e1");
             }
             if(!skippedFittingNotRemovedBackground){
-                draw_and_save(result_vector_nobcgremoval[i*allCategories.size()+j], folderWithDiagonal, "M"+pairTab[i]+allCategories[j]+"nobcgremoval", pairTab[i]+" "+allCategories[j]+";"+allCategories[j]+";entries", "e");
-                draw_and_save(width_vector_nobcgremoval[i*allCategories.size()+j], folderWithDiagonal, "M"+pairTab[i]+allCategories[j]+"Width"+"nobcgremoval", pairTab[i]+" "+allCategories[j]+";"+allCategories[j]+";entries", "e");
+                draw_and_save(result_vector_nobcgremoval[i*allCategories.size()+j], folderWithDiagonal, "M"+pairTab[i]+allCategories[j]+"nobcgremoval", pairTab[i]+" "+allCategories[j]+";"+allCategories[j]+";entries", "e1");
+                draw_and_save(width_vector_nobcgremoval[i*allCategories.size()+j], folderWithDiagonal, "M"+pairTab[i]+allCategories[j]+"Width"+"nobcgremoval", pairTab[i]+" "+allCategories[j]+";"+allCategories[j]+";entries", "e1");
             }
         }
     }
@@ -481,7 +496,6 @@ void draw_and_save(TH1D* data, std::string folderWithDiagonal, std::string name,
     tempStyle.cd();
     gROOT->ForceStyle();
     TCanvas* resultCanvas = new TCanvas("resultCanvas", "resultCanvas", 4000, 2400);
-    //TODO: add fitting
     data->Draw(options.c_str());
     resultCanvas->UseCurrentStyle();
     data->SetMinimum(0);
@@ -505,7 +519,7 @@ void draw_and_save_minus_background(TH1D* data, TH1D* bcg, std::string folderWit
         bcg->Scale(data->Integral(bcg_bin, -1)/bcg->Integral(bcg_bin, -1));
         data->Add(bcg, -1.);
     }
-    data->Draw("e");
+    data->Draw("e1");
     resultCanvas->UseCurrentStyle();
     data->SetMarkerStyle(kFullCircle);
     data->SetMarkerSize(2);
@@ -580,7 +594,7 @@ TFitResult differential_crossection_fit(TPad* pad, TH1D* slice, TF1* fitting_fun
     fitting_function_total->SetNpx(1000);
     //fitting and drawing
     fitPointer = slice->Fit(fitting_function_total, "0BRS");
-    slice->Draw("E");
+    slice->Draw("E1");
     fitting_function_signal->SetParameters(fitting_function_total->GetParameters());
     fitting_function_signal->SetParErrors(fitting_function_total->GetParErrors());
     fitting_function_bcg->SetParameters(fitting_function_total->GetParameters()+signalparams);
