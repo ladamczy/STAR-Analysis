@@ -215,6 +215,9 @@ public:
 
     // Colors for different particle types
     int colors[] = {kBlue, kRed, kGreen+2, kMagenta, kCyan+2, kOrange+7};
+
+    TFile* outFile = new TFile("Old_eff.root", "RECREATE");
+    
     
     for(int i = 0; i < 6; ++i) {
       int sign = particleConfigs[i][0];
@@ -261,6 +264,7 @@ public:
       projPt->GetXaxis()->SetRangeUser(0.0, 3.0);  // Focus on reasonable pT range
       projPt->SetMarkerColor(colors[i]);
       projPt->Draw("HIST P");
+      projPt->Write();
       
       //------------------------
       // 2. Eta Projections
@@ -299,6 +303,7 @@ public:
       projEta->GetYaxis()->SetRangeUser(0.0, 1.1);
       projEta->SetMarkerColor(colors[i]);
       projEta->Draw("HIST P");
+      projEta->Write();
       
       //------------------------
       // 3. Z-Vertex Projections
@@ -338,6 +343,7 @@ public:
       projVerZ->GetXaxis()->SetRangeUser(-90.5, 90.5);  // Focus on reasonable z-vertex range
       projVerZ->SetMarkerColor(colors[i]);
       projVerZ->Draw("HIST P");
+      projVerZ->Write();
     }
     
     // Save all canvases
