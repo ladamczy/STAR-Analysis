@@ -36,6 +36,7 @@ void MyStyles::SetDefault(){
     currentMyStyle.SetTitleFontSize(0.06);
     currentMyStyle.SetTitleX(0.55);
     currentMyStyle.SetHistLineWidth(2);
+    currentMyStyle.SetEndErrorSize(12.);
     //axis
     currentMyStyle.SetAxisMaxDigits(3);
     currentMyStyle.SetLabelSize(0.045, "xyz");
