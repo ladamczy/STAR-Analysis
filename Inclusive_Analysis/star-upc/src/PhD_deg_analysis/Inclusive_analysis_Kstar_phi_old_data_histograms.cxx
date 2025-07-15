@@ -23,6 +23,7 @@
 int GetFirstNonzeroBinNumber(TH1* input);
 void draw_and_save(TH1D* data, std::string folderWithDiagonal, std::string name, std::string title, std::string options = "");
 void draw_and_save_minus_background(TH1D* data, TH1D* bcg, std::string folderWithDiagonal, std::string name, std::string title, double bcg_region);
+void draw_bulk(std::vector<TH1D*> data, std::string folderWithDiagonal, std::string name, std::string title, std::string options);
 TFitResult differential_crossection_fit(TPad* pad, TH1D* slice, TF1* fitting_function_signal, TF1* fitting_function_bcg, std::string draw_full_path = "");
 
 int main(int argc, char* argv[]){
@@ -453,27 +454,15 @@ noBackground:
             }
         }
     }
-    //Chi2 drawing
+
+    //bulk drawing
     for(size_t i = 0; i<pairTab.size(); i++){
         for(size_t j = 0; j<allCategories.size(); j++){
-            MyStyles styleLibrary;
-            TStyle tempStyle = styleLibrary.Hist2DNormalSize(true);
-            tempStyle.cd();
-            gROOT->ForceStyle();
-            TCanvas* resultCanvas = new TCanvas("resultCanvas", "resultCanvas", 4000, 2400);
-            Chi2withbcg_vector[i*allCategories.size()+j]->SetMinimum(0.);
-            Chi2withbcg_vector[i*allCategories.size()+j]->SetMaximum(1.1*std::max(std::max(Chi2withbcg_vector[i*allCategories.size()+j]->GetMaximum(), Chi2withoutbcg_vector[i*allCategories.size()+j]->GetMaximum()), Chi2withoutremovingbcg_vector[i*allCategories.size()+j]->GetMaximum()));
-            Chi2withbcg_vector[i*allCategories.size()+j]->Draw("hist");
-            Chi2withoutbcg_vector[i*allCategories.size()+j]->Draw("hist same");
-            Chi2withoutremovingbcg_vector[i*allCategories.size()+j]->Draw("hist same");
-            resultCanvas->UseCurrentStyle();
-            Chi2withbcg_vector[i*allCategories.size()+j]->SetTitle((pairTab[i]+" "+allCategories[j]+";"+allCategories[j]+";#chi^{2}/ndf").c_str());
-            Chi2withbcg_vector[i*allCategories.size()+j]->SetLineColor(kBlue);
-            Chi2withoutbcg_vector[i*allCategories.size()+j]->SetLineColor(kRed);
-            Chi2withoutremovingbcg_vector[i*allCategories.size()+j]->SetLineColor(kGreen+2);
-            resultCanvas->BuildLegend();
-            resultCanvas->Update();
-            resultCanvas->SaveAs((folderWithDiagonal+"M"+pairTab[i]+allCategories[j]+"Chi2.pdf").c_str());
+            std::vector<TH1D*> AllvectorChi2;
+            AllvectorChi2.push_back(Chi2withbcg_vector[i*allCategories.size()+j]);
+            AllvectorChi2.push_back(Chi2withoutbcg_vector[i*allCategories.size()+j]);
+            AllvectorChi2.push_back(Chi2withoutremovingbcg_vector[i*allCategories.size()+j]);
+            draw_bulk(AllvectorChi2, folderWithDiagonal, "M"+pairTab[i]+allCategories[j]+"Chi2", pairTab[i]+" "+allCategories[j]+";"+allCategories[j]+";#chi^{2}/ndf", "hist");
         }
     }
 
@@ -526,6 +515,30 @@ void draw_and_save_minus_background(TH1D* data, TH1D* bcg, std::string folderWit
     data->SetMarkerColor(kBlue);
     data->SetTitle(title.c_str());
 
+    resultCanvas->SaveAs((folderWithDiagonal+name+".pdf").c_str());
+}
+
+void draw_bulk(std::vector<TH1D*> data, std::string folderWithDiagonal, std::string name, std::string title, std::string options){
+    MyStyles styleLibrary;
+    TStyle tempStyle = styleLibrary.Hist2DNormalSize(true);
+    tempStyle.cd();
+    gROOT->ForceStyle();
+    TCanvas* resultCanvas = new TCanvas("resultCanvas", "resultCanvas", 4000, 2400);
+    data[0]->SetMinimum(0.);
+    std::vector<TH1D*>::iterator max_hist = std::max_element(data.begin(), data.end(), [](TH1D* a, TH1D* b){return a->GetMaximum()<b->GetMaximum();});
+    data[0]->SetMaximum(1.1*(*max_hist)->GetMaximum());
+    data[0]->Draw(options.c_str());
+    for(size_t i = 1; i<data.size(); i++){
+        data[i]->Draw((options+" same").c_str());
+    }
+    resultCanvas->UseCurrentStyle();
+    data[0]->SetTitle(title.c_str());
+    for(size_t i = 0; i<data.size(); i++){
+        //0 & 1 are black & white, and 10 is white too
+        data[i]->SetLineColor(i+2+(i+2>=10));
+    }
+    resultCanvas->BuildLegend();
+    resultCanvas->Update();
     resultCanvas->SaveAs((folderWithDiagonal+name+".pdf").c_str());
 }
 
