@@ -259,14 +259,16 @@ int main(int argc, char** argv){
                         mass = (positive_track+negative_track).M();
                         eta = (positive_track+negative_track).Eta();
                         pT = (positive_track+negative_track).Pt();
-                        insideprocessing.Fill("MKpiChi2", mass);
-                        insideprocessing.Fill("MKpiChi2Close", mass);
                         insideprocessing.Fill("MKpiChi2eta", mass, eta);
-                        insideprocessing.Fill("MKpiChi2pT", mass, pT);
                         insideprocessing.Fill("EtaPhi_KpiChi2plus", vector_Track_positive[i]->getEta(), vector_Track_positive[i]->getPhi());
                         insideprocessing.Fill("EtaPhi_KpiChi2minus", vector_Track_negative[j]->getEta(), vector_Track_negative[j]->getPhi());
                         insideprocessing.Fill("EtaPhi_KpiChi2plus_lowres", vector_Track_positive[i]->getEta(), vector_Track_positive[i]->getPhi());
                         insideprocessing.Fill("EtaPhi_KpiChi2minus_lowres", vector_Track_negative[j]->getEta(), vector_Track_negative[j]->getPhi());
+                        if(abs((positive_track+negative_track).Rapidity())<0.6){
+                            insideprocessing.Fill("MKpiChi2", mass);
+                            insideprocessing.Fill("MKpiChi2Close", mass);
+                            insideprocessing.Fill("MKpiChi2pT", mass, pT);
+                        }
                     }
                     if(almostAllChi2(chi2Map, "pi_K", 9)){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
@@ -274,14 +276,16 @@ int main(int argc, char** argv){
                         mass = (positive_track+negative_track).M();
                         eta = (positive_track+negative_track).Eta();
                         pT = (positive_track+negative_track).Pt();
-                        insideprocessing.Fill("MpiKChi2", mass);
-                        insideprocessing.Fill("MpiKChi2Close", mass);
                         insideprocessing.Fill("MpiKChi2eta", mass, eta);
-                        insideprocessing.Fill("MpiKChi2pT", mass, pT);
                         insideprocessing.Fill("EtaPhi_piKChi2plus", vector_Track_positive[i]->getEta(), vector_Track_positive[i]->getPhi());
                         insideprocessing.Fill("EtaPhi_piKChi2minus", vector_Track_negative[j]->getEta(), vector_Track_negative[j]->getPhi());
                         insideprocessing.Fill("EtaPhi_piKChi2plus_lowres", vector_Track_positive[i]->getEta(), vector_Track_positive[i]->getPhi());
                         insideprocessing.Fill("EtaPhi_piKChi2minus_lowres", vector_Track_negative[j]->getEta(), vector_Track_negative[j]->getPhi());
+                        if(abs((positive_track+negative_track).Rapidity())<0.6){
+                            insideprocessing.Fill("MpiKChi2", mass);
+                            insideprocessing.Fill("MpiKChi2Close", mass);
+                            insideprocessing.Fill("MpiKChi2pT", mass, pT);
+                        }
                     }
                     if(almostAllChi2(chi2Map, "p_pi", 9)){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Proton]);
@@ -309,14 +313,16 @@ int main(int argc, char** argv){
                         mass = (positive_track+negative_track).M();
                         eta = (positive_track+negative_track).Eta();
                         pT = (positive_track+negative_track).Pt();
-                        insideprocessing.Fill("MKKChi2", mass);
-                        insideprocessing.Fill("MKKChi2Close", mass);
                         insideprocessing.Fill("MKKChi2eta", mass, eta);
-                        insideprocessing.Fill("MKKChi2pT", mass, pT);
                         insideprocessing.Fill("EtaPhi_KKChi2plus", vector_Track_positive[i]->getEta(), vector_Track_positive[i]->getPhi());
                         insideprocessing.Fill("EtaPhi_KKChi2minus", vector_Track_negative[j]->getEta(), vector_Track_negative[j]->getPhi());
                         insideprocessing.Fill("EtaPhi_KKChi2plus_lowres", vector_Track_positive[i]->getEta(), vector_Track_positive[i]->getPhi());
                         insideprocessing.Fill("EtaPhi_KKChi2minus_lowres", vector_Track_negative[j]->getEta(), vector_Track_negative[j]->getPhi());
+                        if(abs((positive_track+negative_track).Rapidity())<0.6){
+                            insideprocessing.Fill("MKKChi2", mass);
+                            insideprocessing.Fill("MKKChi2Close", mass);
+                            insideprocessing.Fill("MKKChi2pT", mass, pT);
+                        }
                     }
                     if(almostAllChi2(chi2Map, "pi_pi", 9)){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);

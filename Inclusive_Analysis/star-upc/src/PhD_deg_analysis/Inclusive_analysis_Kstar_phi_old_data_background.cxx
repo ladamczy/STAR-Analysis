@@ -115,6 +115,8 @@ int main(int argc, char** argv){
             previous_vector_Tracks_positive_TOF.emplace_back();
             previous_vector_Tracks_negative_TOF.emplace_back();
         }
+        std::vector<double> previous_event_vertex_Z_position_positive(previousEventsMemorised, -999.);
+        std::vector<double> previous_event_vertex_Z_position_negative(previousEventsMemorised, -999.);
 
         StUPCTrack* tempTrack;
         TLorentzVector positive_track;
@@ -220,6 +222,9 @@ int main(int argc, char** argv){
                 for(auto const& name:pairNames){
                     //previous + , current -
                     for(long unsigned int i = 0; i<previous_vector_Tracks_positive_TOF[prev_event][name].size(); i++){
+                        if(abs(previous_event_vertex_Z_position_positive[prev_event]-tempUPCpointer->getVertex(0)->getPosZ())>=10.0){
+                            continue;
+                        }
                         for(long unsigned int j = 0; j<vector_Track_negative_TOF[name].size(); j++){
                             auto pair = extractExtendedParticlesNumbersFromPair(name);
                             //replaces $ with pair name without "_"
@@ -233,14 +238,19 @@ int main(int argc, char** argv){
                             mass = (positive_track+negative_track).M();
                             eta = (positive_track+negative_track).Eta();
                             pt = (positive_track+negative_track).Pt();
-                            insideprocessing.Fill(tempHistName.c_str(), mass);
                             insideprocessing.Fill((tempHistName+"eta").c_str(), mass, eta);
-                            insideprocessing.Fill((tempHistName+"pT").c_str(), mass, pt);
+                            if(abs((positive_track+negative_track).Rapidity())<0.6){
+                                insideprocessing.Fill(tempHistName.c_str(), mass);
+                                insideprocessing.Fill((tempHistName+"pT").c_str(), mass, pt);
+                            }
                         }
                     }
                     //current + , previous -
                     for(long unsigned int i = 0; i<vector_Track_positive_TOF[name].size(); i++){
                         for(long unsigned int j = 0; j<previous_vector_Tracks_negative_TOF[prev_event][name].size(); j++){
+                            if(abs(previous_event_vertex_Z_position_negative[prev_event]-tempUPCpointer->getVertex(0)->getPosZ())>=10.0){
+                                continue;
+                            }
                             auto pair = extractExtendedParticlesNumbersFromPair(name);
                             //replaces $ with pair name without "_"
                             string tempHistName = "M$Chi2bcgTOF";
@@ -253,9 +263,11 @@ int main(int argc, char** argv){
                             mass = (positive_track+negative_track).M();
                             eta = (positive_track+negative_track).Eta();
                             pt = (positive_track+negative_track).Pt();
-                            insideprocessing.Fill(tempHistName.c_str(), mass);
                             insideprocessing.Fill((tempHistName+"eta").c_str(), mass, eta);
-                            insideprocessing.Fill((tempHistName+"pT").c_str(), mass, pt);
+                            if(abs((positive_track+negative_track).Rapidity())<0.6){
+                                insideprocessing.Fill(tempHistName.c_str(), mass);
+                                insideprocessing.Fill((tempHistName+"pT").c_str(), mass, pt);
+                            }
                         }
                     }
                 }
@@ -306,6 +318,13 @@ int main(int argc, char** argv){
                         previous_vector_Tracks_positive_TOF[previousEventsMemorised-1][name].back()->setNSigmasTPC(static_cast<StUPCTrack::Part>(part), vector_Track_positive_TOF[name][i]->getNSigmasTPC(static_cast<StUPCTrack::Part>(part)));
                     }
                 }
+                //doing the same with vertex position:
+                //reverse bunny-hopping from the last one to the second-newest one
+                //prev_event points to the one written to 
+                for(int prev_event = 0; prev_event<previousEventsMemorised-1; prev_event++){
+                    previous_event_vertex_Z_position_positive[prev_event] = previous_event_vertex_Z_position_positive[prev_event+1];
+                }
+                previous_event_vertex_Z_position_positive[previousEventsMemorised-1] = tempUPCpointer->getVertex(0)->getPosZ();
             }
             //negative
             for(auto&& name:pairNames){
@@ -351,6 +370,13 @@ int main(int argc, char** argv){
                         previous_vector_Tracks_negative_TOF[previousEventsMemorised-1][name].back()->setNSigmasTPC(static_cast<StUPCTrack::Part>(part), vector_Track_negative_TOF[name][i]->getNSigmasTPC(static_cast<StUPCTrack::Part>(part)));
                     }
                 }
+                //doing the same with vertex position:
+                //reverse bunny-hopping from the last one to the second-newest one
+                //prev_event points to the one written to 
+                for(int prev_event = 0; prev_event<previousEventsMemorised-1; prev_event++){
+                    previous_event_vertex_Z_position_negative[prev_event] = previous_event_vertex_Z_position_negative[prev_event+1];
+                }
+                previous_event_vertex_Z_position_negative[previousEventsMemorised-1] = tempUPCpointer->getVertex(0)->getPosZ();
             }
 
 
