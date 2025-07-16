@@ -70,7 +70,8 @@ int main(int argc, char* argv[]){
     // std::vector<std::string> pairTab = { "Kpi", "piK", "ppi", "pip", "KK", "pipi", "pp" };
     // std::vector<double> bcgRegion = { 1.0, 1.0, 1.1, 1.1, 1.1, 0.2, 2.4 };
     std::vector<std::string> pairTab = { "Kpi", "piK", "KK" };
-    std::vector<double> bcgRegion = { 1.0, 1.0, 1.1 };
+    std::vector<double> bcgRegionStart = { 1.2, 1.2, 1.04 };
+    std::vector<double> bcgRegionStop = { 2.0, 2.0, 1.2 };
     std::vector<double> fitMaximum = { 0.892, 0.892, 1.02 };
     std::vector<double> fitWidth = { 0.0514, 0.0514, 0.004 };//51.4 MeV for K*(892), 4.43 MeV for phi(1020)
     //creating list of categories
@@ -219,8 +220,9 @@ skipOneTimeFitting:
             TH2D* sig_pointer = (TH2D*)signal_vector[i*allCategories.size()+j]->Clone();
             //background fitting moved from binned to overall sum
             //background still removed like that
-            int bcg_bin = bcg_pointer->GetXaxis()->FindBin(bcgRegion[i]);
-            bcg_pointer->Scale(sig_pointer->Integral(bcg_bin, -1, 0, -1)/bcg_pointer->Integral(bcg_bin, -1, 0, -1));
+            int bcg_bin_start = bcg_pointer->GetXaxis()->FindBin(bcgRegionStart[i]);
+            int bcg_bin_stop = bcg_pointer->GetXaxis()->FindBin(bcgRegionStop[i]);
+            bcg_pointer->Scale(sig_pointer->Integral(bcg_bin_start, bcg_bin_stop, 0, -1)/bcg_pointer->Integral(bcg_bin_start, bcg_bin_stop, 0, -1));
             sig_pointer->Add(bcg_pointer, -1.);
             //for keeping title
             std::string baseOfTitle = std::string(sig_pointer->GetTitle())+" ";
@@ -279,8 +281,9 @@ fittingBackground:
             TH2D* sig_pointer = (TH2D*)signal_vector[i*allCategories.size()+j]->Clone();
             //background fitting moved from binned to overall sum
             //background still removed like that
-            int bcg_bin = bcg_pointer->GetXaxis()->FindBin(bcgRegion[i]);
-            bcg_pointer->Scale(sig_pointer->Integral(bcg_bin, -1, 0, -1)/bcg_pointer->Integral(bcg_bin, -1, 0, -1));
+            int bcg_bin_start = bcg_pointer->GetXaxis()->FindBin(bcgRegionStart[i]);
+            int bcg_bin_stop = bcg_pointer->GetXaxis()->FindBin(bcgRegionStop[i]);
+            bcg_pointer->Scale(sig_pointer->Integral(bcg_bin_start, bcg_bin_stop, 0, -1)/bcg_pointer->Integral(bcg_bin_start, bcg_bin_stop, 0, -1));
             sig_pointer->Add(bcg_pointer, -1.);
             //for keeping title
             std::string baseOfTitle = std::string(sig_pointer->GetTitle())+" ";
