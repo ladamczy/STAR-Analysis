@@ -260,7 +260,7 @@ skipOneTimeFitting:
                     par_error = tempResult.ParError(0)/sig_slice->GetXaxis()->GetBinWidth(1)*bin_width;
                     result_vector[i*allCategories.size()+j]->SetBinContent(k+1, par_value);
                     result_vector[i*allCategories.size()+j]->SetBinError(k+1, par_error);
-                    width_vector[i*allCategories.size()+j]->SetBinContent(k+1, tempResult.Parameter(2));
+                    width_vector[i*allCategories.size()+j]->SetBinContent(k+1, abs(tempResult.Parameter(2)));
                     width_vector[i*allCategories.size()+j]->SetBinError(k+1, tempResult.Error(2));
                 }
                 Chi2withbcg_vector[i*allCategories.size()+j]->SetBinContent(k+1, tempResult.Chi2()/tempResult.Ndf());
@@ -318,7 +318,7 @@ fittingBackground:
                     par_error = tempResult.ParError(0)/sig_slice->GetXaxis()->GetBinWidth(1)*bin_width;
                     result_vector_nobcgfit[i*allCategories.size()+j]->SetBinContent(k+1, par_value);
                     result_vector_nobcgfit[i*allCategories.size()+j]->SetBinError(k+1, par_error);
-                    width_vector_nobcgfit[i*allCategories.size()+j]->SetBinContent(k+1, tempResult.Parameter(2));
+                    width_vector_nobcgfit[i*allCategories.size()+j]->SetBinContent(k+1, abs(tempResult.Parameter(2)));
                     width_vector_nobcgfit[i*allCategories.size()+j]->SetBinError(k+1, tempResult.Error(2));
                 }
                 Chi2withoutbcg_vector[i*allCategories.size()+j]->SetBinContent(k+1, tempResult.Chi2()/tempResult.Ndf());
@@ -388,7 +388,7 @@ notFittingBackground:
                     par_error = tempResult.ParError(0)/sig_slice->GetXaxis()->GetBinWidth(1)*bin_width;
                     result_vector_nobcgremoval[i*allCategories.size()+j]->SetBinContent(k+1, par_value);
                     result_vector_nobcgremoval[i*allCategories.size()+j]->SetBinError(k+1, par_error);
-                    width_vector_nobcgremoval[i*allCategories.size()+j]->SetBinContent(k+1, tempResult.Parameter(2));
+                    width_vector_nobcgremoval[i*allCategories.size()+j]->SetBinContent(k+1, abs(tempResult.Parameter(2)));
                     width_vector_nobcgremoval[i*allCategories.size()+j]->SetBinError(k+1, tempResult.Error(2));
                 }
                 Chi2withoutremovingbcg_vector[i*allCategories.size()+j]->SetBinContent(k+1, tempResult.Chi2()/tempResult.Ndf());
@@ -496,6 +496,7 @@ void draw_and_save(TH1D* data, std::string folderWithDiagonal, std::string name,
     data->SetMarkerColor(kBlue);
     data->SetTitle(title.c_str());
     resultCanvas->SaveAs((folderWithDiagonal+name+".pdf").c_str());
+    resultCanvas->Clear();
 }
 
 void draw_and_save_minus_background(TH1D* data, TH1D* bcg, std::string folderWithDiagonal, std::string name, std::string title, double bcg_region){
@@ -519,6 +520,7 @@ void draw_and_save_minus_background(TH1D* data, TH1D* bcg, std::string folderWit
     data->SetTitle(title.c_str());
 
     resultCanvas->SaveAs((folderWithDiagonal+name+".pdf").c_str());
+    resultCanvas->Clear();
 }
 
 void draw_bulk(std::vector<TH1D*> data, std::string folderWithDiagonal, std::string name, std::string title, std::string options){
@@ -543,6 +545,7 @@ void draw_bulk(std::vector<TH1D*> data, std::string folderWithDiagonal, std::str
     resultCanvas->BuildLegend();
     resultCanvas->Update();
     resultCanvas->SaveAs((folderWithDiagonal+name+".pdf").c_str());
+    resultCanvas->Clear();
 }
 
 TFitResult differential_crossection_fit(TPad* pad, TH1D* slice, TF1* fitting_function_signal, TF1* fitting_function_bcg, std::string draw_full_path){
