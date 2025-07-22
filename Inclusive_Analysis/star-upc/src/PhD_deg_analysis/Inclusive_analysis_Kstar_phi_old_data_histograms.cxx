@@ -17,6 +17,7 @@
 #include "TF1Convolution.h"
 #include "TApplication.h"
 #include "TFitResult.h"
+#include "THStack.h"
 
 #include "MyStyles.h"
 
@@ -532,18 +533,18 @@ void draw_bulk(std::vector<TH1D*> data, std::string folderWithDiagonal, std::str
     tempStyle.cd();
     gROOT->ForceStyle();
     TCanvas* resultCanvas = new TCanvas("resultCanvas", "resultCanvas", 4000, 2400);
-    data[0]->SetMinimum(0.);
-    std::vector<TH1D*>::iterator max_hist = std::max_element(data.begin(), data.end(), [](TH1D* a, TH1D* b){return a->GetMaximum()<b->GetMaximum();});
-    data[0]->SetMaximum(1.1*(*max_hist)->GetMaximum());
-    data[0]->Draw(options.c_str());
-    for(size_t i = 1; i<data.size(); i++){
-        data[i]->Draw((options+" same").c_str());
-    }
-    resultCanvas->UseCurrentStyle();
-    data[0]->SetTitle(title.c_str());
+    THStack drawingStack(name.c_str(), title.c_str());
+    drawingStack.SetMinimum(0);
     for(size_t i = 0; i<data.size(); i++){
+        drawingStack.Add(data[i], options.c_str());
+    }
+    drawingStack.Draw("nostack");
+    resultCanvas->UseCurrentStyle();
+    TList* hists = drawingStack.GetHists();
+    for(size_t i = 0; i<drawingStack.GetNhists(); i++){
         //0 & 1 are black & white, and 10 is white too
-        data[i]->SetLineColor(i+2+(i+2>=10));
+        ((TH1D*)hists->At(i))->SetLineColor(i+2+(i+2>=10));
+        ((TH1D*)hists->At(i))->SetMarkerColor(TColor::GetColorDark(i+2+(i+2>=10)));
     }
     resultCanvas->BuildLegend();
     resultCanvas->Update();
