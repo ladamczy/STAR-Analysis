@@ -539,10 +539,10 @@ void draw_bulk(std::vector<TH1D*> data, std::string folderWithDiagonal, std::str
         drawingStack.Add(data[i], options.c_str());
     }
     drawingStack.Draw("nostack");
-    resultCanvas->UseCurrentStyle();
     TList* hists = drawingStack.GetHists();
     for(size_t i = 0; i<drawingStack.GetNhists(); i++){
         //0 & 1 are black & white, and 10 is white too
+        ((TH1D*)hists->At(i))->UseCurrentStyle();
         ((TH1D*)hists->At(i))->SetLineColor(i+2+(i+2>=10));
         ((TH1D*)hists->At(i))->SetMarkerColor(TColor::GetColorDark(i+2+(i+2>=10)));
     }
