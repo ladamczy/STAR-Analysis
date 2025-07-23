@@ -68,11 +68,9 @@ int main(int argc, char* argv[]){
     TH1D* MpipiChi2bcg = (TH1D*)inputbcg->Get("MpipiChi2bcgTOF");
     TH1D* MppChi2bcg = (TH1D*)inputbcg->Get("MppChi2bcgTOF");
     //getting diffractive background and signal
-    // std::vector<std::string> pairTab = { "Kpi", "piK", "ppi", "pip", "KK", "pipi", "pp" };
-    // std::vector<double> bcgRegion = { 1.0, 1.0, 1.1, 1.1, 1.1, 0.2, 2.4 };
     std::vector<std::string> pairTab = { "Kpi", "piK", "KK" };
-    std::vector<double> bcgRegionStart = { 1.2, 1.2, 1.04 };
-    std::vector<double> bcgRegionStop = { 2.0, 2.0, 1.2 };
+    std::vector<double> bcgRegionStart = { 1.05, 1.05, 1.15 };
+    std::vector<double> bcgRegionStop = { 1.25, 1.25, 1.45 };
     std::vector<double> fitMaximum = { 0.892, 0.892, 1.02 };
     std::vector<double> fitWidth = { 0.0514, 0.0514, 0.004 };//51.4 MeV for K*(892), 4.43 MeV for phi(1020)
     //creating list of categories
@@ -178,6 +176,46 @@ int main(int argc, char* argv[]){
     fit_func_custom_sig.SetParameter(5, 0.0013);
     differential_crossection_fit(result, MpiKChi2Close, &fit_func_custom_sig, &fit_func_custom_bcg, folderWithDiagonal+"MpiKwhole.pdf");
 skipOneTimeFitting:
+
+    std::string inputString;
+    //checking fitting bounds
+    //Kpi
+    TH1D KpiRatio(*MKpiChi2bcg);
+    MKpiChi2->Sumw2();
+    KpiRatio.Divide(MKpiChi2);
+    KpiRatio.SetTitle("Kpi mixed/single events ratio");
+    result->cd();
+    KpiRatio.Draw("e1");
+    result->Update();
+    printf("Write lower & higher bound of the background fit\nOr press \"Enter\" to keep current: %lf, %lf\n", bcgRegionStart[0], bcgRegionStop[0]);
+    std::getline(std::cin, inputString);
+    sscanf(inputString.c_str(), "%lf %lf", &bcgRegionStart[0], &bcgRegionStop[0]);
+    printf("Chosen bounds: %lf, %lf\n", bcgRegionStart[0], bcgRegionStop[0]);
+    result->Clear();
+    //piK
+    TH1D piKRatio(*MpiKChi2bcg);
+    MpiKChi2->Sumw2();
+    piKRatio.Divide(MpiKChi2);
+    piKRatio.SetTitle("piK mixed/single events ratio");
+    piKRatio.Draw("e1");
+    result->Update();
+    printf("Write lower & higher bound of the background fit\nOr press \"Enter\" to keep current: %lf, %lf\n", bcgRegionStart[1], bcgRegionStop[1]);
+    std::getline(std::cin, inputString);
+    sscanf(inputString.c_str(), "%lf %lf", &bcgRegionStart[1], &bcgRegionStop[1]);
+    printf("Chosen bounds: %lf, %lf\n", bcgRegionStart[1], bcgRegionStop[1]);
+    result->Clear();
+    //KK
+    TH1D KKRatio(*MKKChi2bcg);
+    MKKChi2->Sumw2();
+    KKRatio.Divide(MKKChi2);
+    KKRatio.SetTitle("KK mixed/single events ratio");
+    KKRatio.Draw("e1");
+    result->Update();
+    printf("Write lower & higher bound of the background fit\nOr press \"Enter\" to keep current: %lf, %lf\n", bcgRegionStart[2], bcgRegionStop[2]);
+    std::getline(std::cin, inputString);
+    sscanf(inputString.c_str(), "%lf %lf", &bcgRegionStart[2], &bcgRegionStop[2]);
+    printf("Chosen bounds: %lf, %lf\n", bcgRegionStart[2], bcgRegionStop[2]);
+    result->Clear();
 
     //fitting functions
     TF1* fit_func_sig = new TF1("fit_func_sig", "breitwigner", 0.8, 1.0);
