@@ -1,5 +1,6 @@
 # STAR-MuDST-QA: Unified Quality Analysis for Particle Embedding - User Documentation
-# Author : Sneha Bhosale (AGH Krakow)
+
+Author : Sneha Bhosale (AGH Krakow)
 
 ## Overview
 
