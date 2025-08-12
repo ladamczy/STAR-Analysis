@@ -52,11 +52,6 @@ Load the STAR software environment:
 starver SL20c
 ```
 
-Verify ROOT is available:
-```bash
-which root4star
-```
-
 ### 2. Prepare Input Files
 
 Create or verify your input file lists. Each list should contain absolute paths to MuDST files:
