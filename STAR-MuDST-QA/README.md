@@ -215,20 +215,6 @@ After running analysis, your output directory will contain:
 
 Modify `UnifiedMuDstQA.C` to accept additional parameters or change analysis settings.
 
-### Batch Processing Multiple Particle Types
-
-```bash
-# Submit multiple analyses
-./submit_analysis.py pion_analysis pions_all.list
-./submit_analysis.py kaon_analysis kaons_all.list  
-./submit_analysis.py proton_analysis protons_all.list
-
-# Monitor all runs
-./monitor_jobs.py pion_analysis
-./monitor_jobs.py kaon_analysis
-./monitor_jobs.py proton_analysis
-```
-
 ### Customizing Output Location
 
 Edit the `base_output_dir` configuration in `submit_analysis.py`:
