@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE job>
+
+<job maxFilesPerProcess="1" fileListSyntax="xrootd" simulateSubmission="false" maxWallTime="10">
+  <command>
+    echo "Starting the job"
+    ls
+    hostname
+    starver SL20c
+    root4star -l -b -q 'UnifiedMuDstQA.C("'$FILELIST'",1,0,"'$JOBID'.root",true)'
+    ls
+  </command>
+
+  __INPUT__
+  
+  <stdout URL="file:__BASE_OUTPUT_DIR__/outfiles/$JOBID.out"/>
+  <stderr URL="file:__BASE_OUTPUT_DIR__/errfiles/$JOBID.err"/>
+  <output fromScratch="*.root" toURL="file:__BASE_OUTPUT_DIR__/rootfiles/"/>
+
+  <Generator>
+    <Location>__BASE_OUTPUT_DIR__/sched</Location>
+  </Generator>
+
+  <SandBox installer="ZIP">
+    <Package>
+      <File>file:__SOURCE_DIR__/UnifiedMuDstQA.C</File>
+    </Package>
+  </SandBox>
+</job>
