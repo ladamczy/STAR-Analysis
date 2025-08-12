@@ -23,7 +23,6 @@ The analysis generates ROOT files containing histograms and data trees for physi
 - **ROOT**: Part of STAR framework (root4star)
 - **HTCondor**: Job submission system
 - **Python 3**: For management scripts
-- **Storage**: Access to `/star/data05/scratch/` or equivalent
 
 ### Required Files
 - `UnifiedMuDstQA.C` - Main analysis code (ROOT macro)
@@ -214,21 +213,6 @@ After running analysis, your output directory will contain:
 - Check `rootfiles/` directory for output files
 - Verify ROOT files are not empty
 
-### Monitoring Commands
-
-```bash
-# Check HTCondor queue
-condor_q
-
-# Check specific user jobs  
-condor_q [username]
-
-# Check disk usage
-df -h /path/to/your/output/directory/
-
-# List output files
-ls -la /path/to/your/output/directory/[tag]/rootfiles/
-```
 
 ## Advanced Usage
 
@@ -272,7 +256,7 @@ config = {
 
 - **Chunk Size**: Adjust merge chunk size based on available memory and analysis needs
 - **File Lists**: Split large file lists for better job distribution
-- **Resource Limits**: Monitor job wall time (default: 10 hours) and adjust if needed
+- **Resource Limits**: Monitor job wall time and adjust if needed
 - **Storage**: Ensure sufficient disk space for output files
 
 ## Support and Troubleshooting
