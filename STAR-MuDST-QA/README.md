@@ -8,7 +8,7 @@ The Unified MuDST Analysis project is a comprehensive pipeline for processing an
 
 ## What This Project Does
 
-This analysis framework processes MuDST (Micro Data Summary Tape) files from the STAR experiment at RHIC (Relativistic Heavy Ion Collider). It performs quality assurance analysis on embedded particle data including:
+This analysis framework processes MuDST files from the STAR experiment at RHIC (Relativistic Heavy Ion Collider). It performs quality assurance analysis on embedded particle data including:
 
 - **Pion analysis** (π+ and π- particles)
 - **Kaon analysis** (K+ and K- particles)  
