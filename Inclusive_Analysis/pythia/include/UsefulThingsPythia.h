@@ -56,8 +56,11 @@ bool isParticleDetected(Pythia8::Particle* particle){
     static TH3F Acceptance[nSigns*nParticles];
     //solving initialization in a prettier way
     static bool isInitialised = false;
-    if(!isInitialised)
-        readingAcceptanceFromFile(Acceptance);
+    if(!isInitialised){
+        isInitialised = readingAcceptanceFromFile(Acceptance);
+    }
+    //random number generator
+    static Pythia8::Rndm generator(0);
     //getting the histogram
     int histID = -1;
     switch(particle->id()){
@@ -95,10 +98,17 @@ bool isParticleDetected(Pythia8::Particle* particle){
         zVx += 1e-3*(1-2*(zVx>0));
     }
     if(pT<temp->GetYaxis()->GetBinCenter(1) or pT>temp->GetYaxis()->GetBinCenter(temp->GetNbinsY())){
-        pT += 1e-3*(1-2*(pT>0));
+        pT += 1e-3*(1-2*(pT>1.0));
     }
     if(eta<temp->GetZaxis()->GetBinCenter(1) or eta>temp->GetZaxis()->GetBinCenter(temp->GetNbinsZ())){
         eta += 1e-3*(1-2*(eta>0));
     }
-    return temp->Interpolate(zVx, pT, eta);
+    try{
+        return temp->Interpolate(zVx, pT, eta)>generator.flat();
+    }
+    catch(const std::exception& e){
+        std::cerr<<e.what()<<'\n';
+        printf("%lf, %lf, %lf\n", zVx, pT, eta);
+    }
+    return temp->Interpolate(zVx, pT, eta)>generator.flat();
 }
