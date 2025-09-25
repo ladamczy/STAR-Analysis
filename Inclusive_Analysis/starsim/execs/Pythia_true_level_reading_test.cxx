@@ -6,7 +6,7 @@
 #include <ROOT/TTreeProcessorMT.hxx>
 
 //STAR headers
-#include <StarGenPPEvent.h>
+#include <StarGenEvent.h>
 #include <StarGenParticle.h>
 
 //my headers
