@@ -53,7 +53,7 @@ void ProcessingInsideLoop::Fill(int hist_number, double x){
     if(hist1dtabLocal[hist_number]!=nullptr){
         hist1dtabLocal[hist_number]->Fill(x);
     } else{
-        throw std::invalid_argument("1D histogram with number \""+to_string(hist_number)+"\" does not exist.");
+        throw std::invalid_argument("1D histogram with number \""+std::to_string(hist_number)+"\" does not exist.");
     }
 }
 void ProcessingInsideLoop::Fill(const char *hist_name, double x){
@@ -73,7 +73,7 @@ void ProcessingInsideLoop::Fill(int hist_number, double x, double y_or_w){
     } else if(hist2dtabLocal[hist_number]!=nullptr){
         hist2dtabLocal[hist_number]->Fill(x, y_or_w);
     } else{
-        throw std::invalid_argument("1D nor 2D histogram with number \""+to_string(hist_number)+"\" does not exist.");
+        throw std::invalid_argument("1D nor 2D histogram with number \""+std::to_string(hist_number)+"\" does not exist.");
     }
 }
 void ProcessingInsideLoop::Fill(const char *hist_name, double x, double y_or_w){
@@ -99,7 +99,7 @@ void ProcessingInsideLoop::Fill(int hist_number, const char* key, double w){
     if(hist1dtabLocal[hist_number]!=nullptr){
         hist1dtabLocal[hist_number]->Fill(key, w);
     } else{
-        throw std::invalid_argument("1D histogram with number \""+to_string(hist_number)+"\" does not exist.");
+        throw std::invalid_argument("1D histogram with number \""+std::to_string(hist_number)+"\" does not exist.");
     }
 }
 void ProcessingInsideLoop::Fill(const char* hist_name, const char* key, double w){
@@ -118,7 +118,7 @@ void ProcessingInsideLoop::Fill(int hist_number, const char* key, double y, doub
     if(hist2dtabLocal[hist_number]!=nullptr){
         hist2dtabLocal[hist_number]->Fill(key, y, w);
     } else{
-        throw std::invalid_argument("1D histogram with number \""+to_string(hist_number)+"\" does not exist.");
+        throw std::invalid_argument("1D histogram with number \""+std::to_string(hist_number)+"\" does not exist.");
     }
 }
 void ProcessingInsideLoop::Fill(const char* hist_name, const char* key, double y, double w){
@@ -137,7 +137,7 @@ void ProcessingInsideLoop::Fill(int hist_number, const char* key_x, const char* 
     if(hist2dtabLocal[hist_number]!=nullptr){
         hist2dtabLocal[hist_number]->Fill(key_x, key_y, w);
     } else{
-        throw std::invalid_argument("1D histogram with number \""+to_string(hist_number)+"\" does not exist.");
+        throw std::invalid_argument("1D histogram with number \""+std::to_string(hist_number)+"\" does not exist.");
     }
 }
 void ProcessingInsideLoop::Fill(const char* hist_name, const char* key_x, const char* key_y, double w){
@@ -157,7 +157,7 @@ void ProcessingInsideLoop::Fill(int hist_number, const char* key, double y, doub
     if(hist3dtabLocal[hist_number]!=nullptr){
         hist3dtabLocal[hist_number]->Fill(key, y, z, w);
     } else{
-        throw std::invalid_argument("3D histogram with number \""+to_string(hist_number)+"\" does not exist.");
+        throw std::invalid_argument("3D histogram with number \""+std::to_string(hist_number)+"\" does not exist.");
     }
 }
 void ProcessingInsideLoop::Fill(const char* hist_name, const char* key, double y, double z, double w){
