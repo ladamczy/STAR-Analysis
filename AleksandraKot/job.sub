@@ -1,0 +1,20 @@
+executable              = job.sh 
+
+arguments               = $(file)
+
+log                     = $(file).log
+output                  = $(file).out
+error                   = $(file).err
+
+
+should_transfer_files   = IF_NEEDED
+when_to_transfer_output = ON_EXIT
+
+request_cpus            = 1
+request_memory          = 2048M
+request_disk            = 2G
+
+max_retries             = 0
+
+queue
+

@@ -3,7 +3,7 @@
 # Check if build directory exists
 if [ -d "build" ]; then
     echo "Cleaning build directory..."
-    rm -rf build/Preselection
+    rm -rf build/SD_Analysis
 else
     echo "Creating build directory..."
     mkdir -p build
@@ -18,10 +18,10 @@ ROOT_EG_LIB="-lEG"  # Add EG library explicitly
 STAR_UPC_LIB_DIR="../star-upc-new/build"
 
 # Compile Preselection
-echo "Compiling Preselection..."
+echo "Compiling SD_Analysis..."
 
-g++ Preselection.cxx \
-    -o build/Preselection \
+g++ SD_Analysis.cxx \
+    -o build/SD_Analysis \
     -I/usr/include/root \
     -I./include \
     -I${STAR_UPC_LIB_DIR%/build}/include \
@@ -31,7 +31,7 @@ g++ Preselection.cxx \
     -Wl,-rpath,${STAR_UPC_LIB_DIR}
 
 if [ $? -eq 0 ]; then
-    echo "Build complete. Executable is in build/Preselection"
+    echo "Build complete. Executable is in build/SD_Analysis"
 else
     echo "Build failed!"
     exit 1
