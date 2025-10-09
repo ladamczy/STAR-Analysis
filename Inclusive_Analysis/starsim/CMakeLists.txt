@@ -10,11 +10,13 @@ include(GNUInstallDirs)
 
 #outside libraries
 find_package(ROOT REQUIRED COMPONENTS EG)
-# set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR})
 # find_package(Pythia8)
 
 #folder with shared code
 set(SHARED_FOLDER ../../star-upc-new)
+
+#compile options
+add_compile_options("-O3")
 
 #headers
 include_directories(include)
