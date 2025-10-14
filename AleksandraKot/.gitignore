@@ -1,5 +1,7 @@
 build
 Run
+Histos
+make_ratio.C
 *.err
 *.log
 *.out
