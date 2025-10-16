@@ -95,12 +95,12 @@ int main(int argc, char** argv)
     TH1D* HistXiProtonEast = new TH1D("HistXiProtonEast", "xi of the proton on east;xi; # events", 110 ,-0.1,1);
     TH1D* HistLogXiProtonWest = new TH1D("HistLogXiProtonWest", "logxi of the proton on west; logxi; # events", 110 ,-6,0);
     TH1D* HistLogXiProtonEast = new TH1D("HistLogXiProtonEast", "logxi of the proton on east; logxi; # events", 110 ,-6,0);
-    TH1D* HistPtProtonWest = new TH1D("HistPtProtonWest", "pT of the proton on west; pT [GeV]; # events", 110 ,0,2);
-    TH1D* HistPtProtonEast = new TH1D("HistPtProtonEast", "pT of the proton on west; pT [GeV]; pT [GeV]; # events", 110 ,0,2);
+    TH1D* HistPtProtonWest = new TH1D("HistPtProtonWest", "pT of the proton on west; pT [GeV]; # events", 110 ,0,4);
+    TH1D* HistPtProtonEast = new TH1D("HistPtProtonEast", "pT of the proton on west; pT [GeV]; pT [GeV]; # events", 110 ,0,4);
     TH1D* HistEtaProtonWest = new TH1D("HistEtaProtonWest", "Eta of the proton on west; #eta; # events", 110 ,-10,10);
     TH1D* HistEtaProtonEast = new TH1D("HistEtaProtonEast", "Eta of the proton on east; #eta; # events", 110 ,-10,10);
-    TH1D* HistPtTracksWest = new TH1D("HistPtTracksWest", "pT of the reconstructed tracks when proton on west; pT [GeV]; # events", 110 ,0,2);
-    TH1D* HistPtTracksEast = new TH1D("HistPtTracksEast", "pT of the reconstructed tracks when proton on east; pT [GeV]; # events", 110 ,0,2);
+    TH1D* HistPtTracksWest = new TH1D("HistPtTracksWest", "pT of the reconstructed tracks when proton on west; pT [GeV]; # events", 110 ,0,4);
+    TH1D* HistPtTracksEast = new TH1D("HistPtTracksEast", "pT of the reconstructed tracks when proton on east; pT [GeV]; # events", 110 ,0,4);
     TH1D* HistEtaTracksWest = new TH1D("HistEtaTracksWest", "Eta of the reconstructed tracks when proton on west; #eta; # events", 110 ,-3,3);
     TH1D* HistEtaTracksEast = new TH1D("HistEtaTracksEast", "Eta of the reconstructed tracks when proton on east; #eta; # events", 110 ,-3,3);
 
@@ -124,15 +124,15 @@ int main(int argc, char** argv)
               if(   upcEvt->getTrack(j)->getNhits()>15  
                  && upcEvt->getTrack(j)->getFlag(StUPCTrack::kTof) 
                  && upcEvt->getTrack(j)->getFlag(StUPCTrack::kPrimary)) {
-                     if (upcEvt->getTrack(j)->getPt()>0.15 
-                         && abs(upcEvt->getTrack(j)->getEta())<1.0){
+                     if (upcEvt->getTrack(j)->getPt()>0.2 
+                         && abs(upcEvt->getTrack(j)->getEta())<0.9){
                             NumOfPrimaryTracksToF++;
                      }
-                     if (abs(upcEvt->getTrack(j)->getEta())<1.0) {
+                     if (abs(upcEvt->getTrack(j)->getEta())<0.9) {
                            if (isEast) HistPtTracksEast->Fill(upcEvt->getTrack(j)->getPt());
                            if (isWest) HistPtTracksWest->Fill(upcEvt->getTrack(j)->getPt()); 
                      } 
-                     if (upcEvt->getTrack(j)->getPt()>0.15) {
+                     if (upcEvt->getTrack(j)->getPt()>0.2) {
                            if (isEast) HistEtaTracksEast->Fill(upcEvt->getTrack(j)->getEta());
                            if (isWest) HistEtaTracksWest->Fill(upcEvt->getTrack(j)->getEta()); 
                      }
