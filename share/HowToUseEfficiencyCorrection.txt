@@ -1,0 +1,61 @@
+The `StEfficiencyCorrector3D.h` class is designed to facilitate efficiency corrections for particle detector analyses using 3D histograms and efficiency objects from ROOT. It supports complex scaling, interpolation, and boundary handling for PID (Pion/Kaon/Proton) corrections based on both TPC and TOF detector information. The class allows per-charge and per-particle-specific adjustments via multiple configuration parameters and encapsulates all logic for extracting and applying efficiency factors. It lets you set up scaling factors and apply bin-by-bin corrections based on coordinates (eta, pT, Vz), simplifying accurate physics analyses.
+
+### Purpose and Usage
+  - Closure tests: Apply bin-by-bin correction to MC or reconstructed histograms before statistical comparison.
+  - Bias assessment: Use corrected yields and compare with truth for efficiency validation.
+  - Visualization: Project corrected histograms for eta, pT, Vz and plot ratios to truth distributions for quality control.
+
+### Main Capabilities
+- **Stores Efficiency Data:**
+  - Loads efficiency histograms (TH3F) or TEfficiency objects for TPC and TOF detectors
+  - Separate histograms for charge and particle type (proton, kaon, pion)
+
+- **Configures Scaling/Corrections:**
+  - Lets you set plateau shifts and multipliers to match experiment systematics
+  - Handles edge cases with boundary clamping and interpolation
+
+- **Applies Corrections:**
+  - Retrieves the correct efficiency for any (eta, pT, Vz) bin using a simple call
+  - Computes corrected yield for each histogram bin
+
+- **Diagnostics:**
+  - Checks that setup is valid before you run analyses
+  - Prints info and helps debug if you need details or encounter issues
+
+
+### Main Features
+- **Enumerations:**
+  - DetectorType: TPC, TOF
+  - ChargeType: POSITIVE, NEGATIVE
+  - ParticleType: PION, KAON, PROTON
+
+- **Efficiency Data:**
+  - Set via TH3F or TEfficiency; ownership tracked for cleanup.
+  - Efficiency histograms and objects can be set per detector, charge, and particle.
+
+- **Scaling Parameters:**
+  - Plateau shift, multiplication factor, inflation shift, unchanged flag for legacy and interpolated corrections (per charge/particle).
+
+- **Efficiency Retrieval:**
+  - Methods: `getTpcEfficiency`, `getTofEfficiency`, `getCombinedEfficiency`, `getCorrectedYield`.
+  - Handles all clamping, legacy edge logic, and scaling per configuration.
+
+- **Utility Methods:**
+  - Print debug info and histogram details.
+  - Validate input parameters for range and type safety.
+  - Verbose and interpolation settings configurable.
+
+### Usage Example (Basic Workflow)
+
+StEfficiencyCorrector3D effCorr;
+
+// Set TPC efficiency histogram for positive pions
+effCorr.setTpcEfficiencyTH3F(hist, StEfficiencyCorrector3D::POSITIVE, StEfficiencyCorrector3D::PION, true);
+
+// Get efficiency for eta, pT, Vz (for a positive pion)
+double eff = effCorr.getTpcEfficiency(eta, pT, Vz, +1, 0);
+
+// Apply correction to raw yield
+double corrYield = effCorr.getCorrectedYield(rawYield, eta, pT, Vz, +1, 0, false);
+
+The class provides robust legacy handling for boundary edge cases, scaling, and high-pT plateau corrections to STAR experiment workflows.
