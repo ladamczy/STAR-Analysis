@@ -1,4 +1,4 @@
-*/
+/*
     please check the documentation how to use this class in you analysis -> https://github.com/ladamczy/STAR-Analysis/blob/main/share/HowToUseEfficiencyCorrection.txt
 */
 
