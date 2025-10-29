@@ -1,0 +1,12 @@
+executable     = run_preselection.sh
+arguments      = $(infile)
+output         = logs/Preselection.$(ClusterId).$(Process).out
+error          = logs/Preselection.$(ClusterId).$(Process).err
+log            = logs/Preselection.$(ClusterId).log
+
+should_transfer_files = NO
+request_cpus   = 1
+request_memory = 4 GB
+
+queue infile from Check5files.txt
+

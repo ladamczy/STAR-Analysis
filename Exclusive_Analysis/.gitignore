@@ -1,2 +1,6 @@
 *.root
+*.txt
+logs/
+DataAfterPreselection/
+
 

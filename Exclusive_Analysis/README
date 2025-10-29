@@ -1,1 +1,166 @@
+  ╔═══════════════════════════════════════════════════════════════╗
+  ║                    CEP in pp Collisions                      ║
+  ╚═══════════════════════════════════════════════════════════════╝
+
+    Intact Proton         Central System          Intact Proton
+         |                      |                       |
+         v                      v                       v
+         
+      p ────→               π⁺ π⁻                  ←──── p
+            \                 ╱ ╲                 /
+             \               ╱   ╲               /
+              \             ╱     ╲             /
+               \      ╭────╱       ╲────╮      /
+                \    ╱                   ╲    /
+                 \  ╱  Double Pomeron     ╲  /
+                  ╱╲     Exchange         ╱╲
+                 ╱  ╲      (DPE)         ╱  ╲
+                ╱    ╲                  ╱    ╲
+               ╱      ╲________________╱      ╲
+              ╱                               ╲
+             ╱           Rapidity Gap          ╲
+            ╱                                  ╲
+           ╱____________________________________╲
+    
+    RP-West                STAR TPC                RP-East
+      ↑                      ↑                       ↑
+   (intact p)         (central π⁺π⁻)              (intact p)
+   
+   ═══════════════════════════════════════════════════════════════
+
+# STAR UPC Preselection Analysis
+
+This repository contains the preselection analysis code for STAR Ultra-Peripheral Collision (UPC) data processing, designed to run efficiently on HTCondor batch systems.
+
+## Overview
+
+The preselection analysis processes STAR ROOT files containing UPC event data, applies physics cuts (CEP triggers, RP track requirements, fiducial regions), and outputs both histograms and filtered event trees for further analysis.
+
+## Prerequisites
+
+- ROOT 6.x with C++17 support
+- STAR UPC analysis framework (`star-upc-new` library)
+- HTCondor batch system (for parallel processing)
+- GCC compiler with C++17 support
+
+## Files Structure
+
+```
+project_directory/
+├── Preselection.cxx           # Main analysis code
+├── building_Preselection.sh   # Compilation script
+├── run_preselection.sh        # Job execution script
+├── preselection_submit.sub    # HTCondor submit file
+├── New_star_data_full_part1.txt # Input file list
+├── build/                     # Compiled executables
+├── logs/                      # HTCondor job logs
+├── DataAfterPreselection/     # Output ROOT files
+└── README.md                  # This file
+```
+
+## Setup and Compilation
+
+### 1. Compile the Analysis Code
+
+
+# Make the build script executable
+chmod +x building_Preselection.sh
+
+# Compile the analysis code
+./building_Preselection.sh
+
+
+This creates the executable at `build/Preselection`.
+
+### 2. Prepare Input File List
+
+Create a text file containing full paths to ROOT files (one per line):
+/data2/New_star_data_full/part1/18053098/18053098.root
+/data2/New_star_data_full/part1/18053099/18053099.root
+
+### 3. Setup Output Directory
+
+mkdir -p DataAfterPreselection
+mkdir -p logs
+
+
+## Running the Analysis
+
+### Single File (Local Testing)
+
+# Make runner script executable
+chmod +x run_preselection.sh
+
+# Test with single file
+./run_preselection.sh "/data2/New_star_data_full/part1/18053098/18053098.root"
+-> the output file will be stored in DataAfterPreselection
+
+### Batch Processing with HTCondor
+
+1. **Submit jobs:**
+condor_submit preselection_submit.sub
+
+2. **Monitor jobs:**
+condor_q                          # Check job status
+condor_q -better-analyze          # Diagnose idle jobs
+condor_tail -f <job_id>          # Follow job output
+
+3. **Check job logs:**
+ls logs/                         # View log files
+cat logs/Preselection.<cluster>.<process>.out
+
+## Output Files
+
+The analysis produces two types of ROOT files in `DataAfterPreselection/`:
+
+- **Histogram files:** `hist_<basename>.root` - Analysis histograms
+- **Preselection files:** `presel_<basename>.root` - Filtered event trees
+
+### Output Histograms
+
+- Trigger distributions (pre/post selection)
+- RP track branch distributions
+- Track point plane usage
+- Fiducial region plots (px vs py)
+- TOF-matched track counts
+
+## Physics Cuts Applied
+
+1. **CEP Triggers:** 570701, 570705, 570711
+2. **RP Tracks:** Exactly 1 East + 1 West track
+3. **Plane Usage:** ≥3 planes used per track point
+4. **Fiducial Region:** Geometric acceptance cuts
+5. **TOF Matching:** ≥2 TOF-matched primary tracks
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Compilation errors:**
+   - Check ROOT installation: `root-config --version`
+   - Verify STAR UPC library path in `building_Preselection.sh`
+
+2. **Job failures:**
+   - Check log files in `logs/` directory
+   - Verify input file accessibility on compute nodes
+   - Ensure `DataAfterPreselection/` is writable
+
+3. **No output files:**
+   - Check job error logs for runtime errors
+   - Verify input ROOT files are valid: `root -l <filename>`
+
+### Performance Notes
+
+- Each job processes ~1 ROOT file and takes ~5 minutes
+- Memory usage: ~4 GB per job
+- Recommended batch size: 100-500 jobs depending on cluster load
+
+## Contact
+
+For questions about this analysis, contact the STAR UPC analysis team.
+
+***
+
+**Last updated:** October 2025  
+**Compatible with:** ROOT 6.x, HTCondor 24.6.1+
 

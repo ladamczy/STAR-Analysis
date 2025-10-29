@@ -103,7 +103,7 @@ int main(int argc, char** argv)
     static StRPEvent *correctedRpEvent = nullptr; // Pointer to corrected RP event
 
     // Load offset file for corrections (not applicable)
-    LoadOffsetFile("../data/OffSetsCorrectionsRun17.list", mCorrection);
+    //LoadOffsetFile("data/OffSetsCorrectionsRun17.list", mCorrection);
 
     // Set branch addresses for UPC event and check if it's MC
     chain->SetBranchAddress("mUPCEvent", &upcEvt);

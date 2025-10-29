@@ -64,7 +64,7 @@ using namespace std;
 int main(int argc, char** argv)  
 {
     // At the start of main(), create an output directory for the files
-    string outputDir = "../DataAfterPreselection/";
+    string outputDir = "DataAfterPreselection/";
     string command = "mkdir -p " + outputDir;
     system(command.c_str());
     if (argc != 2) {
@@ -93,22 +93,25 @@ int main(int argc, char** argv)
     TH2D* HistRpTrackPxPyN1 = new TH2D("4_HistRpTrackPxPyN1", ";p_{x} [GeV]; p_{y} [GeV]", 100, -1.5, 1.5, 100, -1.5, 1.5);	
    
 
-    ifstream inputFilePathList(argv[1]);
-    if (!inputFilePathList) 
-    {
-        cerr << "Failed to open input file." << std::endl;
-        return 1;
-    }
+    //ifstream inputFilePathList(argv[1]);
+    //if (!inputFilePathList) 
+    //{
+    //    cerr << "Failed to open input file." << std::endl;
+    //    return 1;
+    //}
+    
+    string inputFileName = argv[1];  // Direct ROOT file path
+    cout << "Processing single file: " << inputFileName << endl;
 
     //TChain *chain = new TChain("mUPCTree"); 
 
-    string inputFileName;
+    //string inputFileName;
  
-    std::string dataDir = "";//"/data2/star_data_5/";  // Full path to the data directory
-    std::string filePath;
+    //std::string dataDir = "";//"/data2/star_data_5/";  // Full path to the data directory
+    //std::string filePath;
         
-    while (std::getline(inputFilePathList, inputFileName))
-    {  /*  
+    //while (std::getline(inputFilePathList, inputFileName))
+    /*{   
         // Directly construct the full path
         filePath = dataDir + inputFileName;
         
@@ -150,7 +153,7 @@ int main(int argc, char** argv)
     chain->SetBranchAddress("mUPCEvent", &upcEvt);
     chain->SetBranchAddress("mRPEvent", &rpEvt);
 
-    LoadOffsetFile("../data/OffSetsCorrectionsRun17.list", mCorrection);
+    LoadOffsetFile("data/OffSetsCorrectionsRun17.list", mCorrection);
 
     TTree* mUPCTree = new TTree("mUPCTree", "mUPCTree");
     mUPCTree->Branch("mUPCEvent", &upcEvt);
@@ -498,6 +501,6 @@ int main(int argc, char** argv)
     HistRpTrackPointPlanesUsedN1->Reset();
     HistRpTrackPxPyN1->Reset();
 
-    }
+   // }
     return 0;
 }
