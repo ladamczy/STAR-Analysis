@@ -148,7 +148,6 @@ int main(int argc, char** argv)
     TH1D* hMultiplicityNProtonWestX = new TH1D("hMultiplicityNProtonWestX", "Multiplicity of antiprotons (West); N_{#bar{p}}; # events", 29, 1, 30);
     TH1D* hMultiplicityNProtonX = new TH1D("hMultiplicityNProtonX", "Multiplicity of antiprotons; N_{#bar{p}}; # events", 29, 1, 30);
 
-
        for (Long64_t i = 0; i < chain->GetEntries(); ++i) {
        chain->GetEntry(i);
        if( upcEvt->getNumberOfVertices() != 1) continue;
