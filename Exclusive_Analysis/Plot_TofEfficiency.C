@@ -12,6 +12,7 @@
 #include <TMath.h>
 #include <TLatex.h>
 #include <iomanip>
+//
 // Add these as global variables at the top of the file
 double gFixedMean = 0.0;
 double gFixedSigma = 0.0;
