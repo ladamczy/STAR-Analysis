@@ -1,3 +1,8 @@
+*/
+    please check the documentation how to use this class in you analysis -> https://github.com/ladamczy/STAR-Analysis/blob/main/share/HowToUseEfficiencyCorrection.txt
+*/
+
+        
 #ifndef StEfficiencyCorrector3D_h
 #define StEfficiencyCorrector3D_h
 
