@@ -2,7 +2,6 @@
     please check the documentation how to use this class in you analysis -> https://github.com/ladamczy/STAR-Analysis/blob/main/share/HowToUseEfficiencyCorrection.txt
 */
 
-        
 #ifndef StEfficiencyCorrector3D_h
 #define StEfficiencyCorrector3D_h
 
@@ -540,59 +539,73 @@ private:
      * Includes fallback to bin content if interpolation returns 0/NaN at edges
      */
     Double_t calculateHighPtPlateau(TH3F* hist, Double_t clampedEta, Double_t clampedVz) const {
-        // Legacy high-pT averaging of last 3 bins - YOUR axis order: X=pT
-        Double_t eff1 = hist->Interpolate(hist->GetXaxis()->GetBinCenter(hist->GetNbinsX()) - 1e-3, clampedEta, clampedVz);
-        Double_t eff2 = hist->Interpolate(hist->GetXaxis()->GetBinCenter(hist->GetNbinsX() - 1), clampedEta, clampedVz);
-        Double_t eff3 = hist->Interpolate(hist->GetXaxis()->GetBinCenter(hist->GetNbinsX() - 2), clampedEta, clampedVz);
-        
-        // Robustness: fallback to bin content if interpolation fails at edges
-        if(!TMath::Finite(eff1) || eff1 <= 0) {
-            eff1 = hist->GetBinContent(hist->GetNbinsX(), 
-                                      hist->GetYaxis()->FindBin(clampedEta), 
-                                      hist->GetZaxis()->FindBin(clampedVz));
-        }
-        if(!TMath::Finite(eff2) || eff2 <= 0) {
-            eff2 = hist->GetBinContent(hist->GetNbinsX() - 1, 
-                                      hist->GetYaxis()->FindBin(clampedEta), 
-                                      hist->GetZaxis()->FindBin(clampedVz));
-        }
-        if(!TMath::Finite(eff3) || eff3 <= 0) {
-            eff3 = hist->GetBinContent(hist->GetNbinsX() - 2, 
-                                      hist->GetYaxis()->FindBin(clampedEta), 
-                                      hist->GetZaxis()->FindBin(clampedVz));
-        }
-        
-        Double_t highPtEff = (eff1 + eff2 + eff3) / 3.0;
-        
-        // Additional robustness: if all three are bad, try single best bin
-        if(!TMath::Finite(highPtEff) || highPtEff <= 0) {
-            // Try the second-to-last bin (often more stable than the very last)
-            highPtEff = hist->GetBinContent(hist->GetNbinsX() - 1, 
-                                          hist->GetYaxis()->FindBin(clampedEta), 
-                                          hist->GetZaxis()->FindBin(clampedVz));
-            
-            if(!TMath::Finite(highPtEff) || highPtEff <= 0) {
-                // Last resort: use minimum efficiency
-                highPtEff = mMinEfficiency * 10; // Give it some headroom for scaling
-            }
-        }
-        
-        return TMath::Max(mMinEfficiency, highPtEff);
+    Double_t eff1, eff2, eff3;
+    
+    if(mUseInterpolation) {
+        // Use interpolation if enabled
+        eff1 = hist->Interpolate(hist->GetXaxis()->GetBinCenter(hist->GetNbinsX()), clampedEta, clampedVz);
+        eff2 = hist->Interpolate(hist->GetXaxis()->GetBinCenter(hist->GetNbinsX() - 1), clampedEta, clampedVz);
+        eff3 = hist->Interpolate(hist->GetXaxis()->GetBinCenter(hist->GetNbinsX() - 2), clampedEta, clampedVz);
+    } else {
+        // Use bin content directly when interpolation disabled
+        eff1 = hist->GetBinContent(hist->GetNbinsX(),
+                                  hist->GetYaxis()->FindBin(clampedEta),
+                                  hist->GetZaxis()->FindBin(clampedVz));
+        eff2 = hist->GetBinContent(hist->GetNbinsX() - 1,
+                                  hist->GetYaxis()->FindBin(clampedEta),
+                                  hist->GetZaxis()->FindBin(clampedVz));
+        eff3 = hist->GetBinContent(hist->GetNbinsX() - 2,
+                                  hist->GetYaxis()->FindBin(clampedEta),
+                                  hist->GetZaxis()->FindBin(clampedVz));
     }
+
+    // Robustness: fallback to bin content if interpolation fails at edges
+    if(!TMath::Finite(eff1) || eff1 <= 0) {
+        eff1 = hist->GetBinContent(hist->GetNbinsX(),
+                                  hist->GetYaxis()->FindBin(clampedEta),
+                                  hist->GetZaxis()->FindBin(clampedVz));
+    }
+
+    if(!TMath::Finite(eff2) || eff2 <= 0) {
+        eff2 = hist->GetBinContent(hist->GetNbinsX() - 1,
+                                  hist->GetYaxis()->FindBin(clampedEta),
+                                  hist->GetZaxis()->FindBin(clampedVz));
+    }
+
+    if(!TMath::Finite(eff3) || eff3 <= 0) {
+        eff3 = hist->GetBinContent(hist->GetNbinsX() - 2,
+                                  hist->GetYaxis()->FindBin(clampedEta),
+                                  hist->GetZaxis()->FindBin(clampedVz));
+    }
+
+    Double_t highPtEff = (eff1 + eff2 + eff3) / 3.0;
+
+    // Additional robustness: if all three are bad, try single best bin
+    if(!TMath::Finite(highPtEff) || highPtEff <= 0) {
+        highPtEff = hist->GetBinContent(hist->GetNbinsX() - 1,
+                                       hist->GetYaxis()->FindBin(clampedEta),
+                                       hist->GetZaxis()->FindBin(clampedVz));
+        if(!TMath::Finite(highPtEff) || highPtEff <= 0) {
+            highPtEff = mMinEfficiency * 10; // Give it some headroom for scaling
+        }
+    }
+
+    return TMath::Max(mMinEfficiency, highPtEff);
+}
+
+    
 Double_t getEfficiencyFromTEfficiency(TEfficiency* teff, Double_t eta, Double_t pT, Double_t Vz) const {
     if(!teff) return mMinEfficiency;
     
     TH3F* totalHist = (TH3F*)teff->GetTotalHistogram();
-    if(!totalHist) return mMinEfficiency;
-    
-    // IMPROVED: Clamp to BIN CENTERS, not boundaries, with small margins
-    // This prevents interpolation failures at histogram edges
-    
+    TH3F* passedHist = (TH3F*)teff->GetPassedHistogram();
+    if(!totalHist || !passedHist) return mMinEfficiency;
+
     // Get axis information
-    TAxis* xAxis = totalHist->GetXaxis();  // pT
-    TAxis* yAxis = totalHist->GetYaxis();  // eta  
-    TAxis* zAxis = totalHist->GetZaxis();  // Vz
-    
+    TAxis* xAxis = totalHist->GetXaxis(); // pT
+    TAxis* yAxis = totalHist->GetYaxis(); // eta  
+    TAxis* zAxis = totalHist->GetZaxis(); // Vz
+
     // Clamp to bin centers with small margins (like legacy algorithm)
     Double_t clampedPt = pT;
     if(xAxis->GetBinCenter(1) > pT) {
@@ -600,26 +613,26 @@ Double_t getEfficiencyFromTEfficiency(TEfficiency* teff, Double_t eta, Double_t 
     } else if(xAxis->GetBinCenter(xAxis->GetNbins()) < pT) {
         clampedPt = xAxis->GetBinCenter(xAxis->GetNbins()) - 1e-3;
     }
-    
+
     Double_t clampedEta = eta;
     if(yAxis->GetBinCenter(1) > eta) {
         clampedEta = yAxis->GetBinCenter(1) + 1e-3;
     } else if(yAxis->GetBinCenter(yAxis->GetNbins()) < eta) {
         clampedEta = yAxis->GetBinCenter(yAxis->GetNbins()) - 1e-3;
     }
-    
+
     Double_t clampedVz = Vz;
     if(zAxis->GetBinCenter(1) > Vz) {
         clampedVz = zAxis->GetBinCenter(1) + 1e-3;
     } else if(zAxis->GetBinCenter(zAxis->GetNbins()) < Vz) {
         clampedVz = zAxis->GetBinCenter(zAxis->GetNbins()) - 1e-3;
     }
-    
+
     Double_t efficiency = 0.0;
-    
-    // Method 1: Try interpolation with properly clamped coordinates
-    TH3F* passedHist = (TH3F*)teff->GetPassedHistogram();
-    if(passedHist && totalHist) {
+
+    // **KEY FIX: Honor mUseInterpolation flag**
+    if(mUseInterpolation) {
+        // Only try interpolation if explicitly enabled
         // Check if coordinates are within interpolation-safe bounds
         Bool_t safeToInterpolate = (clampedPt > totalHist->GetXaxis()->GetXmin() + 1e-6 &&
                                    clampedPt < totalHist->GetXaxis()->GetXmax() - 1e-6 &&
@@ -627,48 +640,37 @@ Double_t getEfficiencyFromTEfficiency(TEfficiency* teff, Double_t eta, Double_t 
                                    clampedEta < totalHist->GetYaxis()->GetXmax() - 1e-6 &&
                                    clampedVz > totalHist->GetZaxis()->GetXmin() + 1e-6 &&
                                    clampedVz < totalHist->GetZaxis()->GetXmax() - 1e-6);
-        
+
         if(safeToInterpolate) {
             Double_t passed = passedHist->Interpolate(clampedPt, clampedEta, clampedVz);
             Double_t total = totalHist->Interpolate(clampedPt, clampedEta, clampedVz);
-            
             if(total > 0) {
                 efficiency = passed / total;
             }
         }
     }
-    
-    // Method 2: Fallback to bin content if interpolation failed or unsafe
-    if(efficiency <= mMinEfficiency && passedHist && totalHist) {
+
+    // Always use bin content as fallback (or primary method when interpolation disabled)
+    if(efficiency <= mMinEfficiency) {
         Int_t binX = totalHist->GetXaxis()->FindBin(clampedPt);
         Int_t binY = totalHist->GetYaxis()->FindBin(clampedEta);
         Int_t binZ = totalHist->GetZaxis()->FindBin(clampedVz);
-        
+
         // Ensure bins are within valid range
         binX = TMath::Max(1, TMath::Min(totalHist->GetNbinsX(), binX));
         binY = TMath::Max(1, TMath::Min(totalHist->GetNbinsY(), binY));
         binZ = TMath::Max(1, TMath::Min(totalHist->GetNbinsZ(), binZ));
-        
+
         Double_t passed = passedHist->GetBinContent(binX, binY, binZ);
         Double_t total = totalHist->GetBinContent(binX, binY, binZ);
-        
         if(total > 0) {
             efficiency = passed / total;
         }
     }
-    
-    // Don't spam verbose output for expected edge cases
-    if(mVerbose && efficiency <= mMinEfficiency) {
-        // Only print verbose if this wasn't an extreme coordinate test
-        Bool_t isExtremeCoordinate = (TMath::Abs(eta) > 5.0 || pT < 0.05 || pT > 10.0 || TMath::Abs(Vz) > 100.0);
-        if(!isExtremeCoordinate) {
-            std::cout << "TEfficiency lookup failed for (" << clampedPt << "," << clampedEta << "," << clampedVz 
-                      << ") - using minimum efficiency" << std::endl;
-        }
-    }
-    
+
     return TMath::Max(mMinEfficiency, efficiency);
 }
+
     void setEfficiency(DetectorType detector, TH3F* hist, Int_t charge, Int_t particle, Bool_t takeOwnership) {
         ChargeType chargeType = getChargeType(charge);
         ParticleType particleType = getParticleType(particle);
