@@ -3,8 +3,8 @@
  *
  * \author Victor Perev  8/22/2003
  *  Wrapper for old <strstream>
- *                                          
- *                                                                      
+ *
+ *
  */
 #ifndef STSSTREAM_H
 #define STSSTREAM_H
@@ -13,15 +13,15 @@
 #ifdef R__SSTREAM
 using std::streamsize;
 
-class istrstream : public std::istringstream {
+class istrstream : public std::istringstream{
 public:
-istrstream(): std::istringstream(){}
-istrstream(const char *init):std::istringstream(std::string(init)){}
+    istrstream(): std::istringstream(){}
+    istrstream(const char* init):std::istringstream(std::string(init)){}
 };
 #else
 #endif 
 
-// Hide the function from `rootcint` as it cannot process variadic template parameters
+ // Hide the function from `rootcint` as it cannot process variadic template parameters
 #ifndef __CINT__
 
 #include <iostream>
@@ -37,12 +37,11 @@ istrstream(const char *init):std::istringstream(std::string(init)){}
  * Returns an std::string
  */
 template<typename ... Args>
-std::string FormString(const std::string& format, Args ... args)
-{
-    size_t cstr_size = snprintf(nullptr, 0, format.c_str(), args ...) + 1; // Extra space for '\0'
+std::string FormString(const std::string& format, Args ... args){
+    size_t cstr_size = snprintf(nullptr, 0, format.c_str(), args ...)+1; // Extra space for '\0'
     std::unique_ptr<char[]> buf(new char[cstr_size]);
     snprintf(buf.get(), cstr_size, format.c_str(), args ...);
-    return std::string(buf.get(), buf.get() + cstr_size - 1); // We don't want the '\0' inside
+    return std::string(buf.get(), buf.get()+cstr_size-1); // We don't want the '\0' inside
 }
 #endif
 
