@@ -16,6 +16,8 @@ Inclusive_Analysis/starsim/starsim_and_bfc/results/
 Inclusive_Analysis/starsim/starsim_and_bfc/send.package
 Inclusive_Analysis/starsim/starsim_and_bfc/send.zip
 Inclusive_Analysis/starsim/starsim_and_bfc/schedTemplateExp.xml
+Inclusive_Analysis/starsim/starsim_and_bfc/fpsgeom.txt
+Inclusive_Analysis/starsim/starsim_and_bfc/prs*.txt
 test/build
 test/run
 star-upc/build
@@ -24,3 +26,4 @@ Exclusive_Analysis/build
 plots/dime_K0K0.root
 plots/dime_LLBar.root
 .vscode
+

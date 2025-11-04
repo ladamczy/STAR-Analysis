@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<job maxFilesPerProcess="1" filesPerHour="3"  fileListSyntax="paths" >
+<command>
+@ nFile = 1
+starver pro
+cons
+root4star -q -b centralDiffractiveRun.C
+</command>
+        <ResourceUsage>
+                <Memory>
+                        <MinMemory>350</MinMemory>
+                </Memory>
+       </ResourceUsage>
+<SandBox installer="ZIP">
+	<Package name="send"> 
+		<File>file:./StRoot/</File>
+		<File>file:/star/u/adamwatroba/STAR-Analysis/Inclusive_Analysis/starsim/starsim_and_bfc/centralDiffractiveRun.C</File>
+     	<File>file:/star/u/adamwatroba/STAR-Analysis/Inclusive_Analysis/starsim/starsim_and_bfc/centralDiffractive.C</File>
+	 </Package>
+</SandBox>
+        <stdout URL="file:/star/data05/scratch/adamwatroba/$JOBID.out"/>
+        <stderr URL="file:/star/data05/scratch/adamwatroba/$JOBID.err"/>
+       <output fromScratch="*.root" toURL="file:/star/data05/scratch/adamwatroba/simulationSched/5/" />
+       <output fromScratch="*.fzd" toURL="file:/star/data05/scratch/adamwatroba/simulationSched/5/" />
+</job>  
