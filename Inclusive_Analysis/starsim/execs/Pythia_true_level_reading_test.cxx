@@ -37,11 +37,33 @@ int main(int argc, char* argv[]){
     }
     const string& outputFolder = argv[2];
 
+    //Useful IDs
+    const int K0sPDGid = 310;
+    const int K0sbarPDGid = -310;
+    const int LambdaPDGid = 3122;
+    const int LambdabarPDGid = -3122;
+    const int phiPDGid = 333;
+    const int phibarPDGid = -333;
+    const int KstarPDGid = 313;
+    const int KstarbarPDGid = -313;
+    const int piplusPDGid = 211;
+    const int piminusPDGid = -211;
+    const int KplusPDGid = 321;
+    const int KminusPDGid = -321;
+    const int pplusPDGid = 2212;
+    const int pminusPDGid = -2212;
+
     //histograms
     ProcessingOutsideLoop outsideprocessing;
     //mixing TOF between events proved to be a failure
     //mass histograms with TOF first and mixing event pairs after
-    outsideprocessing.AddHistogram(TH1D("TestEnergy", "Enegy of simulated particles;E [GeV];Number of particles", 200, 0.0, 2.0));
+    outsideprocessing.AddHistogram(TH1D("Name", "Name of simulated particles;id;Number of particles", 1, 0, 1));
+    outsideprocessing.AddHistogram(TH2D("etapTK0S", "K^{0}_{S} number;eta;p_{T}", 10, -1, 1, 10, 0, 2.5));
+    outsideprocessing.AddHistogram(TH2D("etapTLambda", "#Lambda^{0} number;eta;p_{T}", 10, -1, 1, 10, 0, 2.5));
+    outsideprocessing.AddHistogram(TH2D("etapTLambdabar", "#bar{#Lambda}^{0} number;eta;p_{T}", 10, -1, 1, 10, 0, 2.5));
+    outsideprocessing.AddHistogram(TH2D("etapTKstar", "K^{*}(892) number;eta;p_{T}", 10, -1, 1, 10, 0, 2.5));
+    outsideprocessing.AddHistogram(TH2D("etapTKstarbar", "#bar{K}^{*}(892) number;eta;p_{T}", 10, -1, 1, 10, 0, 2.5));
+    outsideprocessing.AddHistogram(TH2D("etapTphi", "#varphi(1020) number;eta;p_{T}", 10, -1, 1, 10, 0, 2.5));
 
     //processing
     //defining TreeProcessor
@@ -59,9 +81,41 @@ int main(int argc, char* argv[]){
             tempStarGenEventpointer = tempStarGenEventInstance.Get();
             //below is the loop
 
-            //test case - get energy of every particle that was left
+            //checking created particles - how many of them existed
             for(size_t particle_index = 0; particle_index<tempStarGenEventpointer->GetNumberOfParticles(); particle_index++){
-                insideprocessing.Fill("TestEnergy", (*tempStarGenEventpointer)[particle_index]->GetEnergy());
+                //putting result (detection or not) into histogram
+                TLorentzVector particle;
+                particle.SetXYZM((*tempStarGenEventpointer)[particle_index]->GetPx(), (*tempStarGenEventpointer)[particle_index]->GetPy(), (*tempStarGenEventpointer)[particle_index]->GetPz(), (*tempStarGenEventpointer)[particle_index]->GetMass());
+                switch((*tempStarGenEventpointer)[particle_index]->GetId()){
+                case K0sPDGid:
+                case K0sbarPDGid:
+                    insideprocessing.Fill("Name", "K^{0}_{S}", 1.);
+                    insideprocessing.Fill("etapTK0S", particle.Eta(), particle.Pt());
+                    break;
+                case LambdaPDGid:
+                    insideprocessing.Fill("Name", "#Lambda^{0}", 1.);
+                    insideprocessing.Fill("etapTLambda", particle.Eta(), particle.Pt());
+                    break;
+                case LambdabarPDGid:
+                    insideprocessing.Fill("Name", "#bar{#Lambda}^{0}", 1.);
+                    insideprocessing.Fill("etapTLambdabar", particle.Eta(), particle.Pt());
+                    break;
+                case KstarPDGid:
+                    insideprocessing.Fill("Name", "K^{*}", 1.);
+                    insideprocessing.Fill("etapTKstar", particle.Eta(), particle.Pt());
+                    break;
+                case KstarbarPDGid:
+                    insideprocessing.Fill("Name", "#bar{K}^{*}", 1.);
+                    insideprocessing.Fill("etapTKstarbar", particle.Eta(), particle.Pt());
+                    break;
+                case phiPDGid:
+                case phibarPDGid:
+                    insideprocessing.Fill("Name", "#phi", 1.);
+                    insideprocessing.Fill("etapTphi", particle.Eta(), particle.Pt());
+                    break;
+                default:
+                    break;
+                }
             }
 
             //event loop finish
@@ -74,6 +128,9 @@ int main(int argc, char* argv[]){
     TreeProc.Process(myFunction);
 
     outsideprocessing.Merge();
+    outsideprocessing.GetPointerAfterMerge1D("Name")->LabelsDeflate();
+    outsideprocessing.GetPointerAfterMerge1D("Name")->SetMinimum(0);
+    outsideprocessing.GetPointerAfterMerge1D("Name")->LabelsOption("a", "X");
 
     //setting up a tree & output file
     string path = string(argv[0]);
