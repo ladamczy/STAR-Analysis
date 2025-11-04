@@ -3,6 +3,7 @@ Inclusive_Analysis/**/*.pdf
 Inclusive_Analysis/**/*.root
 Inclusive_Analysis/**/*.png
 Inclusive_Analysis/**/*.fzd
+Inclusive_Analysis/**/*.so
 Inclusive_Analysis/star-upc/AnaOutput_Inclusive_analysis_Kstar_phi_old_data_TOF_tests_sigmaValues.txt
 Inclusive_Analysis/starsim/starsim_and_bfc/*.session.xml
 Inclusive_Analysis/starsim/starsim_and_bfc/*.dataset
@@ -10,7 +11,9 @@ Inclusive_Analysis/starsim/starsim_and_bfc/*.csh
 Inclusive_Analysis/starsim/starsim_and_bfc/*.condor
 Inclusive_Analysis/starsim/starsim_and_bfc/*.report
 Inclusive_Analysis/starsim/starsim_and_bfc/*.list
-Inclusive_Analysis/starsim/starsim_and_bfc/star_scheduler_logs/*.*
+Inclusive_Analysis/starsim/starsim_and_bfc/star_scheduler_logs/
+Inclusive_Analysis/starsim/starsim_and_bfc/send.package
+Inclusive_Analysis/starsim/starsim_and_bfc/send.zip
 test/build
 test/run
 star-upc/build
