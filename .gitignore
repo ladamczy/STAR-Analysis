@@ -12,6 +12,7 @@ Inclusive_Analysis/starsim/starsim_and_bfc/*.condor
 Inclusive_Analysis/starsim/starsim_and_bfc/*.report
 Inclusive_Analysis/starsim/starsim_and_bfc/*.list
 Inclusive_Analysis/starsim/starsim_and_bfc/star_scheduler_logs/
+Inclusive_Analysis/starsim/starsim_and_bfc/results/
 Inclusive_Analysis/starsim/starsim_and_bfc/send.package
 Inclusive_Analysis/starsim/starsim_and_bfc/send.zip
 test/build
