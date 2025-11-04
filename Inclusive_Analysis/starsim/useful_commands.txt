@@ -1,0 +1,11 @@
+do szukania w bibliotekach:
+find . -name '*.so' -exec nm --print-file-name --dynamic {} \; | grep mjchar_
+
+do szukania w bibliotece:
+nm -DgC libgeant3.so | grep gcal
+
+do szukania w zawartości plików:
+grep -rnw $STAR_LIB/../.. -e 'mjchar_'
+
+do dekodowania pokręconych nazw:
+c++filt _ZN11St_particleC1EPKci

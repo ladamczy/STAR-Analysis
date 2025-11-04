@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8" name="minimal_working_test"?>
+<job>
+    <command>echo 'hello world'</command>
+    <stdout URL="file:/star/u/adamwatroba/minimal_working_test.out" />
+</job>

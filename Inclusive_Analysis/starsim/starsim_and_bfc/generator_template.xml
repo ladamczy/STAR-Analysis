@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<job fileListSyntax="paths" name="strangegenerator&number;_">
+<command>
+starver pro
+mkdir -p results
+root4star -q -b centralDiffractiveRun.C
+</command>
+<Generator>
+        <Location>/star/u/adamwatroba/STAR-Analysis/Inclusive_Analysis/starsim/starsim_and_bfc/star_scheduler_logs</Location>
+</Generator>
+<ResourceUsage>
+        <Memory>
+                <MinMemory>350</MinMemory>
+        </Memory>
+</ResourceUsage>
+<SandBox installer="ZIP">
+	<Package name="send">
+		<File>file:./StRoot/</File>
+		<File>file:/star/u/adamwatroba/STAR-Analysis/Inclusive_Analysis/starsim/starsim_and_bfc/centralDiffractiveRun.C</File>
+     	<File>file:/star/u/adamwatroba/STAR-Analysis/Inclusive_Analysis/starsim/starsim_and_bfc/centralDiffractive.C</File>
+	 </Package>
+</SandBox>
+        <stdout URL="file:/star/data05/scratch/adamwatroba/$JOBID.out"/>
+        <stderr URL="file:/star/data05/scratch/adamwatroba/$JOBID.err"/>
+       <output fromScratch="results/centralDiffractive.root" toURL="file:/star/data05/scratch/adamwatroba/simulationSched/1/centralDiffractive&number;.root" />
+       <output fromScratch="results/centralDiffractive.fzd" toURL="file:/star/data05/scratch/adamwatroba/simulationSched/1/centralDiffractive&number;.fzd" />
+</job>

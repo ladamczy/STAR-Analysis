@@ -15,6 +15,7 @@ Inclusive_Analysis/starsim/starsim_and_bfc/star_scheduler_logs/
 Inclusive_Analysis/starsim/starsim_and_bfc/results/
 Inclusive_Analysis/starsim/starsim_and_bfc/send.package
 Inclusive_Analysis/starsim/starsim_and_bfc/send.zip
+Inclusive_Analysis/starsim/starsim_and_bfc/schedTemplateExp.xml
 test/build
 test/run
 star-upc/build

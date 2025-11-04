@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<job fileListSyntax="paths" name="bfcchain&number;_">
+<command>
+        starver pro
+        root4star -q -b bfc.C\(1005,\"DbV20200225,y2017a,agml,StiCA,btof,mtd,mtdCalib,pp2pp,PicoVtxDefault,UseBTOFmatchOnly,VFStoreX,fmsDat,fmsPoint,fpsDat,OSpaceZ2,OGridLeak3D,fzin,usexgeom,l0,FieldOn,MakeEvent,Idst,BAna,Tree,Tree,logger,genvtx,TpcRS,TpxClu,tpcDb,bbcSim,btofsim,btofMixer,btofMatch,emcy2,eefs,geantout,-dstout,IdTruth,big,clearmem,CorrX,gen_T,geomT,sim_T,evout,TpcHitMover,tags,MiniMcMk,sdt20170324.230639,emcDY2,BtofDat,picoWrite\",\"$INPUTFILE0\"\)
+</command>
+<Generator>
+        <Location>/star/u/adamwatroba/STAR-Analysis/Inclusive_Analysis/starsim/starsim_and_bfc/star_scheduler_logs</Location>
+</Generator>
+<!--        <ResourceUsage>
+        <Memory>
+                <MinMemory>350</MinMemory>
+        </Memory>
+</ResourceUsage>-->
+<!--<SandBox installer="ZIP">
+<Package name="send">
+<File>file:./StRoot/</File>
+<File>file:/star/u/adamwatroba/STAR-Analysis/Inclusive_Analysis/starsim/starsim_and_bfc/centralDiffractiveRun.C</File>
+<File>file:/star/u/adamwatroba/STAR-Analysis/Inclusive_Analysis/starsim/starsim_and_bfc/centralDiffractive.C</File>
+</Package>
+</SandBox>-->
+<stdout URL="file:/star/data05/scratch/adamwatroba/$JOBID.out"/>
+<stderr URL="file:/star/data05/scratch/adamwatroba/$JOBID.err"/>
+<input URL="file:/star/data05/scratch/adamwatroba/simulationSched/1/centralDiffractive&number;.fzd" />
+<output fromScratch="*.root" toURL="file:/star/data05/scratch/adamwatroba/simulationSched/2/" />
+</job>

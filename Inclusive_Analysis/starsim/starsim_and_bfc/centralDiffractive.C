@@ -12,6 +12,9 @@ StarGenEvent* event = 0;
 class StarPrimaryMaker;
 StarPrimaryMaker* _primary = 0;
 
+class StarFilterMaker;
+StarFilterMaker* filter = 0;
+
 // ----------------------------------------------------------------------------
 void geometry(TString tag, Bool_t agml = true){
     TString cmd = "DETP GEOM "; cmd += tag;
@@ -40,7 +43,7 @@ void trig(Int_t n = 1){
 void Pythia8(){
     // Create the pythia 8 event generator and add it to 
     // the primary generator
-    StarPythia8* pythia8 = new StarPythia8();
+    StarPythia8* pythia8 = new StarPythia8("pythia8");
 
     pythia8->SetFrame("CMS", 510.0);
     pythia8->SetBlue("proton");
@@ -48,11 +51,28 @@ void Pythia8(){
 
     pythia8->Set("SoftQCD:centralDiffractive = on");
     pythia8->Set("SigmaTotal:zeroAXB = off");
-    //K0S exclusive
-    // pythia8->Set("310:onMode=0");
-    // pythia8->Set("310:OnIfMatch=211 -211");
-    // pythia8->Set("-310:onMode=0");
-    // pythia8->Set("-310:OnIfMatch=-211 211");
+
+    //setting only charged decay products
+    //K0S
+    pythia8->Set("310:onMode=0");
+    pythia8->Set("310:OnIfMatch=211 -211");
+    pythia8->Set("-310:onMode=0");
+    pythia8->Set("-310:OnIfMatch=-211 211");
+    //Lambda0
+    pythia8->Set("3122:onMode=0");
+    pythia8->Set("3122:OnIfMatch=2212 -211");
+    pythia8->Set("-3122:onMode=0");
+    pythia8->Set("-3122:OnIfMatch=-2212 211");
+    //K*(892)
+    pythia8->Set("313:onMode=0");
+    pythia8->Set("313:OnIfMatch=321 -211");
+    pythia8->Set("-313:onMode=0");
+    pythia8->Set("-313:OnIfMatch=-321 211");
+    //phi
+    pythia8->Set("333:onMode=0");
+    pythia8->Set("333:OnIfMatch=321 -321");
+    pythia8->Set("-333:onMode=0");
+    pythia8->Set("-333:OnIfMatch=-321 321");
 
     _primary->AddGenerator(pythia8);
 }
@@ -70,6 +90,7 @@ void centralDiffractive(Int_t nevents = 10, Int_t rngSeed = 1234){
     gSystem->Load("StarGeneratorUtil.so");
     gSystem->Load("StarGeneratorEvent.so");
     gSystem->Load("StarGeneratorBase.so");
+    gSystem->Load("./StRoot/StarGeneratorFilt.so");
     gSystem->Load("Pythia8_3_03.so");
     gSystem->Load("libMathMore.so");
 
@@ -84,9 +105,20 @@ void centralDiffractive(Int_t nevents = 10, Int_t rngSeed = 1234){
     // before the geant maker
     _primary = new StarPrimaryMaker();
     _primary->SetFileName("results/centralDiffractive.root");
-    _primary->SetVertex(0.1, -0.1, 0.0);
-    _primary->SetSigma(0.015, 0.015, 50.);
     chain->AddBefore("geant", _primary);
+
+    //addig filter to primary event maker
+    filter = new StrangeHadronFilter();
+    filter->SetAttr(".Privilege", 1);
+    _primary->AddFilter(filter);
+    //not needed, set to 1 if you want to keep all despite filter working
+    _primary->SetAttr("FilterKeepAll", int(0));
+    //not needed, set to 1 if you want 1000 tries instead of 1000 events generated
+    _primary->SetAttr("FilterSkipRejects", int(0));
+    //ACTUALLY NEEDED, set to 1 if you want to keep rejected events
+    _primary->SetAttr("FilterKeepHeader", int(0));
+    //needed for ability to skip events
+    _primary->SetAttr(".Privilege", 1);
 
     Pythia8();
 
@@ -101,6 +133,7 @@ void centralDiffractive(Int_t nevents = 10, Int_t rngSeed = 1234){
     //   x = 0 gauss width = 1mm
     //   y = 0 gauss width = 1mm
     //   z = 0 gauss width = 30cm
+    //TODO change that or overwrite with info on BFC
     _primary->SetVertex(0., 0., 0.);
     _primary->SetSigma(0.015, 0.015, 50.);
 
