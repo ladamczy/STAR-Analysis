@@ -19,6 +19,7 @@ add_compile_options("-O3")
 
 #headers
 include_directories(include)
+include_directories(STAR_include)
 include_directories(../common_assets)
 include_directories(../star-upc/include)
 include_directories("${SHARED_FOLDER}/include")
@@ -27,7 +28,7 @@ include_directories(${ROOT_INCLUDE_DIRS})
 
 #sources for shared library LIB
 #both from star-upc and starsim
-file(GLOB_RECURSE SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "${SHARED_FOLDER}/src/*.cxx" "${CMAKE_CURRENT_SOURCE_DIR}/srcs/*.cxx")
+file(GLOB_RECURSE SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "${SHARED_FOLDER}/src/*.cxx" "${CMAKE_CURRENT_SOURCE_DIR}/srcs/*.cxx" "${CMAKE_CURRENT_SOURCE_DIR}/STAR_srcs/*.cxx")
 
 #name of shared library LIB
 set (LIB starsim)
@@ -38,6 +39,7 @@ set (LINKDEF "${LIB}LinkDef.h")
 #generate ROOT dictionary
 set (DICT G__${LIB})
 string(REPLACE "src/" "include/" INCLUDES_NAMES_ONLY "${SRCS}")
+string(REPLACE "STAR_srcs/" "" INCLUDES_NAMES_ONLY "${INCLUDES_NAMES_ONLY}")
 string(REPLACE "srcs/" "" INCLUDES_NAMES_ONLY "${INCLUDES_NAMES_ONLY}")
 string(REPLACE ".cxx" ".h" INCLUDES_NAMES_ONLY "${INCLUDES_NAMES_ONLY}")
 root_generate_dictionary(${DICT} ${INCLUDES_NAMES_ONLY} LINKDEF "include/${LINKDEF}")
