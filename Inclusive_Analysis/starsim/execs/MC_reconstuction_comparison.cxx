@@ -81,7 +81,16 @@ int main(int argc, char* argv[]){
     TH1D MCParticles("MCParticles", "MC number of particles;particles;events", 25, 0, 25);
     TH1D TPCParticles("TPCParticles", "TPC number of particles;particles;events", 25, 0, 25);
     TH1D DifferenceParticles("DifferenceParticles", "(MC - TPC) difference in number of particles;difference;events", 20, -10, 10);
-    TH1D Distance("Distance", "Distance MC-TPC in #eta-#phi space;distance;track pairs", 100, 0, 5);
+    TH1D Distance("Distance", "Distance MC-TPC in #eta-#phi space;distance;track pairs", 120, 0, 6);
+    TH1D DistanceCloser("DistanceCloser", "Distance MC-TPC in #eta-#phi space;distance;track pairs", 100, 0, 0.5);
+    TH1D MpipiTPC("MpipiTPC", "#pi^{+}#pi^{-} pair mass;m_{#pi^{+}#pi^{-}} [GeV];pairs", 40, 0.4, 0.6);
+    TH1D MpipiMC("MpipiMC", "#pi^{+}#pi^{-} pair mass (only K^{0}_{S} decay products);m_{#pi^{+}#pi^{-}} [GeV];pairs", 40, 0.4, 0.6);
+    TH1D MpipiFlow("MpipiFlow", "#pi^{+}#pi^{-} pairs after MC cuts;;pairs", 1, 0, 1);
+    TH2D MpipiPairs("MpipiPairs", "particle pairs;positive;negative", 1, 0, 1, 1, 0, 1);
+    TH2D MpipiMothers("MpipiMothers", "particle number;positive;negative", 20, 0, 20, 20, 0, 20);
+    TH1D MpipiMotherName("MpipiMotherName", "#pi^{+}#pi^{-} pair mothers;;mothers", 1, 0, 1);
+    TH1D MpipiDeltaT("MpipiDeltaT", "Time between pion decay;#Delta t_{0} [ns];events", 100, -5, 5);
+    TH1D MpipiAfterDeltaT("MpipiAfterDeltaT", "#pi^{+}#pi^{-} pair mass after #Delta t_{0} cut;m_{#pi^{+}#pi^{-}} [GeV];pairs", 40, 0.4, 0.6);
 
     //processing
     //defining TreeProcessor
@@ -108,6 +117,9 @@ int main(int argc, char* argv[]){
     std::vector<TParticle*> negativeMC;
     std::vector<StUPCTrack*> positiveTrack;
     std::vector<StUPCTrack*> negativeTrack;
+    std::vector<int> chosen_MC_list_positive;
+    std::vector<int> chosen_MC_list_negative;
+    std::vector<int> chosen_MC_list_copy;
 
     while(myReader.Next()){
         tempUPCpointer = StUPCEventInstance.Get();
@@ -118,11 +130,11 @@ int main(int argc, char* argv[]){
         negativeMC.clear();
         positiveTrack.clear();
         negativeTrack.clear();
+        chosen_MC_list_positive.clear();
+        chosen_MC_list_negative.clear();
         //below is the loop
 
-        printf("Event %d:\n", tempCounter);
         //filtering MC particles
-        printf("Number of MC particles (excluding protons) before filter: %d\n", tempUPCpointer->getNumberOfMCParticles()-2);
         for(size_t i = 0; i<tempUPCpointer->getNumberOfMCParticles(); i++){
             TParticle* temp = tempUPCpointer->getMCParticle(i);
             //filtering
@@ -140,20 +152,22 @@ int main(int argc, char* argv[]){
                 negativeMC.push_back(temp);
             }
         }
-        printf("Number of MC particles (excluding protons) after filter: %d\n", positiveMC.size()+negativeMC.size());
 
         //filtering tracks
-        printf("Number of tracks (excluding protons) before filter: %d\n", tempUPCpointer->getNumberOfTracks());
         for(int i = 0; i<tempUPCpointer->getNumberOfTracks(); i++){
             StUPCTrack* tempTrack = tempUPCpointer->getTrack(i);
             if(!tempTrack->getFlag(StUPCTrack::kTof)){
                 continue;
             }
-            // if(!tempTrack->getFlag(StUPCTrack::kPrimary)){
+            // ALL TRACKS ARE PRIMARY
+            // if(tempTrack->getFlag(StUPCTrack::kPrimary)){
             //     continue;
             // }
             //filtering
             if(fabs(tempTrack->getEta())>0.9||tempTrack->getPt()<0.2){
+                continue;
+            }
+            if(tempTrack->getNhitsFit()<=20||tempTrack->getNhitsDEdx()<15){
                 continue;
             }
             //filling
@@ -163,20 +177,118 @@ int main(int argc, char* argv[]){
                 negativeTrack.push_back(tempTrack);
             }
         }
-        printf("Number of tracks (excluding protons) after filter: %d\n", positiveTrack.size()+negativeTrack.size());
+
+        bool duplicated_matches_exist = false;
 
         //histograms
         MCParticles.Fill(positiveMC.size()+negativeMC.size());
         TPCParticles.Fill(positiveTrack.size()+negativeTrack.size());
         DifferenceParticles.Fill(int(positiveMC.size()+negativeMC.size())-int(positiveTrack.size()+negativeTrack.size()));
         if(positiveMC.size()>=positiveTrack.size()&&negativeMC.size()>=negativeTrack.size()){
-            for(size_t i = 0; i<positiveMC.size(); i++){
-                for(size_t j = 0; j<positiveTrack.size(); j++){
+            //positive
+            for(size_t i = 0; i<positiveTrack.size(); i++){
+                double min_distance = 100;
+                int min_distance_id = -1;
+                for(size_t j = 0; j<positiveMC.size(); j++){
                     //getting distance in eta-phi space
                     TVector3 vecMC, vecTPC;
-                    vecMC.SetXYZ(positiveMC[i]->Px(), positiveMC[i]->Py(), positiveMC[i]->Pz());
-                    positiveTrack[j]->getMomentum(vecTPC);
-                    Distance.Fill(vecMC.DrEtaPhi(vecTPC));
+                    vecMC.SetXYZ(positiveMC[j]->Px(), positiveMC[j]->Py(), positiveMC[j]->Pz());
+                    positiveTrack[i]->getMomentum(vecTPC);
+                    double etaphi_distance = vecMC.DrEtaPhi(vecTPC);
+                    Distance.Fill(etaphi_distance);
+                    DistanceCloser.Fill(etaphi_distance);
+                    //checking if the distance to j-th MC track is the smallest
+                    min_distance = min(min_distance, etaphi_distance);
+                    if(min_distance==etaphi_distance){
+                        min_distance_id = j;
+                    }
+                }
+                //checking for which MC track we have the nearest match
+                chosen_MC_list_positive.push_back(min_distance_id);
+            }
+            chosen_MC_list_copy = chosen_MC_list_positive;
+            std::sort(chosen_MC_list_copy.begin(), chosen_MC_list_copy.end());
+            const auto duplicate_positive = std::adjacent_find(chosen_MC_list_copy.begin(), chosen_MC_list_copy.end());
+            if(duplicate_positive!=chosen_MC_list_copy.end()){
+                printf("Event with conflict = %d\n", tempCounter);
+                for(size_t index = 0; index<chosen_MC_list_positive.size(); index++){
+                    printf("%d, ", chosen_MC_list_positive[index]);
+                }
+                printf("\n");
+                duplicated_matches_exist = true;
+            }
+            //negative
+            for(size_t i = 0; i<negativeTrack.size(); i++){
+                double min_distance = 100;
+                int min_distance_id = -1;
+                for(size_t j = 0; j<negativeMC.size(); j++){
+                    //getting distance in eta-phi space
+                    TVector3 vecMC, vecTPC;
+                    vecMC.SetXYZ(negativeMC[j]->Px(), negativeMC[j]->Py(), negativeMC[j]->Pz());
+                    negativeTrack[i]->getMomentum(vecTPC);
+                    double etaphi_distance = vecMC.DrEtaPhi(vecTPC);
+                    Distance.Fill(etaphi_distance);
+                    DistanceCloser.Fill(etaphi_distance);
+                    //checking if the distance to j-th MC track is the smallest
+                    min_distance = min(min_distance, etaphi_distance);
+                    if(min_distance==etaphi_distance){
+                        min_distance_id = j;
+                    }
+                }
+                //checking for which MC track we have the nearest match
+                chosen_MC_list_negative.push_back(min_distance_id);
+            }
+            chosen_MC_list_copy = chosen_MC_list_negative;
+            std::sort(chosen_MC_list_copy.begin(), chosen_MC_list_copy.end());
+            const auto duplicate_negative = std::adjacent_find(chosen_MC_list_copy.begin(), chosen_MC_list_copy.end());
+            if(duplicate_negative!=chosen_MC_list_copy.end()){
+                printf("Event with conflict = %d\n", tempCounter);
+                for(size_t index = 0; index<chosen_MC_list_negative.size(); index++){
+                    printf("%d, ", chosen_MC_list_negative[index]);
+                }
+                printf("\n");
+                duplicated_matches_exist = true;
+            }
+        }
+
+        //checking the mass-fit of pairs when no duplicates & #MC>=#TPC
+        if(!duplicated_matches_exist&&positiveMC.size()>=positiveTrack.size()&&negativeMC.size()>=negativeTrack.size()){
+            for(size_t i = 0; i<positiveTrack.size(); i++){
+                for(size_t j = 0; j<negativeTrack.size(); j++){
+                    //tracks
+                    TLorentzVector posTrack, negTrack;
+                    positiveTrack[i]->getLorentzVector(posTrack, 0.13957);
+                    negativeTrack[j]->getLorentzVector(negTrack, 0.13957);
+                    MpipiTPC.Fill((posTrack+negTrack).M());
+                    //MC particles
+                    //choosing MC particle associated with these particular tracks
+                    int posPDG = positiveMC[chosen_MC_list_positive[i]]->GetPdgCode();
+                    int posMotherNumber = positiveMC[chosen_MC_list_positive[i]]->GetFirstMother();
+                    int posMotherPDG = tempUPCpointer->getMCParticle(posMotherNumber)->GetPdgCode();
+                    int negPDG = negativeMC[chosen_MC_list_negative[j]]->GetPdgCode();
+                    int negMotherNumber = negativeMC[chosen_MC_list_negative[j]]->GetFirstMother();
+                    //both pions, same mother, mother is K0S
+                    MpipiFlow.Fill("TPC", 1.0);
+                    MpipiPairs.Fill(positiveMC[chosen_MC_list_positive[i]]->GetPDG()->GetName(), negativeMC[chosen_MC_list_negative[j]]->GetPDG()->GetName(), 1.0);
+                    if(posPDG==211&&negPDG==-211){
+                        MpipiFlow.Fill("Pion pair", 1.0);
+                        MpipiMothers.Fill(posMotherNumber, negMotherNumber);
+                        if(posMotherNumber==negMotherNumber){
+                            MpipiFlow.Fill("Same mother", 1.0);
+                            MpipiMotherName.Fill(tempUPCpointer->getMCParticle(posMotherNumber)->GetPDG()->GetName(), 1.0);
+                            if(abs(posMotherPDG)==310){
+                                MpipiFlow.Fill("K^{0}_{S} mother", 1.0);
+                                MpipiMC.Fill((posTrack+negTrack).M());
+                                double deltaT = DeltaT0(positiveTrack[i], negativeTrack[j], 0.13957, 0.13957);
+                                MpipiDeltaT.Fill(deltaT);
+                                //value nicked from .txt file with actual data
+                                // if(fabs(deltaT)<3*0.13124272289253383){
+                                if(fabs(deltaT)<0.6){
+                                    MpipiAfterDeltaT.Fill((posTrack+negTrack).M());
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -187,6 +299,14 @@ int main(int argc, char* argv[]){
 
         //special part where one event is drawn
         if(tempCounter==nthreads){
+            //statistics
+            printf("Event %d:\n", tempCounter);
+            printf("Number of MC particles (excluding protons) before filter: %d\n", tempUPCpointer->getNumberOfMCParticles()-2);
+            printf("Number of MC particles (excluding protons) after filter: %d\n", positiveMC.size()+negativeMC.size());
+            printf("Number of tracks (excluding protons) before filter: %d\n", tempUPCpointer->getNumberOfTracks());
+            printf("Number of tracks (excluding protons) after filter: %d\n", positiveTrack.size()+negativeTrack.size());
+
+            //drawing
             TCanvas c1("c1", "c1", 1200, 800);
 
             //MC particles graph
@@ -283,6 +403,19 @@ int main(int argc, char* argv[]){
     TPCParticles.Write();
     DifferenceParticles.Write();
     Distance.Write();
+    DistanceCloser.Write();
+    MpipiTPC.Write();
+    MpipiMC.Write();
+    MpipiFlow.LabelsDeflate();
+    MpipiFlow.Write();
+    MpipiPairs.LabelsDeflate("X");
+    MpipiPairs.LabelsDeflate("Y");
+    MpipiPairs.Write();
+    MpipiMothers.Write();
+    MpipiMotherName.LabelsDeflate();
+    MpipiMotherName.Write();
+    MpipiDeltaT.Write();
+    MpipiAfterDeltaT.Write();
     outputFileHist->Close();
 
     return 0;
