@@ -75,6 +75,91 @@ bool passFiducialCut(double eta, double zvtx) {
            (fabs(eta) < 0.9);
 }
 
+// Function to calculate efficiencies from 3D histograms
+void Calculate1DEfficiencies(TFile* outfile, 
+                             TH3F* h3D_True_Denom, 
+                             TH3F* h3D_Reco_Numer, 
+                             const string& detectorType,  // "TPC" or "TOF"
+                             const string& charge)         // "Pos" or "Neg"
+{
+    cout << "\n=== " << detectorType << " Efficiency (" << charge << ") ===" << endl;
+    cout << string(60, '=') << endl;
+    
+    // Get 1D projections onto pT axis
+    cout << "\nEfficiency as function of p_{T}:" << endl;
+    cout << "p_{T} (GeV/c) | Efficiency | Numerator | Denominator" << endl;
+    cout << string(60, '-') << endl;
+    
+    TH1D* h_pT_denom = h3D_True_Denom->ProjectionX("pT_denom", 0, -1, 0, -1);
+    TH1D* h_pT_numer = h3D_Reco_Numer->ProjectionX("pT_numer", 0, -1, 0, -1);
+    
+    for (int i = 1; i <= h_pT_denom->GetNbinsX(); i++) {
+        double denom = h_pT_denom->GetBinContent(i);
+        double numer = h_pT_numer->GetBinContent(i);
+        double binCenter = h_pT_denom->GetBinCenter(i);
+        double binWidth = h_pT_denom->GetBinWidth(i);
+        
+        if (denom > 0) {
+            double eff = (double)numer / denom;
+            double effErr = sqrt(numer * (denom - numer)) / (denom * denom);
+            printf("%6.3f - %6.3f | %8.4f | %9.0f | %11.0f\n", 
+                   binCenter - binWidth/2, binCenter + binWidth/2, eff, numer, denom);
+        }
+    }
+    
+    // Get 1D projections onto η axis
+    cout << "\nEfficiency as function of #eta:" << endl;
+    cout << "#eta         | Efficiency | Numerator | Denominator" << endl;
+    cout << string(60, '-') << endl;
+    
+    TH1D* h_eta_denom = h3D_True_Denom->ProjectionY("eta_denom", 0, -1, 0, -1);
+    TH1D* h_eta_numer = h3D_Reco_Numer->ProjectionY("eta_numer", 0, -1, 0, -1);
+    
+    for (int i = 1; i <= h_eta_denom->GetNbinsX(); i++) {
+        double denom = h_eta_denom->GetBinContent(i);
+        double numer = h_eta_numer->GetBinContent(i);
+        double binCenter = h_eta_denom->GetBinCenter(i);
+        double binWidth = h_eta_denom->GetBinWidth(i);
+        
+        if (denom > 0) {
+            double eff = (double)numer / denom;
+            double effErr = sqrt(numer * (denom - numer)) / (denom * denom);
+            printf("%6.3f - %6.3f | %8.4f | %9.0f | %11.0f\n", 
+                   binCenter - binWidth/2, binCenter + binWidth/2, eff, numer, denom);
+        }
+    }
+    
+    // Get 1D projections onto Vz axis
+    cout << "\nEfficiency as function of V_{z}:" << endl;
+    cout << "V_{z} (cm)   | Efficiency | Numerator | Denominator" << endl;
+    cout << string(60, '-') << endl;
+    
+    TH1D* h_vz_denom = h3D_True_Denom->ProjectionZ("vz_denom", 0, -1, 0, -1);
+    TH1D* h_vz_numer = h3D_Reco_Numer->ProjectionZ("vz_numer", 0, -1, 0, -1);
+    
+    for (int i = 1; i <= h_vz_denom->GetNbinsX(); i++) {
+        double denom = h_vz_denom->GetBinContent(i);
+        double numer = h_vz_numer->GetBinContent(i);
+        double binCenter = h_vz_denom->GetBinCenter(i);
+        double binWidth = h_vz_denom->GetBinWidth(i);
+        
+        if (denom > 0) {
+            double eff = (double)numer / denom;
+            double effErr = sqrt(numer * (denom - numer)) / (denom * denom);
+            printf("%6.1f - %6.1f | %8.4f | %9.0f | %11.0f\n", 
+                   binCenter - binWidth/2, binCenter + binWidth/2, eff, numer, denom);
+        }
+    }
+    
+    cout << string(60, '=') << endl;
+    cout << "Total " << detectorType << " Efficiency (" << charge << "): ";
+    double totalDenom = h_pT_denom->Integral();
+    double totalNumer = h_pT_numer->Integral();
+    if (totalDenom > 0) {
+        cout << fixed << setprecision(4) << (totalNumer / totalDenom) << endl;
+    }
+}
+
 int main(int argc, char** argv)  
 {
     // Particle masses and beam energy definitions
@@ -1032,6 +1117,21 @@ int main(int argc, char** argv)
     hPtTpcTofMatched_N->Write();
     hEtaTpcTofMatched_N->Write();
     hVzTpcTofMatched_N->Write();*/
+
+    // Calculate and print efficiencies
+    cout << "\n\n" << string(80, '*') << endl;
+    cout << "EFFICIENCY CALCULATIONS" << endl;
+    cout << string(80, '*') << endl;
+    
+    // TPC Efficiency
+    Calculate1DEfficiencies(outfile, h3D_TPC_TruePions_P, h3D_TPC_RecoMatchedPions_P, "TPC", "Positive");
+    Calculate1DEfficiencies(outfile, h3D_TPC_TruePions_N, h3D_TPC_RecoMatchedPions_N, "TPC", "Negative");
+    
+    // TOF Efficiency
+    Calculate1DEfficiencies(outfile, h3D_TOF_RecoMatchedPions_P, h3D_TOF_RecoMatchedPionsWithTOF_P, "TOF", "Positive");
+    Calculate1DEfficiencies(outfile, h3D_TOF_RecoMatchedPions_N, h3D_TOF_RecoMatchedPionsWithTOF_N, "TOF", "Negative");
+    
+    cout << string(80, '*') << endl;
     
     cout << "Done" << endl;
   
