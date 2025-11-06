@@ -832,9 +832,9 @@ int main(int argc, char** argv)
                     }
                     
                     // Remove the matched track to avoid double-counting
-                    //positiveRecoTracks.erase(positiveRecoTracks.begin() + bestMatchIndex);
+                    positiveRecoTracks.erase(positiveRecoTracks.begin() + bestMatchIndex);
                     // Instead, mark as used to prevent double-matching
-                    positiveRecoTracks[bestMatchIndex] = nullptr;
+                    //positiveRecoTracks[bestMatchIndex] = nullptr;
                 }
             }
             
@@ -895,9 +895,9 @@ int main(int argc, char** argv)
                         tofNumeratorCount_N++;
                     }
                     
-                    //negativeRecoTracks.erase(negativeRecoTracks.begin() + bestMatchIndex);
+                    negativeRecoTracks.erase(negativeRecoTracks.begin() + bestMatchIndex);
                     // Instead, mark as used to prevent double-matching
-                    negativeRecoTracks[bestMatchIndex] = nullptr;
+                    //negativeRecoTracks[bestMatchIndex] = nullptr;
                 }
             }
         }
