@@ -735,6 +735,11 @@ int main(int argc, char** argv)
         */
 
         //trying
+        int tofDenominatorCount_P = 0;
+        int tofNumeratorCount_P = 0;
+        int tofDenominatorCount_N = 0;
+        int tofNumeratorCount_N = 0;
+
         if (isMC == 1) 
         {
             TLorentzVector productionVertex;  // 
@@ -819,13 +824,17 @@ int main(int argc, char** argv)
                     double recoPt = positiveRecoTracks[bestMatchIndex]->getPt();
                     double recoEta = positiveRecoTracks[bestMatchIndex]->getEta();
                     h3D_TOF_RecoMatchedPions_P->Fill(recoPt, recoEta, truthVertexZ);
+                    tofDenominatorCount_P++;
                     
                     if (positiveRecoTracks[bestMatchIndex]->getFlag(StUPCTrack::kTof)) {
                         h3D_TOF_RecoMatchedPionsWithTOF_P->Fill(recoPt, recoEta, truthVertexZ);
+                        tofNumeratorCount_P++;
                     }
                     
                     // Remove the matched track to avoid double-counting
-                    positiveRecoTracks.erase(positiveRecoTracks.begin() + bestMatchIndex);
+                    //positiveRecoTracks.erase(positiveRecoTracks.begin() + bestMatchIndex);
+                    // Instead, mark as used to prevent double-matching
+                    positiveRecoTracks[bestMatchIndex] = nullptr;
                 }
             }
             
@@ -879,12 +888,16 @@ int main(int argc, char** argv)
                     double recoPt = negativeRecoTracks[bestMatchIndex]->getPt();
                     double recoEta = negativeRecoTracks[bestMatchIndex]->getEta();
                     h3D_TOF_RecoMatchedPions_N->Fill(recoPt, recoEta, truthVertexZ);
+                    tofDenominatorCount_N++;
                     
                     if (negativeRecoTracks[bestMatchIndex]->getFlag(StUPCTrack::kTof)) {
                         h3D_TOF_RecoMatchedPionsWithTOF_N->Fill(recoPt, recoEta, truthVertexZ);
+                        tofNumeratorCount_N++;
                     }
                     
-                    negativeRecoTracks.erase(negativeRecoTracks.begin() + bestMatchIndex);
+                    //negativeRecoTracks.erase(negativeRecoTracks.begin() + bestMatchIndex);
+                    // Instead, mark as used to prevent double-matching
+                    negativeRecoTracks[bestMatchIndex] = nullptr;
                 }
             }
         }
@@ -954,8 +967,19 @@ int main(int argc, char** argv)
         << ", Charge matched: " << chargeMatchedPionsPos << endl;
     cout << "True π-: " << totalTruePionsNeg << ", Matched: " << matchedPionsNeg 
         << ", Charge matched: " << chargeMatchedPionsNeg << endl;
+    
+    // TOF matching stats for positive pions
+    cout << "Positive TOF Denominator entries: " << tofDenominatorCount_P << endl;
+    cout << "Positive TOF Numerator entries: " << tofNumeratorCount_P << endl;
+    cout << "h3D_TOF_RecoMatchedPions_P integral: "  << h3D_TOF_RecoMatchedPions_P->Integral() << endl;
+    cout << "h3D_TOF_RecoMatchedPionsWithTOF_P integral: "  << h3D_TOF_RecoMatchedPionsWithTOF_P->Integral() << endl;   
+    
+    // TOF matching stats for negative pions
+    cout << "Negative TOF Denominator entries: " << tofDenominatorCount_N << endl;
+    cout << "Negative TOF Numerator entries: " << tofNumeratorCount_N << endl;
+    cout << "h3D_TOF_RecoMatchedPions_N integral: "  << h3D_TOF_RecoMatchedPions_N->Integral() << endl; 
+    cout << "h3D_TOF_RecoMatchedPionsWithTOF_N integral: "  << h3D_TOF_RecoMatchedPionsWithTOF_N->Integral() << endl;
 
-         
     // Write histograms to output file
     TFile *outfile = TFile::Open(argv[2], "recreate");
 
