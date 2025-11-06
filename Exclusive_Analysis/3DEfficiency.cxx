@@ -296,7 +296,11 @@ int main(int argc, char** argv)
     int totalTruePionsPos = 0, totalTruePionsNeg = 0;
     int matchedPionsPos = 0, matchedPionsNeg = 0;
     int chargeMatchedPionsPos = 0, chargeMatchedPionsNeg = 0;
-
+    
+    int tofDenominatorCount_P = 0;
+    int tofNumeratorCount_P = 0;
+    int tofDenominatorCount_N = 0;
+    int tofNumeratorCount_N = 0;
 
     // Loop over all entries in the TChain
     for (Long64_t i = 0; i < chain->GetEntries(); ++i) 
@@ -735,15 +739,11 @@ int main(int argc, char** argv)
         */
 
         //trying
-        int tofDenominatorCount_P = 0;
-        int tofNumeratorCount_P = 0;
-        int tofDenominatorCount_N = 0;
-        int tofNumeratorCount_N = 0;
 
         if (isMC == 1) 
         {
             TLorentzVector productionVertex;  // 
-             TLorentzVector lorentzTrack;     // 
+            TLorentzVector lorentzTrack;     // 
             
             // Separate true pions by charge
             vector <TParticle *> vPositivePions;
@@ -902,7 +902,7 @@ int main(int argc, char** argv)
             }
         }
 
-
+        
 
         // Fill event cut flow: Events with a reconstructed primary vertex
         HistEventCutFlow->Fill(1);
@@ -960,14 +960,8 @@ int main(int argc, char** argv)
                 }
             } 
         }
-    }
-    // At the end of your event loop
-    cout << "Matching Statistics:" << endl;
-    cout << "True π+: " << totalTruePionsPos << ", Matched: " << matchedPionsPos 
-        << ", Charge matched: " << chargeMatchedPionsPos << endl;
-    cout << "True π-: " << totalTruePionsNeg << ", Matched: " << matchedPionsNeg 
-        << ", Charge matched: " << chargeMatchedPionsNeg << endl;
-    
+    }// End of chain of events
+
     // TOF matching stats for positive pions
     cout << "Positive TOF Denominator entries: " << tofDenominatorCount_P << endl;
     cout << "Positive TOF Numerator entries: " << tofNumeratorCount_P << endl;
@@ -980,6 +974,15 @@ int main(int argc, char** argv)
     cout << "h3D_TOF_RecoMatchedPions_N integral: "  << h3D_TOF_RecoMatchedPions_N->Integral() << endl; 
     cout << "h3D_TOF_RecoMatchedPionsWithTOF_N integral: "  << h3D_TOF_RecoMatchedPionsWithTOF_N->Integral() << endl;
 
+
+    // At the end of your event loop
+    cout << "Matching Statistics:" << endl;
+    cout << "True π+: " << totalTruePionsPos << ", Matched: " << matchedPionsPos 
+        << ", Charge matched: " << chargeMatchedPionsPos << endl;
+    cout << "True π-: " << totalTruePionsNeg << ", Matched: " << matchedPionsNeg 
+        << ", Charge matched: " << chargeMatchedPionsNeg << endl;
+    
+    
     // Write histograms to output file
     TFile *outfile = TFile::Open(argv[2], "recreate");
 
