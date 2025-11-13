@@ -1,3 +1,10 @@
+//.................................................................................................................................
+//Author       : Sneha Bhosale (AGH Krakow)
+//Example code : https://github.com/ladamczy/STAR-Analysis/blob/main/share/simpleEfficiencyExample.C
+//Root files   : https://indico.fis.agh.edu.pl/event/393/
+//Class        : https://github.com/ladamczy/STAR-Analysis/blob/main/star-upc-new/include/StEfficiencyCorrector3D.h
+//.................................................................................................................................
+
 The `StEfficiencyCorrector3D.h` class is designed to facilitate efficiency corrections for particle detector analyses using 3D histograms and efficiency objects from ROOT. It supports complex scaling, interpolation, and boundary handling for PID (Pion/Kaon/Proton) corrections based on both TPC and TOF detector information. The class allows per-charge and per-particle-specific adjustments via multiple configuration parameters and encapsulates all logic for extracting and applying efficiency factors. It lets you set up scaling factors and apply bin-by-bin corrections based on coordinates (eta, pT, Vz), simplifying accurate physics analyses.
 
 ### Purpose and Usage
