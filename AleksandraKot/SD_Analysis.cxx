@@ -45,6 +45,7 @@
 #include <TLatex.h> 
 #include <TMath.h>
 #include <TLorentzVector.h>
+#include <TVector3.h>
 #include <ROOT/TThreadedObject.hxx>
 #include <TTreeReader.h>
 #include <ROOT/TTreeProcessorMT.hxx>
@@ -57,12 +58,51 @@
 #include "StUPCVertex.h"
 #include "StUPCTofHit.h"
 #include "StUPCV0.h"
+#include "StEfficiencyCorrector3D.h"
 
 
 using namespace std;
 
 int main(int argc, char** argv)  
 {
+    //loading efficiency
+
+    // TFile *effFile = TFile::Open("Efficiency/SingleParticleMC_ProtonsAug12_0.root", "READ");
+    // if (!file || effFile->IsZombie()) {
+    //     cerr << "ERROR: Cannot open ROOT file" << endl;
+    //     return 1;
+    // }
+    // TH3F* h3D_TPC_num_plus = (TH3F*)effFile->Get("h3D_TPC_num_P");
+    // TH3F* h3D_TPC_den_plus = (TH3F*)effFile->Get("h3D_TPC_den_P");
+    // TH3F* h3D_TOF_num_plus = (TH3F*)effFile->Get("h3D_TOF_num_P");
+    // TH3F* h3D_TOF_den_plus = (TH3F*)effFile->Get("h3D_TOF_den_P");
+
+    // TH3F* h3D_TPC_num_minus = (TH3F*)effFile->Get("h3D_TPC_num_N");
+    // TH3F* h3D_TPC_den_minus = (TH3F*)effFile->Get("h3D_TPC_den_N");
+    // TH3F* h3D_TOF_num_minus = (TH3F*)effFile->Get("h3D_TOF_num_N");
+    // TH3F* h3D_TOF_den_minus = (TH3F*)effFile->Get("h3D_TOF_den_N");
+
+    // TH3F* tpcEfficiency_plus = (TH3F*)h3D_TPC_num_plus->Clone("tpcEfficiency_plus");
+    // TH3F* tofEfficiency_plus = (TH3F*)h3D_TOF_num_plus->Clone("tofEfficiency_plus");
+
+    // TH3F* tpcEfficiency_minus = (TH3F*)h3D_TPC_num_plus->Clone("tpcEfficiency_minus");
+    // TH3F* tofEfficiency_minus = (TH3F*)h3D_TOF_num_plus->Clone("tofEfficiency_minus");
+
+    // tpcEfficiency_plus->Divide(h3D_TPC_num_plus, h3D_TPC_den_plus, 1, 1, "B");
+    // tofEfficiency_plus->Divide(h3D_TOF_num_plus, h3D_TOF_den_plus, 1, 1, "B"); //efficiency
+
+    // tpcEfficiency_minus->Divide(h3D_TPC_num_minus, h3D_TPC_den_minus, 1, 1, "B");
+    // tofEfficiency_minus->Divide(h3D_TOF_num_minus, h3D_TOF_den_minus, 1, 1, "B");
+
+    // StEfficiencyCorrector3D corrector_plus;
+    // StEfficiencyCorrector3D corrector_minus;
+
+    // corrector_plus.setTpcEfficiency(tpcEfficiency_plus, +1, 2, true);
+    // corrector_plus.setTofEfficiency(tofEfficiency_plus, +1, 2, true);
+
+    // corrector_minus.setTpcEfficiency(tpcEfficiency_minus, -1, 2, true);
+    // corrector_minus.setTofEfficiency(tofEfficiency_minus, -1, 2, true);
+
 //    ifstream inputFilePathList(argv[1]);
 //    if (!inputFilePathList) 
 //
@@ -126,35 +166,77 @@ int main(int argc, char** argv)
 
     // analysis of protons and antiprotons created
 
-    TH1D* hPtProtonEastX = new TH1D("hPtProtonEastX", "pT of protons (East); pT [GeV]; # events", 200, 0, 4);
-    TH1D* hPtProtonWestX = new TH1D("hPtProtonWestX", "pT of protons (West); pT [GeV]; # events", 200, 0, 4);
-    TH1D* hPtProtonX = new TH1D("hPtProtonX", "pT of protons; pT [GeV]; # events", 200, 0, 4);
-    TH1D* hPtNProtonEastX = new TH1D("hPtNProtonEastX", "pT of antiprotons (East); pT [GeV]; # events", 200, 0, 4);
-    TH1D* hPtNProtonWestX = new TH1D("hPtNProtonWestX", "pT of antiprotons (West); pT [GeV]; # events", 200, 0, 4);
-    TH1D* hPtNProtonX = new TH1D("hPtNProtonX", "pT of antiprotons; pT [GeV]; # events", 200, 0, 4);
+    TH1D* hPtProtonEastX = new TH1D("hPtProtonEastX","pT of protons (East); pT [GeV]; # events",60,0,3);
+    TH1D* hPtProtonWestX = new TH1D("hPtProtonWestX","pT of protons (West); pT [GeV]; # events",60,0,3);
+    TH1D* hPtProtonX = new TH1D("hPtProtonX","pT of protons; pT [GeV]; # events",60,0,3);
 
-    TH1D* hEtaProtonEastX = new TH1D("hEtaProtonEastX", "#eta of protons (East); #eta; # events", 100, -3, 3);
-    TH1D* hEtaProtonWestX = new TH1D("hEtaProtonWestX", "#eta of protons (West); #eta; # events", 100, -3, 3);
-    TH1D* hEtaProtonX = new TH1D("hEtaProtonX", "#eta of proton; #eta; # events", 100, -3, 3);
-    TH1D* hEtaNProtonEastX = new TH1D("hEtaNProtonEastX", "#eta of antiprotons (East); #eta; # events", 100, -3, 3);
-    TH1D* hEtaNProtonWestX = new TH1D("hEtaNProtonWestX", "#eta of antiprotons (West); #eta; # events", 100, -3, 3);
-    TH1D* hEtaNProtonX = new TH1D("hEtaNProtonX", "#eta of antiprotons; #eta; # events", 100, -3, 3);
+    TH1D* hPtNProtonEastX = new TH1D("hPtNProtonEastX","pT of antiprotons (East); pT [GeV]; # events",60,0,3);
+    TH1D* hPtNProtonWestX = new TH1D("hPtNProtonWestX","pT of antiprotons (West); pT [GeV]; # events",60,0,3);
+    TH1D* hPtNProtonX = new TH1D("hPtNProtonX","pT of antiprotons; pT [GeV]; # events",60,0,3);
 
-    TH1D* hMultiplicityProtonEastX = new TH1D("hMultiplicityProtonEastX", "Multiplicity of protons (East); N_{p}; # events", 29, 1, 30);
-    TH1D* hMultiplicityProtonWestX = new TH1D("hMultiplicityProtonWestX", "Multiplicity of protons (West); N_{p}; # events", 29, 1, 30);
-    TH1D* hMultiplicityProtonX = new TH1D("hMultiplicityProtonX", "Multiplicity of protons; N_{p}; # events", 29, 1, 30);
+    // eta (40 bins, −1–1)
+    TH1D* hEtaProtonEastX = new TH1D("hEtaProtonEastX","#eta of protons (East); #eta; # events",40,-1,1);
+    TH1D* hEtaProtonWestX = new TH1D("hEtaProtonWestX","#eta of protons (West); #eta; # events",40,-1,1);
+    TH1D* hEtaProtonX = new TH1D("hEtaProtonX","#eta of proton; #eta; # events",40,-1,1);
 
-    TH1D* hMultiplicityNProtonEastX = new TH1D("hMultiplicityNProtonEastX", "Multiplicity of antiprotons (East); N_{#bar{p}}; # events", 29, 1, 30);
-    TH1D* hMultiplicityNProtonWestX = new TH1D("hMultiplicityNProtonWestX", "Multiplicity of antiprotons (West); N_{#bar{p}}; # events", 29, 1, 30);
-    TH1D* hMultiplicityNProtonX = new TH1D("hMultiplicityNProtonX", "Multiplicity of antiprotons; N_{#bar{p}}; # events", 29, 1, 30);
+    TH1D* hEtaNProtonEastX = new TH1D("hEtaNProtonEastX","#eta of antiprotons (East); #eta; # events",40,-1,1);
+    TH1D* hEtaNProtonWestX = new TH1D("hEtaNProtonWestX","#eta of antiprotons (West); #eta; # events",40,-1,1);
+    TH1D* hEtaNProtonX = new TH1D("hEtaNProtonX","#eta of antiprotons; #eta; # events",40,-1,1);
+
+    TH1D* hMultiplicityProtonEastX = new TH1D("hMultiplicityProtonEastX", "Multiplicity of protons (East); N_{p}; # events", 30, 0, 30);
+    TH1D* hMultiplicityProtonWestX = new TH1D("hMultiplicityProtonWestX", "Multiplicity of protons (West); N_{p}; # events", 30, 0, 30);
+    TH1D* hMultiplicityProtonX = new TH1D("hMultiplicityProtonX", "Multiplicity of protons; N_{p}; # events", 30, 0, 30);
+
+    TH1D* hMultiplicityNProtonEastX = new TH1D("hMultiplicityNProtonEastX", "Multiplicity of antiprotons (East); N_{#bar{p}}; # events", 30, 0, 30);
+    TH1D* hMultiplicityNProtonWestX = new TH1D("hMultiplicityNProtonWestX", "Multiplicity of antiprotons (West); N_{#bar{p}}; # events", 30, 0, 30);
+    TH1D* hMultiplicityNProtonX = new TH1D("hMultiplicityNProtonX", "Multiplicity of antiprotons; N_{#bar{p}}; # events", 30, 0, 30);
+
+    TH1D* hVz_check = new TH1D("Vz check", "Vz check", 200, -400, 400);
+
+    TH3F* h3D_protons = new TH3F("h3D_protons",
+                             "Protons: pT vs #eta vs Vz; p_{T} [GeV/c]; #eta; V_{z} [mm]",
+                             60, 0.0, 3.0,      // pT bins
+                             40, -1.0, 1.0,     // eta bins
+                             80, -100.0, 100.0);  // Vz bins
+
+    TH3F* h3D_antiprotons = new TH3F("h3D_antiprotons",
+                            "Antiprotons: pT vs #eta vs Vz; p_{T} [GeV/c]; #eta; V_{z} [mm]",
+                            60, 0.0, 3.0,      // pT bins
+                            40, -1.0, 1.0,     // eta bins
+                            80, -100.0, 100.0);  // Vz bins
+
+    // making 3D histograms in terms of East and West side of forward proton -> eta changes
+    TH3F* h3D_protonsEast = new TH3F("h3D_protonsEast",
+                             "Protons east: pT vs #eta vs Vz; p_{T} [GeV/c]; #eta; V_{z} [mm]",
+                             60, 0.0, 3.0,      // pT bins
+                             40, -1.0, 1.0,     // eta bins
+                             80, -100.0, 100.0);  // Vz bins
+
+    TH3F* h3D_antiprotonsEast = new TH3F("h3D_antiprotonsEast",
+                            "Antiprotons east: pT vs #eta vs Vz; p_{T} [GeV/c]; #eta; V_{z} [mm]",
+                            60, 0.0, 3.0,      // pT bins
+                            40, -1.0, 1.0,     // eta bins
+                            80, -100.0, 100.0);  // Vz bins
+
+    TH3F* h3D_protonsWest = new TH3F("h3D_protonsWest",
+                             "Protons west: pT vs #eta vs Vz; p_{T} [GeV/c]; #eta; V_{z} [mm]",
+                             60, 0.0, 3.0,      // pT bins
+                             40, -1.0, 1.0,    // eta bins
+                             80, -100.0, 100.0);  // Vz bins
+
+    TH3F* h3D_antiprotonsWest = new TH3F("h3D_antiprotonsWest",
+                            "Antiprotons west: pT vs #eta vs Vz; p_{T} [GeV/c]; #eta; V_{z} [mm]",
+                            60, 0.0, 3.0,      // pT bins
+                            40, -1.0, 1.0,    // eta bins
+                            80, -100.0, 100.0);  // Vz bins
 
        for (Long64_t i = 0; i < chain->GetEntries(); ++i) {
        chain->GetEntry(i);
        if( upcEvt->getNumberOfVertices() != 1) continue;
        if (rpEvt->getNumberOfTracks() != 1 ) continue;
 
-//       cout << upcEvt->getEventNumber() << " " 
-//            << upcEvt->getNPrimVertices() <<  endl;
+    //   cout << upcEvt->getEventNumber() << " " 
+    //        << upcEvt->getNPrimVertices() <<  endl; //1, 2, 3
 
        StUPCRpsTrack *proton = rpEvt->getTrack(0);
 
@@ -170,12 +252,21 @@ int main(int argc, char** argv)
         int MultiplicityProtonWestX=0;
         int MultiplicityNProtonWestX=0;
 
+        //vz in mm
+        double vz = upcEvt->getVertex(0)->getPosZ();
+        hVz_check->Fill(vz);
+        if(fabs(vz)>100.0) continue; //vz cut
+
        for (int j = 0; j < upcEvt->getNumberOfTracks(); j++) {
               if(   upcEvt->getTrack(j)->getNhits()>15  
                  && upcEvt->getTrack(j)->getFlag(StUPCTrack::kTof) 
                  && upcEvt->getTrack(j)->getFlag(StUPCTrack::kPrimary)) {
                 if (upcEvt->getTrack(j)->getPt()>0.2  && abs(upcEvt->getTrack(j)->getEta())<0.9){ // initial selection
                     NumOfPrimaryTracksToF++;
+                    TVector3 momentum;
+                    upcEvt->getTrack(j)->getMomentum(momentum);
+                    double p = momentum.Mag();
+
                     if (isEast) {
                         HistPtTracksEastCut->Fill(upcEvt->getTrack(j)->getPt());
                         HistEtaTracksEastCut->Fill(upcEvt->getTrack(j)->getEta());
@@ -184,34 +275,40 @@ int main(int argc, char** argv)
                         HistPtTracksWestCut->Fill(upcEvt->getTrack(j)->getPt());
                         HistEtaTracksWestCut->Fill(upcEvt->getTrack(j)->getEta());
                     }
-                    if((fabs(upcEvt->getTrack(j)->getNSigmasTPCProton())<3) && (upcEvt->getTrack(j)->getPt()<0.9)) { //proton further selection based on nsigma nad pT
+                    if((fabs(upcEvt->getTrack(j)->getNSigmasTPCProton())<3) && (p<0.9)) { //proton further selection based on nsigma and p
                         double pt  = upcEvt->getTrack(j)->getPt();
                         double eta = upcEvt->getTrack(j)->getEta();
                         if(upcEvt->getTrack(j)->getCharge()>0){
+                            h3D_protons->Fill(pt, eta, vz);
                             hPtProtonX->Fill(pt);
                             hEtaProtonX->Fill(eta);
                             MultiplicityProtonX++;
                             if(isEast) {
+                                h3D_protonsEast->Fill(pt, eta, vz);
                                 hPtProtonEastX->Fill(pt);
                                 hEtaProtonEastX->Fill(eta);
                                 MultiplicityProtonEastX++;
                             }
                             if(isWest) {
+                                h3D_protonsWest->Fill(pt, eta, vz);
                                 hPtProtonWestX->Fill(pt);
                                 hEtaProtonWestX->Fill(eta);
                                 MultiplicityProtonWestX++;
                             }
                         } 
                         if(upcEvt->getTrack(j)->getCharge()<0){
+                            h3D_antiprotons->Fill(pt, eta, vz);
                             hPtNProtonX->Fill(pt);
                             hEtaNProtonX->Fill(eta);
                             MultiplicityNProtonX++;
                             if(isEast) {
+                                h3D_antiprotonsEast->Fill(pt, eta, vz);
                                 hPtNProtonEastX->Fill(pt);
                                 hEtaNProtonEastX->Fill(eta);
                                 MultiplicityNProtonEastX++;
                             }
                             if(isWest) {
+                                h3D_antiprotonsWest->Fill(pt, eta, vz);
                                 hPtNProtonWestX->Fill(pt);
                                 hEtaNProtonWestX->Fill(eta);
                                 MultiplicityNProtonWestX++;
@@ -334,6 +431,14 @@ int main(int argc, char** argv)
     hMultiplicityNProtonEastX->Write();
     hMultiplicityNProtonWestX->Write();
     hMultiplicityNProtonX->Write();
+    hVz_check->Write();
+
+    h3D_protons->Write();
+    h3D_antiprotons->Write();
+    h3D_protonsEast->Write();
+    h3D_antiprotonsEast->Write();
+    h3D_protonsWest->Write();
+    h3D_antiprotonsWest->Write();
 
     outfile->Close();
     return 0;

@@ -1,7 +1,10 @@
 build
 Run
 Histos
+Efficiency
+Efficiency.C
 make_ratio.C
+simple_efficiency_correction_example
 *.err
 *.log
 *.out
