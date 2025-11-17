@@ -78,6 +78,9 @@ int main(int argc, char* argv[]){
     // outsideprocessing.AddHistogram(TH2D("etapTKstarbar", "#bar{K}^{*}(892) number;eta;p_{T}", 10, -1, 1, 10, 0, 2.5));
     // outsideprocessing.AddHistogram(TH2D("etapTphi", "#varphi(1020) number;eta;p_{T}", 10, -1, 1, 10, 0, 2.5));
 
+    TH1D FlowOfEvents("FlowOfEvents", "Independent event checks (of MC particles);;events", 1, 0, 1);
+    TH1D K0SIndex("K0SIndex", "Index of K^{0}_{S};index;particles", 30, 0, 30);
+    TH3D NumberOfPions("NumberOfPions", "Number of pions in event;positive;negative;neutral", 5, 0, 5, 5, 0, 5, 5, 0, 5);
     TH1D MCParticles("MCParticles", "MC number of particles;particles;events", 25, 0, 25);
     TH1D TPCParticles("TPCParticles", "TPC number of particles;particles;events", 25, 0, 25);
     TH1D DifferenceParticles("DifferenceParticles", "(MC - TPC) difference in number of particles;difference;events", 20, -10, 10);
@@ -90,7 +93,10 @@ int main(int argc, char* argv[]){
     TH2D MpipiMothers("MpipiMothers", "particle number;positive;negative", 20, 0, 20, 20, 0, 20);
     TH1D MpipiMotherName("MpipiMotherName", "#pi^{+}#pi^{-} pair mothers;;mothers", 1, 0, 1);
     TH1D MpipiDeltaT("MpipiDeltaT", "Time between pion decay;#Delta t_{0} [ns];events", 100, -5, 5);
+    TH1D MpipiDeltaTOnlyTwoTracksDetected("MpipiDeltaTOnlyTwoTracksDetected", "Time between pion decay;#Delta t_{0} [ns];events", 100, -5, 5);
+    TH1D MpipiDeltaTMoreThanTwoTracksDetected("MpipiDeltaTMoreThanTwoTracksDetected", "Time between pion decay;#Delta t_{0} [ns];events", 100, -5, 5);
     TH1D MpipiAfterDeltaT("MpipiAfterDeltaT", "#pi^{+}#pi^{-} pair mass after #Delta t_{0} cut;m_{#pi^{+}#pi^{-}} [GeV];pairs", 40, 0.4, 0.6);
+    TH1D MpipiMCnotK0SMother("MpipiMCnotK0SMother", "#pi^{+}#pi^{-} pair mass (everything except K^{0}_{S} mother verification);m_{#pi^{+}#pi^{-}} [GeV];pairs", 40, 0.4, 0.6);
 
     //processing
     //defining TreeProcessor
@@ -156,6 +162,7 @@ int main(int argc, char* argv[]){
         //filtering tracks
         for(int i = 0; i<tempUPCpointer->getNumberOfTracks(); i++){
             StUPCTrack* tempTrack = tempUPCpointer->getTrack(i);
+            //TODO check with & without TOF
             if(!tempTrack->getFlag(StUPCTrack::kTof)){
                 continue;
             }
@@ -181,6 +188,36 @@ int main(int argc, char* argv[]){
         bool duplicated_matches_exist = false;
 
         //histograms
+        //flow
+        FlowOfEvents.Fill("All events", 1.0);
+        //for proper order
+        FlowOfEvents.Fill("2x K^{0}_{S}", 0.0);
+        FlowOfEvents.Fill("4x#pi^{#pm/0}", 0.0);
+        FlowOfEvents.Fill("2x#pi^{+}, 2x#pi^{-}", 0.0);
+        int n_of_K0S = 0;
+        int n_of_piplus = 0;
+        int n_of_piminus = 0;
+        int n_of_pizero = 0;
+        for(size_t i = 0; i<tempUPCpointer->getNumberOfMCParticles(); i++){
+            if(abs(tempUPCpointer->getMCParticle(i)->GetPdgCode())==310){
+                n_of_K0S++;
+                K0SIndex.Fill(i);
+            }
+            if(tempUPCpointer->getMCParticle(i)->GetPdgCode()==piplusPDGid)
+                n_of_piplus++;
+            if(tempUPCpointer->getMCParticle(i)->GetPdgCode()==piminusPDGid)
+                n_of_piminus++;
+            if(abs(tempUPCpointer->getMCParticle(i)->GetPdgCode())==111)
+                n_of_pizero++;
+        }
+        NumberOfPions.Fill(n_of_piplus, n_of_piminus, n_of_pizero);
+        if(n_of_K0S==2)
+            FlowOfEvents.Fill("2x K^{0}_{S}", 1.0);
+        if(n_of_piplus==2&&n_of_piminus==2)
+            FlowOfEvents.Fill("2x#pi^{+}, 2x#pi^{-}", 1.0);
+        if(n_of_piplus+n_of_piminus+n_of_pizero==4)
+            FlowOfEvents.Fill("4x#pi^{#pm/0}", 1.0);
+        //the rest
         MCParticles.Fill(positiveMC.size()+negativeMC.size());
         TPCParticles.Fill(positiveTrack.size()+negativeTrack.size());
         DifferenceParticles.Fill(int(positiveMC.size()+negativeMC.size())-int(positiveTrack.size()+negativeTrack.size()));
@@ -281,11 +318,21 @@ int main(int argc, char* argv[]){
                                 MpipiMC.Fill((posTrack+negTrack).M());
                                 double deltaT = DeltaT0(positiveTrack[i], negativeTrack[j], 0.13957, 0.13957);
                                 MpipiDeltaT.Fill(deltaT);
+                                if(positiveTrack.size()==1&&negativeTrack.size()==1){
+                                    MpipiDeltaTOnlyTwoTracksDetected.Fill(deltaT);
+                                } else{
+                                    //if no tracks either positive or negative
+                                    //then no loops, so the only alternative to 1&1
+                                    //is more tracks, so no checking necessary
+                                    MpipiDeltaTMoreThanTwoTracksDetected.Fill(deltaT);
+                                }
                                 //value nicked from .txt file with actual data
                                 // if(fabs(deltaT)<3*0.13124272289253383){
                                 if(fabs(deltaT)<0.6){
                                     MpipiAfterDeltaT.Fill((posTrack+negTrack).M());
                                 }
+                            } else{
+                                MpipiMCnotK0SMother.Fill((posTrack+negTrack).M());
                             }
                         }
                     }
@@ -399,6 +446,10 @@ int main(int argc, char* argv[]){
 
     TFile* outputFileHist = TFile::Open(outfileName.c_str(), "recreate");
     // outsideprocessing.SaveToFile(outputFileHist);
+    FlowOfEvents.LabelsDeflate();
+    FlowOfEvents.Write();
+    K0SIndex.Write();
+    NumberOfPions.Write();
     MCParticles.Write();
     TPCParticles.Write();
     DifferenceParticles.Write();
@@ -415,7 +466,10 @@ int main(int argc, char* argv[]){
     MpipiMotherName.LabelsDeflate();
     MpipiMotherName.Write();
     MpipiDeltaT.Write();
+    MpipiDeltaTOnlyTwoTracksDetected.Write();
+    MpipiDeltaTMoreThanTwoTracksDetected.Write();
     MpipiAfterDeltaT.Write();
+    MpipiMCnotK0SMother.Write();
     outputFileHist->Close();
 
     return 0;
