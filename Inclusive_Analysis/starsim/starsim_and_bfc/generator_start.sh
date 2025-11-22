@@ -4,3 +4,7 @@ for i in {1..1000};
 do
     star-submit-template -template generator_template.xml -entities number=$i
 done
+
+mv strangegenerator*.* ./star_scheduler_logs/
+rm schedTemplateExp.xml
+rm send.zip
