@@ -17,7 +17,7 @@ root4star -q -b centralDiffractiveRun.C
 	<Package name="send">
 		<File>file:./StRoot/</File>
 		<File>file:/star/u/adamwatroba/STAR-Analysis/Inclusive_Analysis/starsim/starsim_and_bfc/centralDiffractiveRun.C</File>
-     	<File>file:/star/u/adamwatroba/STAR-Analysis/Inclusive_Analysis/starsim/starsim_and_bfc/centralDiffractive.C</File>
+                <File>file:/star/u/adamwatroba/STAR-Analysis/Inclusive_Analysis/starsim/starsim_and_bfc/centralDiffractive.C</File>
 	 </Package>
 </SandBox>
         <stdout URL="file:/star/data05/scratch/adamwatroba/$JOBID.out"/>
