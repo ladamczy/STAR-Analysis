@@ -296,7 +296,7 @@ int main(int argc, char** argv)
         int MultiplicityProtonWestX=0;
         int MultiplicityNProtonWestX=0;
 
-        //vz in mm
+        //vz in cm
         double vz = upcEvt->getVertex(0)->getPosZ();
         hVz_check->Fill(vz);
         if(fabs(vz)>100.0) continue; //vz cut
