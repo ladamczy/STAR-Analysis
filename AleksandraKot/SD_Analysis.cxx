@@ -60,6 +60,7 @@
 #include "StUPCV0.h"
 #include "StEfficiencyCorrector3D.h"
 
+int getXiBin(double xi);
 
 using namespace std;
 
@@ -230,20 +231,63 @@ int main(int argc, char** argv)
                             40, -1.0, 1.0,    // eta bins
                             80, -100.0, 100.0);  // Vz bins
 
-       for (Long64_t i = 0; i < chain->GetEntries(); ++i) {
-       chain->GetEntry(i);
-       if( upcEvt->getNumberOfVertices() != 1) continue;
-       if (rpEvt->getNumberOfTracks() != 1 ) continue;
 
-    //   cout << upcEvt->getEventNumber() << " " 
-    //        << upcEvt->getNPrimVertices() <<  endl; //1, 2, 3
+    TH1D* hEta_xi0_proton_E = new TH1D("hEta_xi0_proton_E", ";#eta;counts", 20, -1, 1);
+    TH1D* hEta_xi1_proton_E = new TH1D("hEta_xi1_proton_E", ";#eta;counts", 20, -1, 1);
+    TH1D* hEta_xi2_proton_E = new TH1D("hEta_xi2_proton_E", ";#eta;counts", 20, -1, 1);
+    TH1D* hEta_xi3_proton_E = new TH1D("hEta_xi3_proton_E", ";#eta;counts", 20, -1, 1);
+    TH1D* hEta_xi4_proton_E = new TH1D("hEta_xi4_proton_E", ";#eta;counts", 20, -1, 1);
 
-       StUPCRpsTrack *proton = rpEvt->getTrack(0);
+    TH1D* hEta_xi0_proton_W = new TH1D("hEta_xi0_proton_W", ";#eta;counts", 20, -1, 1);
+    TH1D* hEta_xi1_proton_W = new TH1D("hEta_xi1_proton_W", ";#eta;counts", 20, -1, 1);
+    TH1D* hEta_xi2_proton_W = new TH1D("hEta_xi2_proton_W", ";#eta;counts", 20, -1, 1);
+    TH1D* hEta_xi3_proton_W = new TH1D("hEta_xi3_proton_W", ";#eta;counts", 20, -1, 1);
+    TH1D* hEta_xi4_proton_W = new TH1D("hEta_xi4_proton_W", ";#eta;counts", 20, -1, 1);
 
-       bool isEast = (proton->branch() < 2);
-       bool isWest = (proton->branch() > 1);
+    TH1D* hEta_xi0_proton_C = new TH1D("hEta_xi0_proton_C", ";#eta;counts", 20, -1, 1);
+    TH1D* hEta_xi1_proton_C = new TH1D("hEta_xi1_proton_C", ";#eta;counts", 20, -1, 1);
+    TH1D* hEta_xi2_proton_C = new TH1D("hEta_xi2_proton_C", ";#eta;counts", 20, -1, 1);
+    TH1D* hEta_xi3_proton_C = new TH1D("hEta_xi3_proton_C", ";#eta;counts", 20, -1, 1);
+    TH1D* hEta_xi4_proton_C = new TH1D("hEta_xi4_proton_C", ";#eta;counts", 20, -1, 1);
 
-       int NumOfPrimaryTracksToF = 0;
+    TH1D* hEta_xi0_antiproton_E = new TH1D("hEta_xi0_antiproton_E", ";#eta;counts", 20, -1, 1);
+    TH1D* hEta_xi1_antiproton_E = new TH1D("hEta_xi1_antiproton_E", ";#eta;counts", 20, -1, 1);
+    TH1D* hEta_xi2_antiproton_E = new TH1D("hEta_xi2_antiproton_E", ";#eta;counts", 20, -1, 1);
+    TH1D* hEta_xi3_antiproton_E = new TH1D("hEta_xi3_antiproton_E", ";#eta;counts", 20, -1, 1);
+    TH1D* hEta_xi4_antiproton_E = new TH1D("hEta_xi4_antiproton_E", ";#eta;counts", 20, -1, 1);
+
+    TH1D* hEta_xi0_antiproton_W = new TH1D("hEta_xi0_antiproton_W", ";#eta;counts", 20, -1, 1);
+    TH1D* hEta_xi1_antiproton_W = new TH1D("hEta_xi1_antiproton_W", ";#eta;counts", 20, -1, 1);
+    TH1D* hEta_xi2_antiproton_W = new TH1D("hEta_xi2_antiproton_W", ";#eta;counts", 20, -1, 1);
+    TH1D* hEta_xi3_antiproton_W = new TH1D("hEta_xi3_antiproton_W", ";#eta;counts", 20, -1, 1);
+    TH1D* hEta_xi4_antiproton_W = new TH1D("hEta_xi4_antiproton_W", ";#eta;counts", 20, -1, 1);
+
+    TH1D* hEta_xi0_antiproton_C = new TH1D("hEta_xi0_antiproton_C", ";#eta;counts", 20, -1, 1);
+    TH1D* hEta_xi1_antiproton_C = new TH1D("hEta_xi1_antiproton_C", ";#eta;counts", 20, -1, 1);
+    TH1D* hEta_xi2_antiproton_C = new TH1D("hEta_xi2_antiproton_C", ";#eta;counts", 20, -1, 1);
+    TH1D* hEta_xi3_antiproton_C = new TH1D("hEta_xi3_antiproton_C", ";#eta;counts", 20, -1, 1);
+    TH1D* hEta_xi4_antiproton_C = new TH1D("hEta_xi4_antiproton_C", ";#eta;counts", 20, -1, 1);
+
+
+    
+
+    for (Long64_t i = 0; i < chain->GetEntries(); ++i) {
+        chain->GetEntry(i);
+        if( upcEvt->getNumberOfVertices() != 1) continue;
+        if (rpEvt->getNumberOfTracks() != 1 ) continue;
+
+        //   cout << upcEvt->getEventNumber() << " " 
+        //        << upcEvt->getNPrimVertices() <<  endl; //1, 2, 3
+
+        StUPCRpsTrack *proton = rpEvt->getTrack(0);
+
+        bool isEast = (proton->branch() < 2);
+        bool isWest = (proton->branch() > 1);
+
+        double xi_proton = proton->xi(254.867);
+        int b=getXiBin(xi_proton);
+
+        int NumOfPrimaryTracksToF = 0;
 
         int MultiplicityProtonX = 0;
         int MultiplicityNProtonX=0;
@@ -257,11 +301,12 @@ int main(int argc, char** argv)
         hVz_check->Fill(vz);
         if(fabs(vz)>100.0) continue; //vz cut
 
-       for (int j = 0; j < upcEvt->getNumberOfTracks(); j++) {
-              if(   upcEvt->getTrack(j)->getNhits()>15  
-                 && upcEvt->getTrack(j)->getFlag(StUPCTrack::kTof) 
-                 && upcEvt->getTrack(j)->getFlag(StUPCTrack::kPrimary)) {
-                if (upcEvt->getTrack(j)->getPt()>0.2  && abs(upcEvt->getTrack(j)->getEta())<0.9){ // initial selection
+        for (int j = 0; j < upcEvt->getNumberOfTracks(); j++) {
+            if(   upcEvt->getTrack(j)->getNhits()>15  
+                && upcEvt->getTrack(j)->getFlag(StUPCTrack::kTof) 
+                && upcEvt->getTrack(j)->getFlag(StUPCTrack::kPrimary)) {
+
+                if (upcEvt->getTrack(j)->getPt()>0.2  && abs(upcEvt->getTrack(j)->getEta())<0.9){ // fiducial cuts
                     NumOfPrimaryTracksToF++;
                     TVector3 momentum;
                     upcEvt->getTrack(j)->getMomentum(momentum);
@@ -288,13 +333,39 @@ int main(int argc, char** argv)
                                 hPtProtonEastX->Fill(pt);
                                 hEtaProtonEastX->Fill(eta);
                                 MultiplicityProtonEastX++;
+
+                                if (b == 0) hEta_xi0_proton_E->Fill(eta);
+                                if (b == 1) hEta_xi1_proton_E->Fill(eta);
+                                if (b == 2) hEta_xi2_proton_E->Fill(eta);
+                                if (b == 3) hEta_xi3_proton_E->Fill(eta);
+                                if (b == 4) hEta_xi4_proton_E->Fill(eta);
+
+                                if (b == 0) hEta_xi0_proton_C->Fill(-eta);
+                                if (b == 1) hEta_xi1_proton_C->Fill(-eta);
+                                if (b == 2) hEta_xi2_proton_C->Fill(-eta);
+                                if (b == 3) hEta_xi3_proton_C->Fill(-eta);
+                                if (b == 4) hEta_xi4_proton_C->Fill(-eta);
+
                             }
                             if(isWest) {
                                 h3D_protonsWest->Fill(pt, eta, vz);
                                 hPtProtonWestX->Fill(pt);
                                 hEtaProtonWestX->Fill(eta);
                                 MultiplicityProtonWestX++;
+
+                                if (b == 0) hEta_xi0_proton_W->Fill(eta);
+                                if (b == 1) hEta_xi1_proton_W->Fill(eta);
+                                if (b == 2) hEta_xi2_proton_W->Fill(eta);
+                                if (b == 3) hEta_xi3_proton_W->Fill(eta);
+                                if (b == 4) hEta_xi4_proton_W->Fill(eta);
+
+                                if (b == 0) hEta_xi0_proton_C->Fill(eta);
+                                if (b == 1) hEta_xi1_proton_C->Fill(eta);
+                                if (b == 2) hEta_xi2_proton_C->Fill(eta);
+                                if (b == 3) hEta_xi3_proton_C->Fill(eta);
+                                if (b == 4) hEta_xi4_proton_C->Fill(eta);
                             }
+
                         } 
                         if(upcEvt->getTrack(j)->getCharge()<0){
                             h3D_antiprotons->Fill(pt, eta, vz);
@@ -306,37 +377,62 @@ int main(int argc, char** argv)
                                 hPtNProtonEastX->Fill(pt);
                                 hEtaNProtonEastX->Fill(eta);
                                 MultiplicityNProtonEastX++;
+
+                                if (b == 0) hEta_xi0_antiproton_E->Fill(eta);
+                                if (b == 1) hEta_xi1_antiproton_E->Fill(eta);
+                                if (b == 2) hEta_xi2_antiproton_E->Fill(eta);
+                                if (b == 3) hEta_xi3_antiproton_E->Fill(eta);
+                                if (b == 4) hEta_xi4_antiproton_E->Fill(eta);
+
+                                if (b == 0) hEta_xi0_antiproton_C->Fill(-eta);
+                                if (b == 1) hEta_xi1_antiproton_C->Fill(-eta);
+                                if (b == 2) hEta_xi2_antiproton_C->Fill(-eta);
+                                if (b == 3) hEta_xi3_antiproton_C->Fill(-eta);
+                                if (b == 4) hEta_xi4_antiproton_C->Fill(-eta);
                             }
                             if(isWest) {
                                 h3D_antiprotonsWest->Fill(pt, eta, vz);
                                 hPtNProtonWestX->Fill(pt);
                                 hEtaNProtonWestX->Fill(eta);
                                 MultiplicityNProtonWestX++;
+
+                                if (b == 0) hEta_xi0_antiproton_W->Fill(eta);
+                                if (b == 1) hEta_xi1_antiproton_W->Fill(eta);
+                                if (b == 2) hEta_xi2_antiproton_W->Fill(eta);
+                                if (b == 3) hEta_xi3_antiproton_W->Fill(eta);
+                                if (b == 4) hEta_xi4_antiproton_W->Fill(eta);
+
+                                if (b == 0) hEta_xi0_antiproton_C->Fill(eta);
+                                if (b == 1) hEta_xi1_antiproton_C->Fill(eta);
+                                if (b == 2) hEta_xi2_antiproton_C->Fill(eta);
+                                if (b == 3) hEta_xi3_antiproton_C->Fill(eta);
+                                if (b == 4) hEta_xi4_antiproton_C->Fill(eta);
                             }
                         }
                     }
+                }
+
+                if (abs(upcEvt->getTrack(j)->getEta())<0.9) {
+                    if (isEast) HistPtTracksEast->Fill(upcEvt->getTrack(j)->getPt());
+                    if (isWest) HistPtTracksWest->Fill(upcEvt->getTrack(j)->getPt()); 
+                    if(upcEvt->getTrack(j)->getCharge()>0) { //positive charge
+                        hNSigmaPiPlus->Fill(upcEvt->getTrack(j)->getPt(), upcEvt->getTrack(j)->getNSigmasTPCPion());
+                        hNSigmaKPlus->Fill(upcEvt->getTrack(j)->getPt(), upcEvt->getTrack(j)->getNSigmasTPCKaon());
+                        hNSigmaPPlus->Fill(upcEvt->getTrack(j)->getPt(), upcEvt->getTrack(j)->getNSigmasTPCProton());
+                    } else { //negative charge
+                            hNSigmaPiMinus->Fill(upcEvt->getTrack(j)->getPt(), upcEvt->getTrack(j)->getNSigmasTPCPion());
+                            hNSigmaKMinus->Fill(upcEvt->getTrack(j)->getPt(), upcEvt->getTrack(j)->getNSigmasTPCKaon());
+                            hNSigmaPMinus->Fill(upcEvt->getTrack(j)->getPt(), upcEvt->getTrack(j)->getNSigmasTPCProton());
                     }
-                     if (abs(upcEvt->getTrack(j)->getEta())<0.9) {
-                           if (isEast) HistPtTracksEast->Fill(upcEvt->getTrack(j)->getPt());
-                           if (isWest) HistPtTracksWest->Fill(upcEvt->getTrack(j)->getPt()); 
-                           if(upcEvt->getTrack(j)->getCharge()>0) { //positive charge
-                                hNSigmaPiPlus->Fill(upcEvt->getTrack(j)->getPt(), upcEvt->getTrack(j)->getNSigmasTPCPion());
-                                hNSigmaKPlus->Fill(upcEvt->getTrack(j)->getPt(), upcEvt->getTrack(j)->getNSigmasTPCKaon());
-                                hNSigmaPPlus->Fill(upcEvt->getTrack(j)->getPt(), upcEvt->getTrack(j)->getNSigmasTPCProton());
-                           } else { //negative charge
-                                   hNSigmaPiMinus->Fill(upcEvt->getTrack(j)->getPt(), upcEvt->getTrack(j)->getNSigmasTPCPion());
-                                   hNSigmaKMinus->Fill(upcEvt->getTrack(j)->getPt(), upcEvt->getTrack(j)->getNSigmasTPCKaon());
-                                   hNSigmaPMinus->Fill(upcEvt->getTrack(j)->getPt(), upcEvt->getTrack(j)->getNSigmasTPCProton());
-                           }
-                           double pq = (upcEvt->getTrack(j)->getPt())*(upcEvt->getTrack(j)->getCharge());
-                           hdEdx->Fill(pq, upcEvt->getTrack(j)->getDEdxSignal()*1e6); //GeV originally, keV now
-                     } 
-                     if (upcEvt->getTrack(j)->getPt()>0.2) {
-                           if (isEast) HistEtaTracksEast->Fill(upcEvt->getTrack(j)->getEta());
-                           if (isWest) HistEtaTracksWest->Fill(upcEvt->getTrack(j)->getEta()); 
-                     }
-              }
-       }
+                    double pq = (upcEvt->getTrack(j)->getPt())*(upcEvt->getTrack(j)->getCharge());
+                    hdEdx->Fill(pq, upcEvt->getTrack(j)->getDEdxSignal()*1e6); //GeV originally, keV now
+                } 
+                if (upcEvt->getTrack(j)->getPt()>0.2) {
+                    if (isEast) HistEtaTracksEast->Fill(upcEvt->getTrack(j)->getEta());
+                    if (isWest) HistEtaTracksWest->Fill(upcEvt->getTrack(j)->getEta()); 
+                }
+            }
+        }
        
         HistNumOfPrimaryTracksToF->Fill(NumOfPrimaryTracksToF);
         hMultiplicityProtonX->Fill(MultiplicityProtonX);
@@ -440,7 +536,54 @@ int main(int argc, char** argv)
     h3D_protonsWest->Write();
     h3D_antiprotonsWest->Write();
 
+
+    hEta_xi0_proton_E->Write();
+    hEta_xi1_proton_E->Write();
+    hEta_xi2_proton_E->Write();
+    hEta_xi3_proton_E->Write();
+    hEta_xi4_proton_E->Write();
+
+    hEta_xi0_proton_W->Write();
+    hEta_xi1_proton_W->Write();
+    hEta_xi2_proton_W->Write();
+    hEta_xi3_proton_W->Write();
+    hEta_xi4_proton_W->Write();
+
+    hEta_xi0_proton_C->Write();
+    hEta_xi1_proton_C->Write();
+    hEta_xi2_proton_C->Write();
+    hEta_xi3_proton_C->Write();
+    hEta_xi4_proton_C->Write();
+
+    hEta_xi0_antiproton_E->Write();
+    hEta_xi1_antiproton_E->Write();
+    hEta_xi2_antiproton_E->Write();
+    hEta_xi3_antiproton_E->Write();
+    hEta_xi4_antiproton_E->Write();
+
+    hEta_xi0_antiproton_W->Write();
+    hEta_xi1_antiproton_W->Write();
+    hEta_xi2_antiproton_W->Write();
+    hEta_xi3_antiproton_W->Write();
+    hEta_xi4_antiproton_W->Write();
+
+    hEta_xi0_antiproton_C->Write();
+    hEta_xi1_antiproton_C->Write();
+    hEta_xi2_antiproton_C->Write();
+    hEta_xi3_antiproton_C->Write();
+    hEta_xi4_antiproton_C->Write();
+
     outfile->Close();
     return 0;
 }
  
+int getXiBin(double xi) {
+    const int nXi = 5;
+    double xi_low[nXi]  = {0.0,   0.02, 0.05, 0.1, 0.2};
+    double xi_high[nXi] = {0.02, 0.05, 0.1, 0.2, 0.4};
+    for (int i = 0; i < nXi; i++) {
+        if (xi >= xi_low[i] && xi < xi_high[i])
+            return i;
+    }
+    return -1; // poza zakresem
+}

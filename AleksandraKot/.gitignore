@@ -4,7 +4,7 @@ Histos
 Efficiency
 Efficiency.C
 make_ratio.C
-simple_efficiency_correction_example
+simple_efficiency_correction_example.png
 *.err
 *.log
 *.out
