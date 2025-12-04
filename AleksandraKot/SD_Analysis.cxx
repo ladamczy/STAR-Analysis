@@ -798,7 +798,7 @@ int getXiBin(double xi) {
 }
 
 bool LambdaCut(const StUPCV0& L, char cut_type) {
-    bool mass_cut = (L.m() > (1.1157-0.009675) && L.m() < 1.115+0.009675); //1.115683
+    bool mass_cut = (L.m() > (1.1157-0.009675) && L.m() < 1.1157+0.009675); //1.115683
     bool dcaDaughters_cut = L.dcaDaughters()<1.5;
     bool PointingAngle_cut = std::cos(L.pointingAngle())>0.925;
     bool dcaBeamline_cut=L.DCABeamLine()<1.5;
