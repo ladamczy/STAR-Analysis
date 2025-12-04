@@ -26,7 +26,7 @@
 #include <TH2.h> 
 #include <TF1.h> 
 #include <TF2.h> 
-#include <THStack.h> 
+#include <THStack.h>
 #include <TParticle.h>
 #include <TParticlePDG.h>
 #include <TStyle.h> 
@@ -61,6 +61,7 @@
 #include "StEfficiencyCorrector3D.h"
 
 int getXiBin(double xi);
+bool LambdaCut(const StUPCV0& L, char cut_type='0');
 
 using namespace std;
 
@@ -133,6 +134,7 @@ int main(int argc, char** argv)
     TFile *outfile = TFile::Open(outputFileName.c_str(), "recreate"); 
     TDirectory* dirNSigma = outfile->mkdir("dEdx_Nsigma");
     TDirectory* dirProtons = outfile->mkdir("Protons");
+    TDirectory* dirLambdas = outfile->mkdir("Lambdas");
 
     outfile->cd();
     TH1D* HistNumOfPrimaryTracksToF = new TH1D("HistNumOfPrimaryTracksToF", "; Num of tracks; # events", 50 ,0, 50);
@@ -268,6 +270,36 @@ int main(int argc, char** argv)
     TH1D* hEta_xi3_antiproton_C = new TH1D("hEta_xi3_antiproton_C", ";#eta;counts", 20, -1, 1);
     TH1D* hEta_xi4_antiproton_C = new TH1D("hEta_xi4_antiproton_C", ";#eta;counts", 20, -1, 1);
 
+    TH1D* hLambda_DCA_W=new TH1D("hLambda_DCA_W","#Lambda DCA daughters (West);DCA [cm];Events",100,0,40);
+    TH1D* hLambda_DCA_E=new TH1D("hLambda_DCA_E","#Lambda DCA daughters (East);DCA [cm];Events",100,0,40);
+    TH1D* hLambda_DCABeamLine_W=new TH1D("hLambda_DCABeamLine_W","#Lambda DCA to Beamline (West);DCA [cm];Events",100,0,40);
+    TH1D* hLambda_DCABeamLine_E=new TH1D("hLambda_DCABeamLine_E","#Lambda DCA to Beamline (East);DCA [cm];Events",100,0,40);
+    TH1D* hLambda_PointingAngle_W=new TH1D("hLambda_PointingAngle_W","#Lambda Pointing angle (West);cos(#theta);Events",100,-1.1,1.1);
+    TH1D* hLambda_PointingAngle_E=new TH1D("hLambda_PointingAngle_E","#Lambda Pointing angle (East);cos(#theta);Events",100,-1.1,1.1);
+    TH1D* hLambda_DecayLength_W=new TH1D("hLambda_DecayLength_W","#Lambda Decay length (West);L [cm];Events",100,0,50);
+    TH1D* hLambda_DecayLength_E=new TH1D("hLambda_DecayLength_E","#Lambda Decay length (East);L [cm];Events",100,0,50);
+    TH1D* hLambda_Mass_W=new TH1D("hLambda_Mass_W","#Lambda invariant mass (West);m [GeV/c^{2}];Events",100,1.05,1.25);
+    TH1D* hLambda_Mass_E=new TH1D("hLambda_Mass_E","#Lambda invariant mass (East);m [GeV/c^{2}];Events",100,1.05,1.25);
+    TH1D* hPT_Lambda_E = new TH1D("pT_lambda_E","p_{T} of #Lambda (East);p_{T} [GeV/c];Counts",60,0,3);
+    TH1D* hPT_Lambda_W = new TH1D("pT_lambda_W","p_{T} of #Lambda (West);p_{T} [GeV/c];Counts",60,0,3);
+    TH1D* hEta_Lambda_E = new TH1D("eta_lambda_E","#eta of #Lambda (East);#eta;Counts",20,-1,1);
+    TH1D* hEta_Lambda_W = new TH1D("eta_lambda_W","#eta of #Lambda (West);#eta;Counts",20,-1,1);
+
+    TH1D* hAntiLambda_DCA_W=new TH1D("hAntiLambda_DCA_W","#bar{#Lambda} DCA daughters (West);DCA [cm];Events",100,0,40);
+    TH1D* hAntiLambda_DCA_E=new TH1D("hAntiLambda_DCA_E","#bar{#Lambda} DCA daughters (East);DCA [cm];Events",100,0,40);
+    TH1D* hAntiLambda_DCABeamLine_W=new TH1D("hAntiLambda_DCABeamLine_W","#bar{#Lambda} DCA to Beamline (West);DCA [cm];Events",100,0,40);
+    TH1D* hAntiLambda_DCABeamLine_E=new TH1D("hAntiLambda_DCABeamLine_E","#bar{#Lambda} DCA to Beamline (East);DCA [cm];Events",100,0,40);
+    TH1D* hAntiLambda_PointingAngle_W=new TH1D("hAntiLambda_PointingAngle_W","#bar{#Lambda} Pointing angle (West);cos(#theta);Events",100,-1.1,1.1);
+    TH1D* hAntiLambda_PointingAngle_E=new TH1D("hAntiLambda_PointingAngle_E","#bar{#Lambda} Pointing angle (East);cos(#theta);Events",100,-1.1,1.1);
+    TH1D* hAntiLambda_DecayLength_W=new TH1D("hAntiLambda_DecayLength_W","#bar{#Lambda} Decay length (West);L [cm];Events",100,0,50);
+    TH1D* hAntiLambda_DecayLength_E=new TH1D("hAntiLambda_DecayLength_E","#bar{#Lambda} Decay length (East);L [cm];Events",100,0,50);
+    TH1D* hAntiLambda_Mass_W=new TH1D("hAntiLambda_Mass_W","#bar{#Lambda} invariant mass (West);m [GeV/c^{2}];Events",100,1.05,1.25);
+    TH1D* hAntiLambda_Mass_E=new TH1D("hAntiLambda_Mass_E","#bar{#Lambda} invariant mass (East);m [GeV/c^{2}];Events",100,1.05,1.25);
+    TH1D* hPT_antiLambda_E = new TH1D("pT_antiLambda_E","p_{T} of #bar{#Lambda} (East);p_{T} [GeV/c];Counts",60,0,3);
+    TH1D* hPT_antiLambda_W = new TH1D("pT_antiLambda_W","p_{T} of #bar{#Lambda} (West);p_{T} [GeV/c];Counts",60,0,3);
+    TH1D* hEta_antiLambda_E = new TH1D("eta_antiLambda_E","#eta of #bar{#Lambda} (East);#eta;Counts",20,-1,1);
+    TH1D* hEta_antiLambda_W = new TH1D("eta_antiLambda_W","#eta of #bar{#Lambda} (West);#eta;Counts",20,-1,1);
+
 
     
 
@@ -301,12 +333,32 @@ int main(int argc, char** argv)
         hVz_check->Fill(vz);
         if(fabs(vz)>100.0) continue; //vz cut
 
+        int NumOfGoodPrimaryTracks=0;
+
+        for(int j=0; j<upcEvt->getNumberOfTracks(); j++) {
+            if (upcEvt->getTrack(j)->getFlag(StUPCTrack::kPrimary)
+                && upcEvt->getTrack(j)->getFlag(StUPCTrack::kTof)
+                && upcEvt->getTrack(j)->getNhits()>20
+                && upcEvt->getTrack(j)->getPt()>0.2
+                && fabs(upcEvt->getTrack(j)->getEta()) < 0.9
+                && upcEvt->getTrack(j)->getEta() < -(vz/250.0) + 0.9
+                && upcEvt->getTrack(j)->getEta() > -(vz/250.0) - 0.9) {
+                    NumOfGoodPrimaryTracks++;
+                }
+        }
+
+        if (NumOfGoodPrimaryTracks<2) continue;
+
         for (int j = 0; j < upcEvt->getNumberOfTracks(); j++) {
-            if(   upcEvt->getTrack(j)->getNhits()>15  
+            if( upcEvt->getTrack(j)->getNhits()>20  
                 && upcEvt->getTrack(j)->getFlag(StUPCTrack::kTof) 
                 && upcEvt->getTrack(j)->getFlag(StUPCTrack::kPrimary)) {
 
-                if (upcEvt->getTrack(j)->getPt()>0.2  && abs(upcEvt->getTrack(j)->getEta())<0.9){ // fiducial cuts
+                if  ( upcEvt->getTrack(j)->getPt() > 0.2 &&
+                    ( fabs(upcEvt->getTrack(j)->getEta()) < 0.9 &&
+                    upcEvt->getTrack(j)->getEta() < -(vz/250.0) + 0.9 &&
+                    upcEvt->getTrack(j)->getEta() > -(vz/250.0) - 0.9 ) ){ // fiducial cuts
+
                     NumOfPrimaryTracksToF++;
                     TVector3 momentum;
                     upcEvt->getTrack(j)->getMomentum(momentum);
@@ -411,10 +463,11 @@ int main(int argc, char** argv)
                         }
                     }
                 }
-
-                if (abs(upcEvt->getTrack(j)->getEta())<0.9) {
+                if (fabs(upcEvt->getTrack(j)->getEta()) < 0.9 &&
+                    upcEvt->getTrack(j)->getEta() < -(vz/250.0) + 0.9 &&
+                    upcEvt->getTrack(j)->getEta() > -(vz/250.0) - 0.9) {
                     if (isEast) HistPtTracksEast->Fill(upcEvt->getTrack(j)->getPt());
-                    if (isWest) HistPtTracksWest->Fill(upcEvt->getTrack(j)->getPt()); 
+                    if (isWest) HistPtTracksWest->Fill(upcEvt->getTrack(j)->getPt());
                     if(upcEvt->getTrack(j)->getCharge()>0) { //positive charge
                         hNSigmaPiPlus->Fill(upcEvt->getTrack(j)->getPt(), upcEvt->getTrack(j)->getNSigmasTPCPion());
                         hNSigmaKPlus->Fill(upcEvt->getTrack(j)->getPt(), upcEvt->getTrack(j)->getNSigmasTPCKaon());
@@ -424,7 +477,9 @@ int main(int argc, char** argv)
                             hNSigmaKMinus->Fill(upcEvt->getTrack(j)->getPt(), upcEvt->getTrack(j)->getNSigmasTPCKaon());
                             hNSigmaPMinus->Fill(upcEvt->getTrack(j)->getPt(), upcEvt->getTrack(j)->getNSigmasTPCProton());
                     }
-                    double pq = (upcEvt->getTrack(j)->getPt())*(upcEvt->getTrack(j)->getCharge());
+                    TVector3 momentum_01;
+                    upcEvt->getTrack(j)->getMomentum(momentum_01);
+                    double pq = (momentum_01.Mag())*(upcEvt->getTrack(j)->getCharge());
                     hdEdx->Fill(pq, upcEvt->getTrack(j)->getDEdxSignal()*1e6); //GeV originally, keV now
                 } 
                 if (upcEvt->getTrack(j)->getPt()>0.2) {
@@ -432,7 +487,130 @@ int main(int argc, char** argv)
                     if (isWest) HistEtaTracksWest->Fill(upcEvt->getTrack(j)->getEta()); 
                 }
             }
-        }
+
+            if(upcEvt->getTrack(j)->getFlag(StUPCTrack::kTof)
+                && upcEvt->getTrack(j)->getFlag(StUPCTrack::kV0)
+                && upcEvt->getTrack(j)->getNhits()>20 
+                && upcEvt->getTrack(j)->getPt()>0.2
+                && fabs(upcEvt->getTrack(j)->getEta())<0.9) {
+                        
+                StUPCTrack* track1=upcEvt->getTrack(j);
+
+                for(size_t k=j+1; k<upcEvt->getNumberOfTracks(); k++) {
+
+                    if (upcEvt->getTrack(k)->getFlag(StUPCTrack::kTof)
+                    && upcEvt->getTrack(k)->getFlag(StUPCTrack::kV0)
+                    && upcEvt->getTrack(k)->getNhits()>20 
+                    && upcEvt->getTrack(k)->getPt()>0.2
+                    && fabs(upcEvt->getTrack(k)->getEta())<0.9) {
+
+                        StUPCTrack* track2=upcEvt->getTrack(k);
+
+                        if (track1->getCharge() == track2->getCharge()) continue;
+
+                        double massPion = 0.13957061;
+                        double massProton = 0.93827;
+
+                        double bField = upcEvt->getMagneticField();
+                        double beamline[4]; 
+                        beamline[0] = upcEvt->getBeamXPosition();
+                        beamline[2] = upcEvt->getBeamXSlope();
+                        beamline[1] = upcEvt->getBeamYPosition();
+                        beamline[3] = upcEvt->getBeamYSlope();
+
+                        const TVector3 PrimVrtx(upcEvt->getVertex(0)->getPosX(), upcEvt->getVertex(0)->getPosY(), upcEvt->getVertex(0)->getPosZ());
+                        // cout<< "PrimVrtx: " 
+                        // << " x=" << PrimVrtx.X() 
+                        // << " y=" << PrimVrtx.Y() 
+                        // << " z=" << PrimVrtx.Z() 
+                        // << endl;
+
+                        StUPCV0 L01(track1,track2, massPion, massProton, j, k, PrimVrtx, beamline, bField, false);
+                        if ( abs(L01.m()-1.115) < 0.02 ) { //checking hypothesis of lambda/lambdabar, when track1 is a pion and track2 is a proton
+                            if(track2->getCharge()>0) { //we know its lambda/lambdabar, now check the sign of the proton -> if true, then its lambda
+                                if(isWest) {
+                                    if (LambdaCut(L01, 'd')) hLambda_DCA_W->Fill(L01.dcaDaughters());
+                                    if (LambdaCut(L01, 'b')) hLambda_DCABeamLine_W->Fill(L01.DCABeamLine());
+                                    if (LambdaCut(L01, 'a')) hLambda_PointingAngle_W->Fill(std::cos(L01.pointingAngle()));
+                                    if (LambdaCut(L01)) hLambda_DecayLength_W->Fill(L01.decayLength());
+                                    if (LambdaCut(L01, 'm')) hLambda_Mass_W->Fill(L01.m());
+                                    if (LambdaCut(L01)) hPT_Lambda_W->Fill(L01.pt());
+                                    if (LambdaCut(L01)) hEta_Lambda_W->Fill(L01.eta());
+                                } else if(isEast) {
+                                    if (LambdaCut(L01, 'd')) hLambda_DCA_E->Fill(L01.dcaDaughters());
+                                    if (LambdaCut(L01, 'b')) hLambda_DCABeamLine_E->Fill(L01.DCABeamLine());
+                                    if (LambdaCut(L01, 'a')) hLambda_PointingAngle_E->Fill(std::cos(L01.pointingAngle()));
+                                    if (LambdaCut(L01)) hLambda_DecayLength_E->Fill(L01.decayLength());
+                                    if(LambdaCut(L01, 'm')) hLambda_Mass_E->Fill(L01.m());
+                                    if (LambdaCut(L01)) hPT_Lambda_E->Fill(L01.pt());
+                                    if (LambdaCut(L01)) hEta_Lambda_E->Fill(L01.eta());
+                                }
+                            }
+                            else { //lambdabar
+                                if(isWest) {
+                                    if (LambdaCut(L01, 'd')) hAntiLambda_DCA_W->Fill(L01.dcaDaughters());
+                                    if (LambdaCut(L01, 'b')) hAntiLambda_DCABeamLine_W->Fill(L01.DCABeamLine());
+                                    if (LambdaCut(L01, 'a')) hAntiLambda_PointingAngle_W->Fill(std::cos(L01.pointingAngle()));
+                                    if (LambdaCut(L01)) hAntiLambda_DecayLength_W->Fill(L01.decayLength());
+                                    if(LambdaCut(L01, 'm')) hAntiLambda_Mass_W->Fill(L01.m());
+                                    if (LambdaCut(L01)) hPT_antiLambda_W->Fill(L01.pt());
+                                    if (LambdaCut(L01)) hEta_antiLambda_W->Fill(L01.eta());
+                                } else if (isEast) {
+                                    if (LambdaCut(L01, 'd')) hAntiLambda_DCA_E->Fill(L01.dcaDaughters());
+                                    if (LambdaCut(L01, 'b')) hAntiLambda_DCABeamLine_E->Fill(L01.DCABeamLine());
+                                    if (LambdaCut(L01, 'a')) hAntiLambda_PointingAngle_E->Fill(std::cos(L01.pointingAngle()));
+                                    if (LambdaCut(L01)) hAntiLambda_DecayLength_E->Fill(L01.decayLength());
+                                    if(LambdaCut(L01, 'm')) hAntiLambda_Mass_W->Fill(L01.m());
+                                    if (LambdaCut(L01)) hPT_antiLambda_E->Fill(L01.pt());
+                                    if (LambdaCut(L01)) hEta_antiLambda_E->Fill(L01.eta());
+                                }
+                            }
+                        }
+                        StUPCV0 L02(track1,track2, massProton, massPion, j, k, PrimVrtx, beamline, bField, false);
+                        if ( abs(L02.m()-1.115) < 0.02 ) {
+                            if(track1->getCharge()>0) { //we know its lambda/lambdabar, now check the sign of the proton -> if true, then its lambda
+                                if(isWest) {
+                                    if (LambdaCut(L02, 'd')) hLambda_DCA_W->Fill(L02.dcaDaughters());
+                                    if (LambdaCut(L02, 'b')) hLambda_DCABeamLine_W->Fill(L02.DCABeamLine());
+                                    if (LambdaCut(L02, 'a')) hLambda_PointingAngle_W->Fill(std::cos(L02.pointingAngle()));
+                                    if (LambdaCut(L02)) hLambda_DecayLength_W->Fill(L02.decayLength());
+                                    if(LambdaCut(L02, 'm')) hLambda_Mass_W->Fill(L02.m());
+                                    if (LambdaCut(L02)) hPT_Lambda_W->Fill(L02.pt());
+                                    if (LambdaCut(L02)) hEta_Lambda_W->Fill(L02.eta());
+                                } else if(isEast) {
+                                    if (LambdaCut(L02, 'd')) hLambda_DCA_E->Fill(L02.dcaDaughters());
+                                    if (LambdaCut(L02, 'b')) hLambda_DCABeamLine_E->Fill(L02.DCABeamLine());
+                                    if (LambdaCut(L02, 'a')) hLambda_PointingAngle_E->Fill(std::cos(L02.pointingAngle()));
+                                    if (LambdaCut(L02)) hLambda_DecayLength_E->Fill(L02.decayLength());
+                                    if(LambdaCut(L02, 'm')) hLambda_Mass_E->Fill(L02.m());
+                                    if (LambdaCut(L02)) hPT_Lambda_E->Fill(L02.pt());
+                                    if (LambdaCut(L02)) hEta_Lambda_E->Fill(L02.eta());
+                                }
+                            }
+                            else { //lambdabar
+                                if(isWest) {
+                                    if (LambdaCut(L02, 'd')) hAntiLambda_DCA_W->Fill(L02.dcaDaughters());
+                                    if (LambdaCut(L02, 'b')) hAntiLambda_DCABeamLine_W->Fill(L02.DCABeamLine());
+                                    if (LambdaCut(L02, 'a')) hAntiLambda_PointingAngle_W->Fill(std::cos(L02.pointingAngle()));
+                                    if (LambdaCut(L02)) hAntiLambda_DecayLength_W->Fill(L02.decayLength());
+                                    if(LambdaCut(L02, 'm')) hAntiLambda_Mass_W->Fill(L02.m());
+                                    if (LambdaCut(L02)) hPT_antiLambda_W->Fill(L02.pt());
+                                    if (LambdaCut(L02)) hEta_antiLambda_W->Fill(L02.eta());
+                                } else if (isEast) {
+                                    if (LambdaCut(L02, 'd')) hAntiLambda_DCA_E->Fill(L02.dcaDaughters());
+                                    if (LambdaCut(L02, 'b')) hAntiLambda_DCABeamLine_E->Fill(L02.DCABeamLine());
+                                    if (LambdaCut(L02, 'a')) hAntiLambda_PointingAngle_E->Fill(std::cos(L02.pointingAngle()));
+                                    if (LambdaCut(L02)) hAntiLambda_DecayLength_E->Fill(L02.decayLength());
+                                    if(LambdaCut(L02, 'm')) hAntiLambda_Mass_E->Fill(L02.m());
+                                    if (LambdaCut(L02)) hPT_antiLambda_E->Fill(L02.pt());
+                                    if (LambdaCut(L02)) hEta_antiLambda_E->Fill(L02.eta());
+                                }
+                            } // charge if-else
+                        }  // end of second hypothesis loop
+                    } // second loop for lambda selection
+                } // second tracks loop
+            } // end of loop for lambda selection
+        } // end of loop for tracks in an event
        
         HistNumOfPrimaryTracksToF->Fill(NumOfPrimaryTracksToF);
         hMultiplicityProtonX->Fill(MultiplicityProtonX);
@@ -462,7 +640,7 @@ int main(int argc, char** argv)
        HistEtaProtonWest->Fill(proton->eta());
        }
 
-     }
+    } // end of loop for events
     
     HistNumOfPrimaryTracksToF->Write();
     HistNumOfPToFWest->Write();
@@ -536,7 +714,6 @@ int main(int argc, char** argv)
     h3D_protonsWest->Write();
     h3D_antiprotonsWest->Write();
 
-
     hEta_xi0_proton_E->Write();
     hEta_xi1_proton_E->Write();
     hEta_xi2_proton_E->Write();
@@ -573,6 +750,38 @@ int main(int argc, char** argv)
     hEta_xi3_antiproton_C->Write();
     hEta_xi4_antiproton_C->Write();
 
+    dirLambdas->cd();
+
+    hLambda_DCA_W->Write();
+    hLambda_DCA_E->Write();
+    hLambda_DCABeamLine_W->Write();
+    hLambda_DCABeamLine_E->Write();
+    hLambda_PointingAngle_W->Write();
+    hLambda_PointingAngle_E->Write();
+    hLambda_DecayLength_W->Write();
+    hLambda_DecayLength_E->Write();
+    hLambda_Mass_W->Write();
+    hLambda_Mass_E->Write();
+    hPT_Lambda_E->Write();
+    hPT_Lambda_W->Write();
+    hEta_Lambda_E->Write();
+    hEta_Lambda_W->Write();
+
+    hAntiLambda_DCA_W->Write();
+    hAntiLambda_DCA_E->Write();
+    hAntiLambda_DCABeamLine_W->Write();
+    hAntiLambda_DCABeamLine_E->Write();
+    hAntiLambda_PointingAngle_W->Write();
+    hAntiLambda_PointingAngle_E->Write();
+    hAntiLambda_DecayLength_W->Write();
+    hAntiLambda_DecayLength_E->Write();
+    hAntiLambda_Mass_W->Write();
+    hAntiLambda_Mass_E->Write();
+    hPT_antiLambda_E->Write();
+    hPT_antiLambda_W->Write();
+    hEta_antiLambda_E->Write();
+    hEta_antiLambda_W->Write();
+
     outfile->Close();
     return 0;
 }
@@ -586,4 +795,22 @@ int getXiBin(double xi) {
             return i;
     }
     return -1; // poza zakresem
+}
+
+bool LambdaCut(const StUPCV0& L, char cut_type) {
+    bool mass_cut = (L.m() > (1.1157-0.009675) && L.m() < 1.115+0.009675); //1.115683
+    bool dcaDaughters_cut = L.dcaDaughters()<1.5;
+    bool PointingAngle_cut = std::cos(L.pointingAngle())>0.925;
+    bool dcaBeamline_cut=L.DCABeamLine()<1.5;
+    if(cut_type == 'd') { //without daughters cut
+        return (PointingAngle_cut && dcaBeamline_cut && mass_cut);
+    } else if(cut_type == 'a') { //without pointing angle cut
+        return (dcaDaughters_cut&& dcaBeamline_cut && mass_cut);
+    } else if(cut_type == 'b') { // without dcaBeamline cut
+        return (dcaDaughters_cut && PointingAngle_cut && mass_cut);
+    } else if(cut_type == 'm') { //without mass cut
+        return (dcaDaughters_cut && PointingAngle_cut && dcaBeamline_cut);
+    } else { //all cuts
+        return (dcaDaughters_cut && PointingAngle_cut && dcaBeamline_cut && mass_cut);
+    }
 }
