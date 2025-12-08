@@ -13,8 +13,8 @@ root4star -q -b centralDiffractiveRun.C
                 <MinMemory>350</MinMemory>
         </Memory>
 </ResourceUsage>
-<SandBox installer="ZIP">
-	<Package name="send">
+<SandBox>
+	<Package>
 		<File>file:./StRoot/</File>
 		<File>file:/star/u/adamwatroba/STAR-Analysis/Inclusive_Analysis/starsim/starsim_and_bfc/centralDiffractiveRun.C</File>
                 <File>file:/star/u/adamwatroba/STAR-Analysis/Inclusive_Analysis/starsim/starsim_and_bfc/centralDiffractive.C</File>

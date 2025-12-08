@@ -2,7 +2,7 @@
 <job fileListSyntax="paths" name="bfcchain&number;_">
 <command>
         starver pro
-        root4star -q -b 'bfc_run($INPUTFILE0)'
+        root4star -q -b bfc_run.C\(\"$INPUTFILE0\"\)
 </command>
 <Generator>
         <Location>/star/u/adamwatroba/STAR-Analysis/Inclusive_Analysis/starsim/starsim_and_bfc/star_scheduler_logs</Location>
@@ -12,8 +12,8 @@
                 <MinMemory>350</MinMemory>
         </Memory>
 </ResourceUsage>-->
-<SandBox installer="ZIP">
-        <Package name="send">
+<SandBox>
+        <Package>
                 <File>file:./StRoot/run17_date_time.txt</File>
                 <File>file:/star/u/adamwatroba/STAR-Analysis/Inclusive_Analysis/starsim/starsim_and_bfc/bfc_run.C</File>
         </Package>

@@ -1,7 +1,5 @@
 #!/bin/bash
 
-rm -rf send.package
-
 # setting default value so that only one batch is made in default case
 length=$1
 length="${length:-0}"
@@ -13,4 +11,3 @@ done
 
 mv bfcchain*.* ./star_scheduler_logs/
 rm schedTemplateExp.xml
-rm send.zip
