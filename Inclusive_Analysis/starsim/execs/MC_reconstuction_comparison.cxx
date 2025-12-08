@@ -113,10 +113,10 @@ int main(int argc, char* argv[]){
 
     //getting values from TChain, in-loop histogram initialization
     TTreeReaderValue<StUPCEvent> StUPCEventInstance(myReader, "mUPCEvent");
-    TTreeReaderValue<StRPEvent> StRPEventInstance(myReader, "mRPEvent");
+    // TTreeReaderValue<StRPEvent> StRPEventInstance(myReader, "mRPEvent");
     // ProcessingInsideLoop insideprocessing;
     StUPCEvent* tempUPCpointer;
-    StRPEvent* tempRPpointer;
+    // StRPEvent* tempRPpointer;
     // insideprocessing.GetLocalHistograms(&outsideprocessing);
 
     std::vector<TParticle*> positiveMC;
@@ -129,7 +129,7 @@ int main(int argc, char* argv[]){
 
     while(myReader.Next()){
         tempUPCpointer = StUPCEventInstance.Get();
-        tempRPpointer = StRPEventInstance.Get();
+        // tempRPpointer = StRPEventInstance.Get();
         tempCounter++;
         //cleaning
         positiveMC.clear();
@@ -221,77 +221,92 @@ int main(int argc, char* argv[]){
         MCParticles.Fill(positiveMC.size()+negativeMC.size());
         TPCParticles.Fill(positiveTrack.size()+negativeTrack.size());
         DifferenceParticles.Fill(int(positiveMC.size()+negativeMC.size())-int(positiveTrack.size()+negativeTrack.size()));
-        if(positiveMC.size()>=positiveTrack.size()&&negativeMC.size()>=negativeTrack.size()){
-            //positive
-            for(size_t i = 0; i<positiveTrack.size(); i++){
-                double min_distance = 100;
-                int min_distance_id = -1;
-                for(size_t j = 0; j<positiveMC.size(); j++){
-                    //getting distance in eta-phi space
-                    TVector3 vecMC, vecTPC;
-                    vecMC.SetXYZ(positiveMC[j]->Px(), positiveMC[j]->Py(), positiveMC[j]->Pz());
-                    positiveTrack[i]->getMomentum(vecTPC);
-                    double etaphi_distance = vecMC.DrEtaPhi(vecTPC);
-                    Distance.Fill(etaphi_distance);
-                    DistanceCloser.Fill(etaphi_distance);
-                    //checking if the distance to j-th MC track is the smallest
-                    min_distance = min(min_distance, etaphi_distance);
-                    if(min_distance==etaphi_distance){
-                        min_distance_id = j;
-                    }
+        //loops for fitting the tracks
+        //positive
+        for(size_t i = 0; i<positiveTrack.size(); i++){
+            double min_distance = 100;
+            int min_distance_id = -1;
+            for(size_t j = 0; j<positiveMC.size(); j++){
+                //getting distance in eta-phi space
+                TVector3 vecMC, vecTPC;
+                vecMC.SetXYZ(positiveMC[j]->Px(), positiveMC[j]->Py(), positiveMC[j]->Pz());
+                positiveTrack[i]->getMomentum(vecTPC);
+                double etaphi_distance = vecMC.DrEtaPhi(vecTPC);
+                //distance cutoff
+                if(etaphi_distance>0.1){
+                    continue;
                 }
-                //checking for which MC track we have the nearest match
-                chosen_MC_list_positive.push_back(min_distance_id);
-            }
-            chosen_MC_list_copy = chosen_MC_list_positive;
-            std::sort(chosen_MC_list_copy.begin(), chosen_MC_list_copy.end());
-            const auto duplicate_positive = std::adjacent_find(chosen_MC_list_copy.begin(), chosen_MC_list_copy.end());
-            if(duplicate_positive!=chosen_MC_list_copy.end()){
-                printf("Event with conflict = %d\n", tempCounter);
-                for(size_t index = 0; index<chosen_MC_list_positive.size(); index++){
-                    printf("%d, ", chosen_MC_list_positive[index]);
+                Distance.Fill(etaphi_distance);
+                DistanceCloser.Fill(etaphi_distance);
+                //checking if the distance to j-th MC track is the smallest
+                min_distance = min(min_distance, etaphi_distance);
+                if(min_distance==etaphi_distance){
+                    min_distance_id = j;
                 }
-                printf("\n");
-                duplicated_matches_exist = true;
             }
-            //negative
-            for(size_t i = 0; i<negativeTrack.size(); i++){
-                double min_distance = 100;
-                int min_distance_id = -1;
-                for(size_t j = 0; j<negativeMC.size(); j++){
-                    //getting distance in eta-phi space
-                    TVector3 vecMC, vecTPC;
-                    vecMC.SetXYZ(negativeMC[j]->Px(), negativeMC[j]->Py(), negativeMC[j]->Pz());
-                    negativeTrack[i]->getMomentum(vecTPC);
-                    double etaphi_distance = vecMC.DrEtaPhi(vecTPC);
-                    Distance.Fill(etaphi_distance);
-                    DistanceCloser.Fill(etaphi_distance);
-                    //checking if the distance to j-th MC track is the smallest
-                    min_distance = min(min_distance, etaphi_distance);
-                    if(min_distance==etaphi_distance){
-                        min_distance_id = j;
-                    }
+            //checking for which MC track we have the nearest match
+            chosen_MC_list_positive.push_back(min_distance_id);
+        }
+        chosen_MC_list_copy = chosen_MC_list_positive;
+        //removing all the -1
+        chosen_MC_list_copy.erase(std::remove(chosen_MC_list_copy.begin(), chosen_MC_list_copy.end(), -1), chosen_MC_list_copy.end());
+        std::sort(chosen_MC_list_copy.begin(), chosen_MC_list_copy.end());
+        const auto duplicate_positive = std::adjacent_find(chosen_MC_list_copy.begin(), chosen_MC_list_copy.end());
+        if(duplicate_positive!=chosen_MC_list_copy.end()){
+            printf("Event with conflict (positive) = %d\n", tempCounter);
+            for(size_t index = 0; index<chosen_MC_list_positive.size(); index++){
+                printf("%d, ", chosen_MC_list_positive[index]);
+            }
+            printf("\n");
+            duplicated_matches_exist = true;
+        }
+        //negative
+        for(size_t i = 0; i<negativeTrack.size(); i++){
+            double min_distance = 100;
+            int min_distance_id = -1;
+            for(size_t j = 0; j<negativeMC.size(); j++){
+                //getting distance in eta-phi space
+                TVector3 vecMC, vecTPC;
+                vecMC.SetXYZ(negativeMC[j]->Px(), negativeMC[j]->Py(), negativeMC[j]->Pz());
+                negativeTrack[i]->getMomentum(vecTPC);
+                double etaphi_distance = vecMC.DrEtaPhi(vecTPC);
+                //distance cutoff
+                if(etaphi_distance>0.1){
+                    continue;
                 }
-                //checking for which MC track we have the nearest match
-                chosen_MC_list_negative.push_back(min_distance_id);
-            }
-            chosen_MC_list_copy = chosen_MC_list_negative;
-            std::sort(chosen_MC_list_copy.begin(), chosen_MC_list_copy.end());
-            const auto duplicate_negative = std::adjacent_find(chosen_MC_list_copy.begin(), chosen_MC_list_copy.end());
-            if(duplicate_negative!=chosen_MC_list_copy.end()){
-                printf("Event with conflict = %d\n", tempCounter);
-                for(size_t index = 0; index<chosen_MC_list_negative.size(); index++){
-                    printf("%d, ", chosen_MC_list_negative[index]);
+                Distance.Fill(etaphi_distance);
+                DistanceCloser.Fill(etaphi_distance);
+                //checking if the distance to j-th MC track is the smallest
+                min_distance = min(min_distance, etaphi_distance);
+                if(min_distance==etaphi_distance){
+                    min_distance_id = j;
                 }
-                printf("\n");
-                duplicated_matches_exist = true;
             }
+            //checking for which MC track we have the nearest match
+            chosen_MC_list_negative.push_back(min_distance_id);
+        }
+        chosen_MC_list_copy = chosen_MC_list_negative;
+        //removing all the -1
+        chosen_MC_list_copy.erase(std::remove(chosen_MC_list_copy.begin(), chosen_MC_list_copy.end(), -1), chosen_MC_list_copy.end());
+        std::sort(chosen_MC_list_copy.begin(), chosen_MC_list_copy.end());
+        const auto duplicate_negative = std::adjacent_find(chosen_MC_list_copy.begin(), chosen_MC_list_copy.end());
+        if(duplicate_negative!=chosen_MC_list_copy.end()){
+            printf("Event with conflict (negative) = %d\n", tempCounter);
+            for(size_t index = 0; index<chosen_MC_list_negative.size(); index++){
+                printf("%d, ", chosen_MC_list_negative[index]);
+            }
+            printf("\n");
+            duplicated_matches_exist = true;
         }
 
-        //checking the mass-fit of pairs when no duplicates & #MC>=#TPC
-        if(!duplicated_matches_exist&&positiveMC.size()>=positiveTrack.size()&&negativeMC.size()>=negativeTrack.size()){
+        //checking the mass-fit of pairs when no duplicates
+        if(!duplicated_matches_exist){
             for(size_t i = 0; i<positiveTrack.size(); i++){
                 for(size_t j = 0; j<negativeTrack.size(); j++){
+                    //check if the track is associated with anything
+                    if(chosen_MC_list_positive[i]<0||chosen_MC_list_negative[j]<0){
+                        continue;
+                    }
                     //tracks
                     TLorentzVector posTrack, negTrack;
                     positiveTrack[i]->getLorentzVector(posTrack, 0.13957);
