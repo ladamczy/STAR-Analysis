@@ -152,7 +152,7 @@ void Pythia8(){
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
-void centralDiffractive(Int_t nevents = 10, Int_t rngSeed = 1234, Int_t runNumber = 18091010){
+void centralDiffractive(Int_t nevents = 10, Int_t runNumber = 18091010, Int_t rngSeed = 1234){
     gROOT->ProcessLine(".L bfc.C");
     {
         TString simple = "y2017a geant gstar usexgeom agml";
@@ -210,7 +210,9 @@ void centralDiffractive(Int_t nevents = 10, Int_t rngSeed = 1234, Int_t runNumbe
     //settings taken from the database for the run given
     //default run 18091010
     //RTS Start Time 2017-04-01 08:36:11 GMT
-    double beamline[4] = {0,0,0,0};
+    double beamline[4] = { 0,0,0,0 };
+    if(runNumber==0)
+        runNumber = 18091010;
     getBeamlineParameters(runNumber, beamline);
     printf("Beamline parameters:\nx0:\t%lf\ny0:\t%lf\ndxdz:\t%lf\ndydz:\t%lf\n", beamline[0], beamline[1], beamline[2], beamline[3]);
     _primary->SetVertex(beamline[0], beamline[1], 0.);
