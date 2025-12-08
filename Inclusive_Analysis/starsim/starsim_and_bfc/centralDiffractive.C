@@ -15,6 +15,79 @@ StarPrimaryMaker* _primary = 0;
 class StarFilterMaker;
 StarFilterMaker* filter = 0;
 
+std::map<int, int> date;
+std::map<int, int> time;
+
+// ----------------------------------------------------------------------------
+bool loadTimestampFile(){
+    ifstream fp;
+    fp.open("./StRoot/run17_date_time.txt");
+    if(!fp.is_open()){
+        printf("Run timestamp file could not be loaded\n");
+        return false;
+    }
+    int runNumb;
+    int DateSt;
+    int timeSt;
+    int rowNumber = 0;
+    while(fp.good()){
+        std::string line;
+        fp>>DateSt>>timeSt>>runNumb;
+        date[runNumb] = DateSt;
+        time[runNumb] = timeSt;
+        rowNumber++;
+    }
+    printf("Imported %d rows\n", rowNumber);
+
+    return true;
+}
+// ----------------------------------------------------------------------------
+bool getBeamlineParameters(int runNumber, double* beamline){
+    loadTimestampFile();
+    //checking if run actually exists on a list
+    if(date.find(runNumber)==date.end()||time.find(runNumber)==time.end()){
+        printf("Run does not exist in the list, possibly it isn't from Run17?\n");
+        return false;
+    }
+    //database maker setup
+    printf("Database setup start; run %d\n", runNumber);
+    St_db_Maker* dbMk = new St_db_Maker("dbMaker", "MySQL:StarDb", "$STAR/StarDb");
+    dbMk->SetDebug();
+    int dt = date.find(runNumber)->second;
+    int tt = time.find(runNumber)->second;
+    dbMk->SetDateTime(dt, tt);
+    dbMk->SetFlavor("ofl");
+    dbMk->Init();
+    dbMk->Make();
+    printf("Database setup finished\n");
+
+    TDataSet* DB = 0;
+    DB = dbMk->GetDataBase("Calibrations/rhic/vertexSeed");
+    if(!DB){
+        printf("ERROR: no table found in db, or malformed local db config\n");
+        return false;
+    }
+
+    St_vertexSeed* dataset = 0;
+    dataset = (St_vertexSeed*)DB->Find("vertexSeed");
+    Int_t rows = dataset->GetNRows();
+    if(rows>1)
+        printf("INFO: found INDEXED table with "<<rows<<" rows\n");
+
+    if(dataset){
+        vertexSeed_st* table = dataset->GetTable();
+        beamline[0] = table->x0;
+        beamline[1] = table->y0;
+        beamline[2] = table->dxdz;
+        beamline[3] = table->dydz;
+    } else{
+        printf("ERROR: dataset does not contain requested table\n");
+        return false;
+    }
+
+    printf("Database set up successfully\n");
+    return true;
+}
 // ----------------------------------------------------------------------------
 void geometry(TString tag, Bool_t agml = true){
     TString cmd = "DETP GEOM "; cmd += tag;
@@ -79,7 +152,7 @@ void Pythia8(){
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
-void centralDiffractive(Int_t nevents = 10, Int_t rngSeed = 1234){
+void centralDiffractive(Int_t nevents = 10, Int_t rngSeed = 1234, Int_t runNumber = 18091010){
     gROOT->ProcessLine(".L bfc.C");
     {
         TString simple = "y2017a geant gstar usexgeom agml";
@@ -129,13 +202,19 @@ void centralDiffractive(Int_t nevents = 10, Int_t rngSeed = 1234){
     _primary->SetEtaRange(-3.0, +3.0);
     _primary->SetPhiRange(0., TMath::TwoPi());
 
-    // Setup a realistic z-vertex distribution:
-    //   x = 0 gauss width = 1mm
-    //   y = 0 gauss width = 1mm
-    //   z = 0 gauss width = 30cm
-    //TODO change that or overwrite with info on BFC
-    _primary->SetVertex(0., 0., 0.);
+    // Setup a realistic vertex distribution:
+    //z parameter fit from data
+    //TODO: actually change it to a reasonable value
     _primary->SetSigma(0.015, 0.015, 50.);
+
+    //settings taken from the database for the run given
+    //default run 18091010
+    //RTS Start Time 2017-04-01 08:36:11 GMT
+    double beamline[4] = {0,0,0,0};
+    getBeamlineParameters(runNumber, beamline);
+    printf("Beamline parameters:\nx0:\t%lf\ny0:\t%lf\ndxdz:\t%lf\ndydz:\t%lf\n", beamline[0], beamline[1], beamline[2], beamline[3]);
+    _primary->SetVertex(beamline[0], beamline[1], 0.);
+    _primary->SetSlope(beamline[2], beamline[3]);
 
     _primary->Init();
 
