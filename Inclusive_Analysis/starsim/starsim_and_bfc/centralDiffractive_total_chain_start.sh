@@ -18,7 +18,7 @@ seed="${seed:-0}"
 #show help if there is 0 arguments provided
 if [ "$#" -eq "0" ]; then
     echo Usage:
-    echo ./centralDiffractive_total_chain_template.sh [number of events] [run number \(optional, default 18091010\)] ["seed" \(optional, default 0\)]
+    echo ./centralDiffractive_total_chain_start.sh [number of events] [run number \(optional, default 18091010\)] ["seed" \(optional, default 0\)]
 fi
 
 # finishing if there is none (0) events
