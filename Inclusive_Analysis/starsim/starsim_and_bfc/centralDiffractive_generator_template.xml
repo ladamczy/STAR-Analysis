@@ -19,8 +19,8 @@ root4star -q -b centralDiffractive.C\(&events_number;,&run_number;,&seed;\)
         <File>file:/star/u/adamwatroba/STAR-Analysis/Inclusive_Analysis/starsim/starsim_and_bfc/centralDiffractive.C</File>
 	 </Package>
 </SandBox>
-        <stdout URL="file:/star/data05/scratch/adamwatroba/$JOBID.out"/>
-        <stderr URL="file:/star/data05/scratch/adamwatroba/$JOBID.err"/>
-       <output fromScratch="results/centralDiffractive.root" toURL="file:/star/data05/scratch/adamwatroba/simulationSched/1/centralDiffractive&number;.root" />
-       <output fromScratch="results/centralDiffractive.fzd" toURL="file:/star/data05/scratch/adamwatroba/simulationSched/1/centralDiffractive&number;.fzd" />
+<stdout URL="file:/star/data05/scratch/adamwatroba/generator_output/strangegenerator&number;.out"/>
+<stderr URL="file:/star/data05/scratch/adamwatroba/generator_output/strangegenerator&number;.err"/>
+<output fromScratch="results/centralDiffractive.root" toURL="file:/star/data05/scratch/adamwatroba/generator_output/centralDiffractive&number;.root" />
+<output fromScratch="results/centralDiffractive.fzd" toURL="file:/star/data05/scratch/adamwatroba/generator_output/centralDiffractive&number;.fzd" />
 </job>
