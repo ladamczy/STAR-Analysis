@@ -1,25 +1,28 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<job fileListSyntax="paths" name="bfcchain&number;_">
+<job fileListSyntax="paths" name="bfcchain_" maxFilesPerProcess="10">
 <command>
         starver pro
-        root4star -q -b bfc_run.C\(\"$INPUTFILE0\",&run_number;\)
+        @ nFile=0
+        while ( $nFile &lt; $INPUTFILECOUNT )
+        eval set filename = '$INPUTFILE'$nFile
+
+        root4star -q -b bfc_run.C\(\"$filename\",&run_number;\)
+
+        @ nFile++
+
 </command>
 <Generator>
         <Location>/star/u/adamwatroba/STAR-Analysis/Inclusive_Analysis/starsim/starsim_and_bfc/star_scheduler_logs</Location>
 </Generator>
-<!--        <ResourceUsage>
-        <Memory>
-                <MinMemory>350</MinMemory>
-        </Memory>
-</ResourceUsage>-->
 <SandBox>
         <Package>
                 <File>file:./StRoot/run17_date_time.txt</File>
+<!--                 <File>file:./tempfilelist.filelist</File> -->
                 <File>file:/star/u/adamwatroba/STAR-Analysis/Inclusive_Analysis/starsim/starsim_and_bfc/bfc_run.C</File>
         </Package>
 </SandBox>
-<stdout URL="file:/star/data05/scratch/adamwatroba/$JOBID.out"/>
-<stderr URL="file:/star/data05/scratch/adamwatroba/$JOBID.err"/>
-<input URL="file:/star/data05/scratch/adamwatroba/simulationSched/1/centralDiffractive&number;.fzd" />
-<output fromScratch="*.root" toURL="file:/star/data05/scratch/adamwatroba/simulationSched/2/" />
+<stdout URL="file:/star/data05/scratch/adamwatroba/bfc_output/bfcchain.out"/>
+<stderr URL="file:/star/data05/scratch/adamwatroba/bfc_output/bfcchain.err"/>
+<input URL="filelist:&filelist;" />
+<output fromScratch="*.root" toURL="file:/star/data05/scratch/adamwatroba/bfc_output/" />
 </job>
