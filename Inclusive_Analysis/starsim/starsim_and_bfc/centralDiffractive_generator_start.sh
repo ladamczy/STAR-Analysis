@@ -41,13 +41,13 @@ partial_events=$(($length % $n))
 if [ "$full_events" -ne "0" ]; then
     for i in $( eval echo {0..$(($full_events-1))} );
     do
-        star-submit-template -template generator_template.xml -entities number=$i,events_number=$n,run_number=$run_number,seed=$seed
+        star-submit-template -template centralDiffractive_generator_template.xml -entities number=$i,events_number=$n,run_number=$run_number,seed=$seed
     done
 fi
 
 # doing last, not-full batch
 if [ "$partial_events" -ne "0" ]; then
-    star-submit-template -template generator_template.xml -entities number=$full_events,events_number=$partial_events,run_number=$run_number,seed=$seed
+    star-submit-template -template centralDiffractive_generator_template.xml -entities number=$full_events,events_number=$partial_events,run_number=$run_number,seed=$seed
 fi
 
 mv strangegenerator*.* ./star_scheduler_logs/

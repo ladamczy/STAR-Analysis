@@ -23,7 +23,7 @@ fi
 
 # finishing if there is none (0) events
 if [ "$length" -eq "0" ]; then
-    exit 0
+    exit 1
 fi
 
 #creating file with info about simulation
