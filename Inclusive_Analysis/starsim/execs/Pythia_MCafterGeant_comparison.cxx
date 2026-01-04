@@ -49,8 +49,8 @@ int main(int argc, char* argv[]){
     const int pminusPDGid = -2212;
 
     //setting up input trees
-    TFile pythia_input("/home/adam/STAR-Analysis/Inclusive_Analysis/starsim/execs/centralDiffractive0pythia.root");
-    TFile MCafterGeant_input("/home/adam/STAR-Analysis/Inclusive_Analysis/starsim/execs/centralDiffractive0upcDst.root");
+    TFile pythia_input("/home/adam/STAR-Analysis/Inclusive_Analysis/starsim/execs/centralDiffractive.root");
+    TFile MCafterGeant_input("/home/adam/STAR-Analysis/Inclusive_Analysis/starsim/execs/centralDiffractive.upcDst.root");
     // TTree* pythia_tree = pythia_input.Get<TTree>("genevents");
     // TTree* MCafterGeant_tree = MCafterGeant_input.Get<TTree>("mUPCTree");
     TTree* pythia_tree = (TTree*)pythia_input.Get("genevents");
@@ -60,9 +60,51 @@ int main(int argc, char* argv[]){
     pythia_tree->SetBranchAddress("primaryEvent", &pythia_event);
     MCafterGeant_tree->SetBranchAddress("mUPCEvent", &MCafterGeant_event);
 
+    //setting up graph histograms
+    TH1D pythia_given_particles("pythia_given_particles", "Number of particles given to GEANT for further processing", 50, 0, 50);
+    TH1D GEANT_taken_particles("GEANT_taken_particles", "Number of particles first in GEANT event tree", 50, 0, 50);
+
     //setting up canvas
     TCanvas c1("c1", "c1", 1200, 800);
 
+    //loop to check all the events
+    for(size_t event_number = 0; event_number<99; event_number++){
+        pythia_tree->GetEntry(event_number);
+        MCafterGeant_tree->GetEntry(event_number);
+
+        //pythia
+        int part_pythia = 0;
+        for(size_t part_number = 0; part_number<pythia_event->GetNumberOfParticles(); part_number++){
+            StarGenParticle* part = (*pythia_event)[part_number];
+            if(part->Simulate()&&part->GetStack()!=-1){
+                part_pythia++;
+            }
+        }
+        pythia_given_particles.Fill(part_pythia);
+        //Geant
+        int part_geant = 0;
+        for(size_t part_number = 0; part_number<MCafterGeant_event->getNumberOfMCParticles(); part_number++){
+            TParticle* part = MCafterGeant_event->getMCParticle(part_number);
+            if(part->GetFirstMother()==1){
+                part_geant++;
+            }
+        }
+        GEANT_taken_particles.Fill(part_geant);
+
+        //other
+        if(part_geant>part_pythia){
+            printf("More particles given to Geant than implied it should be on event %d\n", event_number);
+        }
+        if(part_geant<part_pythia){
+            printf("Less particles given to Geant than implied it should be on event %d\n", event_number);
+        }
+    }
+    //saving histograms
+    TFile output("~/output.root", "RECREATE");
+    output.cd();
+    pythia_given_particles.Write();
+    GEANT_taken_particles.Write();
+    output.Close();
 
     //loop to check different events
     while(true){
