@@ -109,11 +109,11 @@ int main(int argc, char* argv[]){
     //loop to check different events
     while(true){
         int pythia_event_number, MCafterGeant_event_number;
-        printf("Write event numbers; PYTHIA, then Geant\n");
+        printf("Write event numbers; PYTHIA, then Geant\n\n");
         scanf("%d %d", &pythia_event_number, &MCafterGeant_event_number);
         pythia_tree->GetEntry(pythia_event_number);
         MCafterGeant_tree->GetEntry(MCafterGeant_event_number);
-        printf("PYTHIA particles:\t%d\nGeant particles:\t%d\n\n\n\n\n", pythia_event->GetNumberOfParticles(), MCafterGeant_event->getNumberOfMCParticles());
+        printf("\nPYTHIA particles:\t%d\nGeant particles:\t%d\n\n", pythia_event->GetNumberOfParticles(), MCafterGeant_event->getNumberOfMCParticles());
         c1.Clear();
 
         //Pythia particles graph
@@ -135,7 +135,6 @@ int main(int argc, char* argv[]){
         ParticlesGeant.SetMarkerColor(2);
         for(int particle_index = 0; particle_index<MCafterGeant_event->getNumberOfMCParticles(); particle_index++){
             TParticle* tempPart = MCafterGeant_event->getMCParticle(particle_index);
-            tempPart->Print();
             TVector3 tempVec(tempPart->Px(), tempPart->Py(), tempPart->Pz());
             ParticlesGeant.AddPoint(tempVec.Eta(), tempVec.Phi());
         }
@@ -164,12 +163,19 @@ int main(int argc, char* argv[]){
         gPad->Modified();
         gPad->Update();
 
-        printf("Full event:\n");
+        //writing event
+        //Pythia part
+        printf("Full Pythia event:\n");
         pythia_event->Print();
-        printf("\nPart passed to Geant:\n");
+        printf("\nPart passed from Pythia to Geant:\n");
         pythia_event->Print("simu");
-        printf("\n\n\n\nEvent number:\t%d\n", MCafterGeant_event->getEventNumber());
-
+        //Geant part
+        printf("\nFull Geant event:\n");
+        printf("Geant event number:\t%d\n", MCafterGeant_event->getEventNumber());
+        for(int particle_index = 0; particle_index<MCafterGeant_event->getNumberOfMCParticles(); particle_index++){
+            TParticle* tempPart = MCafterGeant_event->getMCParticle(particle_index);
+            tempPart->Print();
+        }
     }
 
     a.Run();
