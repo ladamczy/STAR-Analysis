@@ -71,10 +71,13 @@ int main(int argc, char* argv[]){
     int max_events = max(pythia_tree->GetEntries(), MCafterGeant_tree->GetEntries());
     int offset = 0;
     int making_sure_all_events_were_checked = 0;
+    std::vector<int> pythia_pgd_ids, geant_pdg_ids;
     // for(size_t event_number = 0; event_number<99; event_number++){
     for(size_t event_number = 0; event_number<max_events; event_number++){
         pythia_tree->GetEntry(event_number);
         MCafterGeant_tree->GetEntry(event_number-offset);
+        pythia_pgd_ids.clear();
+        geant_pdg_ids.clear();
         making_sure_all_events_were_checked++;
 
         //part that synchronises events
@@ -94,6 +97,7 @@ int main(int argc, char* argv[]){
             StarGenParticle* part = (*pythia_event)[part_number];
             if(part->Simulate()&&part->GetStack()!=-1){
                 part_pythia++;
+                pythia_pgd_ids.push_back(part->GetId());
             }
         }
         pythia_given_particles.Fill(part_pythia);
@@ -103,6 +107,7 @@ int main(int argc, char* argv[]){
             TParticle* part = MCafterGeant_event->getMCParticle(part_number);
             if(part->GetFirstMother()==1){
                 part_geant++;
+                geant_pdg_ids.push_back(part->GetPdgCode());
             }
         }
         GEANT_taken_particles.Fill(part_geant);
@@ -110,9 +115,14 @@ int main(int argc, char* argv[]){
         //other
         if(part_geant>part_pythia){
             printf("More particles given to Geant than implied it should be on event %d\n", event_number);
-        }
-        if(part_geant<part_pythia){
+        } else if(part_geant<part_pythia){
             printf("Less particles given to Geant than implied it should be on event %d\n", event_number);
+        } else{
+            for(size_t i = 0; i<pythia_pgd_ids.size(); i++){
+                if(pythia_pgd_ids[i]!=geant_pdg_ids[i]){
+                    printf("MISMATCHED IDS at event %d\n", event_number);
+                }
+            }
         }
     }
 
