@@ -68,9 +68,25 @@ int main(int argc, char* argv[]){
     TCanvas c1("c1", "c1", 1200, 800);
 
     //loop to check all the events
-    for(size_t event_number = 0; event_number<99; event_number++){
+    int max_events = max(pythia_tree->GetEntries(), MCafterGeant_tree->GetEntries());
+    int offset = 0;
+    int making_sure_all_events_were_checked = 0;
+    // for(size_t event_number = 0; event_number<99; event_number++){
+    for(size_t event_number = 0; event_number<max_events; event_number++){
         pythia_tree->GetEntry(event_number);
-        MCafterGeant_tree->GetEntry(event_number);
+        MCafterGeant_tree->GetEntry(event_number-offset);
+        making_sure_all_events_were_checked++;
+
+        //part that synchronises events
+        //we loop after pythia events, as there will be more of them surely
+        //if pythia event is smaller, that means there is 
+        while(pythia_event->GetEventNumber()<MCafterGeant_event->getEventNumber()){
+            printf("Offset increase at position %d\n", event_number);
+            offset++;
+            event_number++;
+            pythia_tree->GetEntry(event_number);
+            MCafterGeant_tree->GetEntry(event_number-offset);
+        }
 
         //pythia
         int part_pythia = 0;
@@ -99,6 +115,10 @@ int main(int argc, char* argv[]){
             printf("Less particles given to Geant than implied it should be on event %d\n", event_number);
         }
     }
+
+    //summary
+    printf("Events checked: %d\n", making_sure_all_events_were_checked);
+
     //saving histograms
     TFile output("~/output.root", "RECREATE");
     output.cd();
