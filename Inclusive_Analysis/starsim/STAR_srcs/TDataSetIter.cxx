@@ -14,6 +14,7 @@
 #include "TDataSetIter.h"
 #include "TBrowser.h"
 #include "TSystem.h"
+#include "TMath.h"
 
 #ifndef WIN32
 # ifndef HASSTRCASE
