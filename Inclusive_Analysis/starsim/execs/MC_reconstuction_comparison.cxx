@@ -315,19 +315,31 @@ int main(int argc, char* argv[]){
                     //MC particles
                     //choosing MC particle associated with these particular tracks
                     int posPDG = positiveMC[chosen_MC_list_positive[i]]->GetPdgCode();
-                    int posMotherNumber = positiveMC[chosen_MC_list_positive[i]]->GetFirstMother();
-                    int posMotherPDG = tempUPCpointer->getMCParticle(posMotherNumber)->GetPdgCode();
+                    int posProductionVertex = positiveMC[chosen_MC_list_positive[i]]->GetFirstMother();
                     int negPDG = negativeMC[chosen_MC_list_negative[j]]->GetPdgCode();
-                    int negMotherNumber = negativeMC[chosen_MC_list_negative[j]]->GetFirstMother();
+                    int negProductionVertex = negativeMC[chosen_MC_list_negative[j]]->GetFirstMother();
+                    //loop for finding mother particle
+                    int posMotherPDG;
+                    for(size_t MCindex = 0; MCindex<tempUPCpointer->getNumberOfMCParticles(); MCindex++){
+                        if(tempUPCpointer->getMCParticle(MCindex)->GetFirstDaughter()==posProductionVertex){
+                            posMotherPDG = tempUPCpointer->getMCParticle(MCindex)->GetPdgCode();
+                            break;
+                        }
+                    }
                     //both pions, same mother, mother is K0S
                     MpipiFlow.Fill("TPC", 1.0);
                     MpipiPairs.Fill(positiveMC[chosen_MC_list_positive[i]]->GetPDG()->GetName(), negativeMC[chosen_MC_list_negative[j]]->GetPDG()->GetName(), 1.0);
                     if(posPDG==211&&negPDG==-211){
                         MpipiFlow.Fill("Pion pair", 1.0);
-                        MpipiMothers.Fill(posMotherNumber, negMotherNumber);
-                        if(posMotherNumber==negMotherNumber){
+                        MpipiMothers.Fill(posProductionVertex, negProductionVertex);
+                        if(posProductionVertex==negProductionVertex){
                             MpipiFlow.Fill("Same mother", 1.0);
-                            MpipiMotherName.Fill(tempUPCpointer->getMCParticle(posMotherNumber)->GetPDG()->GetName(), 1.0);
+                            for(size_t MCindex = 0; MCindex<tempUPCpointer->getNumberOfMCParticles(); MCindex++){
+                                if(tempUPCpointer->getMCParticle(MCindex)->GetFirstDaughter()==posProductionVertex){
+                                    MpipiMotherName.Fill(tempUPCpointer->getMCParticle(MCindex)->GetPDG()->GetName(), 1.0);
+                                    break;
+                                }
+                            }
                             if(abs(posMotherPDG)==310){
                                 MpipiFlow.Fill("K^{0}_{S} mother", 1.0);
                                 MpipiMC.Fill((posTrack+negTrack).M());
