@@ -26,6 +26,8 @@
 //my headers
 #include <UsefulThings.h>
 
+void PrintBigger(TParticle*);
+
 int main(int argc, char* argv[]){
 
     TApplication a("a", 0, 0);
@@ -207,10 +209,16 @@ int main(int argc, char* argv[]){
         printf("Geant event number:\t%d\n", MCafterGeant_event->getEventNumber());
         for(int particle_index = 0; particle_index<MCafterGeant_event->getNumberOfMCParticles(); particle_index++){
             TParticle* tempPart = MCafterGeant_event->getMCParticle(particle_index);
-            tempPart->Print();
+            PrintBigger(tempPart);
         }
     }
 
     a.Run();
     return 0;
+}
+
+void PrintBigger(TParticle* input){
+    Printf("TParticle: %-13s  p: %8f %8f %8f \tVertex: %8e %8e %8e \tProd. Vertex: %5d %5d \tDecay Vertex: %5d",
+        input->GetName(), input->Px(), input->Py(), input->Pz(), input->Vx(), input->Vy(), input->Vz(),
+        input->GetFirstMother(), input->GetSecondMother(), input->GetFirstDaughter());
 }
