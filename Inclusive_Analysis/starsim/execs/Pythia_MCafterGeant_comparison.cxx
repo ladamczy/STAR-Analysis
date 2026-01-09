@@ -154,6 +154,9 @@ int main(int argc, char* argv[]){
         ParticlesPYTHIA.SetMarkerColor(4);
         for(size_t particle_index = 0; particle_index<pythia_event->GetNumberOfParticles(); particle_index++){
             StarGenParticle* temp = (*pythia_event)[particle_index];
+            if(!temp->Simulate()){
+                continue;
+            }
             TVector3 tempVec(temp->GetPx(), temp->GetPy(), temp->GetPz());
             ParticlesPYTHIA.AddPoint(tempVec.Eta(), tempVec.Phi());
         }
@@ -174,7 +177,7 @@ int main(int argc, char* argv[]){
         bool drawnMC = false;
         if(ParticlesPYTHIA.GetN()){
             ParticlesPYTHIA.Draw("ap");
-            ParticlesPYTHIA.GetXaxis()->SetLimits(-1.0, 1.0);
+            ParticlesPYTHIA.GetXaxis()->SetLimits(-6.0, 6.0);
             ParticlesPYTHIA.GetHistogram()->SetMinimum(-TMath::Pi());
             ParticlesPYTHIA.GetHistogram()->SetMaximum(TMath::Pi());
             drawnMC = true;
@@ -184,7 +187,7 @@ int main(int argc, char* argv[]){
                 ParticlesGeant.Draw("same p");
             } else{
                 ParticlesGeant.Draw("ap");
-                ParticlesGeant.GetXaxis()->SetLimits(-1.0, 1.0);
+                ParticlesGeant.GetXaxis()->SetLimits(-6.0, 6.0);
                 ParticlesGeant.GetHistogram()->SetMinimum(-TMath::Pi());
                 ParticlesGeant.GetHistogram()->SetMaximum(TMath::Pi());
             }
