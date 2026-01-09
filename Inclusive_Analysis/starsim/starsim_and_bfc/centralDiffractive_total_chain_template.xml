@@ -6,6 +6,7 @@
         root4star -q -b centralDiffractive.C\(&events_number;,&run_number;,&seed;\)
         mv results/*.root ./
         root4star -q -b bfc_run.C\(\"results/centralDiffractive.fzd\",&run_number;\)
+        rename centralDiffractive centralDiffractive&number; centralDiffractive.*
         rm vpdana.root
 </command>
 <Generator>
