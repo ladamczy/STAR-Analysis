@@ -315,19 +315,31 @@ int main(int argc, char* argv[]){
                     //MC particles
                     //choosing MC particle associated with these particular tracks
                     int posPDG = positiveMC[chosen_MC_list_positive[i]]->GetPdgCode();
-                    int posMotherNumber = positiveMC[chosen_MC_list_positive[i]]->GetFirstMother();
-                    int posMotherPDG = tempUPCpointer->getMCParticle(posMotherNumber)->GetPdgCode();
+                    int posProductionVertex = positiveMC[chosen_MC_list_positive[i]]->GetFirstMother();
                     int negPDG = negativeMC[chosen_MC_list_negative[j]]->GetPdgCode();
-                    int negMotherNumber = negativeMC[chosen_MC_list_negative[j]]->GetFirstMother();
+                    int negProductionVertex = negativeMC[chosen_MC_list_negative[j]]->GetFirstMother();
+                    //loop for finding mother particle
+                    int posMotherPDG;
+                    for(size_t MCindex = 0; MCindex<tempUPCpointer->getNumberOfMCParticles(); MCindex++){
+                        if(tempUPCpointer->getMCParticle(MCindex)->GetFirstDaughter()==posProductionVertex){
+                            posMotherPDG = tempUPCpointer->getMCParticle(MCindex)->GetPdgCode();
+                            break;
+                        }
+                    }
                     //both pions, same mother, mother is K0S
                     MpipiFlow.Fill("TPC", 1.0);
                     MpipiPairs.Fill(positiveMC[chosen_MC_list_positive[i]]->GetPDG()->GetName(), negativeMC[chosen_MC_list_negative[j]]->GetPDG()->GetName(), 1.0);
                     if(posPDG==211&&negPDG==-211){
                         MpipiFlow.Fill("Pion pair", 1.0);
-                        MpipiMothers.Fill(posMotherNumber, negMotherNumber);
-                        if(posMotherNumber==negMotherNumber){
+                        MpipiMothers.Fill(posProductionVertex, negProductionVertex);
+                        if(posProductionVertex==negProductionVertex){
                             MpipiFlow.Fill("Same mother", 1.0);
-                            MpipiMotherName.Fill(tempUPCpointer->getMCParticle(posMotherNumber)->GetPDG()->GetName(), 1.0);
+                            for(size_t MCindex = 0; MCindex<tempUPCpointer->getNumberOfMCParticles(); MCindex++){
+                                if(tempUPCpointer->getMCParticle(MCindex)->GetFirstDaughter()==posProductionVertex){
+                                    MpipiMotherName.Fill(tempUPCpointer->getMCParticle(MCindex)->GetPDG()->GetName(), 1.0);
+                                    break;
+                                }
+                            }
                             if(abs(posMotherPDG)==310){
                                 MpipiFlow.Fill("K^{0}_{S} mother", 1.0);
                                 MpipiMC.Fill((posTrack+negTrack).M());
@@ -356,9 +368,6 @@ int main(int argc, char* argv[]){
         }
 
 
-
-
-
         //special part where one event is drawn
         if(tempCounter==nthreads){
             //statistics
@@ -380,14 +389,16 @@ int main(int argc, char* argv[]){
             printf("MC positive:\n");
             for(size_t particle_index = 0; particle_index<positiveMC.size(); particle_index++){
                 TParticle* temp = positiveMC[particle_index];
-                ParticlesMC.AddPoint(temp->Eta(), temp->Phi());
-                printf("Eta:\t%f,\tPhi:\t%f\n", temp->Eta(), temp->Phi());
+                TVector3 tempVec(temp->Px(), temp->Py(), temp->Pz());
+                ParticlesMC.AddPoint(tempVec.Eta(), tempVec.Phi());
+                printf("Eta:\t%f,\tPhi:\t%f\n", tempVec.Eta(), tempVec.Phi());
             }
             printf("MC negative:\n");
             for(size_t particle_index = 0; particle_index<negativeMC.size(); particle_index++){
                 TParticle* temp = negativeMC[particle_index];
-                ParticlesMC.AddPoint(temp->Eta(), temp->Phi());
-                printf("Eta:\t%f,\tPhi:\t%f\n", temp->Eta(), temp->Phi());
+                TVector3 tempVec(temp->Px(), temp->Py(), temp->Pz());
+                ParticlesMC.AddPoint(tempVec.Eta(), tempVec.Phi());
+                printf("Eta:\t%f,\tPhi:\t%f\n", tempVec.Eta(), tempVec.Phi());
             }
 
             //TPC particles graph
@@ -399,16 +410,18 @@ int main(int argc, char* argv[]){
             printf("Track positive:\n");
             for(int particle_index = 0; particle_index<positiveTrack.size(); particle_index++){
                 StUPCTrack* tempTrack = positiveTrack[particle_index];
-                double corrected_phi = tempTrack->getPhi()<0 ? tempTrack->getPhi()+2*TMath::Pi() : tempTrack->getPhi();
-                ParticlesTPC.AddPoint(tempTrack->getEta(), corrected_phi);
-                printf("Eta:\t%f,\tPhi:\t%f\n", tempTrack->getEta(), corrected_phi);
+                TVector3 tempVec;
+                tempTrack->getMomentum(tempVec);
+                ParticlesTPC.AddPoint(tempVec.Eta(), tempVec.Phi());
+                printf("Eta:\t%f,\tPhi:\t%f\n", tempVec.Eta(), tempVec.Phi());
             }
             printf("Track negative:\n");
             for(int particle_index = 0; particle_index<negativeTrack.size(); particle_index++){
                 StUPCTrack* tempTrack = negativeTrack[particle_index];
-                double corrected_phi = tempTrack->getPhi()<0 ? tempTrack->getPhi()+2*TMath::Pi() : tempTrack->getPhi();
-                ParticlesTPC.AddPoint(tempTrack->getEta(), corrected_phi);
-                printf("Eta:\t%f,\tPhi:\t%f\n", tempTrack->getEta(), corrected_phi);
+                TVector3 tempVec;
+                tempTrack->getMomentum(tempVec);
+                ParticlesTPC.AddPoint(tempVec.Eta(), tempVec.Phi());
+                printf("Eta:\t%f,\tPhi:\t%f\n", tempVec.Eta(), tempVec.Phi());
             }
 
             //drawing and saving canvas (with protection against empty graphs)
@@ -416,8 +429,8 @@ int main(int argc, char* argv[]){
             if(ParticlesMC.GetN()){
                 ParticlesMC.Draw("ap");
                 ParticlesMC.GetXaxis()->SetLimits(-1.0, 1.0);
-                ParticlesMC.GetHistogram()->SetMinimum(0.0);
-                ParticlesMC.GetHistogram()->SetMaximum(2*TMath::Pi());
+                ParticlesMC.GetHistogram()->SetMinimum(-TMath::Pi());
+                ParticlesMC.GetHistogram()->SetMaximum(TMath::Pi());
                 drawnMC = true;
             }
             if(ParticlesTPC.GetN()){
@@ -426,8 +439,8 @@ int main(int argc, char* argv[]){
                 } else{
                     ParticlesTPC.Draw("ap");
                     ParticlesTPC.GetXaxis()->SetLimits(-1.0, 1.0);
-                    ParticlesTPC.GetHistogram()->SetMinimum(0.0);
-                    ParticlesTPC.GetHistogram()->SetMaximum(2*TMath::Pi());
+                    ParticlesTPC.GetHistogram()->SetMinimum(-TMath::Pi());
+                    ParticlesTPC.GetHistogram()->SetMaximum(TMath::Pi());
                 }
             }
             c1.BuildLegend();

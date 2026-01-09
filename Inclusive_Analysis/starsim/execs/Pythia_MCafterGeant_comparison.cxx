@@ -26,6 +26,8 @@
 //my headers
 #include <UsefulThings.h>
 
+void PrintBigger(TParticle*);
+
 int main(int argc, char* argv[]){
 
     TApplication a("a", 0, 0);
@@ -154,6 +156,9 @@ int main(int argc, char* argv[]){
         ParticlesPYTHIA.SetMarkerColor(4);
         for(size_t particle_index = 0; particle_index<pythia_event->GetNumberOfParticles(); particle_index++){
             StarGenParticle* temp = (*pythia_event)[particle_index];
+            if(!temp->Simulate()){
+                continue;
+            }
             TVector3 tempVec(temp->GetPx(), temp->GetPy(), temp->GetPz());
             ParticlesPYTHIA.AddPoint(tempVec.Eta(), tempVec.Phi());
         }
@@ -174,7 +179,7 @@ int main(int argc, char* argv[]){
         bool drawnMC = false;
         if(ParticlesPYTHIA.GetN()){
             ParticlesPYTHIA.Draw("ap");
-            ParticlesPYTHIA.GetXaxis()->SetLimits(-1.0, 1.0);
+            ParticlesPYTHIA.GetXaxis()->SetLimits(-6.0, 6.0);
             ParticlesPYTHIA.GetHistogram()->SetMinimum(-TMath::Pi());
             ParticlesPYTHIA.GetHistogram()->SetMaximum(TMath::Pi());
             drawnMC = true;
@@ -184,7 +189,7 @@ int main(int argc, char* argv[]){
                 ParticlesGeant.Draw("same p");
             } else{
                 ParticlesGeant.Draw("ap");
-                ParticlesGeant.GetXaxis()->SetLimits(-1.0, 1.0);
+                ParticlesGeant.GetXaxis()->SetLimits(-6.0, 6.0);
                 ParticlesGeant.GetHistogram()->SetMinimum(-TMath::Pi());
                 ParticlesGeant.GetHistogram()->SetMaximum(TMath::Pi());
             }
@@ -204,10 +209,16 @@ int main(int argc, char* argv[]){
         printf("Geant event number:\t%d\n", MCafterGeant_event->getEventNumber());
         for(int particle_index = 0; particle_index<MCafterGeant_event->getNumberOfMCParticles(); particle_index++){
             TParticle* tempPart = MCafterGeant_event->getMCParticle(particle_index);
-            tempPart->Print();
+            PrintBigger(tempPart);
         }
     }
 
     a.Run();
     return 0;
+}
+
+void PrintBigger(TParticle* input){
+    Printf("TParticle: %-13s  p: %8f %8f %8f \tVertex: %8e %8e %8e \tProd. Vertex: %5d %5d \tDecay Vertex: %5d",
+        input->GetName(), input->Px(), input->Py(), input->Pz(), input->Vx(), input->Vy(), input->Vz(),
+        input->GetFirstMother(), input->GetSecondMother(), input->GetFirstDaughter());
 }
