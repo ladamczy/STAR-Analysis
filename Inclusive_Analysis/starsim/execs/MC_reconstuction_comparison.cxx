@@ -356,9 +356,6 @@ int main(int argc, char* argv[]){
         }
 
 
-
-
-
         //special part where one event is drawn
         if(tempCounter==nthreads){
             //statistics
@@ -380,14 +377,16 @@ int main(int argc, char* argv[]){
             printf("MC positive:\n");
             for(size_t particle_index = 0; particle_index<positiveMC.size(); particle_index++){
                 TParticle* temp = positiveMC[particle_index];
-                ParticlesMC.AddPoint(temp->Eta(), temp->Phi());
-                printf("Eta:\t%f,\tPhi:\t%f\n", temp->Eta(), temp->Phi());
+                TVector3 tempVec(temp->Px(), temp->Py(), temp->Pz());
+                ParticlesMC.AddPoint(tempVec.Eta(), tempVec.Phi());
+                printf("Eta:\t%f,\tPhi:\t%f\n", tempVec.Eta(), tempVec.Phi());
             }
             printf("MC negative:\n");
             for(size_t particle_index = 0; particle_index<negativeMC.size(); particle_index++){
                 TParticle* temp = negativeMC[particle_index];
-                ParticlesMC.AddPoint(temp->Eta(), temp->Phi());
-                printf("Eta:\t%f,\tPhi:\t%f\n", temp->Eta(), temp->Phi());
+                TVector3 tempVec(temp->Px(), temp->Py(), temp->Pz());
+                ParticlesMC.AddPoint(tempVec.Eta(), tempVec.Phi());
+                printf("Eta:\t%f,\tPhi:\t%f\n", tempVec.Eta(), tempVec.Phi());
             }
 
             //TPC particles graph
@@ -399,16 +398,18 @@ int main(int argc, char* argv[]){
             printf("Track positive:\n");
             for(int particle_index = 0; particle_index<positiveTrack.size(); particle_index++){
                 StUPCTrack* tempTrack = positiveTrack[particle_index];
-                double corrected_phi = tempTrack->getPhi()<0 ? tempTrack->getPhi()+2*TMath::Pi() : tempTrack->getPhi();
-                ParticlesTPC.AddPoint(tempTrack->getEta(), corrected_phi);
-                printf("Eta:\t%f,\tPhi:\t%f\n", tempTrack->getEta(), corrected_phi);
+                TVector3 tempVec;
+                tempTrack->getMomentum(tempVec);
+                ParticlesTPC.AddPoint(tempVec.Eta(), tempVec.Phi());
+                printf("Eta:\t%f,\tPhi:\t%f\n", tempVec.Eta(), tempVec.Phi());
             }
             printf("Track negative:\n");
             for(int particle_index = 0; particle_index<negativeTrack.size(); particle_index++){
                 StUPCTrack* tempTrack = negativeTrack[particle_index];
-                double corrected_phi = tempTrack->getPhi()<0 ? tempTrack->getPhi()+2*TMath::Pi() : tempTrack->getPhi();
-                ParticlesTPC.AddPoint(tempTrack->getEta(), corrected_phi);
-                printf("Eta:\t%f,\tPhi:\t%f\n", tempTrack->getEta(), corrected_phi);
+                TVector3 tempVec;
+                tempTrack->getMomentum(tempVec);
+                ParticlesTPC.AddPoint(tempVec.Eta(), tempVec.Phi());
+                printf("Eta:\t%f,\tPhi:\t%f\n", tempVec.Eta(), tempVec.Phi());
             }
 
             //drawing and saving canvas (with protection against empty graphs)
@@ -416,8 +417,8 @@ int main(int argc, char* argv[]){
             if(ParticlesMC.GetN()){
                 ParticlesMC.Draw("ap");
                 ParticlesMC.GetXaxis()->SetLimits(-1.0, 1.0);
-                ParticlesMC.GetHistogram()->SetMinimum(0.0);
-                ParticlesMC.GetHistogram()->SetMaximum(2*TMath::Pi());
+                ParticlesMC.GetHistogram()->SetMinimum(-TMath::Pi());
+                ParticlesMC.GetHistogram()->SetMaximum(TMath::Pi());
                 drawnMC = true;
             }
             if(ParticlesTPC.GetN()){
@@ -426,8 +427,8 @@ int main(int argc, char* argv[]){
                 } else{
                     ParticlesTPC.Draw("ap");
                     ParticlesTPC.GetXaxis()->SetLimits(-1.0, 1.0);
-                    ParticlesTPC.GetHistogram()->SetMinimum(0.0);
-                    ParticlesTPC.GetHistogram()->SetMaximum(2*TMath::Pi());
+                    ParticlesTPC.GetHistogram()->SetMinimum(-TMath::Pi());
+                    ParticlesTPC.GetHistogram()->SetMaximum(TMath::Pi());
                 }
             }
             c1.BuildLegend();
