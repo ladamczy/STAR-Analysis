@@ -96,6 +96,7 @@ int main(int argc, char* argv[]){
     TH1D MpipiDeltaTOnlyTwoTracksDetected("MpipiDeltaTOnlyTwoTracksDetected", "Time between pion decay;#Delta t_{0} [ns];events", 100, -5, 5);
     TH1D MpipiDeltaTMoreThanTwoTracksDetected("MpipiDeltaTMoreThanTwoTracksDetected", "Time between pion decay;#Delta t_{0} [ns];events", 100, -5, 5);
     TH1D MpipiAfterDeltaT("MpipiAfterDeltaT", "#pi^{+}#pi^{-} pair mass after #Delta t_{0} cut;m_{#pi^{+}#pi^{-}} [GeV];pairs", 40, 0.4, 0.6);
+    TH1D MpipiAfterDeltaTNotPassed("MpipiAfterDeltaTNotPassed", "#pi^{+}#pi^{-} pair mass after failed #Delta t_{0} cut;m_{#pi^{+}#pi^{-}} [GeV];pairs", 40, 0.4, 0.6);
     TH1D MpipiMCnotK0SMother("MpipiMCnotK0SMother", "#pi^{+}#pi^{-} pair mass (everything except K^{0}_{S} mother verification);m_{#pi^{+}#pi^{-}} [GeV];pairs", 40, 0.4, 0.6);
 
     //processing
@@ -354,9 +355,10 @@ int main(int argc, char* argv[]){
                                     MpipiDeltaTMoreThanTwoTracksDetected.Fill(deltaT);
                                 }
                                 //value nicked from .txt file with actual data
-                                // if(fabs(deltaT)<3*0.13124272289253383){
-                                if(fabs(deltaT)<0.6){
+                                if(fabs(deltaT)<3*0.13124272289253383){
                                     MpipiAfterDeltaT.Fill((posTrack+negTrack).M());
+                                } else{
+                                    MpipiAfterDeltaTNotPassed.Fill((posTrack+negTrack).M());
                                 }
                             } else{
                                 MpipiMCnotK0SMother.Fill((posTrack+negTrack).M());
@@ -497,6 +499,7 @@ int main(int argc, char* argv[]){
     MpipiDeltaTOnlyTwoTracksDetected.Write();
     MpipiDeltaTMoreThanTwoTracksDetected.Write();
     MpipiAfterDeltaT.Write();
+    MpipiAfterDeltaTNotPassed.Write();
     MpipiMCnotK0SMother.Write();
     outputFileHist->Close();
 
