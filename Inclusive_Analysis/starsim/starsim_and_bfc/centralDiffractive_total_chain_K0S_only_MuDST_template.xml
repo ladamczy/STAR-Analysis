@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<job fileListSyntax="paths" name="strange_generator_total_chain_only_MuDST_&number;_">
+<command>
+        starver pro
+        mkdir results
+        root4star -q -b centralDiffractiveK0S.C\(&events_number;,&run_number;,&seed;\)
+        mv results/*.root ./
+        root4star -q -b bfc_run.C\(\"results/centralDiffractive.fzd\",&run_number;\)
+        rename centralDiffractive centralDiffractive&number; centralDiffractive.*
+        rm vpdana.root
+</command>
+<Generator>
+        <Location>/star/u/adamwatroba/STAR-Analysis/Inclusive_Analysis/starsim/starsim_and_bfc/star_scheduler_logs</Location>
+</Generator>
+<SandBox>
+        <Package>
+                <File>file:./StRoot/</File>
+                <File>file:/star/u/adamwatroba/STAR-Analysis/Inclusive_Analysis/starsim/starsim_and_bfc/bfc_run.C</File>
+                <File>file:/star/u/adamwatroba/STAR-Analysis/Inclusive_Analysis/starsim/starsim_and_bfc/centralDiffractiveK0S.C</File>
+        </Package>
+</SandBox>
+<stdout URL="file:&output_directory;/strange_generator_total_chain_&number;.out"/>
+<stderr URL="file:&output_directory;/strange_generator_total_chain_&number;.err"/>
+<output fromScratch="*.MuDst.root" toURL="file:&output_directory;/"/>
+</job>

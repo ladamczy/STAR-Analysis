@@ -31,6 +31,7 @@ extern void G__set_cpp_environmentStrangeHadronFilter_dict();
 
 #include "TObject.h"
 #include "TMemberInspector.h"
+#include "ParticleK0SFilter.h"
 #include "StrangeHadronFilter.h"
 #include "StarGenerator/FILT/StarFilterMaker.h"
 #include "StMaker.h"
