@@ -87,7 +87,9 @@ int main(int argc, char* argv[]){
     TH1D Distance("Distance", "Distance MC-TPC in #eta-#phi space;distance;track pairs", 120, 0, 6);
     TH1D DistanceCloser("DistanceCloser", "Distance MC-TPC in #eta-#phi space;distance;track pairs", 100, 0, 0.5);
     TH1D MpipiTPC("MpipiTPC", "#pi^{+}#pi^{-} pair mass;m_{#pi^{+}#pi^{-}} [GeV];pairs", 40, 0.4, 0.6);
+    TH1D MpipiTPCExtremelyWide("MpipiTPCExtremelyWide", "#pi^{+}#pi^{-} pair mass;m_{#pi^{+}#pi^{-}} [GeV];pairs", 300, 0.0, 3.0);
     TH1D MpipiMC("MpipiMC", "#pi^{+}#pi^{-} pair mass (only K^{0}_{S} decay products);m_{#pi^{+}#pi^{-}} [GeV];pairs", 40, 0.4, 0.6);
+    TH1D MpipiMCExtremelyWide("MpipiMCExtremelyWide", "#pi^{+}#pi^{-} pair mass (only K^{0}_{S} decay products);m_{#pi^{+}#pi^{-}} [GeV];pairs", 300, 0.0, 3.0);
     TH1D MpipiFlow("MpipiFlow", "#pi^{+}#pi^{-} pairs after MC cuts;;pairs", 1, 0, 1);
     TH2D MpipiPairs("MpipiPairs", "particle pairs;positive;negative", 1, 0, 1, 1, 0, 1);
     TH2D MpipiMothers("MpipiMothers", "particle number;positive;negative", 20, 0, 20, 20, 0, 20);
@@ -96,8 +98,13 @@ int main(int argc, char* argv[]){
     TH1D MpipiDeltaTOnlyTwoTracksDetected("MpipiDeltaTOnlyTwoTracksDetected", "Time between pion decay;#Delta t_{0} [ns];events", 100, -5, 5);
     TH1D MpipiDeltaTMoreThanTwoTracksDetected("MpipiDeltaTMoreThanTwoTracksDetected", "Time between pion decay;#Delta t_{0} [ns];events", 100, -5, 5);
     TH1D MpipiAfterDeltaT("MpipiAfterDeltaT", "#pi^{+}#pi^{-} pair mass after #Delta t_{0} cut;m_{#pi^{+}#pi^{-}} [GeV];pairs", 40, 0.4, 0.6);
+    TH1D MpipiAfterDeltaTExtremelyWide("MpipiAfterDeltaTExtremelyWide", "#pi^{+}#pi^{-} pair mass after #Delta t_{0} cut;m_{#pi^{+}#pi^{-}} [GeV];pairs", 300, 0.0, 3.0);
+    TH2D MpipiAfterDeltaTMass("MpipiAfterDeltaTMass", "#pi^{+}#pi^{-} pair mass after #Delta t_{0} cut;m_{#pi^{+}#pi^{-}} [GeV];pairs", 40, 0.4, 0.6, 100, -5, 5);
     TH1D MpipiAfterDeltaTNotPassed("MpipiAfterDeltaTNotPassed", "#pi^{+}#pi^{-} pair mass after failed #Delta t_{0} cut;m_{#pi^{+}#pi^{-}} [GeV];pairs", 40, 0.4, 0.6);
+    TH1D MpipiAfterDeltaTNotPassedExtremelyWide("MpipiAfterDeltaTNotPassedExtremelyWide", "#pi^{+}#pi^{-} pair mass after failed #Delta t_{0} cut;m_{#pi^{+}#pi^{-}} [GeV];pairs", 300, 0.0, 3.0);
+    TH2D MpipiAfterDeltaTNotPassedMass("MpipiAfterDeltaTNotPassedMass", "#pi^{+}#pi^{-} pair mass after failed #Delta t_{0} cut;m_{#pi^{+}#pi^{-}} [GeV];pairs", 40, 0.4, 0.6, 50, -5, 5);
     TH1D MpipiMCnotK0SMother("MpipiMCnotK0SMother", "#pi^{+}#pi^{-} pair mass (everything except K^{0}_{S} mother verification);m_{#pi^{+}#pi^{-}} [GeV];pairs", 40, 0.4, 0.6);
+    TH1D MpipiMCnotK0SMotherExtremelyWide("MpipiMCnotK0SMotherExtremelyWide", "#pi^{+}#pi^{-} pair mass (everything except K^{0}_{S} mother verification);m_{#pi^{+}#pi^{-}} [GeV];pairs", 300, 0.0, 3.0);
 
     //processing
     //defining TreeProcessor
@@ -313,6 +320,7 @@ int main(int argc, char* argv[]){
                     positiveTrack[i]->getLorentzVector(posTrack, 0.13957);
                     negativeTrack[j]->getLorentzVector(negTrack, 0.13957);
                     MpipiTPC.Fill((posTrack+negTrack).M());
+                    MpipiTPCExtremelyWide.Fill((posTrack+negTrack).M());
                     //MC particles
                     //choosing MC particle associated with these particular tracks
                     int posPDG = positiveMC[chosen_MC_list_positive[i]]->GetPdgCode();
@@ -344,6 +352,7 @@ int main(int argc, char* argv[]){
                             if(abs(posMotherPDG)==310){
                                 MpipiFlow.Fill("K^{0}_{S} mother", 1.0);
                                 MpipiMC.Fill((posTrack+negTrack).M());
+                                MpipiMCExtremelyWide.Fill((posTrack+negTrack).M());
                                 double deltaT = DeltaT0(positiveTrack[i], negativeTrack[j], 0.13957, 0.13957);
                                 MpipiDeltaT.Fill(deltaT);
                                 if(positiveTrack.size()==1&&negativeTrack.size()==1){
@@ -357,11 +366,16 @@ int main(int argc, char* argv[]){
                                 //value nicked from .txt file with actual data
                                 if(fabs(deltaT)<3*0.13124272289253383){
                                     MpipiAfterDeltaT.Fill((posTrack+negTrack).M());
+                                    MpipiAfterDeltaTExtremelyWide.Fill((posTrack+negTrack).M());
+                                    MpipiAfterDeltaTMass.Fill((posTrack+negTrack).M(), deltaT);
                                 } else{
                                     MpipiAfterDeltaTNotPassed.Fill((posTrack+negTrack).M());
+                                    MpipiAfterDeltaTNotPassedExtremelyWide.Fill((posTrack+negTrack).M());
+                                    MpipiAfterDeltaTNotPassedMass.Fill((posTrack+negTrack).M(), deltaT);
                                 }
                             } else{
                                 MpipiMCnotK0SMother.Fill((posTrack+negTrack).M());
+                                MpipiMCnotK0SMotherExtremelyWide.Fill((posTrack+negTrack).M());
                             }
                         }
                     }
@@ -486,7 +500,9 @@ int main(int argc, char* argv[]){
     Distance.Write();
     DistanceCloser.Write();
     MpipiTPC.Write();
+    MpipiTPCExtremelyWide.Write();
     MpipiMC.Write();
+    MpipiMCExtremelyWide.Write();
     MpipiFlow.LabelsDeflate();
     MpipiFlow.Write();
     MpipiPairs.LabelsDeflate("X");
@@ -499,8 +515,13 @@ int main(int argc, char* argv[]){
     MpipiDeltaTOnlyTwoTracksDetected.Write();
     MpipiDeltaTMoreThanTwoTracksDetected.Write();
     MpipiAfterDeltaT.Write();
+    MpipiAfterDeltaTExtremelyWide.Write();
+    MpipiAfterDeltaTMass.Write();
     MpipiAfterDeltaTNotPassed.Write();
+    MpipiAfterDeltaTNotPassedExtremelyWide.Write();
+    MpipiAfterDeltaTNotPassedMass.Write();
     MpipiMCnotK0SMother.Write();
+    MpipiMCnotK0SMotherExtremelyWide.Write();
     outputFileHist->Close();
 
     return 0;
