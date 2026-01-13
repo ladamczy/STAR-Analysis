@@ -152,7 +152,7 @@ void Pythia8(){
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
-void centralDiffractive(Int_t nevents = 10, Int_t runNumber = 18091010, Int_t rngSeed = 1234){
+void centralDiffractiveKstar(Int_t nevents = 10, Int_t runNumber = 18091010, Int_t rngSeed = 1234){
     gROOT->ProcessLine(".L bfc.C");
     {
         TString simple = "y2017a geant gstar usexgeom agml";
