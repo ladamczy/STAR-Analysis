@@ -3,7 +3,7 @@
 <command>
         starver pro
         mkdir results
-        root4star -q -b centralDiffractive.C\(&events_number;,&run_number;,&seed;\)
+        root4star -q -b centralDiffractive&filter;.C\(&events_number;,&run_number;,&seed;\)
         mv results/*.root ./
         root4star -q -b bfc_run.C\(\"results/centralDiffractive.fzd\",&run_number;\)
         rename centralDiffractive centralDiffractive&number; centralDiffractive.*
@@ -16,10 +16,10 @@
         <Package>
                 <File>file:./StRoot/</File>
                 <File>file:/star/u/adamwatroba/STAR-Analysis/Inclusive_Analysis/starsim/starsim_and_bfc/bfc_run.C</File>
-                <File>file:/star/u/adamwatroba/STAR-Analysis/Inclusive_Analysis/starsim/starsim_and_bfc/centralDiffractive.C</File>
+                <File>file:/star/u/adamwatroba/STAR-Analysis/Inclusive_Analysis/starsim/starsim_and_bfc/centralDiffractive&filter;.C</File>
         </Package>
 </SandBox>
 <stdout URL="file:&output_directory;/strange_generator_total_chain_&number;.out"/>
 <stderr URL="file:&output_directory;/strange_generator_total_chain_&number;.err"/>
-<output fromScratch="*.root" toURL="file:&output_directory;/"/>
+<output fromScratch="*.&extension;" toURL="file:&output_directory;/"/>
 </job>

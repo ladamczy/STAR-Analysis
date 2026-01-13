@@ -7,21 +7,105 @@ mkdir -p $output_directory
 echo Output directory:
 echo $output_directory
 
-# setting default values
-length=$1
-length="${length:-0}"
-run_number=$2
-run_number="${run_number:-0}"
-seed=$3
-seed="${seed:-0}"
+# setting default values (with checking whether they are actual arguments and not -* ones)
+#if we find a -* one, we just skip checking the rest of them
+length=0
+run_number=0
+seed=0
+#1
+if [[ "$1" != -* ]]; then
+    length=$1
+    # length="${length:-0}"
+    OPTIND=2
+fi
+#2
+if [ "$OPTIND" -lt "2" ]; then
+    #do nothing because that means the -* arguments started earlier
+    :
+elif [[ "$2" != -* ]]; then
+    run_number=$2
+    # run_number="${run_number:-0}"
+    OPTIND=3
+fi
+#3
+if [ "$OPTIND" -lt "3" ]; then
+    #do nothing because that means the -* arguments started earlier
+    :
+elif [[ "$3" != -* ]]; then
+    seed=$3
+    # seed="${seed:-0}"
+    OPTIND=4
+fi
+
+# setting values based on additional parameters
+extension="root"
+filter=""
+while getopts "e:f:t" flag
+do
+    case $flag in
+        #case for checking all extensions i'd like to copy
+        e)  if [[ "$OPTARG" == "Mu" ]]; then
+                extension="MuDst.root"
+            fi
+            ;;
+        #case for checking active filters
+        f)  case $OPTARG in
+                "K0S")
+                    filter="K0S"
+                    ;;
+                "Lambda0")
+                    filter="Lambda0"
+                    ;;
+                "Kstar")
+                    filter="Kstar"
+                    ;;
+                "phi")
+                    filter="Phi"
+                    ;;
+                *)
+                    ;;
+            esac
+            ;;
+        #case for testing the arguments
+        t)  echo "You chose the following arguments:"
+            echo -e "length:\t\t$length"
+            echo -e "run_number:\t$run_number"
+            echo -e "seed:\t\t$seed"
+            echo -e "extension:\t$extension"
+            if [[ -z "$filter" ]]; then
+                echo -e "filter:\t\tstrange particles (K0S, Lambda0, K*, phi)"
+            else
+                echo -e "filter:\t\t$filter"
+            fi
+            ;;
+        #default case
+        *)  ;;
+    esac
+done
 
 #show help if there is 0 arguments provided
 if [ "$#" -eq "0" ]; then
     echo Usage:
-    echo ./centralDiffractive_total_chain_start.sh [number of events] [run number \(optional, default 18091010\)] ["seed" \(optional, default 0\)]
+    echo ./centralDiffractive_total_chain_start.sh [number of events] [run number \(optional, default 18091010\)] ["seed" \(optional, default 0\)] [optional arguments]
+    echo
+    echo Optional arguments:
+    echo
+    echo -e "-e: Mu \t\t\t copies .MuDst.root files only"
+    echo -e "    anything else:\t copies .root files"
+    echo
+    echo -e "-f: K0S \t\t applies filter for K0S particles only"
+    echo -e "    Lambda0 \t\t applies filter for Lambda0 particles only"
+    echo -e "    Kstar \t\t applies filter for K*(892) particles only"
+    echo -e "    phi \t\t applies filter for phi(1020) particles only"
+    echo -e "    anything else:\t applies filter for K0S, Lambda0, K*(892) and phi(1020) particles only"
 fi
 
-# finishing if there is none (0) events
+# finishing if the first argument is not a number (through the power of regex)
+# or if there is none (0) events
+re='^[0-9]+$'
+if ! [[ $length =~ $re ]] ; then
+   exit 1
+fi
 if [ "$length" -eq "0" ]; then
     exit 1
 fi
@@ -44,13 +128,13 @@ partial_events=$(($length % $n))
 if [ "$full_events" -ne "0" ]; then
     for i in $( eval echo {0..$(($full_events-1))} );
     do
-        star-submit-template -template centralDiffractive_total_chain_template.xml -entities number=$i,events_number=$n,run_number=$run_number,seed=$seed,output_directory=$output_directory
+        star-submit-template -template centralDiffractive_total_chain_template.xml -entities number=$i,events_number=$n,run_number=$run_number,seed=$seed,output_directory=$output_directory,extension=$extension,filter=$filter
     done
 fi
 
 # doing last, not-full batch
 if [ "$partial_events" -ne "0" ]; then
-    star-submit-template -template centralDiffractive_total_chain_template.xml -entities number=$full_events,events_number=$partial_events,run_number=$run_number,seed=$seed,output_directory=$output_directory
+    star-submit-template -template centralDiffractive_total_chain_template.xml -entities number=$full_events,events_number=$partial_events,run_number=$run_number,seed=$seed,output_directory=$output_directory,extension=$extension,filter=$filter
 fi
 
 mv strange_generator*.* ./star_scheduler_logs/
