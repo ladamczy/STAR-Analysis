@@ -1,9 +1,8 @@
 #!/bin/bash
 
-#creating output directory
+#creating path of output directory
 current_date=$(date -Iseconds)
 output_directory=/star/u/adamwatroba/STAR-Analysis/Inclusive_Analysis/starsim/starsim_and_bfc/results/$current_date
-mkdir -p $output_directory
 echo Output directory:
 echo $output_directory
 
@@ -129,7 +128,8 @@ if [ "$NO_RUNNING" -eq "1" ]; then
     exit 1
 fi
 
-#creating file with info about simulation
+#creating output directory and file with info about simulation
+mkdir -p $output_directory
 newfile=$output_directory/simulation_data.txt
 echo Number of events: > $newfile
 echo $length >> $newfile
