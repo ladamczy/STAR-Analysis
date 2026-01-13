@@ -43,6 +43,16 @@ filter=""
 NO_RUNNING=0
 while getopts "e:f:t" flag
 do
+    #just in case an argument for -e got forgot and there is -e -t now or sth
+    if [[ "$OPTARG" == -* ]]; then
+        echo -e "\nSomething is wrong with the arguments; script aborted"
+        exit 1
+    fi
+    if [[ "$flag" == "?" ]]; then
+        echo -e "\nThere is an empty argument in the command; script aborted"
+        exit 1
+    fi
+    #in case there is an empty argument
     case $flag in
         #case for checking all extensions i'd like to copy
         e)  if [[ "$OPTARG" == "Mu" ]]; then
