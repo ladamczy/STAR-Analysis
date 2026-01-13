@@ -40,6 +40,7 @@ fi
 # setting values based on additional parameters
 extension="root"
 filter=""
+NO_RUNNING=0
 while getopts "e:f:t" flag
 do
     case $flag in
@@ -66,22 +67,26 @@ do
                     ;;
             esac
             ;;
-        #case for testing the arguments
-        t)  echo "You chose the following arguments:"
-            echo -e "length:\t\t$length"
-            echo -e "run_number:\t$run_number"
-            echo -e "seed:\t\t$seed"
-            echo -e "extension:\t$extension"
-            if [[ -z "$filter" ]]; then
-                echo -e "filter:\t\tstrange particles (K0S, Lambda0, K*, phi)"
-            else
-                echo -e "filter:\t\t$filter"
-            fi
+        #case for testing the arguments without running
+        t)  NO_RUNNING=1
+            echo -e "\nTHIS IS A TEST; IT WILL *NOT* BE SCHEDULED\n"
             ;;
         #default case
         *)  ;;
     esac
 done
+
+#writing down the choices
+echo "You chose the following arguments:"
+echo -e "length:\t\t$length"
+echo -e "run_number:\t$run_number"
+echo -e "seed:\t\t$seed"
+echo -e "extension:\t$extension"
+if [[ -z "$filter" ]]; then
+    echo -e "filter:\t\tstrange particles (K0S, Lambda0, K*, phi)"
+else
+    echo -e "filter:\t\t$filter"
+fi
 
 #show help if there is 0 arguments provided
 if [ "$#" -eq "0" ]; then
@@ -102,11 +107,15 @@ fi
 
 # finishing if the first argument is not a number (through the power of regex)
 # or if there is none (0) events
+# or if -t option is specified
 re='^[0-9]+$'
 if ! [[ $length =~ $re ]] ; then
-   exit 1
+    exit 1
 fi
 if [ "$length" -eq "0" ]; then
+    exit 1
+fi
+if [ "$NO_RUNNING" -eq "1" ]; then
     exit 1
 fi
 
