@@ -137,6 +137,15 @@ echo Run number \(if 0 then actual one is 18091010\): >> $newfile
 echo $run_number >> $newfile
 echo Seed: >> $newfile
 echo $seed >> $newfile
+echo Extension copied: >> $newfile
+echo $extension >> $newfile
+echo Filter used: >> $newfile
+if [[ -z "$filter" ]]; then
+    echo "Strange particles (K0S, Lambda0, K*, phi)" >> $newfile
+else
+    echo $filter >> $newfile
+fi
+
 
 # modulo to cut it into pieces of n events
 n=100
