@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<job fileListSyntax="paths" name="strange_generator_total_chain_&number;_">
+<job fileListSyntax="paths" name="strange_generator_&filter_name;_total_chain_&number;_">
 <command>
         starver pro
         mkdir results

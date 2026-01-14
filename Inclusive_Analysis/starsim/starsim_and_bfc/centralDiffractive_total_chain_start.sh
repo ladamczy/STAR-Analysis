@@ -140,10 +140,13 @@ echo $seed >> $newfile
 echo Extension copied: >> $newfile
 echo $extension >> $newfile
 echo Filter used: >> $newfile
+#also adding filter name to the job name
 if [[ -z "$filter" ]]; then
     echo "Strange particles (K0S, Lambda0, K*, phi)" >> $newfile
+    filter_name=all
 else
     echo $filter >> $newfile
+    filter_name=$filter
 fi
 
 
@@ -156,13 +159,13 @@ partial_events=$(($length % $n))
 if [ "$full_events" -ne "0" ]; then
     for i in $( eval echo {0..$(($full_events-1))} );
     do
-        star-submit-template -template centralDiffractive_total_chain_template.xml -entities number=$i,events_number=$n,run_number=$run_number,seed=$seed,output_directory=$output_directory,extension=$extension,filter=$filter
+        star-submit-template -template centralDiffractive_total_chain_template.xml -entities number=$i,events_number=$n,run_number=$run_number,seed=$seed,output_directory=$output_directory,extension=$extension,filter=$filter,filter_name=$filter_name
     done
 fi
 
 # doing last, not-full batch
 if [ "$partial_events" -ne "0" ]; then
-    star-submit-template -template centralDiffractive_total_chain_template.xml -entities number=$full_events,events_number=$partial_events,run_number=$run_number,seed=$seed,output_directory=$output_directory,extension=$extension,filter=$filter
+    star-submit-template -template centralDiffractive_total_chain_template.xml -entities number=$full_events,events_number=$partial_events,run_number=$run_number,seed=$seed,output_directory=$output_directory,extension=$extension,filter=$filter,filter_name=$filter_name
 fi
 
 mv strange_generator*.* ./star_scheduler_logs/
