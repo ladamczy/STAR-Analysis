@@ -90,7 +90,8 @@ int main(int argc, char* argv[]){
     TH1D MpipiTPCExtremelyWide("MpipiTPCExtremelyWide", "#pi^{+}#pi^{-} pair mass;m_{#pi^{+}#pi^{-}} [GeV];pairs", 300, 0.0, 3.0);
     TH1D MpipiMC("MpipiMC", "#pi^{+}#pi^{-} pair mass (only K^{0}_{S} decay products);m_{#pi^{+}#pi^{-}} [GeV];pairs", 40, 0.4, 0.6);
     TH1D MpipiMCExtremelyWide("MpipiMCExtremelyWide", "#pi^{+}#pi^{-} pair mass (only K^{0}_{S} decay products);m_{#pi^{+}#pi^{-}} [GeV];pairs", 300, 0.0, 3.0);
-    TH2D MpipiMCExtremelyWideParticlesCreated("MpipiMCExtremelyWideParticlesCreated", "Particles created in vertex vs #pi^{+}#pi^{-} pair mass (only K^{0}_{S} decay products);m_{#pi^{+}#pi^{-}} [GeV];pairs", 300, 0.0, 3.0, 10, 2, 12);
+    TH2D MpipiMCExtremelyWideParticlesCreated("MpipiMCExtremelyWideParticlesCreated", "Particles created in vertex vs #pi^{+}#pi^{-} pair mass (only K^{0}_{S} decay products);m_{#pi^{+}#pi^{-}} [GeV];pairs", 300, 0.0, 3.0, 30, 2, 32);
+    TH1D MpipiMCExtremelyWideParticlesNames("MpipiMCExtremelyWideParticlesNames", "Particles created in vertex vs #pi^{+}#pi^{-} pair mass (only K^{0}_{S} decay products);m_{#pi^{+}#pi^{-}} [GeV];pairs", 1, 0, 1);
     TH1D MpipiFlow("MpipiFlow", "#pi^{+}#pi^{-} pairs after MC cuts;;pairs", 1, 0, 1);
     TH2D MpipiPairs("MpipiPairs", "particle pairs;positive;negative", 1, 0, 1, 1, 0, 1);
     TH2D MpipiMothers("MpipiMothers", "particle number;positive;negative", 20, 0, 20, 20, 0, 20);
@@ -361,6 +362,13 @@ int main(int argc, char* argv[]){
                                     }
                                 }
                                 MpipiMCExtremelyWideParticlesCreated.Fill((posTrack+negTrack).M(), particlesFromVertex);
+                                if(particlesFromVertex>2){
+                                    for(size_t MCparticle = 0; MCparticle<tempUPCpointer->getNumberOfMCParticles(); MCparticle++){
+                                        if(tempUPCpointer->getMCParticle(MCparticle)->GetFirstMother()==posProductionVertex){
+                                            MpipiMCExtremelyWideParticlesNames.Fill(tempUPCpointer->getMCParticle(MCparticle)->GetPDG()->GetName(), 1.);
+                                        }
+                                    }
+                                }
                                 //stuff to do with deltaT
                                 double deltaT = DeltaT0(positiveTrack[i], negativeTrack[j], 0.13957, 0.13957);
                                 MpipiDeltaT.Fill(deltaT);
@@ -513,6 +521,8 @@ int main(int argc, char* argv[]){
     MpipiMC.Write();
     MpipiMCExtremelyWide.Write();
     MpipiMCExtremelyWideParticlesCreated.Write();
+    MpipiMCExtremelyWideParticlesNames.LabelsDeflate();
+    MpipiMCExtremelyWideParticlesNames.Write();
     MpipiFlow.LabelsDeflate();
     MpipiFlow.Write();
     MpipiPairs.LabelsDeflate("X");
