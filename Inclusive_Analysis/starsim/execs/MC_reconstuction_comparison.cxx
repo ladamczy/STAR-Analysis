@@ -332,7 +332,7 @@ int main(int argc, char* argv[]){
                     int negPDG = negativeMC[chosen_MC_list_negative[j]]->GetPdgCode();
                     int negProductionVertex = negativeMC[chosen_MC_list_negative[j]]->GetFirstMother();
                     //loop for finding mother particle
-                    int posMotherPDG;
+                    int posMotherPDG = 0;
                     for(size_t MCindex = 0; MCindex<tempUPCpointer->getNumberOfMCParticles(); MCindex++){
                         if(tempUPCpointer->getMCParticle(MCindex)->GetFirstDaughter()==posProductionVertex){
                             posMotherPDG = tempUPCpointer->getMCParticle(MCindex)->GetPdgCode();
