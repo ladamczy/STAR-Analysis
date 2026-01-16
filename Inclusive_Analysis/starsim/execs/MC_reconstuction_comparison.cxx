@@ -27,6 +27,8 @@
 #include <ProcessingOutsideLoop.h>
 #include <UsefulThings.h>
 
+void PrintBigger(TParticle*);
+
 int main(int argc, char* argv[]){
 
     //argv[1] - input file
@@ -363,6 +365,7 @@ int main(int argc, char* argv[]){
                                 }
                                 MpipiMCExtremelyWideParticlesCreated.Fill((posTrack+negTrack).M(), particlesFromVertex);
                                 if(particlesFromVertex>2){
+                                    // printf("%d\n", tempCounter);
                                     for(size_t MCparticle = 0; MCparticle<tempUPCpointer->getNumberOfMCParticles(); MCparticle++){
                                         if(tempUPCpointer->getMCParticle(MCparticle)->GetFirstMother()==posProductionVertex){
                                             MpipiMCExtremelyWideParticlesNames.Fill(tempUPCpointer->getMCParticle(MCparticle)->GetPDG()->GetName(), 1.);
@@ -409,6 +412,10 @@ int main(int argc, char* argv[]){
             printf("Number of MC particles (excluding protons) after filter: %d\n", positiveMC.size()+negativeMC.size());
             printf("Number of tracks (excluding protons) before filter: %d\n", tempUPCpointer->getNumberOfTracks());
             printf("Number of tracks (excluding protons) after filter: %d\n", positiveTrack.size()+negativeTrack.size());
+            for(size_t MCindex = 0; MCindex<tempUPCpointer->getNumberOfMCParticles(); MCindex++){
+                PrintBigger(tempUPCpointer->getMCParticle(MCindex));
+            }
+
 
             //drawing
             TCanvas c1("c1", "c1", 1200, 800);
@@ -546,3 +553,10 @@ int main(int argc, char* argv[]){
 
     return 0;
 }
+
+void PrintBigger(TParticle* input){
+    Printf("TParticle: %-13s  p: %8f %8f %8f \tVertex: %8e %8e %8e \tProd. Vertex: %5d %5d \tDecay Vertex: %5d",
+        input->GetName(), input->Px(), input->Py(), input->Pz(), input->Vx(), input->Vy(), input->Vz(),
+        input->GetFirstMother(), input->GetSecondMother(), input->GetFirstDaughter());
+}
+
