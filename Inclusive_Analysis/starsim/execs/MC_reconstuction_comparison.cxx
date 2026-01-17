@@ -27,6 +27,8 @@
 #include <ProcessingOutsideLoop.h>
 #include <UsefulThings.h>
 
+void PrintBigger(TParticle*);
+
 int main(int argc, char* argv[]){
 
     //argv[1] - input file
@@ -90,6 +92,8 @@ int main(int argc, char* argv[]){
     TH1D MpipiTPCExtremelyWide("MpipiTPCExtremelyWide", "#pi^{+}#pi^{-} pair mass;m_{#pi^{+}#pi^{-}} [GeV];pairs", 300, 0.0, 3.0);
     TH1D MpipiMC("MpipiMC", "#pi^{+}#pi^{-} pair mass (only K^{0}_{S} decay products);m_{#pi^{+}#pi^{-}} [GeV];pairs", 40, 0.4, 0.6);
     TH1D MpipiMCExtremelyWide("MpipiMCExtremelyWide", "#pi^{+}#pi^{-} pair mass (only K^{0}_{S} decay products);m_{#pi^{+}#pi^{-}} [GeV];pairs", 300, 0.0, 3.0);
+    TH2D MpipiMCExtremelyWideParticlesCreated("MpipiMCExtremelyWideParticlesCreated", "Particles created in vertex vs #pi^{+}#pi^{-} pair mass (only K^{0}_{S} decay products);m_{#pi^{+}#pi^{-}} [GeV];pairs", 300, 0.0, 3.0, 30, 2, 32);
+    TH1D MpipiMCExtremelyWideParticlesNames("MpipiMCExtremelyWideParticlesNames", "Particles created in vertex vs #pi^{+}#pi^{-} pair mass (only K^{0}_{S} decay products);m_{#pi^{+}#pi^{-}} [GeV];pairs", 1, 0, 1);
     TH1D MpipiFlow("MpipiFlow", "#pi^{+}#pi^{-} pairs after MC cuts;;pairs", 1, 0, 1);
     TH2D MpipiPairs("MpipiPairs", "particle pairs;positive;negative", 1, 0, 1, 1, 0, 1);
     TH2D MpipiMothers("MpipiMothers", "particle number;positive;negative", 20, 0, 20, 20, 0, 20);
@@ -328,7 +332,7 @@ int main(int argc, char* argv[]){
                     int negPDG = negativeMC[chosen_MC_list_negative[j]]->GetPdgCode();
                     int negProductionVertex = negativeMC[chosen_MC_list_negative[j]]->GetFirstMother();
                     //loop for finding mother particle
-                    int posMotherPDG;
+                    int posMotherPDG = 0;
                     for(size_t MCindex = 0; MCindex<tempUPCpointer->getNumberOfMCParticles(); MCindex++){
                         if(tempUPCpointer->getMCParticle(MCindex)->GetFirstDaughter()==posProductionVertex){
                             posMotherPDG = tempUPCpointer->getMCParticle(MCindex)->GetPdgCode();
@@ -353,6 +357,22 @@ int main(int argc, char* argv[]){
                                 MpipiFlow.Fill("K^{0}_{S} mother", 1.0);
                                 MpipiMC.Fill((posTrack+negTrack).M());
                                 MpipiMCExtremelyWide.Fill((posTrack+negTrack).M());
+                                int particlesFromVertex = 0;
+                                for(size_t MCparticle = 0; MCparticle<tempUPCpointer->getNumberOfMCParticles(); MCparticle++){
+                                    if(tempUPCpointer->getMCParticle(MCparticle)->GetFirstMother()==posProductionVertex){
+                                        particlesFromVertex++;
+                                    }
+                                }
+                                MpipiMCExtremelyWideParticlesCreated.Fill((posTrack+negTrack).M(), particlesFromVertex);
+                                if(particlesFromVertex>2){
+                                    // printf("%d\n", tempCounter);
+                                    for(size_t MCparticle = 0; MCparticle<tempUPCpointer->getNumberOfMCParticles(); MCparticle++){
+                                        if(tempUPCpointer->getMCParticle(MCparticle)->GetFirstMother()==posProductionVertex){
+                                            MpipiMCExtremelyWideParticlesNames.Fill(tempUPCpointer->getMCParticle(MCparticle)->GetPDG()->GetName(), 1.);
+                                        }
+                                    }
+                                }
+                                //stuff to do with deltaT
                                 double deltaT = DeltaT0(positiveTrack[i], negativeTrack[j], 0.13957, 0.13957);
                                 MpipiDeltaT.Fill(deltaT);
                                 if(positiveTrack.size()==1&&negativeTrack.size()==1){
@@ -392,6 +412,10 @@ int main(int argc, char* argv[]){
             printf("Number of MC particles (excluding protons) after filter: %d\n", positiveMC.size()+negativeMC.size());
             printf("Number of tracks (excluding protons) before filter: %d\n", tempUPCpointer->getNumberOfTracks());
             printf("Number of tracks (excluding protons) after filter: %d\n", positiveTrack.size()+negativeTrack.size());
+            for(size_t MCindex = 0; MCindex<tempUPCpointer->getNumberOfMCParticles(); MCindex++){
+                PrintBigger(tempUPCpointer->getMCParticle(MCindex));
+            }
+
 
             //drawing
             TCanvas c1("c1", "c1", 1200, 800);
@@ -503,6 +527,9 @@ int main(int argc, char* argv[]){
     MpipiTPCExtremelyWide.Write();
     MpipiMC.Write();
     MpipiMCExtremelyWide.Write();
+    MpipiMCExtremelyWideParticlesCreated.Write();
+    MpipiMCExtremelyWideParticlesNames.LabelsDeflate();
+    MpipiMCExtremelyWideParticlesNames.Write();
     MpipiFlow.LabelsDeflate();
     MpipiFlow.Write();
     MpipiPairs.LabelsDeflate("X");
@@ -526,3 +553,10 @@ int main(int argc, char* argv[]){
 
     return 0;
 }
+
+void PrintBigger(TParticle* input){
+    Printf("TParticle: %-13s  p: %8f %8f %8f \tVertex: %8e %8e %8e \tProd. Vertex: %5d %5d \tDecay Vertex: %5d",
+        input->GetName(), input->Px(), input->Py(), input->Pz(), input->Vx(), input->Vy(), input->Vz(),
+        input->GetFirstMother(), input->GetSecondMother(), input->GetFirstDaughter());
+}
+
