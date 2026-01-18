@@ -7,6 +7,7 @@
 #include <TGraph.h>
 #include <TCanvas.h>
 #include <TParticlePDG.h>
+#include <TLine.h>
 
 //STAR headers
 #include <StarGenEvent.h>
@@ -82,6 +83,8 @@ int main(int argc, char* argv[]){
 
     TH1D FlowOfEvents("FlowOfEvents", "Independent event checks (of MC particles);;events", 1, 0, 1);
     TH1D K0SIndex("K0SIndex", "Index of K^{0}_{S};index;particles", 30, 0, 30);
+    TH1D K0Sdetectability("K0Sdetectability", "How many K^{0}_{S} are detectable", 1, 0, 1);
+    TH2D K0SdecayProductsKinematics("K0SdecayProductsKinematics", "#eta vs p_{T} of #pi^{#pm} from K^{0}_{S} decay;#eta;p_{T}", 60, -3.0, 3.0, 40, 0, 2);
     TH3D NumberOfPions("NumberOfPions", "Number of pions in event;positive;negative;neutral", 5, 0, 5, 5, 0, 5, 5, 0, 5);
     TH1D MCParticles("MCParticles", "MC number of particles;particles;events", 25, 0, 25);
     TH1D TPCParticles("TPCParticles", "TPC number of particles;particles;events", 25, 0, 25);
@@ -200,12 +203,14 @@ int main(int argc, char* argv[]){
         bool duplicated_matches_exist = false;
 
         //histograms
-        //flow
+        //early histogram filling, for proper order
         FlowOfEvents.Fill("All events", 1.0);
-        //for proper order
         FlowOfEvents.Fill("2x K^{0}_{S}", 0.0);
         FlowOfEvents.Fill("4x#pi^{#pm/0}", 0.0);
         FlowOfEvents.Fill("2x#pi^{+}, 2x#pi^{-}", 0.0);
+        K0Sdetectability.Fill("All K^{0}_{S}", 0.0);
+        K0Sdetectability.Fill("Decayed into #pi^{+}#pi^{-} pair", 0.0);
+        K0Sdetectability.Fill("Both MC pions in p_{T}-#eta range", 0.0);
         int n_of_K0S = 0;
         int n_of_piplus = 0;
         int n_of_piminus = 0;
@@ -214,6 +219,39 @@ int main(int argc, char* argv[]){
             if(abs(tempUPCpointer->getMCParticle(i)->GetPdgCode())==310){
                 n_of_K0S++;
                 K0SIndex.Fill(i);
+                //K0Sdetectability things
+                K0Sdetectability.Fill(0., 1.0);
+                int decayVertex = tempUPCpointer->getMCParticle(i)->GetFirstDaughter();
+                bool hasPiPlus = false, hasPiMinus = false;
+                bool isPiPlusDetectable = false, isPiMinusDetectable = false;
+                for(size_t j = 0; j<tempUPCpointer->getNumberOfMCParticles(); j++){
+                    TParticle* temp = tempUPCpointer->getMCParticle(j);
+                    if(temp->GetFirstMother()!=decayVertex){
+                        continue;
+                    }
+                    //when we check we actually have a particle correlated
+                    //with the proper vertex, we can continue analysis
+                    if(temp->GetPdgCode()==211){
+                        hasPiPlus = true;
+                        if(fabs(temp->Eta())<=0.9&&temp->Pt()>=0.2){
+                            isPiPlusDetectable = true;
+                        }
+                        K0SdecayProductsKinematics.Fill(temp->Eta(), temp->Pt());
+                    }
+                    if(temp->GetPdgCode()==-211){
+                        hasPiMinus = true;
+                        if(fabs(temp->Eta())<=0.9&&temp->Pt()>=0.2){
+                            isPiMinusDetectable = true;
+                        }
+                        K0SdecayProductsKinematics.Fill(temp->Eta(), temp->Pt());
+                    }
+                }
+                if(hasPiPlus&&hasPiMinus){
+                    K0Sdetectability.Fill(1, 1.0);
+                }
+                if(isPiPlusDetectable&&isPiMinusDetectable){
+                    K0Sdetectability.Fill(2, 1.0);
+                }
             }
             if(tempUPCpointer->getMCParticle(i)->GetPdgCode()==piplusPDGid)
                 n_of_piplus++;
@@ -517,6 +555,9 @@ int main(int argc, char* argv[]){
     FlowOfEvents.LabelsDeflate();
     FlowOfEvents.Write();
     K0SIndex.Write();
+    K0Sdetectability.LabelsDeflate();
+    K0Sdetectability.Write();
+    K0SdecayProductsKinematics.Write();
     NumberOfPions.Write();
     MCParticles.Write();
     TPCParticles.Write();
