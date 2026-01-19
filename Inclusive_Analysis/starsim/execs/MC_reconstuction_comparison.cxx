@@ -110,6 +110,11 @@ int main(int argc, char* argv[]){
     TH1D MpipiAfterDeltaTNotPassed("MpipiAfterDeltaTNotPassed", "#pi^{+}#pi^{-} pair mass after failed #Delta t_{0} cut;m_{#pi^{+}#pi^{-}} [GeV];pairs", 40, 0.4, 0.6);
     TH1D MpipiAfterDeltaTNotPassedExtremelyWide("MpipiAfterDeltaTNotPassedExtremelyWide", "#pi^{+}#pi^{-} pair mass after failed #Delta t_{0} cut;m_{#pi^{+}#pi^{-}} [GeV];pairs", 300, 0.0, 3.0);
     TH2D MpipiAfterDeltaTNotPassedMass("MpipiAfterDeltaTNotPassedMass", "#pi^{+}#pi^{-} pair mass after failed #Delta t_{0} cut;m_{#pi^{+}#pi^{-}} [GeV];pairs", 40, 0.4, 0.6, 50, -5, 5);
+    TH1D MpipiAfterDeltaTNotPassedLengthOfFlightPosX("MpipiAfterDeltaTNotPassedLengthOfFlightPosX", "Flight x dimension", 120, -6, 6);
+    TH1D MpipiAfterDeltaTNotPassedLengthOfFlightPosY("MpipiAfterDeltaTNotPassedLengthOfFlightPosY", "Flight y dimension", 120, -6, 6);
+    TH1D MpipiAfterDeltaTNotPassedLengthOfFlightPosZ("MpipiAfterDeltaTNotPassedLengthOfFlightPosZ", "Flight z dimension", 120, -6, 6);
+    TH1D MpipiAfterDeltaTNotPassedLengthOfFlightTime("MpipiAfterDeltaTNotPassedLengthOfFlightTime", "Flight time", 100, 0, 1e-6);
+    TH1D MpipiAfterDeltaTNotPassedLengthOfFlightPosDistance("MpipiAfterDeltaTNotPassedLengthOfFlightPosDistance", "Flight distance", 100, 0, 10);
     TH1D MpipiMCnotK0SMother("MpipiMCnotK0SMother", "#pi^{+}#pi^{-} pair mass (everything except K^{0}_{S} mother verification);m_{#pi^{+}#pi^{-}} [GeV];pairs", 40, 0.4, 0.6);
     TH1D MpipiMCnotK0SMotherExtremelyWide("MpipiMCnotK0SMotherExtremelyWide", "#pi^{+}#pi^{-} pair mass (everything except K^{0}_{S} mother verification);m_{#pi^{+}#pi^{-}} [GeV];pairs", 300, 0.0, 3.0);
 
@@ -371,9 +376,11 @@ int main(int argc, char* argv[]){
                     int negProductionVertex = negativeMC[chosen_MC_list_negative[j]]->GetFirstMother();
                     //loop for finding mother particle
                     int posMotherPDG = 0;
+                    int MotherParticleIndex = -1;
                     for(size_t MCindex = 0; MCindex<tempUPCpointer->getNumberOfMCParticles(); MCindex++){
                         if(tempUPCpointer->getMCParticle(MCindex)->GetFirstDaughter()==posProductionVertex){
                             posMotherPDG = tempUPCpointer->getMCParticle(MCindex)->GetPdgCode();
+                            MotherParticleIndex = MCindex;
                             break;
                         }
                     }
@@ -430,6 +437,17 @@ int main(int argc, char* argv[]){
                                     MpipiAfterDeltaTNotPassed.Fill((posTrack+negTrack).M());
                                     MpipiAfterDeltaTNotPassedExtremelyWide.Fill((posTrack+negTrack).M());
                                     MpipiAfterDeltaTNotPassedMass.Fill((posTrack+negTrack).M(), deltaT);
+                                    TParticle* mother = tempUPCpointer->getMCParticle(MotherParticleIndex);
+                                    TLorentzVector MotherProductionVertex, MotherDecayVertex;
+                                    mother->ProductionVertex(MotherProductionVertex);
+                                    //mother decay vertex is daughter production vertex
+                                    positiveMC[chosen_MC_list_positive[i]]->ProductionVertex(MotherDecayVertex);
+                                    TLorentzVector Length = MotherDecayVertex-MotherProductionVertex;
+                                    MpipiAfterDeltaTNotPassedLengthOfFlightPosX.Fill(Length.X());
+                                    MpipiAfterDeltaTNotPassedLengthOfFlightPosY.Fill(Length.Y());
+                                    MpipiAfterDeltaTNotPassedLengthOfFlightPosZ.Fill(Length.Z());
+                                    MpipiAfterDeltaTNotPassedLengthOfFlightTime.Fill(Length.T());
+                                    MpipiAfterDeltaTNotPassedLengthOfFlightPosDistance.Fill(Length.P());
                                 }
                             } else{
                                 MpipiMCnotK0SMother.Fill((posTrack+negTrack).M());
@@ -588,6 +606,11 @@ int main(int argc, char* argv[]){
     MpipiAfterDeltaTNotPassed.Write();
     MpipiAfterDeltaTNotPassedExtremelyWide.Write();
     MpipiAfterDeltaTNotPassedMass.Write();
+    MpipiAfterDeltaTNotPassedLengthOfFlightPosX.Write();
+    MpipiAfterDeltaTNotPassedLengthOfFlightPosY.Write();
+    MpipiAfterDeltaTNotPassedLengthOfFlightPosZ.Write();
+    MpipiAfterDeltaTNotPassedLengthOfFlightTime.Write();
+    MpipiAfterDeltaTNotPassedLengthOfFlightPosDistance.Write();
     MpipiMCnotK0SMother.Write();
     MpipiMCnotK0SMotherExtremelyWide.Write();
     outputFileHist->Close();
