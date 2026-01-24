@@ -38,6 +38,7 @@ fi
 
 # setting values based on additional parameters
 extension="root"
+remove_everything_but_MuDst_and_pythia=0
 filter=""
 NO_RUNNING=0
 while getopts "e:f:t" flag
@@ -54,9 +55,16 @@ do
     #in case there is an empty argument
     case $flag in
         #case for checking all extensions i'd like to copy
-        e)  if [[ "$OPTARG" == "Mu" ]]; then
-                extension="MuDst.root"
-            fi
+        e)  case $OPTARG in
+                "Mu")
+                    extension="MuDst.root"
+                    ;;
+                "MuPythia")
+                    remove_everything_but_MuDst_and_pythia=1
+                    ;;
+                *)
+                    ;;
+            esac
             ;;
         #case for checking active filters
         f)  case $OPTARG in
@@ -90,7 +98,11 @@ echo "You chose the following arguments:"
 echo -e "length:\t\t$length"
 echo -e "run_number:\t$run_number"
 echo -e "seed:\t\t$seed"
-echo -e "extension:\t$extension"
+if [ "$remove_everything_but_MuDst_and_pythia" -eq "1" ]; then
+    echo -e "extension:\tMuDst.root and Pythia root"
+else
+    echo -e "extension:\t$extension"
+fi
 if [[ -z "$filter" ]]; then
     echo -e "filter:\t\tstrange particles (K0S, Lambda0, K*, phi)"
 else
@@ -105,6 +117,7 @@ if [ "$#" -eq "0" ]; then
     echo Optional arguments:
     echo
     echo -e "-e: Mu \t\t\t copies .MuDst.root files only"
+    echo -e "    MuPythia \t\t copies .MuDst.root and Pythia .root files only"
     echo -e "    anything else:\t copies .root files"
     echo
     echo -e "-f: K0S \t\t applies filter for K0S particles only"
@@ -112,6 +125,7 @@ if [ "$#" -eq "0" ]; then
     echo -e "    Kstar \t\t applies filter for K*(892) particles only"
     echo -e "    phi \t\t applies filter for phi(1020) particles only"
     echo -e "    anything else:\t applies filter for K0S, Lambda0, K*(892) and phi(1020) particles only"
+    echo -e "-t: \t\t\t just prints out taken options and does not schedule"
 fi
 
 # finishing if the first argument is not a number (through the power of regex)
@@ -159,13 +173,13 @@ partial_events=$(($length % $n))
 if [ "$full_events" -ne "0" ]; then
     for i in $( eval echo {0..$(($full_events-1))} );
     do
-        star-submit-template -template centralDiffractive_total_chain_template.xml -entities number=$i,events_number=$n,run_number=$run_number,seed=$seed,output_directory=$output_directory,extension=$extension,filter=$filter,filter_name=$filter_name
+        star-submit-template -template centralDiffractive_total_chain_template.xml -entities number=$i,events_number=$n,run_number=$run_number,seed=$seed,output_directory=$output_directory,extension=$extension,filter=$filter,filter_name=$filter_name,remove_everything_but_MuDst_and_pythia=$remove_everything_but_MuDst_and_pythia
     done
 fi
 
 # doing last, not-full batch
 if [ "$partial_events" -ne "0" ]; then
-    star-submit-template -template centralDiffractive_total_chain_template.xml -entities number=$full_events,events_number=$partial_events,run_number=$run_number,seed=$seed,output_directory=$output_directory,extension=$extension,filter=$filter,filter_name=$filter_name
+    star-submit-template -template centralDiffractive_total_chain_template.xml -entities number=$full_events,events_number=$partial_events,run_number=$run_number,seed=$seed,output_directory=$output_directory,extension=$extension,filter=$filter,filter_name=$filter_name,remove_everything_but_MuDst_and_pythia=$remove_everything_but_MuDst_and_pythia
 fi
 
 mv strange_generator*.* ./star_scheduler_logs/
