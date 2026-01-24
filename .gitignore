@@ -5,7 +5,11 @@ Inclusive_Analysis/**/*.png
 Inclusive_Analysis/**/*.fzd
 Inclusive_Analysis/**/*.so
 Inclusive_Analysis/**/*.zip
+Inclusive_Analysis/**/*.out
+Inclusive_Analysis/**/*.err
 Inclusive_Analysis/star-upc/AnaOutput_Inclusive_analysis_Kstar_phi_old_data_TOF_tests_sigmaValues.txt
+Inclusive_Analysis/**.sl*
+Inclusive_Analysis/**CVS/
 Inclusive_Analysis/starsim/starsim_and_bfc/*.session.xml
 Inclusive_Analysis/starsim/starsim_and_bfc/*.dataset
 Inclusive_Analysis/starsim/starsim_and_bfc/*.csh
