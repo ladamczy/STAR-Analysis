@@ -29,6 +29,7 @@
 #include <UsefulThings.h>
 
 void PrintBigger(TParticle*);
+double distanceToBeamline(TVector3 point, double x0 = -0.126857, double y0 = -0.127072, double dxdz = -0.000945, double dydz = 0.000440);
 
 int main(int argc, char* argv[]){
 
@@ -115,6 +116,14 @@ int main(int argc, char* argv[]){
     TH1D MpipiAfterDeltaTNotPassedLengthOfFlightPosZ("MpipiAfterDeltaTNotPassedLengthOfFlightPosZ", "Flight z dimension", 120, -6, 6);
     TH1D MpipiAfterDeltaTNotPassedLengthOfFlightTime("MpipiAfterDeltaTNotPassedLengthOfFlightTime", "Flight time", 100, 0, 1e-6);
     TH1D MpipiAfterDeltaTNotPassedLengthOfFlightPosDistance("MpipiAfterDeltaTNotPassedLengthOfFlightPosDistance", "Flight distance", 100, 0, 10);
+    TH1D MpipiAfterDeltaTPassedPionTOFLength("MpipiAfterDeltaTPassedPionTOFLength", "TOF path length of #pi^{#pm} from K^{0}_{S} decay", 40, 200, 400);
+    TH1D MpipiAfterDeltaTNotPassedPionTOFLength("MpipiAfterDeltaTNotPassedPionTOFLength", "TOF path length of #pi^{#pm} from K^{0}_{S} decay", 40, 200, 400);
+    TH1D MpipiAfterDeltaTPassedPionTOFTime("MpipiAfterDeltaTPassedPionTOFTime", "TOF time of #pi^{#pm} from K^{0}_{S} decay", 100, 0, 50);
+    TH1D MpipiAfterDeltaTNotPassedPionTOFTime("MpipiAfterDeltaTNotPassedPionTOFTime", "TOF time of #pi^{#pm} from K^{0}_{S} decay", 100, 0, 50);
+    TH1D MpipiAfterDeltaTPassedPionMass("MpipiAfterDeltaTPassedPionMass", "#pi^{#pm} pair mass from K^{0}_{S} decay;m_{#pi^{#pm}} [GeV];pairs", 100, 0., 1.0);
+    TH1D MpipiAfterDeltaTNotPassedPionMass("MpipiAfterDeltaTNotPassedPionMass", "#pi^{#pm} pair mass from K^{0}_{S} decay;m_{#pi^{#pm}} [GeV];pairs", 100, 0., 1.0);
+    TH1D MpipiAfterDeltaTPassedK0SDecayVertexBeamlineDistance("MpipiAfterDeltaTPassedK0SDecayVertexBeamlineDistance", "Distance from K^{0}_{S} decay vertex to the beamline;d [cm];events", 50, 0, 20);
+    TH1D MpipiAfterDeltaTNotPassedK0SDecayVertexBeamlineDistance("MpipiAfterDeltaTNotPassedK0SDecayVertexBeamlineDistance", "Distance from K^{0}_{S} decay vertex to the beamline;d [cm];events", 50, 0, 20);
     TH1D MpipiMCnotK0SMother("MpipiMCnotK0SMother", "#pi^{+}#pi^{-} pair mass (everything except K^{0}_{S} mother verification);m_{#pi^{+}#pi^{-}} [GeV];pairs", 40, 0.4, 0.6);
     TH1D MpipiMCnotK0SMotherExtremelyWide("MpipiMCnotK0SMotherExtremelyWide", "#pi^{+}#pi^{-} pair mass (everything except K^{0}_{S} mother verification);m_{#pi^{+}#pi^{-}} [GeV];pairs", 300, 0.0, 3.0);
 
@@ -184,6 +193,12 @@ int main(int argc, char* argv[]){
             StUPCTrack* tempTrack = tempUPCpointer->getTrack(i);
             //TODO check with & without TOF
             if(!tempTrack->getFlag(StUPCTrack::kTof)){
+                continue;
+            }
+            if(tempTrack->getTofPathLength()<=0){
+                continue;
+            }
+            if(tempTrack->getTofTime()<=0){
                 continue;
             }
             // ALL TRACKS ARE PRIMARY
@@ -433,6 +448,14 @@ int main(int argc, char* argv[]){
                                     MpipiAfterDeltaT.Fill((posTrack+negTrack).M());
                                     MpipiAfterDeltaTExtremelyWide.Fill((posTrack+negTrack).M());
                                     MpipiAfterDeltaTMass.Fill((posTrack+negTrack).M(), deltaT);
+                                    MpipiAfterDeltaTPassedPionTOFLength.Fill(positiveTrack[i]->getTofPathLength());
+                                    MpipiAfterDeltaTPassedPionTOFLength.Fill(negativeTrack[j]->getTofPathLength());
+                                    MpipiAfterDeltaTPassedPionTOFTime.Fill(positiveTrack[i]->getTofTime());
+                                    MpipiAfterDeltaTPassedPionTOFTime.Fill(negativeTrack[j]->getTofTime());
+                                    MpipiAfterDeltaTPassedPionMass.Fill(sqrt(M2TOF(positiveTrack[i], negativeTrack[j])));
+                                    TLorentzVector K0SdecayVertex;
+                                    positiveMC[chosen_MC_list_positive[i]]->ProductionVertex(K0SdecayVertex);
+                                    MpipiAfterDeltaTPassedK0SDecayVertexBeamlineDistance.Fill(distanceToBeamline(K0SdecayVertex.Vect()));
                                 } else{
                                     MpipiAfterDeltaTNotPassed.Fill((posTrack+negTrack).M());
                                     MpipiAfterDeltaTNotPassedExtremelyWide.Fill((posTrack+negTrack).M());
@@ -448,6 +471,14 @@ int main(int argc, char* argv[]){
                                     MpipiAfterDeltaTNotPassedLengthOfFlightPosZ.Fill(Length.Z());
                                     MpipiAfterDeltaTNotPassedLengthOfFlightTime.Fill(Length.T());
                                     MpipiAfterDeltaTNotPassedLengthOfFlightPosDistance.Fill(Length.P());
+                                    MpipiAfterDeltaTNotPassedPionTOFLength.Fill(positiveTrack[i]->getTofPathLength());
+                                    MpipiAfterDeltaTNotPassedPionTOFLength.Fill(negativeTrack[j]->getTofPathLength());
+                                    MpipiAfterDeltaTNotPassedPionTOFTime.Fill(positiveTrack[i]->getTofTime());
+                                    MpipiAfterDeltaTNotPassedPionTOFTime.Fill(negativeTrack[j]->getTofTime());
+                                    MpipiAfterDeltaTNotPassedPionMass.Fill(sqrt(M2TOF(positiveTrack[i], negativeTrack[j])));
+                                    TLorentzVector K0SdecayVertex;
+                                    positiveMC[chosen_MC_list_positive[i]]->ProductionVertex(K0SdecayVertex);
+                                    MpipiAfterDeltaTNotPassedK0SDecayVertexBeamlineDistance.Fill(distanceToBeamline(K0SdecayVertex.Vect()));
                                 }
                             } else{
                                 MpipiMCnotK0SMother.Fill((posTrack+negTrack).M());
@@ -611,6 +642,14 @@ int main(int argc, char* argv[]){
     MpipiAfterDeltaTNotPassedLengthOfFlightPosZ.Write();
     MpipiAfterDeltaTNotPassedLengthOfFlightTime.Write();
     MpipiAfterDeltaTNotPassedLengthOfFlightPosDistance.Write();
+    MpipiAfterDeltaTPassedPionTOFLength.Write();
+    MpipiAfterDeltaTNotPassedPionTOFLength.Write();
+    MpipiAfterDeltaTPassedPionTOFTime.Write();
+    MpipiAfterDeltaTNotPassedPionTOFTime.Write();
+    MpipiAfterDeltaTPassedPionMass.Write();
+    MpipiAfterDeltaTNotPassedPionMass.Write();
+    MpipiAfterDeltaTPassedK0SDecayVertexBeamlineDistance.Write();
+    MpipiAfterDeltaTNotPassedK0SDecayVertexBeamlineDistance.Write();
     MpipiMCnotK0SMother.Write();
     MpipiMCnotK0SMotherExtremelyWide.Write();
     outputFileHist->Close();
@@ -622,5 +661,12 @@ void PrintBigger(TParticle* input){
     Printf("TParticle: %-13s  p: %8f %8f %8f \tVertex: %8e %8e %8e \tProd. Vertex: %5d %5d \tDecay Vertex: %5d",
         input->GetName(), input->Px(), input->Py(), input->Pz(), input->Vx(), input->Vy(), input->Vz(),
         input->GetFirstMother(), input->GetSecondMother(), input->GetFirstDaughter());
+}
+
+double distanceToBeamline(TVector3 point, double x0, double y0, double dxdz, double dydz){
+    TVector3 beamlinePoint(x0, y0, 0.);
+    TVector3 beamlineDirection(dxdz, dydz, 1.);
+    //https://math.stackexchange.com/questions/2353288/point-to-line-distance-in-3d-using-cross-product
+    return beamlineDirection.Cross(beamlinePoint-point).Mag()/beamlineDirection.Mag();
 }
 
