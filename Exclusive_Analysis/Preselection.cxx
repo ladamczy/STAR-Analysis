@@ -93,57 +93,68 @@ int main(int argc, char** argv)
     TH2D* HistRpTrackPxPyN1 = new TH2D("4_HistRpTrackPxPyN1", ";p_{x} [GeV]; p_{y} [GeV]", 100, -1.5, 1.5, 100, -1.5, 1.5);	
    
 
-    //ifstream inputFilePathList(argv[1]);
-    //if (!inputFilePathList) 
-    //{
-    //    cerr << "Failed to open input file." << std::endl;
-    //    return 1;
-    //}
-    
-    string inputFileName = argv[1];  // Direct ROOT file path
-    cout << "Processing single file: " << inputFileName << endl;
+    string inputArg = argv[1];
 
-    //TChain *chain = new TChain("mUPCTree"); 
+    // Declare variables
+    string inputFileName;
+    string filePath;
+    string dataDir = "";
+    string baseName;
+    string histFileName;
+    string preselFileName;
 
-    //string inputFileName;
- 
-    //std::string dataDir = "";//"/data2/star_data_5/";  // Full path to the data directory
-    //std::string filePath;
-        
-    //while (std::getline(inputFilePathList, inputFileName))
-    /*{   
-        // Directly construct the full path
-        filePath = dataDir + inputFileName;
-        
-        std::cout << "Attempting to open: " << filePath << std::endl;  // Debug print
-        
-        TFile* file = TFile::Open(filePath.c_str());
-        if (file && file->IsOpen()) {
-            std::cout << "Successfully opened file: " << filePath << std::endl;
-            file->Close();
-            delete file;
-            chain->Add(filePath.c_str());
-        } else {
-            std::cerr << "Failed to open file: " << filePath << std::endl;
-        }
-    }// if commented out loop should end here
-    inputFilePathList.close();*/
-    // Create a new chain for each file
+    // Check if input is a ROOT file or a text file list
+    bool isSingleFile = (inputArg.find(".root") != string::npos);
+
     TChain *chain = new TChain("mUPCTree");
-    
-    std::cout << "Processing file: " << inputFileName << std::endl;
-    
-    // Add the single file to chain
-    chain->Add(inputFileName.c_str());
-    
-    // Extract base filename
+
+    if (isSingleFile) {
+        // Single ROOT file mode (for HTCondor)
+        cout << "Processing single ROOT file: " << inputArg << endl;
+        chain->Add(inputArg.c_str());
+        inputFileName = inputArg;
+    } else {
+        // Text file list mode
+        cout << "Processing file list: " << inputArg << endl;
+        ifstream inputFilePathList(inputArg);
+        if (!inputFilePathList) {
+            cerr << "Failed to open input file list." << endl;
+            return 1;
+        }
+        
+        string lastFileName = "";
+        while (std::getline(inputFilePathList, inputFileName)) {
+            filePath = dataDir + inputFileName;
+            cout << "Adding file: " << filePath << endl;
+            
+            TFile* file = TFile::Open(filePath.c_str());
+            if (file && file->IsOpen()) {
+                cout << "Successfully opened file: " << filePath << endl;
+                file->Close();
+                delete file;
+                chain->Add(filePath.c_str());
+                lastFileName = inputFileName;
+            } else {
+                cerr << "Failed to open file: " << filePath << endl;
+            }
+        }
+        inputFilePathList.close();
+        inputFileName = lastFileName;
+    }
+
+    // Extract basename for output files
     size_t lastSlash = inputFileName.find_last_of("/");
-    string baseName = inputFileName.substr(lastSlash + 1);
+    baseName = inputFileName.substr(lastSlash + 1);
     baseName = baseName.substr(0, baseName.find_last_of("."));
-    
+
     // Create output filenames
-    string histFileName = outputDir + "hist_" + baseName + ".root";
-    string preselFileName = outputDir + "presel_" + baseName + ".root";
+    histFileName = outputDir + "hist_" + baseName + ".root";
+    preselFileName = outputDir + "presel_" + baseName + ".root";
+
+    cout << "Output will be: " << histFileName << " and " << preselFileName << endl;
+
+
+
     
     // Create new events for each file
     StUPCEvent *upcEvt = nullptr;
@@ -176,6 +187,10 @@ int main(int argc, char** argv)
         correctedRpEvent->clearEvent();
         runAfterburner(rpEvt, correctedRpEvent, upcEvt->getRunNumber());
 
+        // set branch adress
+        mUPCTree->SetBranchAddress("mUPCEvent", &upcEvt);
+        mUPCTree->SetBranchAddress("correctedRpEvent", &correctedRpEvent);
+            
         // selection
         // CEP Triggers
         // two RP tracks
@@ -342,8 +357,6 @@ int main(int argc, char** argv)
 		}
 
 
-
-
         if (hasTwoRpTracksOppositeSide and useAtLeastThreePlanes and withinFiducialRegion)
         {
             for (unsigned long int i = 0; i < triggerID.size(); i++)
@@ -396,9 +409,6 @@ int main(int argc, char** argv)
 
         if (isCepTrigger and hasTwoRpTracksOppositeSide and useAtLeastThreePlanes and withinFiducialRegion and isValidNumberOfTofMatchedTracksClassA)//and (isValidNumberOfTofMatchedTracksClassA or isValidNumberOfTofMatchedTracksClassB) )
         {
-            // set branch adress
-            mUPCTree->SetBranchAddress("mUPCEvent", &upcEvt);
-            mUPCTree->SetBranchAddress("correctedRpEvent", &correctedRpEvent);
             
             // fill tree
             mUPCTree->Fill();

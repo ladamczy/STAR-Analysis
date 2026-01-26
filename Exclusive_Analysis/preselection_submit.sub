@@ -8,5 +8,5 @@ should_transfer_files = NO
 request_cpus   = 1
 request_memory = 4 GB
 
-queue infile from Check5files.txt
+queue infile from New_star_data_testupcdst2.txt
 
