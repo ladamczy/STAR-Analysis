@@ -401,7 +401,7 @@ const char* some[] = {"True pion matching",
 
 const char* fitfunction[] = {"Gaussian"}; 
 const char* fixvar[] = {"#sigma & #mu"};
-double thresholdIndex = 0.3;  
+double thresholdIndex = 0.15;  
 
 // Latex for text
 TLatex Tl;
@@ -428,7 +428,7 @@ void Plot_MC(){
     gStyle->SetPalette(kBird);
     
     // Open input file
-    TFile* rootFile = TFile::Open("InputData/tofeff_withRP_0.3_v3.root");
+    TFile* rootFile = TFile::Open("InputData/TofEfficiency_mc_0.15_Jan29.root");//("InputData/tofeff_withRP_0.15_v3.root");
     if (!rootFile || rootFile->IsZombie()) {
         std::cerr << "Error opening MC input file" << std::endl;
         return;
@@ -479,13 +479,13 @@ void Plot_MC(){
     Double_t y_max2 = HistKaonMassProbeWithTof->GetBinContent(hist_max2); 
     Tl.DrawLatex(0.51, y_max2 + 50, Form("#scale[0.6]{matching threshold < %.2f}", thresholdIndex));   
     fixedParamText->DrawLatex(0.18, 0.7, Form("#splitline{%s fixed}{Fit with: %s distribution}",fixvar[0],fitfunction[0]));
-    canvas->Print("plots/TofEff_tagNprobe_thesis_MC_GS_0.3_v3.png");
+    canvas->Print("plots/TofEff_tagNprobe_thesis_MC_GS_0.15.png");
     
     // Extract and store the parameters
     ExtractTagAndProbeParameters(HistKaonMassProbeWithTof, HistKaonMassProbeWithoutTof);
 
     // Eta plots
-    canvas->Print("plots/TofEff_eta_thesis_MC_GS_0.3_v3.pdf[");
+    canvas->Print("plots/TofEff_eta_thesis_MC_GS_0.15.pdf[");
     for (int i = 0; i < 6; i++) {
         CreateSinglePlot(canvas, etaWithoutTof[i], etaWithTof[i], etaTitles[i], false, true);
         fixedParamText->DrawLatex(0.18, 0.7, Form("#splitline{%s fixed}{Fit with: %s distribution}",fixvar[0],fitfunction[0]));
@@ -493,12 +493,12 @@ void Plot_MC(){
         Double_t x_max = etaWithoutTof[i]->GetBinCenter(hist_max);
         Double_t y_max = etaWithoutTof[i]->GetBinContent(hist_max);   
         Tl.DrawLatex(0.51, y_max + 10, Form("#scale[0.6]{matching threshold < %.2f}", thresholdIndex));
-        canvas->Print("plots/TofEff_eta_thesis_MC_GS_0.3_v3.pdf");
+        canvas->Print("plots/TofEff_eta_thesis_MC_GS_0.15.pdf");
     }
-    canvas->Print("plots/TofEff_eta_thesis_MC_GS_0.3_v3.pdf]");
+    canvas->Print("plots/TofEff_eta_thesis_MC_GS_0.15.pdf]");
 
     // pT plots
-    canvas->Print("plots/TofEff_pt_thesis_MC_GS_0.3_v3.pdf[");
+    canvas->Print("plots/TofEff_pt_thesis_MC_GS_0.15.pdf[");
     for (int i = 0; i < 6; i++) {
         CreateSinglePlot(canvas, ptWithoutTof[i], ptWithTof[i], ptTitles[i], false, true);
         fixedParamText->DrawLatex(0.18, 0.7, Form("#splitline{%s fixed}{Fit with: %s distribution}",fixvar[0],fitfunction[0]));
@@ -506,9 +506,9 @@ void Plot_MC(){
         Double_t x_max = ptWithoutTof[i]->GetBinCenter(hist_max);
         Double_t y_max = ptWithoutTof[i]->GetBinContent(hist_max);   
         Tl.DrawLatex(0.51, y_max + 10, Form("#scale[0.6]{matching threshold < %.2f}", thresholdIndex));
-        canvas->Print("plots/TofEff_pt_thesis_MC_GS_0.3_v3.pdf");
+        canvas->Print("plots/TofEff_pt_thesis_MC_GS_0.15.pdf");
     }
-    canvas->Print("plots/TofEff_pt_thesis_MC_GS_0.3_v3.pdf]");
+    canvas->Print("plots/TofEff_pt_thesis_MC_GS_0.15.pdf]");
    
     for (int i = 0; i < 6; i++) {
         TF1 *fitEtaWith = nullptr, *fitEtaWithout = nullptr;
@@ -565,7 +565,7 @@ void Plot_data(){
 
    
     // Open input file
-    TFile* rootFile = TFile::Open("InputData/tofeff_data_0.3_v3.root");
+    TFile* rootFile = TFile::Open("InputData/TofEfficiency_data_0.15_Jan29.root");//("InputData/tofeff_data_0.15_v3.root");
     if (!rootFile || rootFile->IsZombie()) {
         std::cerr << "Error opening MC input file" << std::endl;
         return;
@@ -615,13 +615,13 @@ void Plot_data(){
     Double_t y_max2 = HistKaonMassProbeWithTof_data->GetBinContent(hist_max2); 
     Tl.DrawLatex(0.51, y_max2 + 50, Form("#scale[0.6]{matching threshold < %.2f}", thresholdIndex));   
     fixedParamText->DrawLatex(0.18, 0.7, Form("#splitline{%s fixed}{Fit with: %s distribution}",fixvar[0],fitfunction[0]));
-    canvas->Print("plots/TofEff_tagNprobe_thesis_data_GS_0.3_v3.png");
+    canvas->Print("plots/TofEff_tagNprobe_thesis_data_GS_0.15.png");
     
     // Extract and store the parameters
     ExtractTagAndProbeParameters(HistKaonMassProbeWithTof_data, HistKaonMassProbeWithoutTof_data);
 
     // Eta plots
-    canvas->Print("plots/TofEff_eta_thesis_data_GS_0.3_v3.pdf[");
+    canvas->Print("plots/TofEff_eta_thesis_data_GS_0.15.pdf[");
     for (int i = 0; i < 6; i++) {
         CreateSinglePlot(canvas, etaWithoutTof_data[i], etaWithTof_data[i], etaTitles[i], false, true);
         fixedParamText->DrawLatex(0.18, 0.7, Form("#splitline{%s fixed}{Fit with: %s distribution}",fixvar[0],fitfunction[0]));
@@ -629,12 +629,12 @@ void Plot_data(){
         Double_t x_max = etaWithoutTof_data[i]->GetBinCenter(hist_max);
         Double_t y_max = etaWithoutTof_data[i]->GetBinContent(hist_max);   
         Tl.DrawLatex(0.51, y_max + 10, Form("#scale[0.6]{matching threshold < %.2f}", thresholdIndex));
-        canvas->Print("plots/TofEff_eta_thesis_data_GS_0.3_v3.pdf");
+        canvas->Print("plots/TofEff_eta_thesis_data_GS_0.15.pdf");
     }
-    canvas->Print("plots/TofEff_eta_thesis_data_GS_0.3_v3.pdf]");
+    canvas->Print("plots/TofEff_eta_thesis_data_GS_0.15.pdf]");
 
     // pT plots
-    canvas->Print("plots/TofEff_pt_thesis_data_GS_0.3_v3.pdf[");
+    canvas->Print("plots/TofEff_pt_thesis_data_GS_0.15.pdf[");
     for (int i = 0; i < 6; i++) {
         CreateSinglePlot(canvas, ptWithoutTof_data[i], ptWithTof_data[i], ptTitles[i], false, true);
         fixedParamText->DrawLatex(0.18, 0.7, Form("#splitline{%s fixed}{Fit with: %s distribution}",fixvar[0],fitfunction[0]));
@@ -642,9 +642,9 @@ void Plot_data(){
         Double_t x_max = ptWithoutTof_data[i]->GetBinCenter(hist_max);
         Double_t y_max = ptWithoutTof_data[i]->GetBinContent(hist_max);   
         Tl.DrawLatex(0.51, y_max + 10, Form("#scale[0.6]{matching threshold < %.2f}", thresholdIndex));
-        canvas->Print("plots/TofEff_pt_thesis_data_GS_0.3_v3.pdf");
+        canvas->Print("plots/TofEff_pt_thesis_data_GS_0.15.pdf");
     }
-    canvas->Print("plots/TofEff_pt_thesis_data_GS_0.3_v3.pdf]");
+    canvas->Print("plots/TofEff_pt_thesis_data_GS_0.15.pdf]");
    
     for (int i = 0; i < 6; i++) {
         TF1 *fitEtaWith = nullptr, *fitEtaWithout = nullptr;
@@ -700,7 +700,7 @@ void Plot_true(){
     gStyle->SetPalette(kBird);
      
     // Open input file
-    TFile* rootFile = TFile::Open("InputData/tofeff_withRP_0.3_v3.root");
+    TFile* rootFile = TFile::Open("InputData/TofEfficiency_mc_0.15_Jan29.root");//("InputData/tofeff_withRP_0.15_v3.root");
     if (!rootFile || rootFile->IsZombie()) {
         std::cerr << "Error opening MC input file" << std::endl;
         return;
@@ -752,13 +752,13 @@ void Plot_true(){
     Double_t y_max2 = HistKaonMassProbeWithTof_true->GetBinContent(hist_max2); 
     Tl.DrawLatex(0.51, y_max2 + 50, Form("#scale[0.6]{matching threshold < %.2f}", thresholdIndex));   
     fixedParamText->DrawLatex(0.18, 0.7, Form("#splitline{%s fixed}{Fit with: %s distribution}",fixvar[0],fitfunction[0]));
-    canvas->Print("plots/TofEff_tagNprobe_thesis_true_GS_0.3_v3.png");
+    canvas->Print("plots/TofEff_tagNprobe_thesis_true_GS_0.15.png");
     
     // Extract and store the parameters
     ExtractTagAndProbeParameters(HistKaonMassProbeWithTof_true, HistKaonMassProbeWithoutTof_true);
 
     // Eta plots
-    canvas->Print("plots/TofEff_eta_thesis_true_GS_0.3_v3.pdf[");
+    canvas->Print("plots/TofEff_eta_thesis_true_GS_0.15.pdf[");
     for (int i = 0; i < 6; i++) {
         CreateSinglePlot(canvas, etaWithoutTof_true[i], etaWithTof_true[i], etaTitles[i], true, true);
         fixedParamText->DrawLatex(0.18, 0.7, Form("#splitline{%s fixed}{Fit with: %s distribution}",fixvar[0],fitfunction[0]));
@@ -766,12 +766,12 @@ void Plot_true(){
         Double_t x_max = etaWithoutTof_true[i]->GetBinCenter(hist_max);
         Double_t y_max = etaWithoutTof_true[i]->GetBinContent(hist_max);   
         Tl.DrawLatex(0.51, y_max + 10, Form("#scale[0.6]{matching threshold < %.2f}", thresholdIndex));
-        canvas->Print("plots/TofEff_eta_thesis_true_GS_0.3_v3.pdf");
+        canvas->Print("plots/TofEff_eta_thesis_true_GS_0.15.pdf");
     }
-    canvas->Print("plots/TofEff_eta_thesis_true_GS_0.3_v3.pdf]");
+    canvas->Print("plots/TofEff_eta_thesis_true_GS_0.15.pdf]");
 
     // pT plots
-    canvas->Print("plots/TofEff_pt_thesis_true_GS_0.3_v3.pdf[");
+    canvas->Print("plots/TofEff_pt_thesis_true_GS_0.15.pdf[");
     for (int i = 0; i < 6; i++) {
         CreateSinglePlot(canvas, ptWithoutTof_true[i], ptWithTof_true[i], ptTitles[i], true, true);
         fixedParamText->DrawLatex(0.18, 0.7, Form("#splitline{%s fixed}{Fit with: %s distribution}",fixvar[0],fitfunction[0]));
@@ -779,9 +779,9 @@ void Plot_true(){
         Double_t x_max = ptWithoutTof_true[i]->GetBinCenter(hist_max);
         Double_t y_max = ptWithoutTof_true[i]->GetBinContent(hist_max);   
         Tl.DrawLatex(0.51, y_max + 10, Form("#scale[0.6]{matching threshold < %.2f}", thresholdIndex));
-        canvas->Print("plots/TofEff_pt_thesis_true_GS_0.3_v3.pdf");
+        canvas->Print("plots/TofEff_pt_thesis_true_GS_0.15.pdf");
     }
-    canvas->Print("plots/TofEff_pt_thesis_true_GS_0.3_v3.pdf]");
+    canvas->Print("plots/TofEff_pt_thesis_true_GS_0.15.pdf]");
    
     for (int i = 0; i < 6; i++) {
         TF1 *fitEtaWith = nullptr, *fitEtaWithout = nullptr;
@@ -863,7 +863,7 @@ void Plot_TofEfficiency() {
     effVsEta_true->Draw("PE same");
     legend->Draw();
     Tl.DrawLatex(-0.8,0.1, Form("#splitline{%s fixed}{Fit with: %s distribution}",fixvar[0],fitfunction[0]));
-    canvas->Print("plots/TofEff_summary_eta_thesis_MC_GS_0.3_v3.png");
+    canvas->Print("plots/TofEff_summary_eta_thesis_MC_GS_0.15.png");
 
     canvas->Clear();
     SetHistogramStyle2(effVsPt, kBlue);
@@ -873,7 +873,7 @@ void Plot_TofEfficiency() {
     legend->Draw();
     
     Tl.DrawLatex(0.25,0.1, Form("#splitline{%s fixed}{Fit with: %s distribution}",fixvar[0],fitfunction[0]));
-    canvas->Print("plots/TofEff_summary_pt_thesis_MC_GS_0.3_v3.png");
+    canvas->Print("plots/TofEff_summary_pt_thesis_MC_GS_0.15.png");
 
     
 }

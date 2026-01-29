@@ -77,7 +77,8 @@ int main(int argc, char** argv)
     double massProton = 938.272 / 1000.0; // Mass of proton in GeV
 
     //cut constants
-    const double kDeltaRCut = 0.3;  //0.15
+    const double kDeltaRCut = 0.3;  //0.15 //0.3
+    double matchingThresholdV0R = 3.0;
 
     // Open input file containing paths to data files
     ifstream inputFilePathList(argv[1]);
@@ -489,7 +490,7 @@ int main(int argc, char** argv)
                 //<< ", vtxR=" << truthVertexR << ", vtxZ=" << truthVertexZ << endl;
 
                 // Apply cuts on the production vertex
-                if (abs(truthVertexZ) > 80 || truthVertexR > 3.0 || pT < 0.2 || abs(eta) > 0.9)
+                if (abs(truthVertexZ) > 80 || truthVertexR > matchingThresholdV0R || pT < 0.2 || abs(eta) > 0.9)
                 {
                     continue; // Skip pions outside the acceptance
                 }
@@ -583,7 +584,7 @@ int main(int argc, char** argv)
                     double truthVertexZ = productionVertex.Z();
                     
                     // Apply cuts on the production vertex
-                    if (abs(truthVertexZ) <= 80 && truthVertexR <= 3.0 && pT >= 0.2 && abs(eta) <= 0.9) {
+                    if (abs(truthVertexZ) <= 80 && truthVertexR <= matchingThresholdV0R && pT >= 0.2 && abs(eta) <= 0.9) {
                         vTruePions.push_back(particle);
                         vTruePionVectors.push_back(pion);
                     }
@@ -708,7 +709,7 @@ int main(int argc, char** argv)
                     double vtxZ = kaon.decayVertex().Z();
                     double vtxR = sqrt(pow(kaon.decayVertex().X(), 2) + pow(kaon.decayVertex().Y(), 2));
                     // Cut on decay vertex position
-                    if (abs(vtxZ) < 80 && vtxR < 3)
+                    if (abs(vtxZ) < 80 && vtxR < matchingThresholdV0R)
                     {
                         // Further cuts on DCA and TOF matching 
                         if (dcaDau < 1 and dcaBeam < 1 )// and  (kaon.pointingAngleHypo()>0.925 )  )
@@ -760,56 +761,52 @@ int main(int argc, char** argv)
                                 
                                 // If both tracks are true pions and have mother information, fill the truth-matched histograms
                                 if (isMC == 1 && isTrack1TruePion && isTrack2TruePion) {
-                                       
-                                    if (mother1 < 0 || mother2 < 0) {
-                                        continue; // Skip if either pion has no mother
-                                    }
                                     
-                                    // Then check if they have the same mother
-                                    if (mother1 != mother2) {
-                                        continue; // Skip if pions have different mothers
-                                    }
+                                    // Only fill truth-matched histograms if pions come from same K0s mother
+                                    //if (mother1 >= 0 && mother2 >= 0 && mother1 == mother2) {
+                                        
+                                        // Optionally uncomment to verify mother is actually K0/K0S
+                                        TParticle* motherParticle = upcEvt->getMCParticle(mother1);
+                                        //if (motherParticle) {
+                                            int motherPdg = abs(motherParticle->GetPdgCode());
+                                            
+                                            // Fill only if mother is K0 (311) or K0S (310)
+                                            if (motherPdg == 311 || motherPdg == 310) {
+                                                
+                                                HistKaonMassProbeWithTof_TruePions->Fill(kaon.m());
+                                                
+                                                // Fill pT and eta histograms for true pions with TOF
+                                                HistPionPtWithTof_TruePions->Fill(track1->getPt());
+                                                HistPionPtWithTof_TruePions->Fill(track2->getPt());
+                                                HistPionEtaWithTof_TruePions->Fill(track1->getEta());
+                                                HistPionEtaWithTof_TruePions->Fill(track2->getEta());
+                                                
+                                                // Fill pT-binned histograms
+                                                for (int i = 0; i < nBinsPt-1; i++) {
+                                                    if (track1->getPt() >= binsPt[i] && track1->getPt() < binsPt[i+1]) {
+                                                        HistKaonPtTruePionWithTofMass[i]->Fill(kaon.m());
+                                                    }
+                                                    if (track2->getPt() >= binsPt[i] && track2->getPt() < binsPt[i+1]) {
+                                                        HistKaonPtTruePionWithTofMass[i]->Fill(kaon.m());
+                                                    }
+                                                }
+                                                
+                                                // Fill eta-binned histograms
+                                                for (int i = 0; i < nBinsEta-1; i++) {
+                                                    if (track1->getEta() >= binsEta[i] && track1->getEta() < binsEta[i+1]) {
+                                                        HistKaonEtaTruePionWithTofMass[i]->Fill(kaon.m());
+                                                    }
+                                                    if (track2->getEta() >= binsEta[i] && track2->getEta() < binsEta[i+1]) {
+                                                        HistKaonEtaTruePionWithTofMass[i]->Fill(kaon.m());
+                                                    }
+                                                }
+                                                
+                                            } // end if K0/K0S
+                                        //} // end if motherParticle exists
+                                    //} // end if valid same mother
                                     
-                                    // Get the mother particle and check its PDG code
-                                    /*TParticle* motherParticle = upcEvt->getMCParticle(mother1);
-                                    if (!motherParticle) {
-                                        continue; // Skip if can't access mother particle
-                                    }
-                                    
-                                    // Check if mother is a K0 (PDG code: 311 for K0, 310 for K0_S)
-                                    int motherPdg = abs(motherParticle->GetPdgCode());
-                                    if (motherPdg != 311 && motherPdg != 310) {
-                                        continue; // Skip if mother is not a K0/K0_S
-                                    }*/
-                                    
-                                    HistKaonMassProbeWithTof_TruePions->Fill(kaon.m());
-                                    
-                                    // Fill pT and eta histograms for true pions with TOF
-                                    HistPionPtWithTof_TruePions->Fill(track1->getPt());
-                                    HistPionPtWithTof_TruePions->Fill(track2->getPt());
-                                    HistPionEtaWithTof_TruePions->Fill(track1->getEta());
-                                    HistPionEtaWithTof_TruePions->Fill(track2->getEta());
+                                } // end if both are true pions
 
-                                    // Fill pT-binned histograms
-                                    for (int i = 0; i < nBinsPt-1; i++) {
-                                        if (track1->getPt() >= binsPt[i] && track1->getPt() < binsPt[i+1]) {
-                                            HistKaonPtTruePionWithTofMass[i]->Fill(kaon.m());
-                                        }
-                                        if (track2->getPt() >= binsPt[i] && track2->getPt() < binsPt[i+1]) {
-                                            HistKaonPtTruePionWithTofMass[i]->Fill(kaon.m());
-                                        }
-                                    }
-                                    
-                                    // Fill eta-binned histograms
-                                    for (int i = 0; i < nBinsEta-1; i++) {
-                                        if (track1->getEta() >= binsEta[i] && track1->getEta() < binsEta[i+1]) {
-                                            HistKaonEtaTruePionWithTofMass[i]->Fill(kaon.m());
-                                        }
-                                        if (track2->getEta() >= binsEta[i] && track2->getEta() < binsEta[i+1]) {
-                                            HistKaonEtaTruePionWithTofMass[i]->Fill(kaon.m());
-                                        }
-                                    }
-                                }   
                             }
                            
                             else     // without ToF
