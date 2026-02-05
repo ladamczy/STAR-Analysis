@@ -8,6 +8,7 @@
 #include <TCanvas.h>
 #include <TParticlePDG.h>
 #include <TLine.h>
+#include <TEfficiency.h>
 
 //STAR headers
 #include <StarGenEvent.h>
@@ -82,6 +83,12 @@ int main(int argc, char* argv[]){
     // outsideprocessing.AddHistogram(TH2D("etapTKstarbar", "#bar{K}^{*}(892) number;eta;p_{T}", 10, -1, 1, 10, 0, 2.5));
     // outsideprocessing.AddHistogram(TH2D("etapTphi", "#varphi(1020) number;eta;p_{T}", 10, -1, 1, 10, 0, 2.5));
 
+    //histograms for efficiency
+    TH2D K0STotal("K0STotal", "#eta vs p_{T} of #pi^{#pm} from K^{0}_{S} decay;#eta;p_{T}", 60, -3.0, 3.0, 40, 0, 2);
+    TH2D K0SAfterMCpionCuts("K0SAfterMCpionCuts", "#eta vs p_{T} of #pi^{#pm} from K^{0}_{S} decay;#eta;p_{T}", 60, -3.0, 3.0, 40, 0, 2);
+    TH2D K0SAfterTPCpionCuts("K0SAfterTPCpionCuts", "#eta vs p_{T} of #pi^{#pm} from K^{0}_{S} decay;#eta;p_{T}", 60, -3.0, 3.0, 40, 0, 2);
+
+    //rest of the histograms
     TH1D FlowOfEvents("FlowOfEvents", "Independent event checks (of MC particles);;events", 1, 0, 1);
     TH1D K0SIndex("K0SIndex", "Index of K^{0}_{S};index;particles", 30, 0, 30);
     TH1D K0Sdetectability("K0Sdetectability", "How many K^{0}_{S} are detectable", 1, 0, 1);
@@ -239,6 +246,7 @@ int main(int argc, char* argv[]){
             if(abs(tempUPCpointer->getMCParticle(i)->GetPdgCode())==310){
                 n_of_K0S++;
                 K0SIndex.Fill(i);
+                K0STotal.Fill(tempUPCpointer->getMCParticle(i)->Eta(), tempUPCpointer->getMCParticle(i)->Pt());
                 //K0Sdetectability things
                 K0Sdetectability.Fill(0., 1.0);
                 int decayVertex = tempUPCpointer->getMCParticle(i)->GetFirstDaughter();
@@ -271,6 +279,7 @@ int main(int argc, char* argv[]){
                 }
                 if(isPiPlusDetectable&&isPiMinusDetectable){
                     K0Sdetectability.Fill(2, 1.0);
+                    K0SAfterMCpionCuts.Fill(tempUPCpointer->getMCParticle(i)->Eta(), tempUPCpointer->getMCParticle(i)->Pt());
                 }
             }
             if(tempUPCpointer->getMCParticle(i)->GetPdgCode()==piplusPDGid)
@@ -432,6 +441,7 @@ int main(int argc, char* argv[]){
                                         }
                                     }
                                 }
+                                K0SAfterTPCpionCuts.Fill(tempUPCpointer->getMCParticle(MotherParticleIndex)->Eta(), tempUPCpointer->getMCParticle(MotherParticleIndex)->Pt());
                                 //stuff to do with deltaT
                                 double deltaT = DeltaT0(positiveTrack[i], negativeTrack[j], 0.13957, 0.13957);
                                 MpipiDeltaT.Fill(deltaT);
@@ -601,12 +611,25 @@ int main(int argc, char* argv[]){
 
     TFile* outputFileHist = TFile::Open(outfileName.c_str(), "recreate");
     // outsideprocessing.SaveToFile(outputFileHist);
+
+    //creating efficiency objects
+    TEfficiency K0SMCEfficiency(K0SAfterMCpionCuts, K0STotal);
+    K0SMCEfficiency.SetNameTitle("K0SMCEfficiency", "K^{0}_{S} MC detection efficiency (judged by pions inside fiducial region)");
+    TEfficiency K0STPCEfficiency(K0SAfterTPCpionCuts, K0SAfterMCpionCuts);
+    K0STPCEfficiency.SetNameTitle("K0STPCEfficiency", "K^{0}_{S} TPC detection efficiency (judged by TPC reconstruction of pions already in fiducial cuts)");
+    TEfficiency K0STotalEfficiency(K0SAfterTPCpionCuts, K0STotal);
+    K0STotalEfficiency.SetNameTitle("K0STotalEfficiency", "K^{0}_{S} total detection efficiency (judged by MC pions inside fiducial region, properly reconstructed)");
+
+    //saving histograms
     FlowOfEvents.LabelsDeflate();
     FlowOfEvents.Write();
     K0SIndex.Write();
     K0Sdetectability.LabelsDeflate();
     K0Sdetectability.Write();
     K0SdecayProductsKinematics.Write();
+    K0SMCEfficiency.Write();
+    K0STPCEfficiency.Write();
+    K0STotalEfficiency.Write();
     NumberOfPions.Write();
     MCParticles.Write();
     TPCParticles.Write();
