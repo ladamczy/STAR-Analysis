@@ -84,9 +84,9 @@ int main(int argc, char* argv[]){
     // outsideprocessing.AddHistogram(TH2D("etapTphi", "#varphi(1020) number;eta;p_{T}", 10, -1, 1, 10, 0, 2.5));
 
     //histograms for efficiency
-    TH2D K0STotal("K0STotal", "#eta vs p_{T} of #pi^{#pm} from K^{0}_{S} decay;#eta;p_{T}", 60, -3.0, 3.0, 40, 0, 2);
-    TH2D K0SAfterMCpionCuts("K0SAfterMCpionCuts", "#eta vs p_{T} of #pi^{#pm} from K^{0}_{S} decay;#eta;p_{T}", 60, -3.0, 3.0, 40, 0, 2);
-    TH2D K0SAfterTPCpionCuts("K0SAfterTPCpionCuts", "#eta vs p_{T} of #pi^{#pm} from K^{0}_{S} decay;#eta;p_{T}", 60, -3.0, 3.0, 40, 0, 2);
+    TH2D K0STotal("K0STotal", "#eta vs p_{T} of K^{0}_{S};#eta;p_{T}", 60, -3.0, 3.0, 40, 0, 2);
+    TH2D K0SAfterMCpionCuts("K0SAfterMCpionCuts", "#eta vs p_{T} of K^{0}_{S} after MC fiducial cuts;#eta;p_{T}", 60, -3.0, 3.0, 40, 0, 2);
+    TH2D K0SAfterTPCpionCuts("K0SAfterTPCpionCuts", "#eta vs p_{T} of K^{0}_{S} after MC cuts and TPC reconstruction;#eta;p_{T}", 60, -3.0, 3.0, 40, 0, 2);
 
     //rest of the histograms
     TH1D FlowOfEvents("FlowOfEvents", "Independent event checks (of MC particles);;events", 1, 0, 1);
@@ -626,6 +626,7 @@ int main(int argc, char* argv[]){
     K0SIndex.Write();
     K0Sdetectability.LabelsDeflate();
     K0Sdetectability.Write();
+    K0STotal.Write();
     K0SdecayProductsKinematics.Write();
     K0SMCEfficiency.Write();
     K0STPCEfficiency.Write();
