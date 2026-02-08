@@ -16,6 +16,7 @@
 <SandBox>
         <Package>
                 <File>file:./StRoot/</File>
+                <File>file:./.$STAR_HOST_SYS/</File>
                 <File>file:/star/u/adamwatroba/STAR-Analysis/Inclusive_Analysis/starsim/starsim_and_bfc/bfc_run.C</File>
                 <File>file:/star/u/adamwatroba/STAR-Analysis/Inclusive_Analysis/starsim/starsim_and_bfc/centralDiffractive&filter;.C</File>
                 <File>file:/star/u/adamwatroba/STAR-Analysis/Inclusive_Analysis/starsim/starsim_and_bfc/remove_everything_but_MuDst_and_pythia.sh</File>
