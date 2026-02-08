@@ -125,17 +125,21 @@ void Pythia8(){
     pythia8->Set("SoftQCD:centralDiffractive = on");
     pythia8->Set("SigmaTotal:zeroAXB = off");
 
+    //in Init() K0S and Lambda decays are turned off, which allows Geant to simulate them
+    //turning them on after Init() (so that it would work actually) would remove them from Geant simulation pool
+    //and they would not be present in MuDst files
+
     //setting only charged decay products
     // //K0S
     // pythia8->Set("310:onMode=0");
     // pythia8->Set("310:OnIfMatch=211 -211");
     // pythia8->Set("-310:onMode=0");
     // pythia8->Set("-310:OnIfMatch=-211 211");
-    //Lambda0
-    pythia8->Set("3122:onMode=0");
-    pythia8->Set("3122:OnIfMatch=2212 -211");
-    pythia8->Set("-3122:onMode=0");
-    pythia8->Set("-3122:OnIfMatch=-2212 211");
+    // //Lambda0
+    // pythia8->Set("3122:onMode=0");
+    // pythia8->Set("3122:OnIfMatch=2212 -211");
+    // pythia8->Set("-3122:onMode=0");
+    // pythia8->Set("-3122:OnIfMatch=-2212 211");
     // //K*(892)
     // pythia8->Set("313:onMode=0");
     // pythia8->Set("313:OnIfMatch=321 -211");
@@ -163,7 +167,7 @@ void centralDiffractiveLambda0(Int_t nevents = 10, Int_t runNumber = 18091010, I
     gSystem->Load("StarGeneratorUtil.so");
     gSystem->Load("StarGeneratorEvent.so");
     gSystem->Load("StarGeneratorBase.so");
-    gSystem->Load("./StRoot/StarGeneratorFilt.so");
+    gSystem->Load(".$STAR_HOST_SYS/lib/StarGeneratorFilt.so");
     gSystem->Load("Pythia8_3_03.so");
     gSystem->Load("libMathMore.so");
 
@@ -198,8 +202,9 @@ void centralDiffractiveLambda0(Int_t nevents = 10, Int_t runNumber = 18091010, I
     // Setup cuts on which particles get passed to geant for
     //   simulation.  (To run generator in standalone mode,
     //   set ptmin=1.0E9.)
+    // turned off eta cuts to save diffractive protons
     _primary->SetPtRange(0.0, -1.0);         // GeV
-    _primary->SetEtaRange(-3.0, +3.0);
+    _primary->SetEtaRange(1.0, -1.0);
     _primary->SetPhiRange(0., TMath::TwoPi());
 
     // Setup a realistic vertex distribution:
@@ -210,6 +215,7 @@ void centralDiffractiveLambda0(Int_t nevents = 10, Int_t runNumber = 18091010, I
     //settings taken from the database for the run given
     //default run 18091010
     //RTS Start Time 2017-04-01 08:36:11 GMT
+    //TODO: change it to just get those values from the timestamp (there is a function for that)
     double beamline[4] = { 0,0,0,0 };
     if(runNumber==0)
         runNumber = 18091010;
@@ -223,6 +229,8 @@ void centralDiffractiveLambda0(Int_t nevents = 10, Int_t runNumber = 18091010, I
     // Setup geometry
     geometry("y2017a field=-5.0");
     command("gkine -4 0");
+
+    //output file
     command("gfile o results/centralDiffractive.fzd");
 
     trig(nevents);

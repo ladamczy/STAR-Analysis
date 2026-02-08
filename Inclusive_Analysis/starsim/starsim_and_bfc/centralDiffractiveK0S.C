@@ -125,12 +125,16 @@ void Pythia8(){
     pythia8->Set("SoftQCD:centralDiffractive = on");
     pythia8->Set("SigmaTotal:zeroAXB = off");
 
+    //in Init() K0S and Lambda decays are turned off, which allows Geant to simulate them
+    //turning them on after Init() (so that it would work actually) would remove them from Geant simulation pool
+    //and they would not be present in MuDst files
+
     //setting only charged decay products
-    //K0S
-    pythia8->Set("310:onMode=0");
-    pythia8->Set("310:OnIfMatch=211 -211");
-    pythia8->Set("-310:onMode=0");
-    pythia8->Set("-310:OnIfMatch=-211 211");
+    // //K0S
+    // pythia8->Set("310:onMode=0");
+    // pythia8->Set("310:OnIfMatch=211 -211");
+    // pythia8->Set("-310:onMode=0");
+    // pythia8->Set("-310:OnIfMatch=-211 211");
     // //Lambda0
     // pythia8->Set("3122:onMode=0");
     // pythia8->Set("3122:OnIfMatch=2212 -211");
@@ -225,7 +229,7 @@ void centralDiffractiveK0S(Int_t nevents = 10, Int_t runNumber = 18091010, Int_t
     // Setup geometry
     geometry("y2017a field=-5.0");
     command("gkine -4 0");
-    
+
     //output file
     command("gfile o results/centralDiffractive.fzd");
 
