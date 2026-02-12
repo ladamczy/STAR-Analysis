@@ -35,17 +35,126 @@ double distanceToBeamline(TVector3 point, double x0 = -0.126857, double y0 = -0.
 int main(int argc, char* argv[]){
 
     //argv[1] - input file
-    //argv[2] - output folder
-    //argv[3] - #of cores
-
-    int nthreads = 1;
-    if(argc==4){
-        nthreads = atoi(argv[3]);
+    //argv[2] - output folder/file
+    //argv[3] - PDG id/codename of particle tested
+    //argv[4] - event to print
+    if(argc>5||argc<4){
+        printf("Invalid number of arguments. Proper argument usage:\n");
+        printf("argv[1] - input file\n");
+        printf("argv[2] - output folder/file\n");
+        printf("argv[3] - PDG id/codename of particle tested\n");
+        printf("argv[4] - event to print (optional)\n");
+        printf("\n");
+        printf("Particle\tPDG code\tcodename\n");
+        printf("K0S\t\t310\t\tK0S\n");
+        printf("Lambda0\t\t3122\t\tLambda0\n");
+        printf("Lambda0bar\t-3122\t\tLambda0bar\n");
+        printf("K*(892)\t\t313\t\tKstar\n");
+        printf("K*(892)bar\t-313\t\tKstarbar\n");
+        printf("phi(1020)\t333\t\tphi\n");
+        return 0;
     }
 
-    cout<<"Program is running on "<<nthreads<<" threads"<<endl;
-    ROOT::EnableThreadSafety();
-    //actually i'm not sure if it's needed here
+    //Useful IDs
+    const int K0SPDGid = 310;
+    const int LambdaPDGid = 3122;
+    const int LambdabarPDGid = -3122;
+    const int KstarPDGid = 313;
+    const int KstarbarPDGid = -313;
+    const int phiPDGid = 333;
+    const int piplusPDGid = 211;
+    const int piminusPDGid = -211;
+    const int KplusPDGid = 321;
+    const int KminusPDGid = -321;
+    const int pplusPDGid = 2212;
+    const int pminusPDGid = -2212;
+    //masses
+    std::map<int, double> massmap = { {K0SPDGid, 0.497611},
+                                    {LambdaPDGid, 1.115683},
+                                    {LambdabarPDGid, 1.115683},
+                                    {KstarPDGid, 0.89167},
+                                    {KstarbarPDGid, 0.89167},
+                                    {phiPDGid, 1.019461},
+                                    {piplusPDGid, 0.139570},
+                                    {piminusPDGid, 0.139570},
+                                    {KplusPDGid, 0.493677},
+                                    {KminusPDGid, 0.493677},
+                                    {pplusPDGid, 0.938272},
+                                    {pminusPDGid, 0.938272} };
+
+    int PDGmain, eventToPrint = -1;
+    int PDGpositive, PDGnegative;
+    if(argc==5){
+        eventToPrint = atoi(argv[4]);
+    }
+    //atoi(not number) returns 0
+    //so there is a nice check if argv[3] is a PDG id or a codename
+    PDGmain = atoi(argv[3]);
+    //consult the map for the key of particle codename
+    //and fill PDGmain with proper id
+    if(PDGmain==0){
+        //why is there no switch for strings, I will never fathom
+        //instead i have std::map with custom comparison function for c strings
+        auto PDGmap = std::map<const char*, int, std::function<bool(const char*, const char*)>>{
+            [](const char* a, const char* b){
+                return strcmp(a,b)<0;
+            }
+        };
+        PDGmap = { {"K0S", K0SPDGid},
+            {"Lambda0", LambdaPDGid},
+            {"Lambda0bar", LambdabarPDGid},
+            {"Kstar", KstarPDGid},
+            {"Kstatbar", KstarbarPDGid},
+            {"phi", phiPDGid} };
+        if(PDGmap.count(argv[3])==0){
+            printf("This codename (%s) is not implemented/invalid\n", argv[3]);
+            return 1;
+        } else{
+            PDGmain = PDGmap[argv[3]];
+        }
+    }
+
+    printf("Chosen main particle PDG id: %d\n", PDGmain);
+
+    //setting particle PDG number and decay products
+    switch(PDGmain){
+    case K0SPDGid:
+        PDGpositive = piplusPDGid;
+        PDGnegative = piminusPDGid;
+        break;
+    case LambdaPDGid:
+        PDGpositive = pplusPDGid;
+        PDGnegative = piminusPDGid;
+        break;
+    case LambdabarPDGid:
+        PDGpositive = piplusPDGid;
+        PDGnegative = pminusPDGid;
+        break;
+    case KstarPDGid:
+        PDGpositive = KplusPDGid;
+        PDGnegative = piminusPDGid;
+        break;
+    case KstarbarPDGid:
+        PDGpositive = piplusPDGid;
+        PDGnegative = KminusPDGid;
+        break;
+    case phiPDGid:
+        PDGpositive = KplusPDGid;
+        PDGnegative = KminusPDGid;
+        break;
+    default:
+        printf("This PDG number is not implemented\n");
+        return 1;
+    }
+
+    // //multithread processing preparation
+    // int nthreads = 1;
+    // if(argc==4){
+    //     nthreads = atoi(argv[3]);
+    // }
+    // cout<<"Program is running on "<<nthreads<<" threads"<<endl;
+    // ROOT::EnableThreadSafety();
+    // //actually i'm not sure if it's needed here
     // ROOT::EnableImplicitMT(nthreads); //turn on multicore processing
 
     //preparing input & output
@@ -55,21 +164,7 @@ int main(int argc, char* argv[]){
     }
     const string& outputFolder = argv[2];
 
-    //Useful IDs
-    const int K0sPDGid = 310;
-    const int K0sbarPDGid = -310;
-    const int LambdaPDGid = 3122;
-    const int LambdabarPDGid = -3122;
-    const int phiPDGid = 333;
-    const int phibarPDGid = -333;
-    const int KstarPDGid = 313;
-    const int KstarbarPDGid = -313;
-    const int piplusPDGid = 211;
-    const int piminusPDGid = -211;
-    const int KplusPDGid = 321;
-    const int KminusPDGid = -321;
-    const int pplusPDGid = 2212;
-    const int pminusPDGid = -2212;
+    //setting IDs and other phrases to customise the histograms
 
     //histograms
     // ProcessingOutsideLoop outsideprocessing;
@@ -243,7 +338,7 @@ int main(int argc, char* argv[]){
         int n_of_piminus = 0;
         int n_of_pizero = 0;
         for(size_t i = 0; i<tempUPCpointer->getNumberOfMCParticles(); i++){
-            if(abs(tempUPCpointer->getMCParticle(i)->GetPdgCode())==310){
+            if(abs(tempUPCpointer->getMCParticle(i)->GetPdgCode())==PDGmain){
                 n_of_K0S++;
                 K0SIndex.Fill(i);
                 K0STotal.Fill(tempUPCpointer->getMCParticle(i)->Eta(), tempUPCpointer->getMCParticle(i)->Pt());
@@ -259,14 +354,14 @@ int main(int argc, char* argv[]){
                     }
                     //when we check we actually have a particle correlated
                     //with the proper vertex, we can continue analysis
-                    if(temp->GetPdgCode()==211){
+                    if(temp->GetPdgCode()==PDGpositive){
                         hasPiPlus = true;
                         if(fabs(temp->Eta())<=0.9&&temp->Pt()>=0.2){
                             isPiPlusDetectable = true;
                         }
                         K0SdecayProductsKinematics.Fill(temp->Eta(), temp->Pt());
                     }
-                    if(temp->GetPdgCode()==-211){
+                    if(temp->GetPdgCode()==PDGnegative){
                         hasPiMinus = true;
                         if(fabs(temp->Eta())<=0.9&&temp->Pt()>=0.2){
                             isPiMinusDetectable = true;
@@ -282,11 +377,11 @@ int main(int argc, char* argv[]){
                     K0SAfterMCpionCuts.Fill(tempUPCpointer->getMCParticle(i)->Eta(), tempUPCpointer->getMCParticle(i)->Pt());
                 }
             }
-            if(tempUPCpointer->getMCParticle(i)->GetPdgCode()==piplusPDGid)
+            if(tempUPCpointer->getMCParticle(i)->GetPdgCode()==PDGpositive)
                 n_of_piplus++;
-            if(tempUPCpointer->getMCParticle(i)->GetPdgCode()==piminusPDGid)
+            if(tempUPCpointer->getMCParticle(i)->GetPdgCode()==PDGnegative)
                 n_of_piminus++;
-            if(abs(tempUPCpointer->getMCParticle(i)->GetPdgCode())==111)
+            if(abs(tempUPCpointer->getMCParticle(i)->GetPdgCode())==111)//pi0 special case
                 n_of_pizero++;
         }
         NumberOfPions.Fill(n_of_piplus, n_of_piminus, n_of_pizero);
@@ -388,8 +483,8 @@ int main(int argc, char* argv[]){
                     }
                     //tracks
                     TLorentzVector posTrack, negTrack;
-                    positiveTrack[i]->getLorentzVector(posTrack, 0.13957);
-                    negativeTrack[j]->getLorentzVector(negTrack, 0.13957);
+                    positiveTrack[i]->getLorentzVector(posTrack, massmap[PDGpositive]);
+                    negativeTrack[j]->getLorentzVector(negTrack, massmap[PDGnegative]);
                     MpipiTPC.Fill((posTrack+negTrack).M());
                     MpipiTPCExtremelyWide.Fill((posTrack+negTrack).M());
                     //MC particles
@@ -411,7 +506,7 @@ int main(int argc, char* argv[]){
                     //both pions, same mother, mother is K0S
                     MpipiFlow.Fill("TPC", 1.0);
                     MpipiPairs.Fill(positiveMC[chosen_MC_list_positive[i]]->GetPDG()->GetName(), negativeMC[chosen_MC_list_negative[j]]->GetPDG()->GetName(), 1.0);
-                    if(posPDG==211&&negPDG==-211){
+                    if(posPDG==PDGpositive&&negPDG==PDGnegative){
                         MpipiFlow.Fill("Pion pair", 1.0);
                         MpipiMothers.Fill(posProductionVertex, negProductionVertex);
                         if(posProductionVertex==negProductionVertex){
@@ -422,7 +517,7 @@ int main(int argc, char* argv[]){
                                     break;
                                 }
                             }
-                            if(abs(posMotherPDG)==310){
+                            if(abs(posMotherPDG)==PDGmain){
                                 MpipiFlow.Fill("K^{0}_{S} mother", 1.0);
                                 MpipiMC.Fill((posTrack+negTrack).M());
                                 MpipiMCExtremelyWide.Fill((posTrack+negTrack).M());
@@ -443,7 +538,7 @@ int main(int argc, char* argv[]){
                                 }
                                 K0SAfterTPCpionCuts.Fill(tempUPCpointer->getMCParticle(MotherParticleIndex)->Eta(), tempUPCpointer->getMCParticle(MotherParticleIndex)->Pt());
                                 //stuff to do with deltaT
-                                double deltaT = DeltaT0(positiveTrack[i], negativeTrack[j], 0.13957, 0.13957);
+                                double deltaT = DeltaT0(positiveTrack[i], negativeTrack[j], massmap[PDGpositive], massmap[PDGnegative]);
                                 MpipiDeltaT.Fill(deltaT);
                                 if(positiveTrack.size()==1&&negativeTrack.size()==1){
                                     MpipiDeltaTOnlyTwoTracksDetected.Fill(deltaT);
@@ -502,7 +597,7 @@ int main(int argc, char* argv[]){
 
 
         //special part where one event is drawn
-        if(tempCounter==nthreads){
+        if(tempCounter==eventToPrint){
             //statistics
             printf("Event %d:\n", tempCounter);
             printf("Number of MC particles (excluding protons) before filter: %d\n", tempUPCpointer->getNumberOfMCParticles()-2);
