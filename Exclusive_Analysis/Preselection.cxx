@@ -407,7 +407,7 @@ int main(int argc, char** argv)
         }
 
 
-        if (isCepTrigger and hasTwoRpTracksOppositeSide and useAtLeastThreePlanes and withinFiducialRegion and isValidNumberOfTofMatchedTracksClassA)//and (isValidNumberOfTofMatchedTracksClassA or isValidNumberOfTofMatchedTracksClassB) )
+        if (isCepTrigger and hasTwoRpTracksOppositeSide and useAtLeastThreePlanes and withinFiducialRegion and (tracksWithTofHit.size() >= 2))//and isValidNumberOfTofMatchedTracksClassA)//and (isValidNumberOfTofMatchedTracksClassA or isValidNumberOfTofMatchedTracksClassB) )
         {
             
             // fill tree
