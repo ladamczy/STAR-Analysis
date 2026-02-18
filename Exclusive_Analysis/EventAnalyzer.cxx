@@ -212,24 +212,31 @@ int main(int argc, char* argv[]) {
         hCutFlow->Fill(2);
         
         // Four TOF-matched tracks
-        vector<const StUPCTrack*> tofTracks;
+        /*vector<const StUPCTrack*> tofTracks;
         for (int iTrk = 0; iTrk < upcEvt->getNumberOfTracks(); ++iTrk) {
             if (upcEvt->getTrack(iTrk)->getFlag(StUPCTrack::kTof)) {
                 tofTracks.push_back(upcEvt->getTrack(iTrk));
             }
+        }*/// if you use non V0 following cuts for v0Tracks change to tofTracks
+        vector<const StUPCTrack*> v0Tracks;
+        for (int iTrk = 0; iTrk < upcEvt->getNumberOfTracks(); ++iTrk) {
+            StUPCTrack* trk = upcEvt->getTrack(iTrk);
+            if (trk->getFlag(StUPCTrack::kTof) && trk->getFlag(StUPCTrack::kV0)) {
+                v0Tracks.push_back(trk);
+            }
         }
-        if (tofTracks.size() != 4) continue;
+        if (v0Tracks.size() != 4) continue;
         hCutFlow->Fill(3);
         
         // Total charge = 0
         int totalCharge = 0;
-        for (auto trk : tofTracks) totalCharge += trk->getCharge();
+        for (auto trk : v0Tracks) totalCharge += trk->getCharge();
         if (totalCharge != 0) continue;
         hCutFlow->Fill(4);
         
         // Eta cut
         bool etaOK = true;
-        for (auto trk : tofTracks) {
+        for (auto trk : v0Tracks) {
             if (fabs(trk->getEta()) > CUT_ETA) {
                 etaOK = false;
                 break;
@@ -240,7 +247,7 @@ int main(int argc, char* argv[]) {
         
         // pT cut
         bool ptOK = true;
-        for (auto trk : tofTracks) {
+        for (auto trk : v0Tracks) {
             if (trk->getPt() < CUT_PT) {
                 ptOK = false;
                 break;
@@ -251,7 +258,7 @@ int main(int argc, char* argv[]) {
         
         // NhitsFit cut
         bool nFitOK = true;
-        for (auto trk : tofTracks) {
+        for (auto trk : v0Tracks) {
             if (trk->getNhitsFit() < CUT_NHITS_FIT) {
                 nFitOK = false;
                 break;
@@ -262,7 +269,7 @@ int main(int argc, char* argv[]) {
         
         // NhitsDEdx cut
         bool nDedxOK = true;
-        for (auto trk : tofTracks) {
+        for (auto trk : v0Tracks) {
             if (trk->getNhitsDEdx() < CUT_NHITS_DEDX) {
                 nDedxOK = false;
                 break;
@@ -275,7 +282,7 @@ int main(int argc, char* argv[]) {
         // Separate positive and negative tracks
         // -------------------------------------------------------------------
         vector<const StUPCTrack*> posTracks, negTracks;
-        for (auto trk : tofTracks) {
+        for (auto trk : v0Tracks) {
             if (trk->getCharge() > 0) posTracks.push_back(trk);
             else negTracks.push_back(trk);
         }
