@@ -27,6 +27,7 @@
 #include <UsefulThings.h>
 
 void PrintBigger(TParticle*);
+void PrintTPC(StUPCTrack*);
 
 int main(int argc, char* argv[]){
 
@@ -173,6 +174,18 @@ int main(int argc, char* argv[]){
             TVector3 tempVec(tempPart->Px(), tempPart->Py(), tempPart->Pz());
             ParticlesGeant.AddPoint(tempVec.Eta(), tempVec.Phi());
         }
+        //TPC particles graph
+        TGraph ParticlesTPC(0);
+        ParticlesTPC.SetNameTitle("TPC", "TPC;#eta;#phi");
+        ParticlesTPC.SetMarkerStyle(22);
+        ParticlesTPC.SetMarkerSize(1.5);
+        ParticlesTPC.SetMarkerColor(3);
+        for(int particle_index = 0; particle_index<MCafterGeant_event->getNumberOfTracks(); particle_index++){
+            StUPCTrack* tempPart = MCafterGeant_event->getTrack(particle_index);
+            TVector3 tempVec;
+            tempPart->getMomentum(tempVec);
+            ParticlesTPC.AddPoint(tempVec.Eta(), tempVec.Phi());
+        }
 
         //drawing and saving canvas
         ParticlesPYTHIA.RemovePoint(0);
@@ -194,6 +207,16 @@ int main(int argc, char* argv[]){
                 ParticlesGeant.GetHistogram()->SetMaximum(TMath::Pi());
             }
         }
+        if(ParticlesTPC.GetN()){
+            if(drawnMC){
+                ParticlesTPC.Draw("same p");
+            } else{
+                ParticlesTPC.Draw("ap");
+                ParticlesTPC.GetXaxis()->SetLimits(-6.0, 6.0);
+                ParticlesTPC.GetHistogram()->SetMinimum(-TMath::Pi());
+                ParticlesTPC.GetHistogram()->SetMaximum(TMath::Pi());
+            }
+        }
         c1.BuildLegend();
         gPad->Modified();
         gPad->Update();
@@ -211,6 +234,12 @@ int main(int argc, char* argv[]){
             TParticle* tempPart = MCafterGeant_event->getMCParticle(particle_index);
             PrintBigger(tempPart);
         }
+        //TPC part
+        printf("\nFull TPC data:\n");
+        for(int particle_index = 0; particle_index<MCafterGeant_event->getNumberOfTracks(); particle_index++){
+            StUPCTrack* tempPart = MCafterGeant_event->getTrack(particle_index);
+            PrintTPC(tempPart);
+        }
     }
 
     a.Run();
@@ -221,4 +250,13 @@ void PrintBigger(TParticle* input){
     Printf("TParticle: %-13s  p: %8f %8f %8f \tVertex: %8e %8e %8e \tProd. Vertex: %5d %5d \tDecay Vertex: %5d",
         input->GetName(), input->Px(), input->Py(), input->Pz(), input->Vx(), input->Vy(), input->Vz(),
         input->GetFirstMother(), input->GetSecondMother(), input->GetFirstDaughter());
+}
+
+void PrintTPC(StUPCTrack* input){
+    TVector3 momVector, originVector;
+    input->getMomentum(momVector);
+    originVector = input->getOrigin();
+    Printf("StUPCTrack: %-13s  p: %8f %8f %8f \tVertex: %8e %8e %8e \tId Truth: %5d",
+        input->GetName(), momVector.x(), momVector.y(), momVector.z(), originVector.x(), originVector.y(), originVector.z(),
+        input->getIdTruth());
 }
