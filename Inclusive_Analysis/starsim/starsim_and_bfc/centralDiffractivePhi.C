@@ -128,16 +128,12 @@ void Pythia8(){
     //in Init() K0S and Lambda decays are turned off, which allows Geant to simulate them
     //turning them on after Init() (so that it would work actually) would remove them from Geant simulation pool
     //and they would not be present in MuDst files
-    //however, I will purposefully turn off K*(892) and phi(1020) decays
-    //for the same reason they are turned off for the K0S and Lambda0
+    //Turning off K*(892) and phi(1020) decays doesn't work, beacuse their simulation is not implemented in Geant
 
     // 0 if a channel is off,
     // 1 if on,
     // 2 if on for a particle but off for an antiparticle,
     // 3 if on for an antiparticle but off for a particle.
-
-    //phi(1020)
-    pythia8->Set("333:onMode=0");
 
     //setting only charged decay products
     // //K0S
@@ -155,11 +151,11 @@ void Pythia8(){
     // pythia8->Set("313:OnIfMatch=321 -211");
     // pythia8->Set("-313:onMode=0");
     // pythia8->Set("-313:OnIfMatch=-321 211");
-    // //phi
-    // pythia8->Set("333:onMode=0");
-    // pythia8->Set("333:OnIfMatch=321 -321");
-    // pythia8->Set("-333:onMode=0");
-    // pythia8->Set("-333:OnIfMatch=-321 321");
+    //phi
+    pythia8->Set("333:onMode=0");
+    pythia8->Set("333:OnIfMatch=321 -321");
+    pythia8->Set("-333:onMode=0");
+    pythia8->Set("-333:OnIfMatch=-321 321");
 
     _primary->AddGenerator(pythia8);
 }
@@ -239,7 +235,7 @@ void centralDiffractivePhi(Int_t nevents = 10, Int_t runNumber = 18091010, Int_t
     // Setup geometry
     geometry("y2017a field=-5.0");
     command("gkine -4 0");
- 
+
     //output file
     command("gfile o results/centralDiffractive.fzd");
 
