@@ -6,6 +6,7 @@
         root4star -q -b centralDiffractive&filter;.C\(&events_number;,&run_number;,&seed;\)
         mv results/*.root ./
         root4star -q -b bfc_run.C\(\"results/centralDiffractive.fzd\",&run_number;\)
+        root4star -q -b addPythiaParticles.C\(\"centralDiffractive.MuDst.root\",\"centralDiffractive.root\",&run_number;\)
         rename centralDiffractive centralDiffractive&number; centralDiffractive.*
         rm vpdana.root
         ./remove_everything_but_MuDst_and_pythia.sh &remove_everything_but_MuDst_and_pythia;
@@ -19,6 +20,7 @@
                 <File>file:./.$STAR_HOST_SYS/</File>
                 <File>file:/star/u/adamwatroba/STAR-Analysis/Inclusive_Analysis/starsim/starsim_and_bfc/bfc_run.C</File>
                 <File>file:/star/u/adamwatroba/STAR-Analysis/Inclusive_Analysis/starsim/starsim_and_bfc/centralDiffractive&filter;.C</File>
+                <File>file:/star/u/adamwatroba/STAR-Analysis/Inclusive_Analysis/starsim/starsim_and_bfc/addPythiaParticles.C</File>
                 <File>file:/star/u/adamwatroba/STAR-Analysis/Inclusive_Analysis/starsim/starsim_and_bfc/remove_everything_but_MuDst_and_pythia.sh</File>
         </Package>
 </SandBox>
