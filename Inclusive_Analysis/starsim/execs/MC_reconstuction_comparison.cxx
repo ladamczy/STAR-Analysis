@@ -207,9 +207,11 @@ int main(int argc, char* argv[]){
     TH1D MpipiDeltaT("MpipiDeltaT", "Time between pion decay;#Delta t_{0} [ns];events", 100, -5, 5);
     TH1D MpipiDeltaTOnlyTwoTracksDetected("MpipiDeltaTOnlyTwoTracksDetected", "Time between pion decay;#Delta t_{0} [ns];events", 100, -5, 5);
     TH1D MpipiDeltaTMoreThanTwoTracksDetected("MpipiDeltaTMoreThanTwoTracksDetected", "Time between pion decay;#Delta t_{0} [ns];events", 100, -5, 5);
+
     TH1D MpipiAfterDeltaT("MpipiAfterDeltaT", "#pi^{+}#pi^{-} pair mass after #Delta t_{0} cut;m_{#pi^{+}#pi^{-}} [GeV];pairs", 40, 0.4, 0.6);
     TH1D MpipiAfterDeltaTExtremelyWide("MpipiAfterDeltaTExtremelyWide", "#pi^{+}#pi^{-} pair mass after #Delta t_{0} cut;m_{#pi^{+}#pi^{-}} [GeV];pairs", 300, 0.0, 3.0);
     TH2D MpipiAfterDeltaTMass("MpipiAfterDeltaTMass", "#pi^{+}#pi^{-} pair mass after #Delta t_{0} cut;m_{#pi^{+}#pi^{-}} [GeV];pairs", 40, 0.4, 0.6, 100, -5, 5);
+
     TH1D MpipiAfterDeltaTNotPassed("MpipiAfterDeltaTNotPassed", "#pi^{+}#pi^{-} pair mass after failed #Delta t_{0} cut;m_{#pi^{+}#pi^{-}} [GeV];pairs", 40, 0.4, 0.6);
     TH1D MpipiAfterDeltaTNotPassedExtremelyWide("MpipiAfterDeltaTNotPassedExtremelyWide", "#pi^{+}#pi^{-} pair mass after failed #Delta t_{0} cut;m_{#pi^{+}#pi^{-}} [GeV];pairs", 300, 0.0, 3.0);
     TH2D MpipiAfterDeltaTNotPassedMass("MpipiAfterDeltaTNotPassedMass", "#pi^{+}#pi^{-} pair mass after failed #Delta t_{0} cut;m_{#pi^{+}#pi^{-}} [GeV];pairs", 40, 0.4, 0.6, 50, -5, 5);
@@ -217,6 +219,7 @@ int main(int argc, char* argv[]){
     TH1D MpipiAfterDeltaTNotPassedLengthOfFlightPosY("MpipiAfterDeltaTNotPassedLengthOfFlightPosY", "Flight y dimension", 120, -6, 6);
     TH1D MpipiAfterDeltaTNotPassedLengthOfFlightPosZ("MpipiAfterDeltaTNotPassedLengthOfFlightPosZ", "Flight z dimension", 120, -6, 6);
     TH1D MpipiAfterDeltaTNotPassedLengthOfFlightTime("MpipiAfterDeltaTNotPassedLengthOfFlightTime", "Flight time", 100, 0, 1e-6);
+
     TH1D MpipiAfterDeltaTNotPassedLengthOfFlightPosDistance("MpipiAfterDeltaTNotPassedLengthOfFlightPosDistance", "Flight distance", 100, 0, 10);
     TH1D MpipiAfterDeltaTPassedPionTOFLength("MpipiAfterDeltaTPassedPionTOFLength", "TOF path length of #pi^{#pm} from K^{0}_{S} decay", 40, 200, 400);
     TH1D MpipiAfterDeltaTNotPassedPionTOFLength("MpipiAfterDeltaTNotPassedPionTOFLength", "TOF path length of #pi^{#pm} from K^{0}_{S} decay", 40, 200, 400);
@@ -226,6 +229,10 @@ int main(int argc, char* argv[]){
     TH1D MpipiAfterDeltaTNotPassedPionMass("MpipiAfterDeltaTNotPassedPionMass", "#pi^{#pm} pair mass from K^{0}_{S} decay;m_{#pi^{#pm}} [GeV];pairs", 100, 0., 1.0);
     TH1D MpipiAfterDeltaTPassedK0SDecayVertexBeamlineDistance("MpipiAfterDeltaTPassedK0SDecayVertexBeamlineDistance", "Distance from K^{0}_{S} decay vertex to the beamline;d [cm];events", 50, 0, 20);
     TH1D MpipiAfterDeltaTNotPassedK0SDecayVertexBeamlineDistance("MpipiAfterDeltaTNotPassedK0SDecayVertexBeamlineDistance", "Distance from K^{0}_{S} decay vertex to the beamline;d [cm];events", 50, 0, 20);
+    TH1D MpipiAfterDeltaTPassedPionAngle("MpipiAfterDeltaTPassedPionAngle", "#pi^{#pm} pair angle from K^{0}_{S} decay;angle [rad];pairs", 63, 0., 2*TMath::Pi());
+    TH1D MpipiAfterDeltaTNotPassedPionAngle("MpipiAfterDeltaTNotPassedPionAngle", "#pi^{#pm} pair angle from K^{0}_{S} decay;angle [rad];pairs", 63, 0., 2*TMath::Pi());
+
+
     TH1D MpipiMCnotK0SMother("MpipiMCnotK0SMother", "#pi^{+}#pi^{-} pair mass (everything except K^{0}_{S} mother verification);m_{#pi^{+}#pi^{-}} [GeV];pairs", 40, 0.4, 0.6);
     TH1D MpipiMCnotK0SMotherExtremelyWide("MpipiMCnotK0SMotherExtremelyWide", "#pi^{+}#pi^{-} pair mass (everything except K^{0}_{S} mother verification);m_{#pi^{+}#pi^{-}} [GeV];pairs", 300, 0.0, 3.0);
 
@@ -561,6 +568,7 @@ int main(int argc, char* argv[]){
                                     TLorentzVector K0SdecayVertex;
                                     positiveMC[chosen_MC_list_positive[i]]->ProductionVertex(K0SdecayVertex);
                                     MpipiAfterDeltaTPassedK0SDecayVertexBeamlineDistance.Fill(distanceToBeamline(K0SdecayVertex.Vect()));
+                                    MpipiAfterDeltaTPassedPionAngle.Fill(posTrack.Angle(negTrack.Vect()));
                                 } else{
                                     MpipiAfterDeltaTNotPassed.Fill((posTrack+negTrack).M());
                                     MpipiAfterDeltaTNotPassedExtremelyWide.Fill((posTrack+negTrack).M());
@@ -584,6 +592,7 @@ int main(int argc, char* argv[]){
                                     TLorentzVector K0SdecayVertex;
                                     positiveMC[chosen_MC_list_positive[i]]->ProductionVertex(K0SdecayVertex);
                                     MpipiAfterDeltaTNotPassedK0SDecayVertexBeamlineDistance.Fill(distanceToBeamline(K0SdecayVertex.Vect()));
+                                    MpipiAfterDeltaTNotPassedPionAngle.Fill(posTrack.Angle(negTrack.Vect()));
                                 }
                             } else{
                                 MpipiMCnotK0SMother.Fill((posTrack+negTrack).M());
@@ -753,6 +762,7 @@ int main(int argc, char* argv[]){
     MpipiAfterDeltaT.Write();
     MpipiAfterDeltaTExtremelyWide.Write();
     MpipiAfterDeltaTMass.Write();
+
     MpipiAfterDeltaTNotPassed.Write();
     MpipiAfterDeltaTNotPassedExtremelyWide.Write();
     MpipiAfterDeltaTNotPassedMass.Write();
@@ -761,6 +771,7 @@ int main(int argc, char* argv[]){
     MpipiAfterDeltaTNotPassedLengthOfFlightPosZ.Write();
     MpipiAfterDeltaTNotPassedLengthOfFlightTime.Write();
     MpipiAfterDeltaTNotPassedLengthOfFlightPosDistance.Write();
+
     MpipiAfterDeltaTPassedPionTOFLength.Write();
     MpipiAfterDeltaTNotPassedPionTOFLength.Write();
     MpipiAfterDeltaTPassedPionTOFTime.Write();
@@ -769,8 +780,12 @@ int main(int argc, char* argv[]){
     MpipiAfterDeltaTNotPassedPionMass.Write();
     MpipiAfterDeltaTPassedK0SDecayVertexBeamlineDistance.Write();
     MpipiAfterDeltaTNotPassedK0SDecayVertexBeamlineDistance.Write();
+    MpipiAfterDeltaTPassedPionAngle.Write();
+    MpipiAfterDeltaTNotPassedPionAngle.Write();
+
     MpipiMCnotK0SMother.Write();
     MpipiMCnotK0SMotherExtremelyWide.Write();
+
     outputFileHist->Close();
 
     return 0;
