@@ -205,6 +205,7 @@ int main(int argc, char* argv[]){
     TH2D MpipiMothers("MpipiMothers", "particle number;positive;negative", 20, 0, 20, 20, 0, 20);
     TH1D MpipiMotherName("MpipiMotherName", "#pi^{+}#pi^{-} pair mothers;;mothers", 1, 0, 1);
     TH1D MpipiDeltaT("MpipiDeltaT", "Time between pion decay;#Delta t_{0} [ns];events", 100, -5, 5);
+    TH2D MpipiDeltaTvsEvent("MpipiDeltaTvsEvent", "Time between pion decay;#Delta t_{0} [ns];event number", 100, -5, 5, eventFiles->GetEntries(), 0, eventFiles->GetEntries());
     TH1D MpipiDeltaTOnlyTwoTracksDetected("MpipiDeltaTOnlyTwoTracksDetected", "Time between pion decay;#Delta t_{0} [ns];events", 100, -5, 5);
     TH1D MpipiDeltaTMoreThanTwoTracksDetected("MpipiDeltaTMoreThanTwoTracksDetected", "Time between pion decay;#Delta t_{0} [ns];events", 100, -5, 5);
 
@@ -547,6 +548,7 @@ int main(int argc, char* argv[]){
                                 //stuff to do with deltaT
                                 double deltaT = DeltaT0(positiveTrack[i], negativeTrack[j], massmap[PDGpositive], massmap[PDGnegative]);
                                 MpipiDeltaT.Fill(deltaT);
+                                MpipiDeltaTvsEvent.Fill(deltaT, tempCounter);
                                 if(positiveTrack.size()==1&&negativeTrack.size()==1){
                                     MpipiDeltaTOnlyTwoTracksDetected.Fill(deltaT);
                                 } else{
@@ -757,6 +759,7 @@ int main(int argc, char* argv[]){
     MpipiMotherName.LabelsDeflate();
     MpipiMotherName.Write();
     MpipiDeltaT.Write();
+    MpipiDeltaTvsEvent.Write();
     MpipiDeltaTOnlyTwoTracksDetected.Write();
     MpipiDeltaTMoreThanTwoTracksDetected.Write();
     MpipiAfterDeltaT.Write();
