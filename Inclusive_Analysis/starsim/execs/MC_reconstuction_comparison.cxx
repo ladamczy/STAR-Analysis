@@ -23,6 +23,7 @@
 #include "StUPCBemcCluster.h"
 #include "StUPCVertex.h"
 #include "StUPCTofHit.h"
+#include "StPicoPhysicalHelix.h"
 
 //my headers
 #include <ProcessingInsideLoop.h>
@@ -233,9 +234,18 @@ int main(int argc, char* argv[]){
     TH1D MpipiAfterDeltaTPassedPionAngle("MpipiAfterDeltaTPassedPionAngle", "#pi^{#pm} pair angle from K^{0}_{S} decay;angle [rad];pairs", 63, 0., 2*TMath::Pi());
     TH1D MpipiAfterDeltaTNotPassedPionAngle("MpipiAfterDeltaTNotPassedPionAngle", "#pi^{#pm} pair angle from K^{0}_{S} decay;angle [rad];pairs", 63, 0., 2*TMath::Pi());
 
-
     TH1D MpipiMCnotK0SMother("MpipiMCnotK0SMother", "#pi^{+}#pi^{-} pair mass (everything except K^{0}_{S} mother verification);m_{#pi^{+}#pi^{-}} [GeV];pairs", 40, 0.4, 0.6);
     TH1D MpipiMCnotK0SMotherExtremelyWide("MpipiMCnotK0SMotherExtremelyWide", "#pi^{+}#pi^{-} pair mass (everything except K^{0}_{S} mother verification);m_{#pi^{+}#pi^{-}} [GeV];pairs", 300, 0.0, 3.0);
+
+    TH1D DistanceAbnormal("DistanceAbnormal", "Distance MC-TPC in #eta-#phi space;distance;track pairs", 100, 0, 0.5);
+    TH1D DistanceNormal("DistanceNormal", "Distance MC-TPC in #eta-#phi space;distance;track pairs", 100, 0, 0.5);
+    TH2D TOFHitPositionAbnormal("TOFHitPositionAbnormal", "TOF hit position;z [cm];#phi [rad]", 40, -200, 200, 40, -TMath::Pi(), TMath::Pi());
+    TH2D TOFHitPositionNormal("TOFHitPositionNormal", "TOF hit position;z [cm];#phi [rad]", 40, -200, 200, 40, -TMath::Pi(), TMath::Pi());
+    TH1D TOFTimeAbnormal("TOFTimeAbnormal", "TOF time of #pi^{#pm} from K^{0}_{S} decay", 100, 0, 50);
+    TH1D TOFTimeNormal("TOFTimeNormal", "TOF time of #pi^{#pm} from K^{0}_{S} decay", 100, 0, 50);
+    TH2D TracksEtaPhiAbnormal("TracksEtaPhiAbnormal", "#eta vs #phi of detected products;#eta;#phi", 40, -1.0, 1.0, 40, -TMath::Pi(), TMath::Pi());
+    TH2D TracksEtaPhiNormal("TracksEtaPhiNormal", "#eta vs #phi of detected products;#eta;#phi", 40, -1.0, 1.0, 40, -TMath::Pi(), TMath::Pi());
+    //TODO add tof cluster finding
 
     //processing
     //defining TreeProcessor
@@ -558,7 +568,9 @@ int main(int argc, char* argv[]){
                                     MpipiDeltaTMoreThanTwoTracksDetected.Fill(deltaT);
                                 }
                                 //value nicked from .txt file with actual data
-                                if(fabs(deltaT)<3*0.13124272289253383){
+                                //replaced with a better cut of 0.6
+                                // if(fabs(deltaT)<3*0.13124272289253383){
+                                if(fabs(deltaT)<0.6){
                                     MpipiAfterDeltaT.Fill((posTrack+negTrack).M());
                                     MpipiAfterDeltaTExtremelyWide.Fill((posTrack+negTrack).M());
                                     MpipiAfterDeltaTMass.Fill((posTrack+negTrack).M(), deltaT);
@@ -595,6 +607,59 @@ int main(int argc, char* argv[]){
                                     positiveMC[chosen_MC_list_positive[i]]->ProductionVertex(K0SdecayVertex);
                                     MpipiAfterDeltaTNotPassedK0SDecayVertexBeamlineDistance.Fill(distanceToBeamline(K0SdecayVertex.Vect()));
                                     MpipiAfterDeltaTNotPassedPionAngle.Fill(posTrack.Angle(negTrack.Vect()));
+                                    //part for checking separate tracks
+                                    //setting temp values to not switch them around
+                                    //assumption is that to abnormal tracks was added 1ns, but it might be wrong
+                                    //and as we always have t0+ - t0-, then for deltaT>0 the abnormal track is the positive one
+                                    StUPCTrack* normalTrack, * abnormalTrack;
+                                    TLorentzVector normalTrackVector, abnormalTrackVector;
+                                    TParticle* normalMCparticle, * abnormalMCParticle;
+                                    if(deltaT>0){
+                                        abnormalTrack = positiveTrack[i];
+                                        normalTrack = negativeTrack[j];
+                                        abnormalTrackVector = posTrack;
+                                        normalTrackVector = negTrack;
+                                        abnormalMCParticle = positiveMC[chosen_MC_list_positive[i]];
+                                        normalMCparticle = negativeMC[chosen_MC_list_negative[j]];
+                                    } else{
+                                        abnormalTrack = negativeTrack[j];
+                                        normalTrack = positiveTrack[i];
+                                        abnormalTrackVector = negTrack;
+                                        normalTrackVector = posTrack;
+                                        abnormalMCParticle = negativeMC[chosen_MC_list_negative[j]];
+                                        normalMCparticle = positiveMC[chosen_MC_list_positive[i]];
+                                    }
+                                    //histograms of distance in eta-phi space
+                                    TVector3 vecMCTempAbnormal, vecMCTempNormal;
+                                    vecMCTempAbnormal.SetXYZ(abnormalMCParticle->Px(), abnormalMCParticle->Py(), abnormalMCParticle->Pz());
+                                    vecMCTempNormal.SetXYZ(normalMCparticle->Px(), normalMCparticle->Py(), normalMCparticle->Pz());
+                                    DistanceAbnormal.Fill(abnormalTrackVector.Vect().DrEtaPhi(vecMCTempAbnormal));
+                                    DistanceNormal.Fill(normalTrackVector.Vect().DrEtaPhi(vecMCTempNormal));
+                                    //histograms of ToF cluster position
+                                    double middleOfToF = 214.4;
+                                    StPicoPhysicalHelix p1Helix = StPicoPhysicalHelix(abnormalTrack->getCurvature(),
+                                        abnormalTrack->getDipAngle(),
+                                        abnormalTrack->getPhase(),
+                                        abnormalTrack->getOrigin(),
+                                        abnormalTrack->getCharge());
+                                    StPicoPhysicalHelix p2Helix = StPicoPhysicalHelix(normalTrack->getCurvature(),
+                                        normalTrack->getDipAngle(),
+                                        normalTrack->getPhase(),
+                                        normalTrack->getOrigin(),
+                                        normalTrack->getCharge());
+                                    std::pair<double, double> stemp = p1Helix.pathLength(middleOfToF);
+                                    double s1 = (stemp.first<=0) ? stemp.second : min(stemp.first, stemp.second);
+                                    TVector3 TOFhitPosition = p1Helix.at(s1);
+                                    TOFHitPositionAbnormal.Fill(TOFhitPosition.Z(), TOFhitPosition.Phi());
+                                    stemp = p2Helix.pathLength(middleOfToF);
+                                    double s2 = (stemp.first<=0) ? stemp.second : min(stemp.first, stemp.second);
+                                    TOFhitPosition = p2Helix.at(s2);
+                                    TOFHitPositionNormal.Fill(TOFhitPosition.Z(), TOFhitPosition.Phi());
+                                    //the rest of the histograms
+                                    TOFTimeAbnormal.Fill(abnormalTrack->getTofTime());
+                                    TOFTimeNormal.Fill(normalTrack->getTofTime());
+                                    TracksEtaPhiAbnormal.Fill(vecMCTempAbnormal.Eta(), vecMCTempAbnormal.Phi());
+                                    TracksEtaPhiNormal.Fill(vecMCTempNormal.Eta(), vecMCTempNormal.Phi());
                                 }
                             } else{
                                 MpipiMCnotK0SMother.Fill((posTrack+negTrack).M());
@@ -789,6 +854,15 @@ int main(int argc, char* argv[]){
 
     MpipiMCnotK0SMother.Write();
     MpipiMCnotK0SMotherExtremelyWide.Write();
+
+    DistanceAbnormal.Write();
+    DistanceNormal.Write();
+    TOFHitPositionAbnormal.Write();
+    TOFHitPositionNormal.Write();
+    TOFTimeAbnormal.Write();
+    TOFTimeNormal.Write();
+    TracksEtaPhiAbnormal.Write();
+    TracksEtaPhiNormal.Write();
 
     outputFileHist->Close();
 
