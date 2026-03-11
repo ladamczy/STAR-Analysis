@@ -207,6 +207,7 @@ int main(int argc, char* argv[]){
     TH1D MpipiMotherName("MpipiMotherName", "#pi^{+}#pi^{-} pair mothers;;mothers", 1, 0, 1);
     TH1D MpipiDeltaT("MpipiDeltaT", "Time between pion decay;#Delta t_{0} [ns];events", 100, -5, 5);
     TH2D MpipiDeltaTvsEvent("MpipiDeltaTvsEvent", "Time between pion decay;#Delta t_{0} [ns];event number", 100, -5, 5, 1, 0, 1);
+    TH2D DeltaTvsNumberOfMCParticles("DeltaTvsNumberOfMCParticles", "Time between pion decay vs number of MC particles;#Delta t_{0} [ns];particles", 100, -5, 5, 10, 0, 100);
     TH1D MpipiDeltaTOnlyTwoTracksDetected("MpipiDeltaTOnlyTwoTracksDetected", "Time between pion decay;#Delta t_{0} [ns];events", 100, -5, 5);
     TH1D MpipiDeltaTMoreThanTwoTracksDetected("MpipiDeltaTMoreThanTwoTracksDetected", "Time between pion decay;#Delta t_{0} [ns];events", 100, -5, 5);
 
@@ -567,6 +568,7 @@ int main(int argc, char* argv[]){
                                     //is more tracks, so no checking necessary
                                     MpipiDeltaTMoreThanTwoTracksDetected.Fill(deltaT);
                                 }
+                                DeltaTvsNumberOfMCParticles.Fill(deltaT, tempUPCpointer->getNumberOfMCParticles());
                                 //value nicked from .txt file with actual data
                                 //replaced with a better cut of 0.6
                                 // if(fabs(deltaT)<3*0.13124272289253383){
@@ -826,6 +828,7 @@ int main(int argc, char* argv[]){
     MpipiDeltaT.Write();
     MpipiDeltaTvsEvent.LabelsDeflate("Y");
     MpipiDeltaTvsEvent.Write();
+    DeltaTvsNumberOfMCParticles.Write();
     MpipiDeltaTOnlyTwoTracksDetected.Write();
     MpipiDeltaTMoreThanTwoTracksDetected.Write();
     MpipiAfterDeltaT.Write();
