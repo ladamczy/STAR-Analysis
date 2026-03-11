@@ -30,7 +30,7 @@
 #include <ProcessingOutsideLoop.h>
 #include <UsefulThings.h>
 
-void PrintBigger(TParticle*);
+void PrintBigger(TParticle* input, std::string additional_stuff = "");
 double distanceToBeamline(TVector3 point, double x0 = -0.126857, double y0 = -0.127072, double dxdz = -0.000945, double dydz = 0.000440);
 
 int main(int argc, char* argv[]){
@@ -246,6 +246,12 @@ int main(int argc, char* argv[]){
     TH1D TOFTimeNormal("TOFTimeNormal", "TOF time of #pi^{#pm} from K^{0}_{S} decay", 100, 0, 50);
     TH2D TracksEtaPhiAbnormal("TracksEtaPhiAbnormal", "#eta vs #phi of detected products;#eta;#phi", 40, -1.0, 1.0, 40, -TMath::Pi(), TMath::Pi());
     TH2D TracksEtaPhiNormal("TracksEtaPhiNormal", "#eta vs #phi of detected products;#eta;#phi", 40, -1.0, 1.0, 40, -TMath::Pi(), TMath::Pi());
+    TH1D MatchingAbnormal("MatchingAbnormal", "Matching of tracks using #eta-#phi space distance;;tracks", 1, 0, 1);
+    TH1D MatchingNormal("MatchingNormal", "Matching of tracks using #eta-#phi space distance;;tracks", 1, 0, 1);
+    MatchingAbnormal.Fill("Correct", 0.0);
+    MatchingAbnormal.Fill("Incorrect", 0.0);
+    MatchingNormal.Fill("Correct", 0.0);
+    MatchingNormal.Fill("Incorrect", 0.0);
     //TODO add tof cluster finding
 
     //processing
@@ -415,6 +421,10 @@ int main(int argc, char* argv[]){
         TPCParticles.Fill(positiveTrack.size()+negativeTrack.size());
         DifferenceParticles.Fill(int(positiveMC.size()+negativeMC.size())-int(positiveTrack.size()+negativeTrack.size()));
         //loops for fitting the tracks
+        if(tempCounter==eventToPrint){
+            printf("Event %d:\n", tempCounter);
+            printf("Positive:\n");
+        }
         //positive
         for(size_t i = 0; i<positiveTrack.size(); i++){
             double min_distance = 100;
@@ -439,6 +449,14 @@ int main(int argc, char* argv[]){
             }
             //checking for which MC track we have the nearest match
             chosen_MC_list_positive.push_back(min_distance_id);
+            if(tempCounter==eventToPrint){
+                //finding global index of MC particle
+                for(size_t MC_particle_index = 0; MC_particle_index<tempUPCpointer->getNumberOfMCParticles(); MC_particle_index++){
+                    if(tempUPCpointer->getMCParticle(MC_particle_index)==positiveMC[min_distance_id]){
+                        printf("TPC TruthId:\t%d,\t\tMC array index:\t%d\n", positiveTrack[i]->getIdTruth(), MC_particle_index);
+                    }
+                }
+            }
         }
         chosen_MC_list_copy = chosen_MC_list_positive;
         //removing all the -1
@@ -452,6 +470,9 @@ int main(int argc, char* argv[]){
             }
             printf("\n");
             duplicated_matches_exist = true;
+        }
+        if(tempCounter==eventToPrint){
+            printf("Negative:\n");
         }
         //negative
         for(size_t i = 0; i<negativeTrack.size(); i++){
@@ -477,6 +498,14 @@ int main(int argc, char* argv[]){
             }
             //checking for which MC track we have the nearest match
             chosen_MC_list_negative.push_back(min_distance_id);
+            if(tempCounter==eventToPrint){
+                //finding global index of MC particle
+                for(size_t MC_particle_index = 0; MC_particle_index<tempUPCpointer->getNumberOfMCParticles(); MC_particle_index++){
+                    if(tempUPCpointer->getMCParticle(MC_particle_index)==negativeMC[min_distance_id]){
+                        printf("TPC TruthId:\t%d,\t\tMC array index:\t%d\n", negativeTrack[i]->getIdTruth(), MC_particle_index);
+                    }
+                }
+            }
         }
         chosen_MC_list_copy = chosen_MC_list_negative;
         //removing all the -1
@@ -662,6 +691,24 @@ int main(int argc, char* argv[]){
                                     TOFTimeNormal.Fill(normalTrack->getTofTime());
                                     TracksEtaPhiAbnormal.Fill(vecMCTempAbnormal.Eta(), vecMCTempAbnormal.Phi());
                                     TracksEtaPhiNormal.Fill(vecMCTempNormal.Eta(), vecMCTempNormal.Phi());
+                                    for(size_t MC_particle_index = 0; MC_particle_index<tempUPCpointer->getNumberOfMCParticles(); MC_particle_index++){
+                                        //looking for match for abnormal track
+                                        if(tempUPCpointer->getMCParticle(MC_particle_index)==abnormalMCParticle){
+                                            if(abnormalTrack->getIdTruth()==MC_particle_index+1){
+                                                MatchingAbnormal.Fill("Correct", 1.0);
+                                            } else{
+                                                MatchingAbnormal.Fill("Incorrect", 1.0);
+                                            }
+                                        }
+                                        //looking for match for normal track
+                                        if(tempUPCpointer->getMCParticle(MC_particle_index)==normalMCparticle){
+                                            if(normalTrack->getIdTruth()==MC_particle_index+1){
+                                                MatchingNormal.Fill("Correct", 1.0);
+                                            } else{
+                                                MatchingNormal.Fill("Incorrect", 1.0);
+                                            }
+                                        }
+                                    }
                                 }
                             } else{
                                 MpipiMCnotK0SMother.Fill((posTrack+negTrack).M());
@@ -677,13 +724,14 @@ int main(int argc, char* argv[]){
         //special part where one event is drawn
         if(tempCounter==eventToPrint){
             //statistics
-            printf("Event %d:\n", tempCounter);
             printf("Number of MC particles (excluding protons) before filter: %d\n", tempUPCpointer->getNumberOfMCParticles()-2);
             printf("Number of MC particles (excluding protons) after filter: %d\n", positiveMC.size()+negativeMC.size());
             printf("Number of tracks (excluding protons) before filter: %d\n", tempUPCpointer->getNumberOfTracks());
             printf("Number of tracks (excluding protons) after filter: %d\n", positiveTrack.size()+negativeTrack.size());
             for(size_t MCindex = 0; MCindex<tempUPCpointer->getNumberOfMCParticles(); MCindex++){
-                PrintBigger(tempUPCpointer->getMCParticle(MCindex));
+                //we only know IdTruth because there is great care taken not to change the order of particles
+                //it is NOT written into upcDst file!!!
+                PrintBigger(tempUPCpointer->getMCParticle(MCindex), "\t\tIdTruth:\t"+to_string(MCindex+1));
             }
 
 
@@ -866,16 +914,20 @@ int main(int argc, char* argv[]){
     TOFTimeNormal.Write();
     TracksEtaPhiAbnormal.Write();
     TracksEtaPhiNormal.Write();
+    MatchingAbnormal.LabelsDeflate();
+    MatchingAbnormal.Write();
+    MatchingNormal.LabelsDeflate();
+    MatchingNormal.Write();
 
     outputFileHist->Close();
 
     return 0;
 }
 
-void PrintBigger(TParticle* input){
-    Printf("TParticle: %-13s  p: %8f %8f %8f \tVertex: %8e %8e %8e \tProd. Vertex: %5d %5d \tDecay Vertex: %5d",
+void PrintBigger(TParticle* input, std::string additional_stuff){
+    Printf("TParticle: %-13s  p: %8f %8f %8f \tVertex: %8e %8e %8e \tProd. Vertex: %5d %5d \tDecay Vertex: %5d%s",
         input->GetName(), input->Px(), input->Py(), input->Pz(), input->Vx(), input->Vy(), input->Vz(),
-        input->GetFirstMother(), input->GetSecondMother(), input->GetFirstDaughter());
+        input->GetFirstMother(), input->GetSecondMother(), input->GetFirstDaughter(), additional_stuff.c_str());
 }
 
 double distanceToBeamline(TVector3 point, double x0, double y0, double dxdz, double dydz){
