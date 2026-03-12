@@ -456,9 +456,16 @@ int main(int argc, char** argv)
     TH1D* hDistanceEdge_antiLambda_E=new TH1D("hDistanceEdge_antiLambda_E","Distance to edge for #bar{#Lambda} East;#it{y};# events",80,-8,8);
     TH1D* hDistanceEdge_antiLambda_W=new TH1D("hDistanceEdge_antiLambda_W","Distance to edge for #bar{#Lambda} West;#it{y};# events",80,-8,8);
 
+    TH1D* hNumOfParticlesPassSelectionWest=new TH1D("hNumOfParticlesPassSelectionWest","hNumOfParticlesPassSelectionWest;N;# events",10,0,10);
+    TH1D* hNumOfParticlesPassSelectionEast=new TH1D("hNumOfParticlesPassSelectionEast","hNumOfParticlesPassSelectionEast;N;# events",10,0,10);
+
+    TH1D* hEventsPassedSelection=new TH1D("hEventsPassedSelection","hEventsPassedSelection;N;# events",5,0,5);
+
     double massPion = 0.13957061;
     double massProton = 0.93827;
     double massLambda = 1.115638;
+
+    int EventsPassedSelection=0;
     
 
     for (Long64_t i = 0; i < chain->GetEntries(); ++i) {
@@ -475,6 +482,18 @@ int main(int argc, char** argv)
         bool isWest = (proton->branch() > 1);
 
         double xi_proton = proton->xi(254.867);
+        if (proton->branch() < 2)  { //east
+            HistXiProtonEast->Fill(proton->xi(254.867));
+            HistLogXiProtonEast->Fill(log(proton->xi(254.867)));
+            HistPtProtonEast->Fill(proton->pt());
+            HistEtaProtonEast->Fill(proton->eta());
+        }
+        if (proton->branch() > 1)  { //west
+            HistXiProtonWest->Fill(proton->xi(254.867));
+            HistLogXiProtonWest->Fill(log(proton->xi(254.867)));
+            HistPtProtonWest->Fill(proton->pt());
+            HistEtaProtonWest->Fill(proton->eta());
+        }
         int b=getXiBin(xi_proton);
 
         if (xi_proton<1e-7) continue;
@@ -520,6 +539,24 @@ int main(int argc, char** argv)
         }
 
         if (NumOfGoodPrimaryTracks<2) continue;
+
+        for (int j = 0; j < upcEvt->getNumberOfTracks(); j++) {
+            if( upcEvt->getTrack(j)->getNhits()>20  
+                && upcEvt->getTrack(j)->getFlag(StUPCTrack::kTof) ) {
+
+                if  ( upcEvt->getTrack(j)->getPt() > 0.2 &&
+                    ( fabs(upcEvt->getTrack(j)->getEta()) < 0.9 &&
+                    upcEvt->getTrack(j)->getEta() < -(vz/250.0) + 0.9 &&
+                    upcEvt->getTrack(j)->getEta() > -(vz/250.0) - 0.9 ) ){ // fiducial cuts
+                    if(isWest) {
+                        hNumOfParticlesPassSelectionWest->Fill(1);
+                    } else {
+                        hNumOfParticlesPassSelectionEast->Fill(1);
+                    }
+                }
+            }
+        }
+
         int proton_high_p_candidate=0;
 
         for (int j = 0; j < upcEvt->getNumberOfTracks(); j++) {
@@ -687,16 +724,19 @@ int main(int argc, char** argv)
                 if (fabs(upcEvt->getTrack(j)->getEta()) < 0.9 &&
                     upcEvt->getTrack(j)->getEta() < -(vz/250.0) + 0.9 &&
                     upcEvt->getTrack(j)->getEta() > -(vz/250.0) - 0.9) {
+                    TVector3 momentum;
+                    upcEvt->getTrack(j)->getMomentum(momentum);
+                    double p = momentum.Mag();
                     if (isEast) HistPtTracksEast->Fill(upcEvt->getTrack(j)->getPt());
                     if (isWest) HistPtTracksWest->Fill(upcEvt->getTrack(j)->getPt());
                     if(upcEvt->getTrack(j)->getCharge()>0) { //positive charge
-                        hNSigmaPiPlus->Fill(upcEvt->getTrack(j)->getPt(), upcEvt->getTrack(j)->getNSigmasTPCPion());
-                        hNSigmaKPlus->Fill(upcEvt->getTrack(j)->getPt(), upcEvt->getTrack(j)->getNSigmasTPCKaon());
-                        hNSigmaPPlus->Fill(upcEvt->getTrack(j)->getPt(), upcEvt->getTrack(j)->getNSigmasTPCProton());
+                        hNSigmaPiPlus->Fill(p, upcEvt->getTrack(j)->getNSigmasTPCPion());
+                        hNSigmaKPlus->Fill(p, upcEvt->getTrack(j)->getNSigmasTPCKaon());
+                        hNSigmaPPlus->Fill(p, upcEvt->getTrack(j)->getNSigmasTPCProton());
                     } else { //negative charge
-                            hNSigmaPiMinus->Fill(upcEvt->getTrack(j)->getPt(), upcEvt->getTrack(j)->getNSigmasTPCPion());
-                            hNSigmaKMinus->Fill(upcEvt->getTrack(j)->getPt(), upcEvt->getTrack(j)->getNSigmasTPCKaon());
-                            hNSigmaPMinus->Fill(upcEvt->getTrack(j)->getPt(), upcEvt->getTrack(j)->getNSigmasTPCProton());
+                            hNSigmaPiMinus->Fill(p, upcEvt->getTrack(j)->getNSigmasTPCPion());
+                            hNSigmaKMinus->Fill(p, upcEvt->getTrack(j)->getNSigmasTPCKaon());
+                            hNSigmaPMinus->Fill(p, upcEvt->getTrack(j)->getNSigmasTPCProton());
                     }
                     TVector3 momentum_01;
                     upcEvt->getTrack(j)->getMomentum(momentum_01);
@@ -1022,20 +1062,24 @@ int main(int argc, char** argv)
             }
         }
 
-       if (proton->branch() < 2)  { //east
-       HistXiProtonEast->Fill(proton->xi(254.867));
-       HistLogXiProtonEast->Fill(log10(proton->xi(254.867)));
-       HistPtProtonEast->Fill(proton->pt());
-       HistEtaProtonEast->Fill(proton->eta());
-       }
-       if (proton->branch() > 1)  { //west
-       HistXiProtonWest->Fill(proton->xi(254.867));
-       HistLogXiProtonWest->Fill(log10(proton->xi(254.867)));
-       HistPtProtonWest->Fill(proton->pt());
-       HistEtaProtonWest->Fill(proton->eta());
-       }
+        if(isWest) hEventsPassedSelection->Fill(1);
+        if(isEast) hEventsPassedSelection->Fill(2);
+
+    //    if (proton->branch() < 2)  { //east
+    //    HistXiProtonEast->Fill(proton->xi(254.867));
+    //    HistLogXiProtonEast->Fill(log(proton->xi(254.867)));
+    //    HistPtProtonEast->Fill(proton->pt());
+    //    HistEtaProtonEast->Fill(proton->eta());
+    //    }
+    //    if (proton->branch() > 1)  { //west
+    //    HistXiProtonWest->Fill(proton->xi(254.867));
+    //    HistLogXiProtonWest->Fill(log(proton->xi(254.867)));
+    //    HistPtProtonWest->Fill(proton->pt());
+    //    HistEtaProtonWest->Fill(proton->eta());
+    //    }
 
     } // end of loop for events
+    hEventsPassedSelection->Write();
     
     HistNumOfPrimaryTracksToF->Write();
     HistNumOfPToFWest->Write();
@@ -1332,6 +1376,9 @@ int main(int argc, char** argv)
     hDistanceEdge_antiLambda_E->Write();
     hDistanceEdge_antiLambda_W->Write();
 
+    hNumOfParticlesPassSelectionWest->Write();
+    hNumOfParticlesPassSelectionEast->Write();
+
     outfile->Close();
     return 0;
 }
@@ -1348,7 +1395,7 @@ int getXiBin(double xi) {
 }
 
 bool LambdaCut(const StUPCV0& L, char cut_type) {
-    bool mass_cut = (L.m() > (1.1157-0.009675) && L.m() < 1.1157+0.009675); //1.115683
+    bool mass_cut = (L.m() > (1.1157-0.00487) && L.m() < 1.1157+0.00487); //1.115683
     bool dcaDaughters_cut = L.dcaDaughters()<1.5;
     bool PointingAngle_cut = std::cos(L.pointingAngle())>0.99;
     bool dcaBeamline_cut=L.DCABeamLine()<1.5;
