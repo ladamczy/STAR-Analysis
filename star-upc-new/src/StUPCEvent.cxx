@@ -283,6 +283,51 @@ StUPCTrack *StUPCEvent::getTrack(Int_t iTrack) const
 
 }//getTrack
 
+Double_t StUPCEvent::getT0(Int_t iTrack, Double_t mass) const{
+  TVector3 mom;
+  StUPCTrack* track = getTrack(iTrack);
+  track->getMomentum(mom);
+  //t1-(t1-t0), in ns
+  return track->getTofTime()-track->getTofPathLength()/100.0/0.299792458*sqrt(1+pow(mass/mom.Mag(), 2));
+}//getT0
+
+Double_t StUPCEvent::getMass(Int_t iTrack, Double_t T0) const{
+  TVector3 mom;
+  StUPCTrack* track = getTrack(iTrack);
+  track->getMomentum(mom);
+  //t1-t0, in ns
+  Double_t time = track->getTofTime()-T0;
+  //distance in m (conversion cm->m)
+  Double_t dist = track->getTofPathLength()/100.0;
+  //velocity, in m/ns
+  Double_t vel = dist/time;
+  Double_t c = 0.299792458;
+  //beta & gamma factors
+  Double_t beta = vel/c;
+  Double_t gamma = 1/sqrt(1-beta*beta);
+  //return p/(beta*gamma)
+  return mom.Mag()/beta/gamma;
+}//getMass
+
+
+Double_t StUPCEvent::getMassSquared(Int_t iTrack1, Int_t iTrack2) const{
+  StUPCTrack* track1 = getTrack(iTrack1);
+  StUPCTrack* track2 = getTrack(iTrack2);
+  Double_t deltaT = (track1->getTofTime()-track2->getTofTime())*100.0*0.299792458;
+  Double_t L1 = track1->getTofPathLength();
+  Double_t L2 = track2->getTofPathLength();
+  TVector3 mom1, mom2;
+  track1->getMomentum(mom1);
+  track2->getMomentum(mom2);
+  Double_t p1 = mom1.Mag();
+  Double_t p2 = mom2.Mag();
+  Double_t A = -2*pow(L1*L2/p1/p2, 2)+pow(L1/p1, 4)+pow(L2/p2, 4);
+  Double_t B = -2*pow(L1*L2, 2)*(pow(p1, -2)+pow(p2, -2))+2*pow(L1*L1/p1, 2)+2*pow(L2*L2/p2, 2)-2*pow(deltaT, 2)*(pow(L1/p1, 2)+pow(L2/p2, 2));
+  Double_t C = pow(deltaT, 4)-2*pow(deltaT, 2)*(L1*L1+L2*L2)+pow(L1*L1-L2*L2, 2);
+  Double_t m2TOF = (-B+sqrt(B*B-4*A*C))/2/A;
+  return m2TOF;
+}//getMassSquared
+
 //_____________________________________________________________________________
 Int_t StUPCEvent::getNumberOfClusters() const {
 
