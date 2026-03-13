@@ -64,7 +64,26 @@ Funkcja FindPosition korzysta z danych wczytaych z wykorzystaniem ReadFillPositi
 Do funkcji jest przekazywany numer fillu (runu) oraz na współrzędna z położenia werteksu zPos. W przypadku gdy na jeden numer fillu (runu) przypadają dwie pozycje wiązki obliczono ich średnią arytmetyczną. Funckja zwraca wektor położenia wiązki: vector <double> beam.  beam[0] = x, beam[1] = y
 
 
+# Funkcje związane z detektorem Time-of-Flight
 
+Klasa StUPCTrack posiada dwie nowe funkcje:
+- `getT0(Double_t mass)`, która na podstawie podanej masy cząstki oblicza moment jej powstania (w ns, według tego samego zegara co ToF liczy getTofTime())
+- `getMass(Double_t T0)`, która na podstawie czasu powstania cząstki oblicza jej masę (w GeV/c^2)
 
+Klasa StUPCEvent posiada nową funkcję:
+- `getMassSquared(StUPCTrack* track1, StUPCTrack* track2)`/`getMassSquared(Int_t iTrack1, Int_t iTrack2)`, która (przy założeniu, że dwie cząstki których pointery/indeksy w evencie mają taką samą masę i pochodzą z rozpadu tej samej cząstki) liczy kwadrat ich masy (w (GeV/c^2)^2)
+
+Wszystkie powyższe funkcje w przypadku niepoprawnego czasu/długości drogi (niedodatnich) bądź braku flagi kToF przy śladzie, zwracają -999.
+
+Dla cząstek pochodzących z tego samego zdarzenia (wierzchołek pierwotny/rozpad, przykład 1 i 2 na rysunku poniżej) o poprawnie dobranych masach różnica czasów ich powstania powinna być bliska 0
+(np. dla pary proton-pion z rozpadu $\Lambda^0$ wyrażenie `protonTrack.getT0(0.938)-pionTrack.getT0(0.1395)` powinno być bliskie 0.).
+
+Para cząstek pochodząca z różnych źródeł (przykład 3 i 4 na rysunku poniżej) bądź o źle dobranych masach tworzy wtedy gładkie continuum.
+
+<img width="5296" height="1572" alt="TOFtiming" src="https://github.com/user-attachments/assets/7a197dc0-63dc-4947-a684-d3a951ef74f5" />
+
+Przykład dla pary proton-pion z rozpadu $\Lambda^0$ (widać pik w okolicy 0 dla poprawnych par i tło dla reszty, z dopasowaniem piku gaussowskiego z tłem wielomianowym) poniżej. Ze względu na różne możliwości detekcji różnych typów cząstek, szerokości piku wokół 0 będą delikatnie różne.
+
+<img width="1103" height="964" alt="image" src="https://github.com/user-attachments/assets/1baff835-a9a9-4758-a56d-891d59fc3cab" />
 
 
