@@ -185,6 +185,8 @@ int main(int argc, char* argv[]){
     TH2D K0SAfterTPCpionCuts("K0SAfterTPCpionCuts", "#eta vs p_{T} of K^{0}_{S} after MC cuts and TPC reconstruction;#eta;p_{T}", 60, -3.0, 3.0, 40, 0, 2);
 
     //rest of the histograms
+    TH1D ToFhitTimeDifference("ToFhitTimeDifference", "Time difference between pair of ToF hits;#Delta t [ns];pairs", 100, -10, 10);
+    TH2D TracksVsTOFHits("TracksVsTOFHits", "Number of tracks with kToF flag vs number of ToF hits;tracks;ToF hits", 50, 0, 50, 50, 0, 50);
     TH1D FlowOfEvents("FlowOfEvents", "Independent event checks (of MC particles);;events", 1, 0, 1);
     TH1D K0SIndex("K0SIndex", "Index of K^{0}_{S};index;particles", 30, 0, 30);
     TH1D K0Sdetectability("K0Sdetectability", "How many K^{0}_{S} are detectable", 1, 0, 1);
@@ -234,6 +236,9 @@ int main(int argc, char* argv[]){
     TH1D MpipiAfterDeltaTNotPassedK0SDecayVertexBeamlineDistance("MpipiAfterDeltaTNotPassedK0SDecayVertexBeamlineDistance", "Distance from K^{0}_{S} decay vertex to the beamline;d [cm];events", 50, 0, 20);
     TH1D MpipiAfterDeltaTPassedPionAngle("MpipiAfterDeltaTPassedPionAngle", "#pi^{#pm} pair angle from K^{0}_{S} decay;angle [rad];pairs", 63, 0., 2*TMath::Pi());
     TH1D MpipiAfterDeltaTNotPassedPionAngle("MpipiAfterDeltaTNotPassedPionAngle", "#pi^{#pm} pair angle from K^{0}_{S} decay;angle [rad];pairs", 63, 0., 2*TMath::Pi());
+    TH1D TOFLeadingEdgeAfterDeltaTPassed("TOFLeadingEdgeAfterDeltaTPassed", "TOF modules leading edge time;time [ns];number of modules", 100, 0, 20);
+    TH1D TOFLeadingEdgeAfterDeltaTNotPassed("TOFLeadingEdgeAfterDeltaTNotPassed", "TOF modules leading edge time;time [ns];number of modules", 100, 0, 20);
+
 
     TH1D MpipiMCnotK0SMother("MpipiMCnotK0SMother", "#pi^{+}#pi^{-} pair mass (everything except K^{0}_{S} mother verification);m_{#pi^{+}#pi^{-}} [GeV];pairs", 40, 0.4, 0.6);
     TH1D MpipiMCnotK0SMotherExtremelyWide("MpipiMCnotK0SMotherExtremelyWide", "#pi^{+}#pi^{-} pair mass (everything except K^{0}_{S} mother verification);m_{#pi^{+}#pi^{-}} [GeV];pairs", 300, 0.0, 3.0);
@@ -288,6 +293,7 @@ int main(int argc, char* argv[]){
         // tempRPpointer = StRPEventInstance.Get();
         tempCounter++;
         //cleaning
+        int tracksWithToFflag = 0;
         positiveMC.clear();
         negativeMC.clear();
         positiveTrack.clear();
@@ -322,6 +328,7 @@ int main(int argc, char* argv[]){
             if(!tempTrack->getFlag(StUPCTrack::kTof)){
                 continue;
             }
+            tracksWithToFflag++;
             if(tempTrack->getTofPathLength()<=0){
                 continue;
             }
@@ -347,9 +354,16 @@ int main(int argc, char* argv[]){
             }
         }
 
+        for(int i = 0; i<tempUPCpointer->getNumberOfHits()-1; i++){
+            for(int j = i+1; j<tempUPCpointer->getNumberOfHits(); j++){
+                ToFhitTimeDifference.Fill(tempUPCpointer->getHit(i)->getLeadingEdgeTime()-tempUPCpointer->getHit(j)->getLeadingEdgeTime());
+            }
+        }
+
         bool duplicated_matches_exist = false;
 
         //histograms
+        TracksVsTOFHits.Fill(tracksWithToFflag, tempUPCpointer->getNumberOfHits());
         //early histogram filling, for proper order
         FlowOfEvents.Fill("All events", 1.0);
         FlowOfEvents.Fill("2x K^{0}_{S}", 0.0);
@@ -614,6 +628,9 @@ int main(int argc, char* argv[]){
                                     positiveMC[chosen_MC_list_positive[i]]->ProductionVertex(K0SdecayVertex);
                                     MpipiAfterDeltaTPassedK0SDecayVertexBeamlineDistance.Fill(distanceToBeamline(K0SdecayVertex.Vect()));
                                     MpipiAfterDeltaTPassedPionAngle.Fill(posTrack.Angle(negTrack.Vect()));
+                                    for(size_t TOFhit = 0; TOFhit<tempUPCpointer->getNumberOfHits(); TOFhit++){
+                                        TOFLeadingEdgeAfterDeltaTPassed.Fill(tempUPCpointer->getHit(TOFhit)->getLeadingEdgeTime());
+                                    }
                                 } else{
                                     MpipiAfterDeltaTNotPassed.Fill((posTrack+negTrack).M());
                                     MpipiAfterDeltaTNotPassedExtremelyWide.Fill((posTrack+negTrack).M());
@@ -638,6 +655,9 @@ int main(int argc, char* argv[]){
                                     positiveMC[chosen_MC_list_positive[i]]->ProductionVertex(K0SdecayVertex);
                                     MpipiAfterDeltaTNotPassedK0SDecayVertexBeamlineDistance.Fill(distanceToBeamline(K0SdecayVertex.Vect()));
                                     MpipiAfterDeltaTNotPassedPionAngle.Fill(posTrack.Angle(negTrack.Vect()));
+                                    for(size_t TOFhit = 0; TOFhit<tempUPCpointer->getNumberOfHits(); TOFhit++){
+                                        TOFLeadingEdgeAfterDeltaTNotPassed.Fill(tempUPCpointer->getHit(TOFhit)->getLeadingEdgeTime());
+                                    }
                                     //part for checking separate tracks
                                     //setting temp values to not switch them around
                                     //assumption is that to abnormal tracks was added 1ns, but it might be wrong
@@ -842,6 +862,8 @@ int main(int argc, char* argv[]){
     K0STotalEfficiency.SetNameTitle("K0STotalEfficiency", "K^{0}_{S} total detection efficiency (judged by MC pions inside fiducial region, properly reconstructed)");
 
     //saving histograms
+    ToFhitTimeDifference.Write();
+    TracksVsTOFHits.Write();
     FlowOfEvents.LabelsDeflate();
     FlowOfEvents.Write();
     K0SIndex.Write();
@@ -902,6 +924,8 @@ int main(int argc, char* argv[]){
     MpipiAfterDeltaTNotPassedK0SDecayVertexBeamlineDistance.Write();
     MpipiAfterDeltaTPassedPionAngle.Write();
     MpipiAfterDeltaTNotPassedPionAngle.Write();
+    TOFLeadingEdgeAfterDeltaTPassed.Write();
+    TOFLeadingEdgeAfterDeltaTNotPassed.Write();
 
     MpipiMCnotK0SMother.Write();
     MpipiMCnotK0SMotherExtremelyWide.Write();
