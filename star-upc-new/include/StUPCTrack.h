@@ -111,6 +111,8 @@ public:
 
   Float_t getTofTime() const { return mTofTime; }
   Float_t getTofPathLength() const { return mTofPathLength; }
+  Double_t getT0(Double_t mass) const;
+  Double_t getMass(Double_t T0) const;
 
   UInt_t getVertexId() const { return mVtxId; }
   StUPCVertex *getVertex() const;

@@ -283,36 +283,24 @@ StUPCTrack *StUPCEvent::getTrack(Int_t iTrack) const
 
 }//getTrack
 
-Double_t StUPCEvent::getT0(Int_t iTrack, Double_t mass) const{
-  TVector3 mom;
-  StUPCTrack* track = getTrack(iTrack);
-  track->getMomentum(mom);
-  //t1-(t1-t0), in ns
-  return track->getTofTime()-track->getTofPathLength()/100.0/0.299792458*sqrt(1+pow(mass/mom.Mag(), 2));
-}//getT0
-
-Double_t StUPCEvent::getMass(Int_t iTrack, Double_t T0) const{
-  TVector3 mom;
-  StUPCTrack* track = getTrack(iTrack);
-  track->getMomentum(mom);
-  //t1-t0, in ns
-  Double_t time = track->getTofTime()-T0;
-  //distance in m (conversion cm->m)
-  Double_t dist = track->getTofPathLength()/100.0;
-  //velocity, in m/ns
-  Double_t vel = dist/time;
-  Double_t c = 0.299792458;
-  //beta & gamma factors
-  Double_t beta = vel/c;
-  Double_t gamma = 1/sqrt(1-beta*beta);
-  //return p/(beta*gamma)
-  return mom.Mag()/beta/gamma;
-}//getMass
-
-
 Double_t StUPCEvent::getMassSquared(Int_t iTrack1, Int_t iTrack2) const{
   StUPCTrack* track1 = getTrack(iTrack1);
   StUPCTrack* track2 = getTrack(iTrack2);
+  return getMassSquared(track1, track2);
+}//getMassSquared
+
+Double_t StUPCEvent::getMassSquared(StUPCTrack* track1, StUPCTrack* track2) const{
+  //guards against crash without tof data:
+  //positive ToF time
+  //positive ToF length
+  //track matched with ToF hit
+  if(track1->getTofTime()<=0||track1->getTofPathLength()<=0||!track1->getFlag(StUPCTrack::kTof)){
+    return -999.;
+  }
+  if(track2->getTofTime()<=0||track2->getTofPathLength()<=0||!track2->getFlag(StUPCTrack::kTof)){
+    return -999.;
+  }
+  //calculation
   Double_t deltaT = (track1->getTofTime()-track2->getTofTime())*100.0*0.299792458;
   Double_t L1 = track1->getTofPathLength();
   Double_t L2 = track2->getTofPathLength();
