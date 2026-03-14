@@ -137,6 +137,7 @@ int main(int argc, char** argv)
     TDirectory* dirProtons = outfile->mkdir("Protons");
     TDirectory* dirLambdas = outfile->mkdir("Lambdas");
     TDirectory* proton_lambda_distances = outfile->mkdir("proton_lambda_distances");
+    TDirectory* TOF_Analysis = outfile->mkdir("TOF_analysis");
 
     outfile->cd();
     TH1D* HistNumOfPrimaryTracksToF = new TH1D("HistNumOfPrimaryTracksToF", "; Num of tracks; # events", 50 ,0, 50);
@@ -461,17 +462,32 @@ int main(int argc, char** argv)
 
     TH1D* hEventsPassedSelection=new TH1D("hEventsPassedSelection","hEventsPassedSelection;N;# events",5,0,5);
 
+    TH2F* hDeltaT1vsT2_protons = new TH2F("hDeltaT1vsT2_protons", "#Delta t_{1} vs #Delta t_{2} (protons);#Delta t_{1} [ns] ;#Delta t_{2} [ns]", 200, -20.0, 20.0, 200, -20.0, 20.0);
+    TH2F* hDeltaT1vsT2_antiprotons = new TH2F("hDeltaT1vsT2_antiprotons", "#Delta t_{1} vs #Delta t_{2} (antiprotons);#Delta t_{1} [ns];#Delta t_{2} [ns]", 200, -20.0, 20.0, 200, -20.0, 20.0);
+    TH2F* hDeltaT1vsT2_protons_east = new TH2F("hDeltaT1vsT2_protons_east", "#Delta t_{1} vs #Delta t_{2} (protons east);#Delta t_{1} [ns] ;#Delta t_{2} [ns]", 200, -20.0, 20.0, 200, -20.0, 20.0);
+    TH2F* hDeltaT1vsT2_antiprotons_east = new TH2F("hDeltaT1vsT2_antiprotons_east", "#Delta t_{1} vs #Delta t_{2} (antiprotons east);#Delta t_{1} [ns];#Delta t_{2} [ns]", 200, -20.0, 20.0, 200, -20.0, 20.0);
+    TH2F* hDeltaT1vsT2_protons_west = new TH2F("hDeltaT1vsT2_protons_west", "#Delta t_{1} vs #Delta t_{2} (protons west);#Delta t_{1} [ns] ;#Delta t_{2} [ns]", 200, -20.0, 20.0, 200, -20.0, 20.0);
+    TH2F* hDeltaT1vsT2_antiprotons_west = new TH2F("hDeltaT1vsT2_antiprotons_west", "#Delta t_{1} vs #Delta t_{2} (antiprotons west);#Delta t_{1} [ns];#Delta t_{2} [ns]", 200, -20.0, 20.0, 200, -20.0, 20.0);
+
     double massPion = 0.13957061;
+    double massKaon = 0.49367;
     double massProton = 0.93827;
     double massLambda = 1.115638;
 
     int EventsPassedSelection=0;
-    
+
+    std::vector<int> goodTrackIdx;
+    std::vector<int> protonIdx;
+    std::vector<int> antiprotonIdx;
 
     for (Long64_t i = 0; i < chain->GetEntries(); ++i) {
         chain->GetEntry(i);
         if( upcEvt->getNumberOfVertices() != 1) continue;
         if (rpEvt->getNumberOfTracks() != 1 ) continue;
+
+        goodTrackIdx.clear();
+        antiprotonIdx.clear();
+        protonIdx.clear();
 
         //   cout << upcEvt->getEventNumber() << " " 
         //   cout << upcEvt->getNPrimVertices() <<  endl; //1, 2, 3
@@ -496,7 +512,7 @@ int main(int argc, char** argv)
         }
         int b=getXiBin(xi_proton);
 
-        if (xi_proton<1e-7) continue;
+        //if (xi_proton<1e-7) continue;
 
         double y_beam = 0.0;
         double y_edge = 0.0;
@@ -559,6 +575,7 @@ int main(int argc, char** argv)
 
         int proton_high_p_candidate=0;
 
+
         for (int j = 0; j < upcEvt->getNumberOfTracks(); j++) {
             if( upcEvt->getTrack(j)->getNhits()>20  
                 && upcEvt->getTrack(j)->getFlag(StUPCTrack::kTof) 
@@ -568,11 +585,12 @@ int main(int argc, char** argv)
                     ( fabs(upcEvt->getTrack(j)->getEta()) < 0.9 &&
                     upcEvt->getTrack(j)->getEta() < -(vz/250.0) + 0.9 &&
                     upcEvt->getTrack(j)->getEta() > -(vz/250.0) - 0.9 ) ){ // fiducial cuts
-
                     NumOfPrimaryTracksToF++;
                     TVector3 momentum;
                     upcEvt->getTrack(j)->getMomentum(momentum);
                     double p = momentum.Mag();
+
+                    goodTrackIdx.push_back(j);
 
                     if (isEast) {
                         HistPtTracksEastCut->Fill(upcEvt->getTrack(j)->getPt());
@@ -590,6 +608,7 @@ int main(int argc, char** argv)
                         double distance_from_beam = rapidity - y_beam;
                         double distance_from_edge = y_edge-rapidity;
                         if(upcEvt->getTrack(j)->getCharge()>0){ //proton
+                            protonIdx.push_back(j);
                             hDistanceBeam_proton->Fill(distance_from_beam);
                             hDistanceEdge_proton->Fill(distance_from_edge);
                             h3D_protons->Fill(pt, eta, vz);
@@ -646,6 +665,7 @@ int main(int argc, char** argv)
 
                         } 
                         if(upcEvt->getTrack(j)->getCharge()<0){
+                            antiprotonIdx.push_back(j);
                             h3D_antiprotons->Fill(pt, eta, vz);
                             hPtNProtonX->Fill(pt);
                             hEtaNProtonX->Fill(eta);
@@ -1040,6 +1060,73 @@ int main(int argc, char** argv)
                 } // second tracks loop
             } // end of loop for lambda selection
         } // end of loop for tracks in an event
+
+        for (int i_p : protonIdx) {
+            int ref_idx = -1;
+            double min_p = 9999.0;
+
+            for (int i_trk : goodTrackIdx) {
+                if (i_trk == i_p) continue;
+
+                TVector3 mom;
+                upcEvt->getTrack(i_trk)->getMomentum(mom);
+
+                if (mom.Mag() < min_p) {
+                    min_p = mom.Mag();
+                    ref_idx = i_trk;
+                }
+            }
+
+            if (ref_idx >= 0) {
+                double t0_proton = upcEvt->getTrack(i_p)->getT0(massProton);
+                double t0_pion = upcEvt->getTrack(ref_idx)->getT0(massPion);
+                double t0_kaon = upcEvt->getTrack(ref_idx)->getT0(massKaon);
+
+                double delta_t1 = t0_proton - t0_pion;
+                double delta_t2 = t0_proton - t0_kaon;
+
+                hDeltaT1vsT2_protons->Fill(delta_t1, delta_t2);
+
+                if (isWest) {
+                    hDeltaT1vsT2_protons_west->Fill(delta_t1, delta_t2);
+                } else {
+                    hDeltaT1vsT2_protons_east->Fill(delta_t1, delta_t2);
+                }
+            }
+        }
+
+        for (int i_p : antiprotonIdx) {
+            int ref_idx = -1;
+            double min_p = 9999.0;
+
+            for (int i_trk : goodTrackIdx) {
+                if (i_trk == i_p) continue;
+
+                TVector3 mom;
+                upcEvt->getTrack(i_trk)->getMomentum(mom);
+
+                if (mom.Mag() < min_p) {
+                    min_p = mom.Mag();
+                    ref_idx = i_trk;
+                }
+            }
+            if (ref_idx >= 0) {
+                double t0_antiproton = upcEvt->getTrack(i_p)->getT0(massProton);
+                double t0_pion = upcEvt->getTrack(ref_idx)->getT0(massPion);
+                double t0_kaon = upcEvt->getTrack(ref_idx)->getT0(massKaon);
+
+                double delta_t1 = t0_antiproton - t0_pion;
+                double delta_t2 = t0_antiproton - t0_kaon;
+
+                hDeltaT1vsT2_antiprotons->Fill(delta_t1, delta_t2);
+
+                if (isWest) {
+                    hDeltaT1vsT2_antiprotons_west->Fill(delta_t1, delta_t2);
+                } else {
+                    hDeltaT1vsT2_antiprotons_east->Fill(delta_t1, delta_t2);
+                }
+            }
+        }
        
         HistNumOfPrimaryTracksToF->Fill(NumOfPrimaryTracksToF);
         hMultiplicityProtonX->Fill(MultiplicityProtonX);
@@ -1378,6 +1465,15 @@ int main(int argc, char** argv)
 
     hNumOfParticlesPassSelectionWest->Write();
     hNumOfParticlesPassSelectionEast->Write();
+
+    TOF_Analysis->cd();
+
+    hDeltaT1vsT2_protons->Write();
+    hDeltaT1vsT2_antiprotons->Write();
+    hDeltaT1vsT2_protons_east->Write();
+    hDeltaT1vsT2_antiprotons_east->Write();
+    hDeltaT1vsT2_protons_west->Write();
+    hDeltaT1vsT2_antiprotons_west->Write();
 
     outfile->Close();
     return 0;
