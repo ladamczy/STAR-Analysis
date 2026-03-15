@@ -186,6 +186,7 @@ int main(int argc, char* argv[]){
 
     //rest of the histograms
     TH1D ToFhitTimeDifference("ToFhitTimeDifference", "Time difference between pair of ToF hits;#Delta t [ns];pairs", 100, -10, 10);
+    TH1D ToFhitTimeDifferenceSamePosition("ToFhitTimeDifferenceSamePosition", "Time difference between pair of ToF hits to the same modules;#Delta t [ns];pairs", 100, -10, 10);
     TH2D TracksVsTOFHits("TracksVsTOFHits", "Number of tracks with kToF flag vs number of ToF hits;tracks;ToF hits", 50, 0, 50, 50, 0, 50);
     TH1D FlowOfEvents("FlowOfEvents", "Independent event checks (of MC particles);;events", 1, 0, 1);
     TH1D K0SIndex("K0SIndex", "Index of K^{0}_{S};index;particles", 30, 0, 30);
@@ -357,6 +358,22 @@ int main(int argc, char* argv[]){
         for(int i = 0; i<tempUPCpointer->getNumberOfHits()-1; i++){
             for(int j = i+1; j<tempUPCpointer->getNumberOfHits(); j++){
                 ToFhitTimeDifference.Fill(tempUPCpointer->getHit(i)->getLeadingEdgeTime()-tempUPCpointer->getHit(j)->getLeadingEdgeTime());
+                int currentTray = tempUPCpointer->getHit(i)->getTray();
+                int currentModule = tempUPCpointer->getHit(i)->getModule();
+                // int currentCell = tempUPCpointer->getHit(i)->getCell();
+                //TEST, effectively disabling cell difference
+                //because there were no two hits with also the same cell number
+                int currentCell = tempUPCpointer->getHit(j)->getCell();
+                if(currentTray==tempUPCpointer->getHit(j)->getTray()&&currentModule==tempUPCpointer->getHit(j)->getModule()&&currentCell==tempUPCpointer->getHit(j)->getCell()){
+                    ToFhitTimeDifferenceSamePosition.Fill(tempUPCpointer->getHit(i)->getLeadingEdgeTime()-tempUPCpointer->getHit(j)->getLeadingEdgeTime());
+                }
+                // //TEST
+                // double timediff = tempUPCpointer->getHit(i)->getLeadingEdgeTime()-tempUPCpointer->getHit(j)->getLeadingEdgeTime();
+                // if(fabs(timediff)>0.8||fabs(timediff)<1.2){
+                //     printf("Pair:\n");
+                //     printf("Tray: %d\tModule: %d\tCell: %d\n", tempUPCpointer->getHit(i)->getTray(), tempUPCpointer->getHit(i)->getModule(), tempUPCpointer->getHit(i)->getCell());
+                //     printf("Tray: %d\tModule: %d\tCell: %d\n", tempUPCpointer->getHit(j)->getTray(), tempUPCpointer->getHit(j)->getModule(), tempUPCpointer->getHit(j)->getCell());
+                // }
             }
         }
 
@@ -863,6 +880,7 @@ int main(int argc, char* argv[]){
 
     //saving histograms
     ToFhitTimeDifference.Write();
+    ToFhitTimeDifferenceSamePosition.Write();
     TracksVsTOFHits.Write();
     FlowOfEvents.LabelsDeflate();
     FlowOfEvents.Write();
