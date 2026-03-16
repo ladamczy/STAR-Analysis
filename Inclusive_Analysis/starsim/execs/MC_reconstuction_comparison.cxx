@@ -258,6 +258,7 @@ int main(int argc, char* argv[]){
     MatchingAbnormal.Fill("Incorrect", 0.0);
     MatchingNormal.Fill("Correct", 0.0);
     MatchingNormal.Fill("Incorrect", 0.0);
+    TH1D MpipiDeltaTAllTPCTracks("MpipiDeltaTAllTPCTracks", "Time between pion decay;#Delta t_{0} [ns];events", 100, -5, 5);
     //TODO add tof cluster finding
 
     //processing
@@ -757,6 +758,18 @@ int main(int argc, char* argv[]){
             }
         }
 
+        //checking things for all TPC tracks
+        for(size_t i = 0; i<positiveTrack.size(); i++){
+            for(size_t j = 0; j<negativeTrack.size(); j++){
+                TLorentzVector posTrack, negTrack;
+                positiveTrack[i]->getLorentzVector(posTrack, massmap[PDGpositive]);
+                negativeTrack[j]->getLorentzVector(negTrack, massmap[PDGnegative]);
+                double deltaT = DeltaT0(positiveTrack[i], negativeTrack[j], massmap[PDGpositive], massmap[PDGnegative]);
+                //filling histograms
+                MpipiDeltaTAllTPCTracks.Fill(deltaT);
+            }
+        }
+
 
         //special part where one event is drawn
         if(tempCounter==eventToPrint){
@@ -960,6 +973,8 @@ int main(int argc, char* argv[]){
     MatchingAbnormal.Write();
     MatchingNormal.LabelsDeflate();
     MatchingNormal.Write();
+
+    MpipiDeltaTAllTPCTracks.Write();
 
     outputFileHist->Close();
 
