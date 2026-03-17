@@ -11,6 +11,7 @@
 #include "TROOT.h"
 
 #include "string.h"
+#include <cmath>
 
 #include "MyStyles.h"
 
