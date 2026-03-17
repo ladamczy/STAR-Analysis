@@ -283,6 +283,39 @@ StUPCTrack *StUPCEvent::getTrack(Int_t iTrack) const
 
 }//getTrack
 
+Double_t StUPCEvent::getMassSquared(Int_t iTrack1, Int_t iTrack2) const{
+  StUPCTrack* track1 = getTrack(iTrack1);
+  StUPCTrack* track2 = getTrack(iTrack2);
+  return getMassSquared(track1, track2);
+}//getMassSquared
+
+Double_t StUPCEvent::getMassSquared(StUPCTrack* track1, StUPCTrack* track2) const{
+  //guards against crash without tof data:
+  //positive ToF time
+  //positive ToF length
+  //track matched with ToF hit
+  if(track1->getTofTime()<=0||track1->getTofPathLength()<=0||!track1->getFlag(StUPCTrack::kTof)){
+    return -999.;
+  }
+  if(track2->getTofTime()<=0||track2->getTofPathLength()<=0||!track2->getFlag(StUPCTrack::kTof)){
+    return -999.;
+  }
+  //calculation
+  Double_t deltaT = (track1->getTofTime()-track2->getTofTime())*100.0*0.299792458;
+  Double_t L1 = track1->getTofPathLength();
+  Double_t L2 = track2->getTofPathLength();
+  TVector3 mom1, mom2;
+  track1->getMomentum(mom1);
+  track2->getMomentum(mom2);
+  Double_t p1 = mom1.Mag();
+  Double_t p2 = mom2.Mag();
+  Double_t A = -2*pow(L1*L2/p1/p2, 2)+pow(L1/p1, 4)+pow(L2/p2, 4);
+  Double_t B = -2*pow(L1*L2, 2)*(pow(p1, -2)+pow(p2, -2))+2*pow(L1*L1/p1, 2)+2*pow(L2*L2/p2, 2)-2*pow(deltaT, 2)*(pow(L1/p1, 2)+pow(L2/p2, 2));
+  Double_t C = pow(deltaT, 4)-2*pow(deltaT, 2)*(L1*L1+L2*L2)+pow(L1*L1-L2*L2, 2);
+  Double_t m2TOF = (-B+sqrt(B*B-4*A*C))/2/A;
+  return m2TOF;
+}//getMassSquared
+
 //_____________________________________________________________________________
 Int_t StUPCEvent::getNumberOfClusters() const {
 

@@ -143,6 +143,9 @@ public:
   Int_t getNumberOfTracks() const;
   StUPCTrack *getTrack(Int_t iTrack) const;
 
+  Double_t getMassSquared(Int_t iTrack1, Int_t iTrack2) const;
+  Double_t getMassSquared(StUPCTrack* track1, StUPCTrack* track2) const;
+
   Int_t getNumberOfClusters() const;
   StUPCBemcCluster *getCluster(Int_t iCls) const;
   StUPCBemcCluster *getClusterId(UInt_t clsId) const;

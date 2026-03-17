@@ -128,6 +128,47 @@ void StUPCTrack::getBemcLorentzVector(TLorentzVector &blvec, Double_t mass) cons
 
 }//getBemcLorentzVector
 
+Double_t StUPCTrack::getT0(Double_t mass) const{
+  //guards against crash without tof data:
+  //positive ToF time
+  //positive ToF length
+  //track matched with ToF hit
+  if(getTofTime()<=0||getTofPathLength()<=0||!getFlag(StUPCTrack::kTof)){
+    return -999.;
+  }
+  //calculations
+  TVector3 mom;
+  mom.SetPtEtaPhi(mPt, mEta, mPhi);
+  //t1-t0 (flight time) is calculated from momentum, known mass and known length of flight path
+  //t0 = t1-(t1-t0), in ns
+  return getTofTime()-getTofPathLength()/100.0/0.299792458*sqrt(1+pow(mass/mom.Mag(), 2));
+}//getT0
+
+Double_t StUPCTrack::getMass(Double_t T0) const{
+  //guards against crash without tof data:
+  //positive ToF time
+  //positive ToF length
+  //track matched with ToF hit
+  if(getTofTime()<=0||getTofPathLength()<=0||!getFlag(StUPCTrack::kTof)){
+    return -999.;
+  }
+  //calculations
+  TVector3 mom;
+  mom.SetPtEtaPhi(mPt, mEta, mPhi);
+  //t1-t0, in ns
+  Double_t time = getTofTime()-T0;
+  //distance in m (conversion cm->m)
+  Double_t dist = getTofPathLength()/100.0;
+  //velocity, in m/ns
+  Double_t vel = dist/time;
+  Double_t c = 0.299792458;
+  //beta & gamma factors
+  Double_t beta = vel/c;
+  Double_t gamma = 1/sqrt(1-beta*beta);
+  //return p/(beta*gamma)
+  return mom.Mag()/beta/gamma;
+}//getMass
+
 //_____________________________________________________________________________
 StUPCVertex *StUPCTrack::getVertex() const
 {
