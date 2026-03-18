@@ -1,11 +1,5 @@
 #!/bin/bash
 
-#creating path of output directory
-current_date=$(date -Iseconds)
-output_directory=/star/u/adamwatroba/STAR-Analysis/Inclusive_Analysis/starsim/starsim_and_bfc/results/$current_date
-echo Output directory:
-echo $output_directory
-
 # setting default values (with checking whether they are actual arguments and not -* ones)
 #if we find a -* one, we just skip checking the rest of them
 length=0
@@ -37,19 +31,21 @@ elif [[ "$3" != -* ]]; then
 fi
 
 # setting values based on additional parameters
+output_directory="/star/u/adamwatroba/STAR-Analysis/Inclusive_Analysis/starsim/starsim_and_bfc/results"
+output_folder=$(date -Iseconds)
 extension="root"
 remove_everything_but_MuDst_and_pythia=0
 filter=""
 NO_RUNNING=0
-while getopts "e:f:t" flag
+while getopts "e:f:p:st" flag
 do
     #just in case an argument for -e got forgot and there is -e -t now or sth
     if [[ "$OPTARG" == -* ]]; then
-        echo -e "\nSomething is wrong with the arguments; script aborted"
+        echo -e "\nSomething is wrong with the arguments; script aborted\n"
         exit 1
     fi
     if [[ "$flag" == "?" ]]; then
-        echo -e "\nThere is an empty argument in the command; script aborted"
+        echo -e "\nThere is an empty argument in the command; script aborted\n"
         exit 1
     fi
     #in case there is an empty argument
@@ -84,6 +80,12 @@ do
                     ;;
             esac
             ;;
+        #case for changing result folder name
+        p)  output_folder=$OPTARG
+            ;;
+        #case for sending results to scrap space instead of results/ folder
+        s)  output_directory="/star/data05/scratch/adamwatroba/results"
+            ;;
         #case for testing the arguments without running
         t)  NO_RUNNING=1
             echo -e "\nTHIS IS A TEST; IT WILL *NOT* BE SCHEDULED\n"
@@ -95,18 +97,20 @@ done
 
 #writing down the choices
 echo "You chose the following arguments:"
-echo -e "length:\t\t$length"
-echo -e "run_number:\t$run_number"
-echo -e "seed:\t\t$seed"
+echo -e "output_directory:\t$output_directory"
+echo -e "output_folder:\t\t$output_folder"
+echo -e "length:\t\t\t$length"
+echo -e "run_number:\t\t$run_number"
+echo -e "seed:\t\t\t$seed"
 if [ "$remove_everything_but_MuDst_and_pythia" -eq "1" ]; then
-    echo -e "extension:\tMuDst.root and Pythia root"
+    echo -e "extension:\t\tMuDst.root and Pythia root"
 else
-    echo -e "extension:\t$extension"
+    echo -e "extension:\t\t$extension"
 fi
 if [[ -z "$filter" ]]; then
-    echo -e "filter:\t\tstrange particles (K0S, Lambda0, K*, phi)"
+    echo -e "filter:\t\t\tstrange particles (K0S, Lambda0, K*, phi)"
 else
-    echo -e "filter:\t\t$filter"
+    echo -e "filter:\t\t\t$filter"
 fi
 
 #show help if there is 0 arguments provided
@@ -125,7 +129,12 @@ if [ "$#" -eq "0" ]; then
     echo -e "    Kstar \t\t applies filter for K*(892) particles only"
     echo -e "    phi \t\t applies filter for phi(1020) particles only"
     echo -e "    anything else:\t applies filter for K0S, Lambda0, K*(892) and phi(1020) particles only"
-    echo -e "-t: \t\t\t just prints out taken options and does not schedule"
+    echo
+    echo -e "-p: foldername \t\t changes folder name to \"foldername\" (without quotes)"
+    echo
+    echo -e "-s: \t\t\t changes output for general scrap space instead of default results/ folder"
+    echo
+    echo -e "-t: \t\t\t prints out taken options and does not schedule"
 fi
 
 # finishing if the first argument is not a number (through the power of regex)
@@ -143,9 +152,13 @@ if [ "$NO_RUNNING" -eq "1" ]; then
 fi
 
 #creating output directory and file with info about simulation
-mkdir -p $output_directory
-newfile=$output_directory/simulation_data.txt
-echo Number of events: > $newfile
+mkdir -p $output_directory/$output_folder
+newfile=$output_directory/$output_folder/simulation_data.txt
+echo Output directory: > $newfile
+echo $output_directory >> $newfile
+echo Output folder: >> $newfile
+echo $output_folder >> $newfile
+echo Number of events: >> $newfile
 echo $length >> $newfile
 echo Run number \(if 0 then actual one is 18091010\): >> $newfile
 echo $run_number >> $newfile
@@ -173,13 +186,13 @@ partial_events=$(($length % $n))
 if [ "$full_events" -ne "0" ]; then
     for i in $( eval echo {0..$(($full_events-1))} );
     do
-        star-submit-template -template centralDiffractive_total_chain_template.xml -entities number=$i,events_number=$n,run_number=$run_number,seed=$seed,output_directory=$output_directory,extension=$extension,filter=$filter,filter_name=$filter_name,remove_everything_but_MuDst_and_pythia=$remove_everything_but_MuDst_and_pythia
+        star-submit-template -template centralDiffractive_total_chain_template.xml -entities number=$i,events_number=$n,run_number=$run_number,seed=$seed,output_directory=$output_directory/$output_folder,extension=$extension,filter=$filter,filter_name=$filter_name,remove_everything_but_MuDst_and_pythia=$remove_everything_but_MuDst_and_pythia
     done
 fi
 
 # doing last, not-full batch
 if [ "$partial_events" -ne "0" ]; then
-    star-submit-template -template centralDiffractive_total_chain_template.xml -entities number=$full_events,events_number=$partial_events,run_number=$run_number,seed=$seed,output_directory=$output_directory,extension=$extension,filter=$filter,filter_name=$filter_name,remove_everything_but_MuDst_and_pythia=$remove_everything_but_MuDst_and_pythia
+    star-submit-template -template centralDiffractive_total_chain_template.xml -entities number=$full_events,events_number=$partial_events,run_number=$run_number,seed=$seed,output_directory=$output_directory/$output_folder,extension=$extension,filter=$filter,filter_name=$filter_name,remove_everything_but_MuDst_and_pythia=$remove_everything_but_MuDst_and_pythia
 fi
 
 mv strange_generator*.* ./star_scheduler_logs/
