@@ -781,7 +781,7 @@ int main(int argc, char* argv[]){
             for(size_t MCindex = 0; MCindex<tempUPCpointer->getNumberOfMCParticles(); MCindex++){
                 //we only know IdTruth because there is great care taken not to change the order of particles
                 //it is NOT written into upcDst file!!!
-                PrintBigger(tempUPCpointer->getMCParticle(MCindex), "\t\tIdTruth:\t"+to_string(MCindex+1));
+                PrintBigger(tempUPCpointer->getMCParticle(MCindex), "\tIdTruth:\t"+to_string(MCindex+1));
             }
 
 
@@ -982,9 +982,10 @@ int main(int argc, char* argv[]){
 }
 
 void PrintBigger(TParticle* input, std::string additional_stuff){
-    Printf("TParticle: %-13s  p: %8f %8f %8f \tVertex: %8e %8e %8e \tProd. Vertex: %5d %5d \tDecay Vertex: %5d%s",
+    Printf("TParticle: %-13s  p: %8f %8f %8f \tVertex: %8e %8e %8e \tProd. Vertex: %5d %5d \tDecay Vertex: %5d \tTOF tray:%5d \tTOF module:%5d%s",
         input->GetName(), input->Px(), input->Py(), input->Pz(), input->Vx(), input->Vy(), input->Vz(),
-        input->GetFirstMother(), input->GetSecondMother(), input->GetFirstDaughter(), additional_stuff.c_str());
+        input->GetFirstMother(), input->GetSecondMother(), input->GetFirstDaughter(),
+        input->GetLastDaughter()/100, input->GetLastDaughter()%100, additional_stuff.c_str());
 }
 
 double distanceToBeamline(TVector3 point, double x0, double y0, double dxdz, double dydz){
