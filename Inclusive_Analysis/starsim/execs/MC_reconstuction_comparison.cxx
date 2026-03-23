@@ -32,6 +32,7 @@
 
 void PrintBigger(TParticle* input, std::string additional_stuff = "");
 double distanceToBeamline(TVector3 point, double x0 = -0.126857, double y0 = -0.127072, double dxdz = -0.000945, double dydz = 0.000440);
+double DeltaTFix(double deltaT, TParticle* particle1, TParticle* particle2, StUPCEvent* upcEvent);
 
 int main(int argc, char* argv[]){
 
@@ -209,6 +210,8 @@ int main(int argc, char* argv[]){
     TH2D MpipiMothers("MpipiMothers", "particle number;positive;negative", 20, 0, 20, 20, 0, 20);
     TH1D MpipiMotherName("MpipiMotherName", "#pi^{+}#pi^{-} pair mothers;;mothers", 1, 0, 1);
     TH1D MpipiDeltaT("MpipiDeltaT", "Time between pion decay;#Delta t_{0} [ns];events", 100, -5, 5);
+    TH1D MpipiDeltaFixCheck("MpipiDeltaFixCheck", "Time correction between pion decay;#Delta t_{0} [ns];events", 100, -5, 5);
+    TH1D MpipiDeltaTAfterFix("MpipiDeltaTAfterFix", "Corrected time between pion decay;#Delta t_{0} [ns];events", 100, -5, 5);
     TH2D MpipiDeltaTvsEvent("MpipiDeltaTvsEvent", "Time between pion decay;#Delta t_{0} [ns];event number", 100, -5, 5, 1, 0, 1);
     TH2D DeltaTvsNumberOfMCParticles("DeltaTvsNumberOfMCParticles", "Time between pion decay vs number of MC particles;#Delta t_{0} [ns];particles", 100, -5, 5, 10, 0, 100);
     TH1D MpipiDeltaTOnlyTwoTracksDetected("MpipiDeltaTOnlyTwoTracksDetected", "Time between pion decay;#Delta t_{0} [ns];events", 100, -5, 5);
@@ -620,6 +623,8 @@ int main(int argc, char* argv[]){
                                 //stuff to do with deltaT
                                 double deltaT = DeltaT0(positiveTrack[i], negativeTrack[j], massmap[PDGpositive], massmap[PDGnegative]);
                                 MpipiDeltaT.Fill(deltaT);
+                                MpipiDeltaTAfterFix.Fill(DeltaTFix(deltaT, positiveMC[chosen_MC_list_positive[i]], negativeMC[chosen_MC_list_negative[j]], tempUPCpointer));
+                                MpipiDeltaFixCheck.Fill(DeltaTFix(deltaT, positiveMC[chosen_MC_list_positive[i]], negativeMC[chosen_MC_list_negative[j]], tempUPCpointer)-deltaT);
                                 MpipiDeltaTvsEvent.Fill(deltaT, to_string(tempCounter).c_str(), 1.);
                                 if(positiveTrack.size()==1&&negativeTrack.size()==1){
                                     MpipiDeltaTOnlyTwoTracksDetected.Fill(deltaT);
@@ -927,6 +932,8 @@ int main(int argc, char* argv[]){
     MpipiMotherName.LabelsDeflate();
     MpipiMotherName.Write();
     MpipiDeltaT.Write();
+    MpipiDeltaFixCheck.Write();
+    MpipiDeltaTAfterFix.Write();
     MpipiDeltaTvsEvent.LabelsDeflate("Y");
     MpipiDeltaTvsEvent.Write();
     DeltaTvsNumberOfMCParticles.Write();
@@ -993,5 +1000,34 @@ double distanceToBeamline(TVector3 point, double x0, double y0, double dxdz, dou
     TVector3 beamlineDirection(dxdz, dydz, 1.);
     //https://math.stackexchange.com/questions/2353288/point-to-line-distance-in-3d-using-cross-product
     return beamlineDirection.Cross(beamlinePoint-point).Mag()/beamlineDirection.Mag();
+}
+
+double DeltaTFix(double deltaT, TParticle* particle1, TParticle* particle2, StUPCEvent* upcEvent){
+    std::map<std::pair<int, int>, double> TOFTimingMap;
+    std::map<std::pair<int, int>, double> TOFTimingDifferenceMap;
+    //tof maps filling
+    for(int i = 0; i<upcEvent->getNumberOfHits(); i++){
+        int currentTray = upcEvent->getHit(i)->getTray();
+        int currentModule = upcEvent->getHit(i)->getModule();
+        double currentLeadingEdge = upcEvent->getHit(i)->getLeadingEdgeTime();
+        //insertion; if trying to insert a second hit in the same position (so emplace gives "false")
+        //a later hit is inserted and a difference of those is recorded
+        if(!TOFTimingMap.emplace(std::pair<int, int>(currentTray, currentModule), currentLeadingEdge).second){
+            //checking if the new tof hit is bigger than the one currently stored
+            if(TOFTimingMap[std::pair<int, int>(currentTray, currentModule)]<currentLeadingEdge){
+                TOFTimingDifferenceMap[std::pair<int, int>(currentTray, currentModule)] += currentLeadingEdge-TOFTimingMap[std::pair<int, int>(currentTray, currentModule)];
+                TOFTimingMap[std::pair<int, int>(currentTray, currentModule)] = currentLeadingEdge;
+            } else{
+                TOFTimingDifferenceMap[std::pair<int, int>(currentTray, currentModule)] -= currentLeadingEdge-TOFTimingMap[std::pair<int, int>(currentTray, currentModule)];
+            }
+        } else{
+            TOFTimingDifferenceMap.emplace(std::pair<int, int>(currentTray, currentModule), 0.);
+        }
+    }
+    int tray1 = particle1->GetLastDaughter()/100;
+    int module1 = particle1->GetLastDaughter()%100;
+    int tray2 = particle2->GetLastDaughter()/100;
+    int module2 = particle2->GetLastDaughter()%100;
+    return deltaT+TOFTimingDifferenceMap[std::pair<int, int>(tray1, module1)]-TOFTimingDifferenceMap[std::pair<int, int>(tray2, module2)];
 }
 
