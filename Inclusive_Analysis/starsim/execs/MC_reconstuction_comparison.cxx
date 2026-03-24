@@ -186,8 +186,12 @@ int main(int argc, char* argv[]){
     TH2D K0SAfterTPCpionCuts("K0SAfterTPCpionCuts", "#eta vs p_{T} of K^{0}_{S} after MC cuts and TPC reconstruction;#eta;p_{T}", 60, -3.0, 3.0, 40, 0, 2);
 
     //rest of the histograms
-    TH1D ToFhitTimeDifference("ToFhitTimeDifference", "Time difference between pair of ToF hits;#Delta t [ns];pairs", 100, -10, 10);
-    TH1D ToFhitTimeDifferenceSamePosition("ToFhitTimeDifferenceSamePosition", "Time difference between pair of ToF hits to the same modules;#Delta t [ns];pairs", 100, -10, 10);
+    TH1D ToFhitTimeDifferenceExtremelyWide("ToFhitTimeDifferenceExtremelyWide", "Time difference between pair of ToF hits;#Delta t [ns];pairs", 100, -10, 10);
+    TH1D ToFhitTimeDifferenceSimilarPositionExtremelyWide("ToFhitTimeDifferenceSimilarPositionExtremelyWide", "Time difference between pair of ToF hits to similar modules;#Delta t [ns];pairs", 100, -10, 10);
+    TH1D ToFhitTimeDifferenceSamePositionExtremelyWide("ToFhitTimeDifferenceSamePositionExtremelyWide", "Time difference between pair of ToF hits to the same modules;#Delta t [ns];pairs", 100, -10, 10);
+    TH1D ToFhitTimeDifference("ToFhitTimeDifference", "Time difference between pair of ToF hits;#Delta t [ns];pairs", 300, -1.5, 1.5);
+    TH1D ToFhitTimeDifferenceSimilarPosition("ToFhitTimeDifferenceSimilarPosition", "Time difference between pair of ToF hits to similar modules;#Delta t [ns];pairs", 300, -1.5, 1.5);
+    TH1D ToFhitTimeDifferenceSamePosition("ToFhitTimeDifferenceSamePosition", "Time difference between pair of ToF hits to the same modules;#Delta t [ns];pairs", 300, -1.5, 1.5);
     TH2D TracksVsTOFHits("TracksVsTOFHits", "Number of tracks with kToF flag vs number of ToF hits;tracks;ToF hits", 50, 0, 50, 50, 0, 50);
     TH1D FlowOfEvents("FlowOfEvents", "Independent event checks (of MC particles);;events", 1, 0, 1);
     TH1D K0SIndex("K0SIndex", "Index of K^{0}_{S};index;particles", 30, 0, 30);
@@ -209,9 +213,12 @@ int main(int argc, char* argv[]){
     TH2D MpipiPairs("MpipiPairs", "particle pairs;positive;negative", 1, 0, 1, 1, 0, 1);
     TH2D MpipiMothers("MpipiMothers", "particle number;positive;negative", 20, 0, 20, 20, 0, 20);
     TH1D MpipiMotherName("MpipiMotherName", "#pi^{+}#pi^{-} pair mothers;;mothers", 1, 0, 1);
-    TH1D MpipiDeltaT("MpipiDeltaT", "Time between pion decay;#Delta t_{0} [ns];events", 100, -5, 5);
-    TH1D MpipiDeltaFixCheck("MpipiDeltaFixCheck", "Time correction between pion decay;#Delta t_{0} [ns];events", 100, -5, 5);
-    TH1D MpipiDeltaTAfterFix("MpipiDeltaTAfterFix", "Corrected time between pion decay;#Delta t_{0} [ns];events", 100, -5, 5);
+    TH1D MpipiDeltaTExtremelyWide("MpipiDeltaTExtremelyWide", "Time between pion decay;#Delta t_{0} [ns];events", 100, -5, 5);
+    TH1D MpipiDeltaTFixCheckExtremelyWide("MpipiDeltaTFixCheckExtremelyWide", "Time correction between pion decay;#Delta t_{0} [ns];events", 100, -5, 5);
+    TH1D MpipiDeltaTAfterFixExtremelyWide("MpipiDeltaTAfterFixExtremelyWide", "Corrected time between pion decay;#Delta t_{0} [ns];events", 100, -5, 5);
+    TH1D MpipiDeltaT("MpipiDeltaT", "Time between pion decay;#Delta t_{0} [ns];events", 300, -1.5, 1.5);
+    TH1D MpipiDeltaTFixCheck("MpipiDeltaTFixCheck", "Time correction between pion decay;#Delta t_{0} [ns];events", 300, -1.5, 1.5);
+    TH1D MpipiDeltaTAfterFix("MpipiDeltaTAfterFix", "Corrected time between pion decay;#Delta t_{0} [ns];events", 500, -2.5, 2.5);
     TH2D MpipiDeltaTvsEvent("MpipiDeltaTvsEvent", "Time between pion decay;#Delta t_{0} [ns];event number", 100, -5, 5, 1, 0, 1);
     TH2D DeltaTvsNumberOfMCParticles("DeltaTvsNumberOfMCParticles", "Time between pion decay vs number of MC particles;#Delta t_{0} [ns];particles", 100, -5, 5, 10, 0, 100);
     TH1D MpipiDeltaTOnlyTwoTracksDetected("MpipiDeltaTOnlyTwoTracksDetected", "Time between pion decay;#Delta t_{0} [ns];events", 100, -5, 5);
@@ -362,22 +369,18 @@ int main(int argc, char* argv[]){
         for(int i = 0; i<tempUPCpointer->getNumberOfHits()-1; i++){
             for(int j = i+1; j<tempUPCpointer->getNumberOfHits(); j++){
                 ToFhitTimeDifference.Fill(tempUPCpointer->getHit(i)->getLeadingEdgeTime()-tempUPCpointer->getHit(j)->getLeadingEdgeTime());
+                ToFhitTimeDifferenceExtremelyWide.Fill(tempUPCpointer->getHit(i)->getLeadingEdgeTime()-tempUPCpointer->getHit(j)->getLeadingEdgeTime());
                 int currentTray = tempUPCpointer->getHit(i)->getTray();
                 int currentModule = tempUPCpointer->getHit(i)->getModule();
-                // int currentCell = tempUPCpointer->getHit(i)->getCell();
-                //TEST, effectively disabling cell difference
-                //because there were no two hits with also the same cell number
-                int currentCell = tempUPCpointer->getHit(j)->getCell();
-                if(currentTray==tempUPCpointer->getHit(j)->getTray()&&currentModule==tempUPCpointer->getHit(j)->getModule()&&currentCell==tempUPCpointer->getHit(j)->getCell()){
+                int TOFmoduleDifference = abs(currentTray-tempUPCpointer->getHit(j)->getTray())+abs(currentModule-tempUPCpointer->getHit(j)->getModule());
+                if(TOFmoduleDifference==0){
                     ToFhitTimeDifferenceSamePosition.Fill(tempUPCpointer->getHit(i)->getLeadingEdgeTime()-tempUPCpointer->getHit(j)->getLeadingEdgeTime());
+                    ToFhitTimeDifferenceSamePositionExtremelyWide.Fill(tempUPCpointer->getHit(i)->getLeadingEdgeTime()-tempUPCpointer->getHit(j)->getLeadingEdgeTime());
                 }
-                // //TEST
-                // double timediff = tempUPCpointer->getHit(i)->getLeadingEdgeTime()-tempUPCpointer->getHit(j)->getLeadingEdgeTime();
-                // if(fabs(timediff)>0.8||fabs(timediff)<1.2){
-                //     printf("Pair:\n");
-                //     printf("Tray: %d\tModule: %d\tCell: %d\n", tempUPCpointer->getHit(i)->getTray(), tempUPCpointer->getHit(i)->getModule(), tempUPCpointer->getHit(i)->getCell());
-                //     printf("Tray: %d\tModule: %d\tCell: %d\n", tempUPCpointer->getHit(j)->getTray(), tempUPCpointer->getHit(j)->getModule(), tempUPCpointer->getHit(j)->getCell());
-                // }
+                if(TOFmoduleDifference==1){
+                    ToFhitTimeDifferenceSimilarPosition.Fill(tempUPCpointer->getHit(i)->getLeadingEdgeTime()-tempUPCpointer->getHit(j)->getLeadingEdgeTime());
+                    ToFhitTimeDifferenceSimilarPositionExtremelyWide.Fill(tempUPCpointer->getHit(i)->getLeadingEdgeTime()-tempUPCpointer->getHit(j)->getLeadingEdgeTime());
+                }
             }
         }
 
@@ -622,9 +625,12 @@ int main(int argc, char* argv[]){
                                 K0SAfterTPCpionCuts.Fill(tempUPCpointer->getMCParticle(MotherParticleIndex)->Eta(), tempUPCpointer->getMCParticle(MotherParticleIndex)->Pt());
                                 //stuff to do with deltaT
                                 double deltaT = DeltaT0(positiveTrack[i], negativeTrack[j], massmap[PDGpositive], massmap[PDGnegative]);
+                                MpipiDeltaTExtremelyWide.Fill(deltaT);
+                                MpipiDeltaTAfterFixExtremelyWide.Fill(DeltaTFix(deltaT, positiveMC[chosen_MC_list_positive[i]], negativeMC[chosen_MC_list_negative[j]], tempUPCpointer));
+                                MpipiDeltaTFixCheckExtremelyWide.Fill(DeltaTFix(deltaT, positiveMC[chosen_MC_list_positive[i]], negativeMC[chosen_MC_list_negative[j]], tempUPCpointer)-deltaT);
                                 MpipiDeltaT.Fill(deltaT);
                                 MpipiDeltaTAfterFix.Fill(DeltaTFix(deltaT, positiveMC[chosen_MC_list_positive[i]], negativeMC[chosen_MC_list_negative[j]], tempUPCpointer));
-                                MpipiDeltaFixCheck.Fill(DeltaTFix(deltaT, positiveMC[chosen_MC_list_positive[i]], negativeMC[chosen_MC_list_negative[j]], tempUPCpointer)-deltaT);
+                                MpipiDeltaTFixCheck.Fill(DeltaTFix(deltaT, positiveMC[chosen_MC_list_positive[i]], negativeMC[chosen_MC_list_negative[j]], tempUPCpointer)-deltaT);
                                 MpipiDeltaTvsEvent.Fill(deltaT, to_string(tempCounter).c_str(), 1.);
                                 if(positiveTrack.size()==1&&negativeTrack.size()==1){
                                     MpipiDeltaTOnlyTwoTracksDetected.Fill(deltaT);
@@ -898,7 +904,11 @@ int main(int argc, char* argv[]){
 
     //saving histograms
     ToFhitTimeDifference.Write();
+    ToFhitTimeDifferenceSimilarPosition.Write();
     ToFhitTimeDifferenceSamePosition.Write();
+    ToFhitTimeDifferenceExtremelyWide.Write();
+    ToFhitTimeDifferenceSimilarPositionExtremelyWide.Write();
+    ToFhitTimeDifferenceSamePositionExtremelyWide.Write();
     TracksVsTOFHits.Write();
     FlowOfEvents.LabelsDeflate();
     FlowOfEvents.Write();
@@ -931,8 +941,11 @@ int main(int argc, char* argv[]){
     MpipiMothers.Write();
     MpipiMotherName.LabelsDeflate();
     MpipiMotherName.Write();
+    MpipiDeltaTExtremelyWide.Write();
+    MpipiDeltaTFixCheckExtremelyWide.Write();
+    MpipiDeltaTAfterFixExtremelyWide.Write();
     MpipiDeltaT.Write();
-    MpipiDeltaFixCheck.Write();
+    MpipiDeltaTFixCheck.Write();
     MpipiDeltaTAfterFix.Write();
     MpipiDeltaTvsEvent.LabelsDeflate("Y");
     MpipiDeltaTvsEvent.Write();
