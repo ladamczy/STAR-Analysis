@@ -33,6 +33,7 @@
 void PrintBigger(TParticle* input, std::string additional_stuff = "");
 double distanceToBeamline(TVector3 point, double x0 = -0.126857, double y0 = -0.127072, double dxdz = -0.000945, double dydz = 0.000440);
 double DeltaTFix(double deltaT, TParticle* particle1, TParticle* particle2, StUPCEvent* upcEvent);
+double DeltaTFixSimilarModules(double deltaT, TParticle* particle1, TParticle* particle2, StUPCEvent* upcEvent);
 
 int main(int argc, char* argv[]){
 
@@ -216,9 +217,13 @@ int main(int argc, char* argv[]){
     TH1D MpipiDeltaTExtremelyWide("MpipiDeltaTExtremelyWide", "Time between pion decay;#Delta t_{0} [ns];events", 100, -5, 5);
     TH1D MpipiDeltaTFixCheckExtremelyWide("MpipiDeltaTFixCheckExtremelyWide", "Time correction between pion decay;#Delta t_{0} [ns];events", 100, -5, 5);
     TH1D MpipiDeltaTAfterFixExtremelyWide("MpipiDeltaTAfterFixExtremelyWide", "Corrected time between pion decay;#Delta t_{0} [ns];events", 100, -5, 5);
+    TH1D MpipiDeltaTSimilarTOFModulesFixCheckExtremelyWide("MpipiDeltaTSimilarTOFModulesFixCheckExtremelyWide", "Time correction between pion decay;#Delta t_{0} [ns];events", 100, -5, 5);
+    TH1D MpipiDeltaTSimilarTOFModulesAfterFixExtremelyWide("MpipiDeltaTSimilarTOFModulesAfterFixExtremelyWide", "Corrected time between pion decay;#Delta t_{0} [ns];events", 100, -5, 5);
     TH1D MpipiDeltaT("MpipiDeltaT", "Time between pion decay;#Delta t_{0} [ns];events", 300, -1.5, 1.5);
     TH1D MpipiDeltaTFixCheck("MpipiDeltaTFixCheck", "Time correction between pion decay;#Delta t_{0} [ns];events", 300, -1.5, 1.5);
     TH1D MpipiDeltaTAfterFix("MpipiDeltaTAfterFix", "Corrected time between pion decay;#Delta t_{0} [ns];events", 500, -2.5, 2.5);
+    TH1D MpipiDeltaTSimilarTOFModulesFixCheck("MpipiDeltaTSimilarTOFModulesFixCheck", "Time correction between pion decay;#Delta t_{0} [ns];events", 300, -1.5, 1.5);
+    TH1D MpipiDeltaTSimilarTOFModulesAfterFix("MpipiDeltaTSimilarTOFModulesAfterFix", "Corrected time between pion decay;#Delta t_{0} [ns];events", 500, -2.5, 2.5);
     TH2D MpipiDeltaTvsEvent("MpipiDeltaTvsEvent", "Time between pion decay;#Delta t_{0} [ns];event number", 100, -5, 5, 1, 0, 1);
     TH2D DeltaTvsNumberOfMCParticles("DeltaTvsNumberOfMCParticles", "Time between pion decay vs number of MC particles;#Delta t_{0} [ns];particles", 100, -5, 5, 10, 0, 100);
     TH1D MpipiDeltaTOnlyTwoTracksDetected("MpipiDeltaTOnlyTwoTracksDetected", "Time between pion decay;#Delta t_{0} [ns];events", 100, -5, 5);
@@ -628,9 +633,13 @@ int main(int argc, char* argv[]){
                                 MpipiDeltaTExtremelyWide.Fill(deltaT);
                                 MpipiDeltaTAfterFixExtremelyWide.Fill(DeltaTFix(deltaT, positiveMC[chosen_MC_list_positive[i]], negativeMC[chosen_MC_list_negative[j]], tempUPCpointer));
                                 MpipiDeltaTFixCheckExtremelyWide.Fill(DeltaTFix(deltaT, positiveMC[chosen_MC_list_positive[i]], negativeMC[chosen_MC_list_negative[j]], tempUPCpointer)-deltaT);
+                                MpipiDeltaTSimilarTOFModulesAfterFixExtremelyWide.Fill(DeltaTFixSimilarModules(deltaT, positiveMC[chosen_MC_list_positive[i]], negativeMC[chosen_MC_list_negative[j]], tempUPCpointer));
+                                MpipiDeltaTSimilarTOFModulesFixCheckExtremelyWide.Fill(DeltaTFixSimilarModules(deltaT, positiveMC[chosen_MC_list_positive[i]], negativeMC[chosen_MC_list_negative[j]], tempUPCpointer)-deltaT);
                                 MpipiDeltaT.Fill(deltaT);
                                 MpipiDeltaTAfterFix.Fill(DeltaTFix(deltaT, positiveMC[chosen_MC_list_positive[i]], negativeMC[chosen_MC_list_negative[j]], tempUPCpointer));
                                 MpipiDeltaTFixCheck.Fill(DeltaTFix(deltaT, positiveMC[chosen_MC_list_positive[i]], negativeMC[chosen_MC_list_negative[j]], tempUPCpointer)-deltaT);
+                                MpipiDeltaTSimilarTOFModulesAfterFix.Fill(DeltaTFixSimilarModules(deltaT, positiveMC[chosen_MC_list_positive[i]], negativeMC[chosen_MC_list_negative[j]], tempUPCpointer));
+                                MpipiDeltaTSimilarTOFModulesFixCheck.Fill(DeltaTFixSimilarModules(deltaT, positiveMC[chosen_MC_list_positive[i]], negativeMC[chosen_MC_list_negative[j]], tempUPCpointer)-deltaT);
                                 MpipiDeltaTvsEvent.Fill(deltaT, to_string(tempCounter).c_str(), 1.);
                                 if(positiveTrack.size()==1&&negativeTrack.size()==1){
                                     MpipiDeltaTOnlyTwoTracksDetected.Fill(deltaT);
@@ -944,9 +953,13 @@ int main(int argc, char* argv[]){
     MpipiDeltaTExtremelyWide.Write();
     MpipiDeltaTFixCheckExtremelyWide.Write();
     MpipiDeltaTAfterFixExtremelyWide.Write();
+    MpipiDeltaTSimilarTOFModulesFixCheckExtremelyWide.Write();
+    MpipiDeltaTSimilarTOFModulesAfterFixExtremelyWide.Write();
     MpipiDeltaT.Write();
     MpipiDeltaTFixCheck.Write();
     MpipiDeltaTAfterFix.Write();
+    MpipiDeltaTSimilarTOFModulesFixCheck.Write();
+    MpipiDeltaTSimilarTOFModulesAfterFix.Write();
     MpipiDeltaTvsEvent.LabelsDeflate("Y");
     MpipiDeltaTvsEvent.Write();
     DeltaTvsNumberOfMCParticles.Write();
@@ -1042,5 +1055,75 @@ double DeltaTFix(double deltaT, TParticle* particle1, TParticle* particle2, StUP
     int tray2 = particle2->GetLastDaughter()/100;
     int module2 = particle2->GetLastDaughter()%100;
     return deltaT+TOFTimingDifferenceMap[std::pair<int, int>(tray1, module1)]-TOFTimingDifferenceMap[std::pair<int, int>(tray2, module2)];
+}
+
+double DeltaTFixSimilarModules(double deltaT, TParticle* particle1, TParticle* particle2, StUPCEvent* upcEvent){
+    std::map<std::pair<int, int>, double> TOFTimingMap;
+    std::map<std::pair<int, int>, double> TOFTimingMapLowerTray;
+    std::map<std::pair<int, int>, double> TOFTimingMapUpperTray;
+    std::map<std::pair<int, int>, double> TOFTimingMapLowerModule;
+    std::map<std::pair<int, int>, double> TOFTimingMapUpperModule;
+    //tof main map filling
+    for(int i = 0; i<upcEvent->getNumberOfHits(); i++){
+        int currentTray = upcEvent->getHit(i)->getTray();
+        int currentModule = upcEvent->getHit(i)->getModule();
+        double currentLeadingEdge = upcEvent->getHit(i)->getLeadingEdgeTime();
+        //insertion; if trying to insert a second hit in the same position (so emplace gives "false")
+        //an earlier hit is kept
+        if(!TOFTimingMap.emplace(std::pair<int, int>(currentTray, currentModule), currentLeadingEdge).second){
+            //checking if the new tof hit is bigger than the one currently stored
+            if(TOFTimingMap[std::pair<int, int>(currentTray, currentModule)]>currentLeadingEdge){
+                TOFTimingMap[std::pair<int, int>(currentTray, currentModule)] = currentLeadingEdge;
+            }
+        }
+    }
+    //tof neighbour maps filling
+    for(int i = 0; i<upcEvent->getNumberOfHits(); i++){
+        int currentTray = upcEvent->getHit(i)->getTray();
+        int currentModule = upcEvent->getHit(i)->getModule();
+        double currentLeadingEdge = upcEvent->getHit(i)->getLeadingEdgeTime();
+        //going througn alleged neighbours and checking if the hit can be a neighbour to someone
+        if(TOFTimingMap.count(std::pair<int, int>(currentTray+1, currentModule))==1){
+            TOFTimingMapLowerTray.emplace(std::pair<int, int>(currentTray, currentModule), currentLeadingEdge);
+        }
+        if(TOFTimingMap.count(std::pair<int, int>(currentTray-1, currentModule))==1){
+            TOFTimingMapUpperTray.emplace(std::pair<int, int>(currentTray, currentModule), currentLeadingEdge);
+        }
+        if(TOFTimingMap.count(std::pair<int, int>(currentTray, currentModule+1))==1){
+            TOFTimingMapLowerModule.emplace(std::pair<int, int>(currentTray, currentModule), currentLeadingEdge);
+        }
+        if(TOFTimingMap.count(std::pair<int, int>(currentTray, currentModule-1))==1){
+            TOFTimingMapUpperModule.emplace(std::pair<int, int>(currentTray, currentModule), currentLeadingEdge);
+        }
+    }
+    double deltaTfix = 0;
+    //checking particle1 times
+    int TOFtray = particle1->GetLastDaughter()/100;
+    int TOFmodule = particle1->GetLastDaughter()%100;
+    std::pair<int, int> TOFhit(TOFtray, TOFmodule);
+    if(TOFTimingMapLowerModule.count(TOFhit)==1){
+        deltaTfix += TOFTimingMapLowerModule[TOFhit]-TOFTimingMap[TOFhit];
+    } else if(TOFTimingMapUpperModule.count(TOFhit)==1){
+        deltaTfix += TOFTimingMapUpperModule[TOFhit]-TOFTimingMap[TOFhit];
+    } else if(TOFTimingMapLowerTray.count(TOFhit)==1){
+        deltaTfix += TOFTimingMapLowerTray[TOFhit]-TOFTimingMap[TOFhit];
+    } else if(TOFTimingMapUpperTray.count(TOFhit)==1){
+        deltaTfix += TOFTimingMapUpperTray[TOFhit]-TOFTimingMap[TOFhit];
+    }
+    //checking particle2 times
+    TOFtray = particle2->GetLastDaughter()/100;
+    TOFmodule = particle2->GetLastDaughter()%100;
+    TOFhit = std::pair<int, int>(TOFtray, TOFmodule);
+    if(TOFTimingMapLowerModule.count(TOFhit)==1){
+        deltaTfix -= TOFTimingMapLowerModule[TOFhit]-TOFTimingMap[TOFhit];
+    } else if(TOFTimingMapUpperModule.count(TOFhit)==1){
+        deltaTfix -= TOFTimingMapUpperModule[TOFhit]-TOFTimingMap[TOFhit];
+    } else if(TOFTimingMapLowerTray.count(TOFhit)==1){
+        deltaTfix -= TOFTimingMapLowerTray[TOFhit]-TOFTimingMap[TOFhit];
+    } else if(TOFTimingMapUpperTray.count(TOFhit)==1){
+        deltaTfix -= TOFTimingMapUpperTray[TOFhit]-TOFTimingMap[TOFhit];
+    }
+
+    return deltaT+deltaTfix;
 }
 
