@@ -462,12 +462,17 @@ int main(int argc, char** argv)
 
     TH1D* hEventsPassedSelection=new TH1D("hEventsPassedSelection","hEventsPassedSelection;N;# events",5,0,5);
 
-    TH2F* hDeltaT1vsT2_protons = new TH2F("hDeltaT1vsT2_protons", "#Delta t_{1} vs #Delta t_{2} (protons);#Delta t_{1} [ns] ;#Delta t_{2} [ns]", 200, -20.0, 20.0, 200, -20.0, 20.0);
-    TH2F* hDeltaT1vsT2_antiprotons = new TH2F("hDeltaT1vsT2_antiprotons", "#Delta t_{1} vs #Delta t_{2} (antiprotons);#Delta t_{1} [ns];#Delta t_{2} [ns]", 200, -20.0, 20.0, 200, -20.0, 20.0);
-    TH2F* hDeltaT1vsT2_protons_east = new TH2F("hDeltaT1vsT2_protons_east", "#Delta t_{1} vs #Delta t_{2} (protons east);#Delta t_{1} [ns] ;#Delta t_{2} [ns]", 200, -20.0, 20.0, 200, -20.0, 20.0);
-    TH2F* hDeltaT1vsT2_antiprotons_east = new TH2F("hDeltaT1vsT2_antiprotons_east", "#Delta t_{1} vs #Delta t_{2} (antiprotons east);#Delta t_{1} [ns];#Delta t_{2} [ns]", 200, -20.0, 20.0, 200, -20.0, 20.0);
-    TH2F* hDeltaT1vsT2_protons_west = new TH2F("hDeltaT1vsT2_protons_west", "#Delta t_{1} vs #Delta t_{2} (protons west);#Delta t_{1} [ns] ;#Delta t_{2} [ns]", 200, -20.0, 20.0, 200, -20.0, 20.0);
-    TH2F* hDeltaT1vsT2_antiprotons_west = new TH2F("hDeltaT1vsT2_antiprotons_west", "#Delta t_{1} vs #Delta t_{2} (antiprotons west);#Delta t_{1} [ns];#Delta t_{2} [ns]", 200, -20.0, 20.0, 200, -20.0, 20.0);
+    TH2D* hDeltaT1vsT2_protons = new TH2D("hDeltaT1vsT2_protons", "#Delta t_{1} vs #Delta t_{2} (protons);#Delta t_{1} [ns] ;#Delta t_{2} [ns]", 200, -20.0, 20.0, 200, -20.0, 20.0);
+    TH2D* hDeltaT1vsT2_antiprotons = new TH2D("hDeltaT1vsT2_antiprotons", "#Delta t_{1} vs #Delta t_{2} (antiprotons);#Delta t_{1} [ns];#Delta t_{2} [ns]", 200, -20.0, 20.0, 200, -20.0, 20.0);
+    TH2D* hDeltaT1vsT2_protons_east = new TH2D("hDeltaT1vsT2_protons_east", "#Delta t_{1} vs #Delta t_{2} (protons east);#Delta t_{1} [ns] ;#Delta t_{2} [ns]", 200, -20.0, 20.0, 200, -20.0, 20.0);
+    TH2D* hDeltaT1vsT2_antiprotons_east = new TH2D("hDeltaT1vsT2_antiprotons_east", "#Delta t_{1} vs #Delta t_{2} (antiprotons east);#Delta t_{1} [ns];#Delta t_{2} [ns]", 200, -20.0, 20.0, 200, -20.0, 20.0);
+    TH2D* hDeltaT1vsT2_protons_west = new TH2D("hDeltaT1vsT2_protons_west", "#Delta t_{1} vs #Delta t_{2} (protons west);#Delta t_{1} [ns] ;#Delta t_{2} [ns]", 200, -20.0, 20.0, 200, -20.0, 20.0);
+    TH2D* hDeltaT1vsT2_antiprotons_west = new TH2D("hDeltaT1vsT2_antiprotons_west", "#Delta t_{1} vs #Delta t_{2} (antiprotons west);#Delta t_{1} [ns];#Delta t_{2} [ns]", 200, -20.0, 20.0, 200, -20.0, 20.0);
+
+    TH1D* hDeltaT_pionpion=new TH1D("hDeltaT_pion_pion","#Delta t pion-pion hypothesis;#Delta t [ns];# events",400,-20.0,20.0);
+    TH1D* hDeltaT_kaonpion=new TH1D("hDeltaT_kaon_pion","#Delta t kaon-pion hypothesis;#Delta t [ns];# events",400,-20.0,20.0);
+    TH1D* hDeltaT_protonproton=new TH1D("hDeltaT_proton_proton","#Delta t proton-proton hypothesis;#Delta t [ns];# events",400,-20.0,20.0);
+    TH1D* hDeltaT_lambda_proton_pion=new TH1D("hDeltaT_lambda_proton_pion","#Delta t lambda proton-pion hypothesis;#Delta t [ns];# events",4000,-20.0,20.0);
 
     double massPion = 0.13957061;
     double massKaon = 0.49367;
@@ -609,113 +614,113 @@ int main(int argc, char** argv)
                         double distance_from_edge = y_edge-rapidity;
                         if(upcEvt->getTrack(j)->getCharge()>0){ //proton
                             protonIdx.push_back(j);
-                            hDistanceBeam_proton->Fill(distance_from_beam);
-                            hDistanceEdge_proton->Fill(distance_from_edge);
-                            h3D_protons->Fill(pt, eta, vz);
-                            hPtProtonX->Fill(pt);
-                            hEtaProtonX->Fill(eta);
-                            hRapidityProtonX->Fill(rapidity);
-                            MultiplicityProtonX++;
+                            //hDistanceBeam_proton->Fill(distance_from_beam);
+                            //hDistanceEdge_proton->Fill(distance_from_edge);
+                            //h3D_protons->Fill(pt, eta, vz);
+                            //hPtProtonX->Fill(pt);
+                            //hEtaProtonX->Fill(eta);
+                            //hRapidityProtonX->Fill(rapidity);
+                            //MultiplicityProtonX++;
                             if(isEast) {
-                                h3D_protonsEast->Fill(pt, eta, vz);
-                                hPtProtonEastX->Fill(pt);
-                                hEtaProtonEastX->Fill(eta);
-                                hRapidityProtonEastX->Fill(rapidity);
-                                hDistanceBeam_proton_E->Fill(distance_from_beam);
-                                hDistanceEdge_proton_E->Fill(distance_from_edge);
-                                hProton_DCA_E->Fill(dca);
-                                MultiplicityProtonEastX++;
+                                //h3D_protonsEast->Fill(pt, eta, vz);
+                                //hPtProtonEastX->Fill(pt);
+                                //hEtaProtonEastX->Fill(eta);
+                                //hRapidityProtonEastX->Fill(rapidity);
+                                //hDistanceBeam_proton_E->Fill(distance_from_beam);
+                                //hDistanceEdge_proton_E->Fill(distance_from_edge);
+                                //hProton_DCA_E->Fill(dca);
+                                //MultiplicityProtonEastX++;
 
-                                if (b == 0) { hEta_xi0_proton_E->Fill(eta); hRapidity_xi0_proton_E->Fill(rapidity); }
-                                if (b == 1) { hEta_xi1_proton_E->Fill(eta); hRapidity_xi1_proton_E->Fill(rapidity); }
-                                if (b == 2) { hEta_xi2_proton_E->Fill(eta); hRapidity_xi2_proton_E->Fill(rapidity); }
-                                if (b == 3) { hEta_xi3_proton_E->Fill(eta); hRapidity_xi3_proton_E->Fill(rapidity); }
-                                if (b == 4) { hEta_xi4_proton_E->Fill(eta); hRapidity_xi4_proton_E->Fill(rapidity); }
+                                // if (b == 0) { hEta_xi0_proton_E->Fill(eta); hRapidity_xi0_proton_E->Fill(rapidity); }
+                                // if (b == 1) { hEta_xi1_proton_E->Fill(eta); hRapidity_xi1_proton_E->Fill(rapidity); }
+                                // if (b == 2) { hEta_xi2_proton_E->Fill(eta); hRapidity_xi2_proton_E->Fill(rapidity); }
+                                // if (b == 3) { hEta_xi3_proton_E->Fill(eta); hRapidity_xi3_proton_E->Fill(rapidity); }
+                                // if (b == 4) { hEta_xi4_proton_E->Fill(eta); hRapidity_xi4_proton_E->Fill(rapidity); }
 
-                                if (b == 0) { hEta_xi0_proton_C->Fill(-eta); hRapidity_xi0_proton_C->Fill(-rapidity); }
-                                if (b == 1) { hEta_xi1_proton_C->Fill(-eta); hRapidity_xi1_proton_C->Fill(-rapidity); }
-                                if (b == 2) { hEta_xi2_proton_C->Fill(-eta); hRapidity_xi2_proton_C->Fill(-rapidity); }
-                                if (b == 3) { hEta_xi3_proton_C->Fill(-eta); hRapidity_xi3_proton_C->Fill(-rapidity); }
-                                if (b == 4) { hEta_xi4_proton_C->Fill(-eta); hRapidity_xi4_proton_C->Fill(-rapidity); }
+                                // if (b == 0) { hEta_xi0_proton_C->Fill(-eta); hRapidity_xi0_proton_C->Fill(-rapidity); }
+                                // if (b == 1) { hEta_xi1_proton_C->Fill(-eta); hRapidity_xi1_proton_C->Fill(-rapidity); }
+                                // if (b == 2) { hEta_xi2_proton_C->Fill(-eta); hRapidity_xi2_proton_C->Fill(-rapidity); }
+                                // if (b == 3) { hEta_xi3_proton_C->Fill(-eta); hRapidity_xi3_proton_C->Fill(-rapidity); }
+                                // if (b == 4) { hEta_xi4_proton_C->Fill(-eta); hRapidity_xi4_proton_C->Fill(-rapidity); }
 
                             }
                             if(isWest) {
-                                h3D_protonsWest->Fill(pt, eta, vz);
-                                hPtProtonWestX->Fill(pt);
-                                hEtaProtonWestX->Fill(eta);
-                                hRapidityProtonWestX->Fill(rapidity);
-                                hDistanceBeam_proton_W->Fill(distance_from_beam);
-                                hDistanceEdge_proton_W->Fill(distance_from_edge);
-                                hProton_DCA_W->Fill(dca);
-                                MultiplicityProtonWestX++;
+                                // h3D_protonsWest->Fill(pt, eta, vz);
+                                // hPtProtonWestX->Fill(pt);
+                                // hEtaProtonWestX->Fill(eta);
+                                // hRapidityProtonWestX->Fill(rapidity);
+                                // hDistanceBeam_proton_W->Fill(distance_from_beam);
+                                // hDistanceEdge_proton_W->Fill(distance_from_edge);
+                                // hProton_DCA_W->Fill(dca);
+                                // MultiplicityProtonWestX++;
 
-                                if (b == 0) { hEta_xi0_proton_W->Fill(eta); hRapidity_xi0_proton_W->Fill(rapidity); }
-                                if (b == 1) { hEta_xi1_proton_W->Fill(eta); hRapidity_xi1_proton_W->Fill(rapidity); }
-                                if (b == 2) { hEta_xi2_proton_W->Fill(eta); hRapidity_xi2_proton_W->Fill(rapidity); }
-                                if (b == 3) { hEta_xi3_proton_W->Fill(eta); hRapidity_xi3_proton_W->Fill(rapidity); }
-                                if (b == 4) { hEta_xi4_proton_W->Fill(eta); hRapidity_xi4_proton_W->Fill(rapidity); }
+                                // if (b == 0) { hEta_xi0_proton_W->Fill(eta); hRapidity_xi0_proton_W->Fill(rapidity); }
+                                // if (b == 1) { hEta_xi1_proton_W->Fill(eta); hRapidity_xi1_proton_W->Fill(rapidity); }
+                                // if (b == 2) { hEta_xi2_proton_W->Fill(eta); hRapidity_xi2_proton_W->Fill(rapidity); }
+                                // if (b == 3) { hEta_xi3_proton_W->Fill(eta); hRapidity_xi3_proton_W->Fill(rapidity); }
+                                // if (b == 4) { hEta_xi4_proton_W->Fill(eta); hRapidity_xi4_proton_W->Fill(rapidity); }
 
-                                if (b == 0) { hEta_xi0_proton_C->Fill(eta); hRapidity_xi0_proton_C->Fill(rapidity); }
-                                if (b == 1) { hEta_xi1_proton_C->Fill(eta); hRapidity_xi1_proton_C->Fill(rapidity); }
-                                if (b == 2) { hEta_xi2_proton_C->Fill(eta); hRapidity_xi2_proton_C->Fill(rapidity); }
-                                if (b == 3) { hEta_xi3_proton_C->Fill(eta); hRapidity_xi3_proton_C->Fill(rapidity); }
-                                if (b == 4) { hEta_xi4_proton_C->Fill(eta); hRapidity_xi4_proton_C->Fill(rapidity); }
+                                // if (b == 0) { hEta_xi0_proton_C->Fill(eta); hRapidity_xi0_proton_C->Fill(rapidity); }
+                                // if (b == 1) { hEta_xi1_proton_C->Fill(eta); hRapidity_xi1_proton_C->Fill(rapidity); }
+                                // if (b == 2) { hEta_xi2_proton_C->Fill(eta); hRapidity_xi2_proton_C->Fill(rapidity); }
+                                // if (b == 3) { hEta_xi3_proton_C->Fill(eta); hRapidity_xi3_proton_C->Fill(rapidity); }
+                                // if (b == 4) { hEta_xi4_proton_C->Fill(eta); hRapidity_xi4_proton_C->Fill(rapidity); }
 
                             }
 
                         } 
                         if(upcEvt->getTrack(j)->getCharge()<0){
                             antiprotonIdx.push_back(j);
-                            h3D_antiprotons->Fill(pt, eta, vz);
-                            hPtNProtonX->Fill(pt);
-                            hEtaNProtonX->Fill(eta);
-                            hRapidityNProtonX->Fill(rapidity);
-                            MultiplicityNProtonX++;
-                            hDistanceBeam_antiproton->Fill(distance_from_beam);
-                            hDistanceEdge_antiproton->Fill(distance_from_edge);
+                            // h3D_antiprotons->Fill(pt, eta, vz);
+                            // hPtNProtonX->Fill(pt);
+                            // hEtaNProtonX->Fill(eta);
+                            // hRapidityNProtonX->Fill(rapidity);
+                            // MultiplicityNProtonX++;
+                            // hDistanceBeam_antiproton->Fill(distance_from_beam);
+                            // hDistanceEdge_antiproton->Fill(distance_from_edge);
                             if(isEast) {
-                                h3D_antiprotonsEast->Fill(pt, eta, vz);
-                                hPtNProtonEastX->Fill(pt);
-                                hEtaNProtonEastX->Fill(eta);
-                                hRapidityNProtonEastX->Fill(rapidity);
-                                hDistanceBeam_antiproton_E->Fill(distance_from_beam);
-                                hDistanceEdge_antiproton_E->Fill(distance_from_edge);
-                                hAntiproton_DCA_E->Fill(dca);
-                                MultiplicityNProtonEastX++;
+                            //     h3D_antiprotonsEast->Fill(pt, eta, vz);
+                            //     hPtNProtonEastX->Fill(pt);
+                            //     hEtaNProtonEastX->Fill(eta);
+                            //     hRapidityNProtonEastX->Fill(rapidity);
+                            //     hDistanceBeam_antiproton_E->Fill(distance_from_beam);
+                            //     hDistanceEdge_antiproton_E->Fill(distance_from_edge);
+                            //     hAntiproton_DCA_E->Fill(dca);
+                            //     MultiplicityNProtonEastX++;
 
-                                if (b == 0) { hEta_xi0_antiproton_E->Fill(eta); hRapidity_xi0_antiproton_E->Fill(rapidity); }
-                                if (b == 1) { hEta_xi1_antiproton_E->Fill(eta); hRapidity_xi1_antiproton_E->Fill(rapidity); }
-                                if (b == 2) { hEta_xi2_antiproton_E->Fill(eta); hRapidity_xi2_antiproton_E->Fill(rapidity); }
-                                if (b == 3) { hEta_xi3_antiproton_E->Fill(eta); hRapidity_xi3_antiproton_E->Fill(rapidity); }
-                                if (b == 4) { hEta_xi4_antiproton_E->Fill(eta); hRapidity_xi4_antiproton_E->Fill(rapidity); }
+                            //     if (b == 0) { hEta_xi0_antiproton_E->Fill(eta); hRapidity_xi0_antiproton_E->Fill(rapidity); }
+                            //     if (b == 1) { hEta_xi1_antiproton_E->Fill(eta); hRapidity_xi1_antiproton_E->Fill(rapidity); }
+                            //     if (b == 2) { hEta_xi2_antiproton_E->Fill(eta); hRapidity_xi2_antiproton_E->Fill(rapidity); }
+                            //     if (b == 3) { hEta_xi3_antiproton_E->Fill(eta); hRapidity_xi3_antiproton_E->Fill(rapidity); }
+                            //     if (b == 4) { hEta_xi4_antiproton_E->Fill(eta); hRapidity_xi4_antiproton_E->Fill(rapidity); }
 
-                                if (b == 0) { hEta_xi0_antiproton_C->Fill(-eta); hRapidity_xi0_antiproton_C->Fill(-rapidity); }
-                                if (b == 1) { hEta_xi1_antiproton_C->Fill(-eta); hRapidity_xi1_antiproton_C->Fill(-rapidity); }
-                                if (b == 2) { hEta_xi2_antiproton_C->Fill(-eta); hRapidity_xi2_antiproton_C->Fill(-rapidity); }
-                                if (b == 3) { hEta_xi3_antiproton_C->Fill(-eta); hRapidity_xi3_antiproton_C->Fill(-rapidity); }
-                                if (b == 4) { hEta_xi4_antiproton_C->Fill(-eta); hRapidity_xi4_antiproton_C->Fill(-rapidity); }
+                            //     if (b == 0) { hEta_xi0_antiproton_C->Fill(-eta); hRapidity_xi0_antiproton_C->Fill(-rapidity); }
+                            //     if (b == 1) { hEta_xi1_antiproton_C->Fill(-eta); hRapidity_xi1_antiproton_C->Fill(-rapidity); }
+                            //     if (b == 2) { hEta_xi2_antiproton_C->Fill(-eta); hRapidity_xi2_antiproton_C->Fill(-rapidity); }
+                            //     if (b == 3) { hEta_xi3_antiproton_C->Fill(-eta); hRapidity_xi3_antiproton_C->Fill(-rapidity); }
+                            //     if (b == 4) { hEta_xi4_antiproton_C->Fill(-eta); hRapidity_xi4_antiproton_C->Fill(-rapidity); }
                             }
                             if(isWest) {
-                                h3D_antiprotonsWest->Fill(pt, eta, vz);
-                                hPtNProtonWestX->Fill(pt);
-                                hEtaNProtonWestX->Fill(eta);
-                                hRapidityNProtonWestX->Fill(rapidity);
-                                hDistanceBeam_antiproton_W->Fill(distance_from_beam);
-                                hDistanceEdge_antiproton_W->Fill(distance_from_edge);
-                                hAntiproton_DCA_W->Fill(dca);
-                                MultiplicityNProtonWestX++;
+                                // h3D_antiprotonsWest->Fill(pt, eta, vz);
+                                // hPtNProtonWestX->Fill(pt);
+                                // hEtaNProtonWestX->Fill(eta);
+                                // hRapidityNProtonWestX->Fill(rapidity);
+                                // hDistanceBeam_antiproton_W->Fill(distance_from_beam);
+                                // hDistanceEdge_antiproton_W->Fill(distance_from_edge);
+                                // hAntiproton_DCA_W->Fill(dca);
+                                // MultiplicityNProtonWestX++;
 
-                                if (b == 0) { hEta_xi0_antiproton_W->Fill(eta); hRapidity_xi0_antiproton_W->Fill(rapidity); }
-                                if (b == 1) { hEta_xi1_antiproton_W->Fill(eta); hRapidity_xi1_antiproton_W->Fill(rapidity); }
-                                if (b == 2) { hEta_xi2_antiproton_W->Fill(eta); hRapidity_xi2_antiproton_W->Fill(rapidity); }
-                                if (b == 3) { hEta_xi3_antiproton_W->Fill(eta); hRapidity_xi3_antiproton_W->Fill(rapidity); }
-                                if (b == 4) { hEta_xi4_antiproton_W->Fill(eta); hRapidity_xi4_antiproton_W->Fill(rapidity); }
+                                // if (b == 0) { hEta_xi0_antiproton_W->Fill(eta); hRapidity_xi0_antiproton_W->Fill(rapidity); }
+                                // if (b == 1) { hEta_xi1_antiproton_W->Fill(eta); hRapidity_xi1_antiproton_W->Fill(rapidity); }
+                                // if (b == 2) { hEta_xi2_antiproton_W->Fill(eta); hRapidity_xi2_antiproton_W->Fill(rapidity); }
+                                // if (b == 3) { hEta_xi3_antiproton_W->Fill(eta); hRapidity_xi3_antiproton_W->Fill(rapidity); }
+                                // if (b == 4) { hEta_xi4_antiproton_W->Fill(eta); hRapidity_xi4_antiproton_W->Fill(rapidity); }
 
-                                if (b == 0) { hEta_xi0_antiproton_C->Fill(eta); hRapidity_xi0_antiproton_C->Fill(rapidity); }
-                                if (b == 1) { hEta_xi1_antiproton_C->Fill(eta); hRapidity_xi1_antiproton_C->Fill(rapidity); }
-                                if (b == 2) { hEta_xi2_antiproton_C->Fill(eta); hRapidity_xi2_antiproton_C->Fill(rapidity); }
-                                if (b == 3) { hEta_xi3_antiproton_C->Fill(eta); hRapidity_xi3_antiproton_C->Fill(rapidity); }
-                                if (b == 4) { hEta_xi4_antiproton_C->Fill(eta); hRapidity_xi4_antiproton_C->Fill(rapidity); }
+                                // if (b == 0) { hEta_xi0_antiproton_C->Fill(eta); hRapidity_xi0_antiproton_C->Fill(rapidity); }
+                                // if (b == 1) { hEta_xi1_antiproton_C->Fill(eta); hRapidity_xi1_antiproton_C->Fill(rapidity); }
+                                // if (b == 2) { hEta_xi2_antiproton_C->Fill(eta); hRapidity_xi2_antiproton_C->Fill(rapidity); }
+                                // if (b == 3) { hEta_xi3_antiproton_C->Fill(eta); hRapidity_xi3_antiproton_C->Fill(rapidity); }
+                                // if (b == 4) { hEta_xi4_antiproton_C->Fill(eta); hRapidity_xi4_antiproton_C->Fill(rapidity); }
 
                             }
                         }
@@ -800,6 +805,13 @@ int main(int argc, char** argv)
 
                         StUPCV0 L01(track1,track2, massPion, massProton, j, k, PrimVrtx, beamline, bField, false);
                         if ( abs(L01.m()-1.115) < 0.02 ) { //checking hypothesis of lambda/lambdabar, when track1 is a pion and track2 is a proton
+                            
+                            double t0_proton = track2->getT0(massProton);
+                            double t0_pion = track1->getT0(massPion);
+                            double delta_t_lambda = t0_proton-t0_pion;
+                            hDeltaT_lambda_proton_pion->Fill(delta_t_lambda);
+
+
                             double rapidity = getRapidity(L01.pt(), L01.eta(), L01.phi(), massLambda);
                             double distance_from_beam = rapidity - y_beam;
                             double distance_from_edge = y_edge-rapidity;
@@ -930,6 +942,12 @@ int main(int argc, char** argv)
                         }
                         StUPCV0 L02(track1,track2, massProton, massPion, j, k, PrimVrtx, beamline, bField, false);
                         if ( abs(L02.m()-1.115) < 0.02 ) {
+
+                            double t0_proton = track1->getT0(massProton);
+                            double t0_pion = track2->getT0(massPion);
+                            double delta_t_lambda = t0_proton-t0_pion;
+                            hDeltaT_lambda_proton_pion->Fill(delta_t_lambda);
+
                             double rapidity = getRapidity(L02.pt(), L02.eta(), L02.phi(), massLambda);
                             double distance_from_beam = rapidity - y_beam;
                             double distance_from_edge = y_edge-rapidity;
@@ -1067,23 +1085,25 @@ int main(int argc, char** argv)
 
             for (int i_trk : goodTrackIdx) {
                 if (i_trk == i_p) continue;
-
                 TVector3 mom;
                 upcEvt->getTrack(i_trk)->getMomentum(mom);
 
-                if (mom.Mag() < min_p) {
-                    min_p = mom.Mag();
-                    ref_idx = i_trk;
-                }
+                    if (mom.Mag() < min_p) {
+                        min_p = mom.Mag();
+                        ref_idx = i_trk;
+                    }
             }
-
             if (ref_idx >= 0) {
+
                 double t0_proton = upcEvt->getTrack(i_p)->getT0(massProton);
                 double t0_pion = upcEvt->getTrack(ref_idx)->getT0(massPion);
                 double t0_kaon = upcEvt->getTrack(ref_idx)->getT0(massKaon);
+                double t0_test_proton=upcEvt->getTrack(ref_idx)->getT0(massProton);
 
                 double delta_t1 = t0_proton - t0_pion;
                 double delta_t2 = t0_proton - t0_kaon;
+
+                double delta_t5 = t0_proton-t0_test_proton;
 
                 hDeltaT1vsT2_protons->Fill(delta_t1, delta_t2);
 
@@ -1092,6 +1112,81 @@ int main(int argc, char** argv)
                 } else {
                     hDeltaT1vsT2_protons_east->Fill(delta_t1, delta_t2);
                 }
+                if((fabs(delta_t1) > 0.6 && fabs(delta_t2) > 0.6)) { 
+    
+                    hDeltaT_protonproton->Fill(delta_t5);
+                
+                    if((fabs(delta_t5)>0.6)) {
+                        double t0_pion_rejected = upcEvt->getTrack(i_p)->getT0(massPion);
+                        double t0_kaon_rejected = upcEvt->getTrack(i_p)->getT0(massKaon);
+                        
+                        double delta_t3 = t0_pion_rejected - t0_pion;
+                        double delta_t4 = t0_kaon_rejected - t0_pion;
+                        
+                        hDeltaT_pionpion->Fill(delta_t3);
+                        hDeltaT_kaonpion->Fill(delta_t4);
+                    }
+                }
+                if(!(fabs(delta_t1)<0.6 || fabs(delta_t2)<0.6 || fabs(delta_t5)<0.6)) continue; //does not lie on the horizontal or vertical axis for delta t1 t2 plot
+                double pt  = upcEvt->getTrack(i_p)->getPt();
+                double eta = upcEvt->getTrack(i_p)->getEta();
+                double dca = upcEvt->getTrack(i_p)->getDcaXY();
+                double rapidity = getRapidity(pt, eta, upcEvt->getTrack(i_p)->getPhi(), massProton);
+                double distance_from_beam = rapidity - y_beam;
+                double distance_from_edge = y_edge-rapidity;
+                hDistanceBeam_proton->Fill(distance_from_beam);
+                hDistanceEdge_proton->Fill(distance_from_edge);
+                h3D_protons->Fill(pt, eta, vz);
+                hPtProtonX->Fill(pt);
+                hEtaProtonX->Fill(eta);
+                hRapidityProtonX->Fill(rapidity);
+                MultiplicityProtonX++;
+                if(isEast) {
+                    h3D_protonsEast->Fill(pt, eta, vz);
+                    hPtProtonEastX->Fill(pt);
+                    hEtaProtonEastX->Fill(eta);
+                    hRapidityProtonEastX->Fill(rapidity);
+                    hDistanceBeam_proton_E->Fill(distance_from_beam);
+                    hDistanceEdge_proton_E->Fill(distance_from_edge);
+                    hProton_DCA_E->Fill(dca);
+                    MultiplicityProtonEastX++;
+
+                    if (b == 0) { hEta_xi0_proton_E->Fill(eta); hRapidity_xi0_proton_E->Fill(rapidity); }
+                    if (b == 1) { hEta_xi1_proton_E->Fill(eta); hRapidity_xi1_proton_E->Fill(rapidity); }
+                    if (b == 2) { hEta_xi2_proton_E->Fill(eta); hRapidity_xi2_proton_E->Fill(rapidity); }
+                    if (b == 3) { hEta_xi3_proton_E->Fill(eta); hRapidity_xi3_proton_E->Fill(rapidity); }
+                    if (b == 4) { hEta_xi4_proton_E->Fill(eta); hRapidity_xi4_proton_E->Fill(rapidity); }
+
+                    if (b == 0) { hEta_xi0_proton_C->Fill(-eta); hRapidity_xi0_proton_C->Fill(-rapidity); }
+                    if (b == 1) { hEta_xi1_proton_C->Fill(-eta); hRapidity_xi1_proton_C->Fill(-rapidity); }
+                    if (b == 2) { hEta_xi2_proton_C->Fill(-eta); hRapidity_xi2_proton_C->Fill(-rapidity); }
+                    if (b == 3) { hEta_xi3_proton_C->Fill(-eta); hRapidity_xi3_proton_C->Fill(-rapidity); }
+                    if (b == 4) { hEta_xi4_proton_C->Fill(-eta); hRapidity_xi4_proton_C->Fill(-rapidity); }
+
+                }
+                if(isWest) {
+                    h3D_protonsWest->Fill(pt, eta, vz);
+                    hPtProtonWestX->Fill(pt);
+                    hEtaProtonWestX->Fill(eta);
+                    hRapidityProtonWestX->Fill(rapidity);
+                    hDistanceBeam_proton_W->Fill(distance_from_beam);
+                    hDistanceEdge_proton_W->Fill(distance_from_edge);
+                    hProton_DCA_W->Fill(dca);
+                    MultiplicityProtonWestX++;
+
+                    if (b == 0) { hEta_xi0_proton_W->Fill(eta); hRapidity_xi0_proton_W->Fill(rapidity); }
+                    if (b == 1) { hEta_xi1_proton_W->Fill(eta); hRapidity_xi1_proton_W->Fill(rapidity); }
+                    if (b == 2) { hEta_xi2_proton_W->Fill(eta); hRapidity_xi2_proton_W->Fill(rapidity); }
+                    if (b == 3) { hEta_xi3_proton_W->Fill(eta); hRapidity_xi3_proton_W->Fill(rapidity); }
+                    if (b == 4) { hEta_xi4_proton_W->Fill(eta); hRapidity_xi4_proton_W->Fill(rapidity); }
+
+                    if (b == 0) { hEta_xi0_proton_C->Fill(eta); hRapidity_xi0_proton_C->Fill(rapidity); }
+                    if (b == 1) { hEta_xi1_proton_C->Fill(eta); hRapidity_xi1_proton_C->Fill(rapidity); }
+                    if (b == 2) { hEta_xi2_proton_C->Fill(eta); hRapidity_xi2_proton_C->Fill(rapidity); }
+                    if (b == 3) { hEta_xi3_proton_C->Fill(eta); hRapidity_xi3_proton_C->Fill(rapidity); }
+                    if (b == 4) { hEta_xi4_proton_C->Fill(eta); hRapidity_xi4_proton_C->Fill(rapidity); }
+
+                } 
             }
         }
 
@@ -1102,21 +1197,24 @@ int main(int argc, char** argv)
             for (int i_trk : goodTrackIdx) {
                 if (i_trk == i_p) continue;
 
-                TVector3 mom;
-                upcEvt->getTrack(i_trk)->getMomentum(mom);
+            TVector3 mom;
+            upcEvt->getTrack(i_trk)->getMomentum(mom);
 
                 if (mom.Mag() < min_p) {
                     min_p = mom.Mag();
                     ref_idx = i_trk;
                 }
             }
+
             if (ref_idx >= 0) {
                 double t0_antiproton = upcEvt->getTrack(i_p)->getT0(massProton);
                 double t0_pion = upcEvt->getTrack(ref_idx)->getT0(massPion);
                 double t0_kaon = upcEvt->getTrack(ref_idx)->getT0(massKaon);
+                double t0_test_antiproton=upcEvt->getTrack(ref_idx)->getT0(massProton);
 
                 double delta_t1 = t0_antiproton - t0_pion;
                 double delta_t2 = t0_antiproton - t0_kaon;
+                double delta_t5 = t0_antiproton-t0_test_antiproton;
 
                 hDeltaT1vsT2_antiprotons->Fill(delta_t1, delta_t2);
 
@@ -1124,6 +1222,82 @@ int main(int argc, char** argv)
                     hDeltaT1vsT2_antiprotons_west->Fill(delta_t1, delta_t2);
                 } else {
                     hDeltaT1vsT2_antiprotons_east->Fill(delta_t1, delta_t2);
+                }
+
+                if((fabs(delta_t1) > 0.6 && fabs(delta_t2) > 0.6)) { 
+    
+                    hDeltaT_protonproton->Fill(delta_t5);
+                
+                    if((fabs(delta_t5)>0.6)) {
+                        double t0_pion_rejected = upcEvt->getTrack(i_p)->getT0(massPion);
+                        double t0_kaon_rejected = upcEvt->getTrack(i_p)->getT0(massKaon);
+                        
+                        double delta_t3 = t0_pion_rejected - t0_pion;
+                        double delta_t4 = t0_kaon_rejected - t0_pion;
+                        
+                        hDeltaT_pionpion->Fill(delta_t3);
+                        hDeltaT_kaonpion->Fill(delta_t4);
+                    }
+                }
+                if(!(fabs(delta_t1)<0.6 || fabs(delta_t2)<0.6 || fabs(delta_t5)<0.6)) continue;
+                
+                double pt  = upcEvt->getTrack(i_p)->getPt();
+                double eta = upcEvt->getTrack(i_p)->getEta();
+                double dca = upcEvt->getTrack(i_p)->getDcaXY();
+                double rapidity = getRapidity(pt, eta, upcEvt->getTrack(i_p)->getPhi(), massProton);
+                double distance_from_beam = rapidity - y_beam;
+                double distance_from_edge = y_edge-rapidity;
+                h3D_antiprotons->Fill(pt, eta, vz);
+                hPtNProtonX->Fill(pt);
+                hEtaNProtonX->Fill(eta);
+                hRapidityNProtonX->Fill(rapidity);
+                MultiplicityNProtonX++;
+                hDistanceBeam_antiproton->Fill(distance_from_beam);
+                hDistanceEdge_antiproton->Fill(distance_from_edge);
+                if(isEast) {
+                    h3D_antiprotonsEast->Fill(pt, eta, vz);
+                    hPtNProtonEastX->Fill(pt);
+                    hEtaNProtonEastX->Fill(eta);
+                    hRapidityNProtonEastX->Fill(rapidity);
+                    hDistanceBeam_antiproton_E->Fill(distance_from_beam);
+                    hDistanceEdge_antiproton_E->Fill(distance_from_edge);
+                    hAntiproton_DCA_E->Fill(dca);
+                    MultiplicityNProtonEastX++;
+
+                    if (b == 0) { hEta_xi0_antiproton_E->Fill(eta); hRapidity_xi0_antiproton_E->Fill(rapidity); }
+                    if (b == 1) { hEta_xi1_antiproton_E->Fill(eta); hRapidity_xi1_antiproton_E->Fill(rapidity); }
+                    if (b == 2) { hEta_xi2_antiproton_E->Fill(eta); hRapidity_xi2_antiproton_E->Fill(rapidity); }
+                    if (b == 3) { hEta_xi3_antiproton_E->Fill(eta); hRapidity_xi3_antiproton_E->Fill(rapidity); }
+                    if (b == 4) { hEta_xi4_antiproton_E->Fill(eta); hRapidity_xi4_antiproton_E->Fill(rapidity); }
+
+                    if (b == 0) { hEta_xi0_antiproton_C->Fill(-eta); hRapidity_xi0_antiproton_C->Fill(-rapidity); }
+                    if (b == 1) { hEta_xi1_antiproton_C->Fill(-eta); hRapidity_xi1_antiproton_C->Fill(-rapidity); }
+                    if (b == 2) { hEta_xi2_antiproton_C->Fill(-eta); hRapidity_xi2_antiproton_C->Fill(-rapidity); }
+                    if (b == 3) { hEta_xi3_antiproton_C->Fill(-eta); hRapidity_xi3_antiproton_C->Fill(-rapidity); }
+                    if (b == 4) { hEta_xi4_antiproton_C->Fill(-eta); hRapidity_xi4_antiproton_C->Fill(-rapidity); }
+                }
+                if(isWest) {
+                    h3D_antiprotonsWest->Fill(pt, eta, vz);
+                    hPtNProtonWestX->Fill(pt);
+                    hEtaNProtonWestX->Fill(eta);
+                    hRapidityNProtonWestX->Fill(rapidity);
+                    hDistanceBeam_antiproton_W->Fill(distance_from_beam);
+                    hDistanceEdge_antiproton_W->Fill(distance_from_edge);
+                    hAntiproton_DCA_W->Fill(dca);
+                    MultiplicityNProtonWestX++;
+
+                    if (b == 0) { hEta_xi0_antiproton_W->Fill(eta); hRapidity_xi0_antiproton_W->Fill(rapidity); }
+                    if (b == 1) { hEta_xi1_antiproton_W->Fill(eta); hRapidity_xi1_antiproton_W->Fill(rapidity); }
+                    if (b == 2) { hEta_xi2_antiproton_W->Fill(eta); hRapidity_xi2_antiproton_W->Fill(rapidity); }
+                    if (b == 3) { hEta_xi3_antiproton_W->Fill(eta); hRapidity_xi3_antiproton_W->Fill(rapidity); }
+                    if (b == 4) { hEta_xi4_antiproton_W->Fill(eta); hRapidity_xi4_antiproton_W->Fill(rapidity); }
+
+                    if (b == 0) { hEta_xi0_antiproton_C->Fill(eta); hRapidity_xi0_antiproton_C->Fill(rapidity); }
+                    if (b == 1) { hEta_xi1_antiproton_C->Fill(eta); hRapidity_xi1_antiproton_C->Fill(rapidity); }
+                    if (b == 2) { hEta_xi2_antiproton_C->Fill(eta); hRapidity_xi2_antiproton_C->Fill(rapidity); }
+                    if (b == 3) { hEta_xi3_antiproton_C->Fill(eta); hRapidity_xi3_antiproton_C->Fill(rapidity); }
+                    if (b == 4) { hEta_xi4_antiproton_C->Fill(eta); hRapidity_xi4_antiproton_C->Fill(rapidity); }
+
                 }
             }
         }
@@ -1474,6 +1648,11 @@ int main(int argc, char** argv)
     hDeltaT1vsT2_antiprotons_east->Write();
     hDeltaT1vsT2_protons_west->Write();
     hDeltaT1vsT2_antiprotons_west->Write();
+
+    hDeltaT_pionpion->Write();
+    hDeltaT_kaonpion->Write();
+    hDeltaT_protonproton->Write();
+    hDeltaT_lambda_proton_pion->Write();
 
     outfile->Close();
     return 0;
