@@ -155,9 +155,11 @@ int main(int argc, char* argv[]){
     const string& outputFolder = argv[2];
 
     //histograms
-    TH1D FlowChart("FlowChart", "Number of #phi(1020) passing criteria", 1, 0, 1);
-    TH1D Chi2Signal("Chi2Signal", "#chi^{2} characteristic of the signal", 100, 0, 100);
-    TH1D Chi2All("Chi2All", "#chi^{2} characteristic of the signal+background", 100, 0, 100);
+    TH1D FlowChart("FlowChart", "Number of #phi(1020) passing criteria;;particles", 1, 0, 1);
+    TH1D Chi2Signal("Chi2Signal", "#chi^{2} characteristic of the signal (with #sigma subtracted by 2.3);#chi^{2};pairs of tracks", 100, 0, 100);
+    TH1D Chi2All("Chi2All", "#chi^{2} characteristic of the signal+background;#chi^{2};pairs of tracks", 100, 0, 100);
+    TH1D NSigmaTestKaon("NSigmaTestKaon", "n#sigma_{K} histogram for tests;n#sigma_{K};tracks", 120, -3, 9);
+    TH1D NSigmaTestPion("NSigmaTestPion", "n#sigma_{#pi} histogram for tests;n#sigma_{#pi};tracks", 120, -3, 33);
 
 
     //setting up TTreeReader without multithread processing
@@ -206,7 +208,7 @@ int main(int argc, char* argv[]){
             if(TPC_tracks.size()!=2){
                 continue;
             }
-            FlowChart.Fill("Decay products detected in TPC", 1.0);
+            FlowChart.Fill("#splitline{Decay products detected in TPC}{(MC track has associated StUPCTrack)}", 1.0);
 
 
             //quality of tracks
@@ -220,7 +222,7 @@ int main(int argc, char* argv[]){
             if(!allTracksFine){
                 continue;
             }
-            FlowChart.Fill("Decay products properly reconstructed", 1.0);
+            FlowChart.Fill("#splitline{Decay products properly reconstructed}{(NhitsFit>20 & NhitsDEdx#geq15)}", 1.0);
 
 
             //fiducial cuts
@@ -234,29 +236,39 @@ int main(int argc, char* argv[]){
             if(!allTracksWithinFiducial){
                 continue;
             }
-            FlowChart.Fill("Decay products inside TPC fiducial region", 1.0);
+            FlowChart.Fill("#splitline{Decay products inside TPC fiducial region}{(|#eta|<0.9 & p_{T}>0.2)}", 1.0);
 
 
-            //proper TOF flags
-            bool allTracksWithProperTOFQualities = true;
+            //TOF flag
+            bool allTracksWithTOFFlag = true;
             for(size_t TPC_track_index = 0; TPC_track_index<TPC_tracks.size(); TPC_track_index++){
                 if(!TPC_tracks[TPC_track_index]->getFlag(StUPCTrack::kTof)){
-                    allTracksWithProperTOFQualities = false;
+                    allTracksWithTOFFlag = false;
                     break;
                 }
+            }
+            if(!allTracksWithTOFFlag){
+                continue;
+            }
+            FlowChart.Fill("#splitline{Decay products detected in TOF}{(kToF flag present)}", 1.0);
+
+
+            //proper TOF measurements
+            bool allTracksWithProperTOFMeasurements = true;
+            for(size_t TPC_track_index = 0; TPC_track_index<TPC_tracks.size(); TPC_track_index++){
                 if(TPC_tracks[TPC_track_index]->getTofPathLength()<=0){
-                    allTracksWithProperTOFQualities = false;
+                    allTracksWithProperTOFMeasurements = false;
                     break;
                 }
                 if(TPC_tracks[TPC_track_index]->getTofTime()<=0){
-                    allTracksWithProperTOFQualities = false;
+                    allTracksWithProperTOFMeasurements = false;
                     break;
                 }
             }
-            if(!allTracksWithProperTOFQualities){
+            if(!allTracksWithProperTOFMeasurements){
                 continue;
             }
-            FlowChart.Fill("Decay products properly detected in TOF", 1.0);
+            FlowChart.Fill("#splitline{Decay products properly detected in TOF}{(kToF flag present, time & distance >0)}", 1.0);
 
 
             //deltaT section
@@ -272,8 +284,13 @@ int main(int argc, char* argv[]){
             double sigmaT = 0.13555533188873461;
             double sigmaParticle1 = TPC_tracks[0]->getNSigmasTPCKaon();
             double sigmaParticle2 = TPC_tracks[1]->getNSigmasTPCKaon();
-            double Chi2 = pow(deltaT/sigmaT, 2)+sigmaParticle1*sigmaParticle1+sigmaParticle2*sigmaParticle2;
+            //TODO get proper number in there instead of temporary 2.3
+            double Chi2 = pow(deltaT/sigmaT, 2)+(sigmaParticle1-2.3)*(sigmaParticle1-2.3)+(sigmaParticle2-2.3)*(sigmaParticle2-2.3);
             Chi2Signal.Fill(Chi2);
+            NSigmaTestKaon.Fill(sigmaParticle1);
+            NSigmaTestKaon.Fill(sigmaParticle2);
+            NSigmaTestPion.Fill(TPC_tracks[0]->getNSigmasTPCPion());
+            NSigmaTestPion.Fill(TPC_tracks[1]->getNSigmasTPCPion());
         }
 
 
@@ -443,9 +460,12 @@ int main(int argc, char* argv[]){
 
     //saving histograms
     FlowChart.LabelsDeflate();
+    FlowChart.GetXaxis()->SetLabelSize(0.08);
     FlowChart.Write();
     Chi2Signal.Write();
     Chi2All.Write();
+    NSigmaTestKaon.Write();
+    NSigmaTestPion.Write();
 
     outputFileHist->Close();
 
