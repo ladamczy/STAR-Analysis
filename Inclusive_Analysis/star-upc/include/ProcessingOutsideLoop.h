@@ -33,6 +33,7 @@ public:
     void AddHistogram(TH3D);
     void Merge();
     void SaveToFile(TFile *);
+    int GetNumberOfHistograms();
     // auto &operator [](int);
     ROOT::TThreadedObject<TH1D>& GetPointer1D(int);
     ROOT::TThreadedObject<TH2D>& GetPointer2D(int);
@@ -87,6 +88,11 @@ void ProcessingOutsideLoop::Merge(){
     }
 }
 
+int ProcessingOutsideLoop::GetNumberOfHistograms(){
+    return hist1dtab.size();
+}
+
+
 void ProcessingOutsideLoop::SaveToFile(TFile *file){
     file->cd();
     for(long unsigned int i = 0; i<hist1dtabFinal.size(); i++){
@@ -100,9 +106,23 @@ void ProcessingOutsideLoop::SaveToFile(TFile *file){
     }
 }
 
-ROOT::TThreadedObject<TH1D>& ProcessingOutsideLoop::GetPointer1D(int i){ return *hist1dtab[i]; }
-ROOT::TThreadedObject<TH2D>& ProcessingOutsideLoop::GetPointer2D(int i){ return *hist2dtab[i]; }
-ROOT::TThreadedObject<TH3D>& ProcessingOutsideLoop::GetPointer3D(int i){ return *hist3dtab[i]; }
+ROOT::TThreadedObject<TH1D>& ProcessingOutsideLoop::GetPointer1D(int i){
+    if(hist1dtab[i]==nullptr){
+        printf("Trying to get TThreadedObject<TH1D> for non-TH1D object. A reference to nullptr address will be returned\n");
+    }
+    return *hist1dtab[i];
+}
+ROOT::TThreadedObject<TH2D>& ProcessingOutsideLoop::GetPointer2D(int i){
+    if(hist2dtab[i]==nullptr){
+        printf("Trying to get TThreadedObject<TH2D> for non-TH2D object. A reference to nullptr address will be returned\n");
+    } return *hist2dtab[i];
+}
+ROOT::TThreadedObject<TH3D>& ProcessingOutsideLoop::GetPointer3D(int i){
+    if(hist3dtab[i]==nullptr){
+        printf("Trying to get TThreadedObject<TH3D> for non-TH3D object. A reference to nullptr address will be returned\n");
+    }
+    return *hist3dtab[i];
+}
 
 ROOT::TThreadedObject<TH1D>& ProcessingOutsideLoop::GetPointer1D(const char* hist_name){
     for(long unsigned int i = 0; i<hist1dtab.size(); i++){
@@ -129,9 +149,24 @@ ROOT::TThreadedObject<TH3D>& ProcessingOutsideLoop::GetPointer3D(const char* his
     throw std::invalid_argument("Histogram with name \""+std::string(hist_name)+"\" could not be found.");
 }
 
-std::shared_ptr<TH1D> ProcessingOutsideLoop::GetPointerAfterMerge1D(int i){ return hist1dtabFinal[i]; }
-std::shared_ptr<TH2D> ProcessingOutsideLoop::GetPointerAfterMerge2D(int i){ return hist2dtabFinal[i]; }
-std::shared_ptr<TH3D> ProcessingOutsideLoop::GetPointerAfterMerge3D(int i){ return hist3dtabFinal[i]; }
+std::shared_ptr<TH1D> ProcessingOutsideLoop::GetPointerAfterMerge1D(int i){
+    if(hist1dtabFinal[i]==nullptr){
+        printf("Trying to get pointer to TH1D for non-TH1D object. A nullptr will be returned\n");
+    }
+    return hist1dtabFinal[i];
+}
+std::shared_ptr<TH2D> ProcessingOutsideLoop::GetPointerAfterMerge2D(int i){
+    if(hist2dtabFinal[i]==nullptr){
+        printf("Trying to get pointer to TH2D for non-TH2D object. A nullptr will be returned\n");
+    }
+    return hist2dtabFinal[i];
+}
+std::shared_ptr<TH3D> ProcessingOutsideLoop::GetPointerAfterMerge3D(int i){
+    if(hist3dtabFinal[i]==nullptr){
+        printf("Trying to get pointer to TH3D for non-TH3D object. A nullptr will be returned\n");
+    }
+    return hist3dtabFinal[i];
+}
 
 std::shared_ptr<TH1D> ProcessingOutsideLoop::GetPointerAfterMerge1D(const char* hist_name){
     for(long unsigned int i = 0; i<hist1dtabFinal.size(); i++){

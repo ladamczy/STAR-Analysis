@@ -157,9 +157,17 @@ void getCategoryHistograms(ProcessingOutsideLoop& out, vector<string> pairs, std
     // vector of pairs of (category_name, bin_constrans_vector)
     std::vector<std::pair<std::string, std::vector<double>>> allCategories;
     //reading categories and splitting into name and value
-    std::ifstream infile("STAR-Analysis/Inclusive_Analysis/star-upc/src/PhD_deg_analysis/Differential_crossection_values.txt");
+    std::ifstream infile("STAR-Analysis/Inclusive_Analysis/star-upc/execs/PhD_deg_analysis/Differential_crossection_values.txt");
+    if(!infile.is_open()){
+        printf("File with differential crossection ranges not opened!\n");
+        return;
+    } else{
+        printf("File with differential crossection ranges opened propery!\nLines found:\n");
+    }
+
     std::string line, buf;
     while(std::getline(infile, line)){
+        printf("%s\n", line.c_str());
         std::stringstream ss(line);
         std::string category = "";
         std::vector<double> values = {};
@@ -188,6 +196,7 @@ void getCategoryHistograms(ProcessingOutsideLoop& out, vector<string> pairs, std
             string name = "M"+pairs[i]+"Chi2"+nameAfterChi2+allCategories[j].first;
             string title = pairs[i]+" "+allCategories[j].first+";"+axisTitle+";"+allCategories[j].first;
             out.AddHistogram(TH2D(name.c_str(), title.c_str(), binNumber, binMin, binMax, allCategories[j].second.size()-1, allCategories[j].second.data()));
+            printf("Added histogram with name %s\n", name.c_str());
         }
     }
 }
