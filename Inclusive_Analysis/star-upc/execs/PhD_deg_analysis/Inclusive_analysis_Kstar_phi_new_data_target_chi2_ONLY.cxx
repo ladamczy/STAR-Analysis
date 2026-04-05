@@ -176,7 +176,7 @@ int main(int argc, char** argv){
             int nOfGoodTracks = 0;
             for(int i = 0; i<tempUPCpointer->getNumberOfTracks(); i++){
                 StUPCTrack* tmptrk = tempUPCpointer->getTrack(i);
-                if(tmptrk->getFlag(StUPCTrack::kTof)&&abs(tmptrk->getEta())<0.9&&tmptrk->getPt()>0.2){
+                if(tmptrk->getFlag(StUPCTrack::kTof)&&tmptrk->getFlag(StUPCTrack::kPrimary)&&fabs(tmptrk->getEta())<0.9&&tmptrk->getPt()>0.2){
                     nOfGoodTracks++;
                 }
             }
@@ -204,7 +204,7 @@ int main(int argc, char** argv){
                 if(!tempTrack->getFlag(StUPCTrack::kPrimary)){
                     continue;
                 }
-                if(tempTrack->getPt()<=0.2 or abs(tempTrack->getEta())>=0.9){
+                if(tempTrack->getPt()<=0.2 or fabs(tempTrack->getEta())>=0.9){
                     continue;
                 }
                 if(tempTrack->getNhits()<=20){
