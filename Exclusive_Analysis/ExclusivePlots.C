@@ -218,7 +218,7 @@ void PlotFinalMass(TFile* fData, TFile* fMC) {
     latex.DrawLatex(0.55, 0.62, Form("#mu = %.2f GeV/c^{2}", fitFunc->GetParameter(1)));
     latex.DrawLatex(0.55, 0.56, Form("#sigma = %.2f GeV/c^{2}", fitFunc->GetParameter(2)));
 
-    c->SaveAs("Plot_K0K0_InvariantMass.pdf");
+    c->SaveAs("plots/Plot_K0K0_InvariantMass.pdf");
     delete c;
 }
 
@@ -226,38 +226,38 @@ void PlotFinalMass(TFile* fData, TFile* fMC) {
 void ExclusivePlots() {
     SetMyStyle();
 
-    TFile* fData = TFile::Open("DataExclusiveClassA.root");
-    TFile* fMC = TFile::Open("MCExclusiveClassA.root");
+    TFile* fData = TFile::Open("PhysDataToFClassA.root");
+    TFile* fMC = TFile::Open("PhyMC.root");
 
     if (!fData || !fMC) {
         cout << "Error opening ROOT files!" << endl;
         return;
     }
 
-    PlotStackedMultiplicity(fData, fMC, "histPtWith_%d", "p_{T} [GeV/c]", 0, 2.0, "Plot_pT_WithTOF", true);
-    PlotStackedMultiplicity(fData, fMC, "histPtWithout_%d", "p_{T} [GeV/c]", 0, 2.0, "Plot_pT_WithoutTOF", true);
-    PlotStackedMultiplicity(fData, fMC, "histEtaWith_%d", "#eta", -2.5, 2.5, "Plot_Eta_WithTOF");
-    PlotStackedMultiplicity(fData, fMC, "histEtaWithout_%d", "#eta", -2.5, 2.5, "Plot_Eta_WithoutTOF");
-    PlotStackedMultiplicity(fData, fMC, "histNfitWith_%d", "N_{fit}^{hit}", 10, 50, "Plot_Nfit_WithTOF");
-    PlotStackedMultiplicity(fData, fMC, "histNfitWithout_%d", "N_{fit}^{hit}", 10, 50, "Plot_Nfit_WithoutTOF");
+    PlotStackedMultiplicity(fData, fMC, "histPtWith_%d", "p_{T} [GeV/c]", 0, 2.0, "plots/Plot_pT_WithTOF", true);
+    PlotStackedMultiplicity(fData, fMC, "histPtWithout_%d", "p_{T} [GeV/c]", 0, 2.0, "plots/Plot_pT_WithoutTOF", true);
+    PlotStackedMultiplicity(fData, fMC, "histEtaWith_%d", "#eta", -2.5, 2.5, "plots/Plot_Eta_WithTOF");
+    PlotStackedMultiplicity(fData, fMC, "histEtaWithout_%d", "#eta", -2.5, 2.5, "plots/Plot_Eta_WithoutTOF");
+    PlotStackedMultiplicity(fData, fMC, "histNfitWith_%d", "N_{fit}^{hit}", 10, 50, "plots/Plot_Nfit_WithTOF");
+    PlotStackedMultiplicity(fData, fMC, "histNfitWithout_%d", "N_{fit}^{hit}", 10, 50, "plots/Plot_Nfit_WithoutTOF");
     
     // Slide 12: 2D Narrow Mass Window on mpipi
-    Plot2DMassWindow(fData, "Data", "Plot_2DMassWindow_Data");
-    Plot2DMassWindow(fMC, "MC", "Plot_2DMassWindow_MC");
+    Plot2DMassWindow(fData, "Data", "plots/Plot_2DMassWindow_Data");
+    Plot2DMassWindow(fMC, "MC", "plots/Plot_2DMassWindow_MC");
 
-    PlotStackedMultiplicity(fData, fMC, "histPtMissBefore%d", "p_{T}^{miss} [GeV/c]", 0, 0.5, "Plot_PtMiss");
-    PlotStackedMultiplicity(fData, fMC, "histNTOFClusterBefore%d", "N_{TOF}^{clusters}", 0, 15, "Plot_NTOFClusters");
-    PlotStackedMultiplicity(fData, fMC, "histDCADaughtersBefore%d", "DCA_{daughters} [cm]", 0, 5.0, "Plot_DCADaughters");
-    PlotStackedMultiplicity(fData, fMC, "histDCABeamlineBefore%d", "DCA_{beamline} [cm]", 0, 5.0, "Plot_DCABeamline");
-    PlotStackedMultiplicity(fData, fMC, "histCosBefore%d", "cos(#alpha_{p})", -1.0, 1.0, "Plot_CosPointingAngle");
-    PlotStackedMultiplicity(fData, fMC, "histDecayBefore%d", "l_{decay} [cm]", 0, 10.0, "Plot_DecayLength");
-    PlotStackedMultiplicity(fData, fMC, "histKsiEBefore%d", "#xi_{E}", -0.005, 0.02, "Plot_KsiE");
-    PlotStackedMultiplicity(fData, fMC, "histKsiWBefore%d", "#xi_{W}", -0.005, 0.02, "Plot_KsiW");
-    PlotStackedMultiplicity(fData, fMC, "histSumProtonMomentaXBefore%d", "p_{x}^{E} + p_{x}^{W} [GeV/c]", -1.0, 1.0, "Plot_SumPx");
-    PlotStackedMultiplicity(fData, fMC, "histSumProtonMomentaYBefore%d", "p_{y}^{E} + p_{y}^{W} [GeV/c]", -1.0, 1.0, "Plot_SumPy");
-    PlotStackedMultiplicity(fData, fMC, "histCorrKsiBefore%d", "m_{K_{S}^{0}K_{S}^{0}} / #sqrt{s} - #sqrt{#xi_{E}#xi_{W}}", -0.006, 0.006, "Plot_CorrKsi");
-    PlotStackedMultiplicity(fData, fMC, "histZDiffBefore%d", "vtx_{z}^{leading} - vtx_{z}^{subleading} [cm]", -50, 50, "Plot_ZDiff");
-    PlotStackedMultiplicity(fData, fMC, "histCosThetaStarBefore%d", "cos(#theta^{*})", -1.0, 1.0, "Plot_CosThetaStar");
+    PlotStackedMultiplicity(fData, fMC, "histPtMissBefore%d", "p_{T}^{miss} [GeV/c]", 0, 0.5, "plots/Plot_PtMiss");
+    PlotStackedMultiplicity(fData, fMC, "histNTOFClusterBefore%d", "N_{TOF}^{clusters}", 0, 15, "plots/Plot_NTOFClusters");
+    PlotStackedMultiplicity(fData, fMC, "histDCADaughtersBefore%d", "DCA_{daughters} [cm]", 0, 5.0, "plots/Plot_DCADaughters");
+    PlotStackedMultiplicity(fData, fMC, "histDCABeamlineBefore%d", "DCA_{beamline} [cm]", 0, 5.0, "plots/Plot_DCABeamline");
+    PlotStackedMultiplicity(fData, fMC, "histCosBefore%d", "cos(#alpha_{p})", -1.0, 1.0, "plots/Plot_CosPointingAngle");
+    PlotStackedMultiplicity(fData, fMC, "histDecayBefore%d", "l_{decay} [cm]", 0, 10.0, "plots/Plot_DecayLength");
+    PlotStackedMultiplicity(fData, fMC, "histKsiEBefore%d", "#xi_{E}", -0.005, 0.02, "plots/Plot_KsiE");
+    PlotStackedMultiplicity(fData, fMC, "histKsiWBefore%d", "#xi_{W}", -0.005, 0.02, "plots/Plot_KsiW");
+    PlotStackedMultiplicity(fData, fMC, "histSumProtonMomentaXBefore%d", "p_{x}^{E} + p_{x}^{W} [GeV/c]", -1.0, 1.0, "plots/Plot_SumPx");
+    PlotStackedMultiplicity(fData, fMC, "histSumProtonMomentaYBefore%d", "p_{y}^{E} + p_{y}^{W} [GeV/c]", -1.0, 1.0, "plots/Plot_SumPy");
+    PlotStackedMultiplicity(fData, fMC, "histCorrKsiBefore%d", "m_{K_{S}^{0}K_{S}^{0}} / #sqrt{s} - #sqrt{#xi_{E}#xi_{W}}", -0.006, 0.006, "plots/Plot_CorrKsi");
+    PlotStackedMultiplicity(fData, fMC, "histZDiffBefore%d", "vtx_{z}^{leading} - vtx_{z}^{subleading} [cm]", -50, 50, "plots/Plot_ZDiff");
+    PlotStackedMultiplicity(fData, fMC, "histCosThetaStarBefore%d", "cos(#theta^{*})", -1.0, 1.0, "plots/Plot_CosThetaStar");
 
     PlotFinalMass(fData, fMC);
 
