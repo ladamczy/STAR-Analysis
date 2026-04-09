@@ -3,7 +3,7 @@
 # Check if build directory exists
 if [ -d "build" ]; then
     echo "Cleaning Executable..."
-    rm -r build/3DEfficiency
+    rm -r build/EfficiencyCorrection
 else
     echo "Creating build directory..."
     mkdir -p build
@@ -17,10 +17,10 @@ ROOT_EG_LIB="-lEG"  # Add EG library explicitly
 # Set the library path
 STAR_UPC_LIB_DIR="/home/sbhosale/Work/STAR-Analysis/star-upc-new/build"
 
-# Compile 3DEfficiency
-echo "Compiling 3DEfficiency..."
-g++ 3DEfficiency.cxx \
-    -o build/3DEfficiency \
+# Compile EfficiencyCorrection
+echo "Compiling EfficiencyCorrection..."
+g++ EfficiencyCorrection.cxx  ExclusiveCode.cxx\
+    -o build/EfficiencyCorrection \
     -I/usr/include/root \
     -I./include \
     -I${STAR_UPC_LIB_DIR%/build}/include \
@@ -28,9 +28,9 @@ g++ 3DEfficiency.cxx \
     ${ROOT_FLAGS} ${ROOT_LIBS} ${ROOT_EG_LIB} \
     -L${STAR_UPC_LIB_DIR} -lstar-upc \
     -Wl,-rpath,${STAR_UPC_LIB_DIR}
-
+    
 if [ $? -eq 0 ]; then
-    echo "Build complete. Executable is in build/3DEfficiency"
+    echo "Build complete. Executable is in build/EfficiencyCorrection"
 else
     echo "Build failed!"
     exit 1

@@ -14,8 +14,8 @@ fi
 
 # Check if build directory exists
 if [ -d "build" ]; then
-    echo "Cleaning build directory..."
-    rm -rf build/*
+    echo "Cleaning Executable..."
+    rm -r build/Exclusive_try2
 else
     echo "Creating build directory..."
     mkdir -p build

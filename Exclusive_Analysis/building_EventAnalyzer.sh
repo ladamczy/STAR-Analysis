@@ -2,8 +2,8 @@
 
 # Check if build directory exists
 if [ -d "build" ]; then
-    echo "Cleaning build directory..."
-    rm -rf build/*
+    echo "Cleaning Executable..."
+    rm -r build/EventAnalyzer
 else
     echo "Creating build directory..."
     mkdir -p build
@@ -19,7 +19,7 @@ STAR_UPC_LIB_DIR="/home/sbhosale/Work/STAR-Analysis/star-upc-new/build"
 
 # Compile EventAnalyzer
 echo "Compiling EventAnalyzer..."
-g++ EventAnalyzer.cxx \
+g++ EventAnalyzer.cxx  ExclusiveCode.cxx\
     -o build/EventAnalyzer \
     -I/usr/include/root \
     -I./include \
