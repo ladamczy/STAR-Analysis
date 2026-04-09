@@ -186,6 +186,13 @@ int main(int argc, char** argv)
         correctedRpEvent = new StRPEvent(*rpEvt);
         correctedRpEvent->clearEvent();
         runAfterburner(rpEvt, correctedRpEvent, upcEvt->getRunNumber());
+	
+	// --- AFTERBURNER SKIPPED FOR NEW DATA ---
+    	//---- check line 460 if not using Afterburner ----
+    	// correctedRpEvent = new StRPEvent(*rpEvt);
+    	// correctedRpEvent->clearEvent();
+    	// runAfterburner(rpEvt, correctedRpEvent, upcEvt->getRunNumber());
+    	//correctedRpEvent = rpEvt;  // Use the original RP event directly
 
         // set branch adress
         mUPCTree->SetBranchAddress("mUPCEvent", &upcEvt);
@@ -407,7 +414,7 @@ int main(int argc, char** argv)
         }
 
 
-        if (isCepTrigger and hasTwoRpTracksOppositeSide and useAtLeastThreePlanes and withinFiducialRegion and (tracksWithTofHit.size() >= 2))//and isValidNumberOfTofMatchedTracksClassA)//and (isValidNumberOfTofMatchedTracksClassA or isValidNumberOfTofMatchedTracksClassB) )
+        if (isCepTrigger and hasTwoRpTracksOppositeSide and useAtLeastThreePlanes and withinFiducialRegion and (tracksWithTofHit.size() >= 2))//and (isValidNumberOfTofMatchedTracksClassA or isValidNumberOfTofMatchedTracksClassB) )//and (tracksWithTofHit.size() >= 2))//and isValidNumberOfTofMatchedTracksClassA)//
         {
             
             // fill tree
@@ -450,8 +457,8 @@ int main(int argc, char** argv)
             }
             HistNumTofMatchedTracksPostSelection->Fill(tracksWithTofHit.size());
         }
-
-        delete correctedRpEvent;
+        //if not using aftrburner, then no need to delete correctedRpEvent as it's just a pointer to the original rpEvt
+       delete correctedRpEvent;
     
     }
     // Save the preselection output
