@@ -107,6 +107,12 @@ int main(int argc, char** argv){
     //adding mass histograms grouped by category (background)
     getCategoryHistograms(outsideprocessing, pairTab, "Bcg");
 
+    //other histograms
+    outsideprocessing.AddHistogram(TH1D("MKKSuspiciousPeakTestedAsPionPair", ";m_{#pi#pi} [GeV];Number of pairs", 400, 0.25, 0.65));
+    outsideprocessing.AddHistogram(TH1D("MKKSuspiciousPeakTestedAsPionPairNeighbourhood", ";m_{#pi#pi} [GeV];Number of pairs", 400, 0.25, 0.65));
+    outsideprocessing.AddHistogram(TH1D("MKKSuspiciousPeakTestedWithStrictChi2LessThan3", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 500, 0.9, 2.4));
+    outsideprocessing.AddHistogram(TH1D("MKKSuspiciousPeakTestedWithStrictChi2LessThan1", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 500, 0.9, 2.4));
+
     for(size_t i = 0; i<outsideprocessing.GetNumberOfHistograms(); i++){
         if(&outsideprocessing.GetPointer1D(i)!=nullptr){
             printf("%s\n", outsideprocessing.GetPointer1D(i)->GetName());
@@ -302,6 +308,25 @@ int main(int argc, char** argv){
                         insideprocessing.Fill("MKKChi2Close", mass);
                         insideprocessing.Fill("MKKChi2eta", mass, eta);
                         insideprocessing.Fill("MKKChi2pT", mass, pT);
+                        //test of suspicious peak and its neighbourhood
+                        if(chi2Map["K_K"]<3){
+                            insideprocessing.Fill("MKKSuspiciousPeakTestedWithStrictChi2LessThan3", mass);
+                        }
+                        if(chi2Map["K_K"]<1){
+                            insideprocessing.Fill("MKKSuspiciousPeakTestedWithStrictChi2LessThan1", mass);
+                        }
+                        if(1.06<mass&&mass<1.08){
+                            vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
+                            vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
+                            mass = (positive_track+negative_track).M();
+                            insideprocessing.Fill("MKKSuspiciousPeakTestedAsPionPair", mass);
+                        }
+                        if((1.05<mass&&mass<1.06)||(1.08<mass&&mass<1.09)){
+                            vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
+                            vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
+                            mass = (positive_track+negative_track).M();
+                            insideprocessing.Fill("MKKSuspiciousPeakTestedAsPionPairNeighbourhood", mass);
+                        }
                     }
                     if(chi2Map["pi_pi"]<9){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
