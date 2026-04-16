@@ -22,21 +22,20 @@ double GetK0TrackWeight(StUPCTrack const* trk, double vz, TH3F* hTpcEff, TH3F* h
     double eff_TPC = hTpcEff->GetBinContent(binX, binY, binZ);
     double eff_TOF_given_TPC = hTofEff->GetBinContent(binX, binY, binZ);
 
-    // Apply safety caps
-    if (eff_TPC > 0.98) eff_TPC = 0.98;
-    if (eff_TOF_given_TPC > 0.98) eff_TOF_given_TPC = 0.98;
+    // -------------------------------------------------------------
+    // THE REALISTIC PHYSICS CAPS
+    // -------------------------------------------------------------
+    // 1. Cap TPC efficiency to prevent 1/0.001 = 1000x explosions
+    if (eff_TPC > 0.90) eff_TPC = 0.90; 
+    
+    // 2. The most critical cap: Stop the TOF miss penalty from exploding.
+    // If we cap at 0.85, the maximum miss penalty is 1 / (1 - 0.85) = 6.6
+    if (eff_TOF_given_TPC > 0.85) eff_TOF_given_TPC = 0.85; 
 
-    // Return 0 weight if in a detector dead zone (instead of 'continue')
-    if (eff_TPC < 0.01) return 0.0;
-    
-    const double kMinEfficiency = 0.01;
-    
+    // Return 0 weight if in a true detector dead zone
+    const double kMinEfficiency = 0.05; // Ignore tracks with < 5% efficiency
     if (eff_TPC <= kMinEfficiency) return 0.0;
-    
-    if (eff_TOF_given_TPC > 0.95) {
-        rejCounter++;
-        return 0.0; // Reject
-    }
+    // -------------------------------------------------------------
 
     double final_weight = 1.0;
     if (hasTof) {
@@ -79,7 +78,7 @@ int main(int argc, char** argv)
     // ===================================================================
     // LOAD EFFICIENCY HISTOGRAMS
     // ===================================================================
-    string effFilePath = "~/Downloads/SPK0K0StylePions_April16_0.root";//SPK0K0StylePions_March13_0
+    string effFilePath = "~/Downloads/SPK0K0StylePions_April16_0.root";//SPK0K0StylePions_March13_0  SPK0K0StylePions_April16_0
     TFile* fEff = TFile::Open(effFilePath.c_str(), "READ");
     if (!fEff || fEff->IsZombie()) {
         cerr << "Error: Cannot open efficiency file " << effFilePath << endl;
@@ -96,9 +95,8 @@ int main(int argc, char** argv)
     h3D_TOF_Eff_P->Divide((TH3F*)fEff->Get("h3D_TOF_RecoMatchedPions_P"));
 
     TH3F* h3D_TOF_Eff_N = (TH3F*)((TH3F*)fEff->Get("h3D_TOF_RecoMatchedPionsWithTOF_N"))->Clone("h3D_TOF_Eff_N");
-    h3D_TOF_Eff_N->Divide((TH3F*)fEff->Get("h3D_TOF_RecoMatchedPions_N"));*/
-   
-    
+    h3D_TOF_Eff_N->Divide((TH3F*)fEff->Get("h3D_TOF_RecoMatchedPions_N"));
+    */
     TH3F* h3D_TPC_Eff_P = (TH3F*)((TH3F*)fEff->Get("h3D_TPC_RecoMatchedParticles_P"))->Clone("h3D_TPC_Eff_P");
     h3D_TPC_Eff_P->Divide((TH3F*)fEff->Get("h3D_TPC_TrueParticles_P"));
     TH3F* h3D_TPC_Eff_N = (TH3F*)((TH3F*)fEff->Get("h3D_TPC_RecoMatchedParticles_N"))->Clone("h3D_TPC_Eff_N");
@@ -107,7 +105,6 @@ int main(int argc, char** argv)
     h3D_TOF_Eff_P->Divide((TH3F*)fEff->Get("h3D_TOF_RecoMatchedParticlesWithTOF_P"));
     TH3F* h3D_TOF_Eff_N = (TH3F*)((TH3F*)fEff->Get("h3D_TOF_RecoMatchedParticlesWithTOF_N"))->Clone("h3D_TOF_Eff_N");
     h3D_TOF_Eff_N->Divide((TH3F*)fEff->Get("h3D_TOF_RecoMatchedParticlesWithTOF_N"));
-    
     
     cout << "✅ Efficiency maps successfully loaded & divided." << endl;
 

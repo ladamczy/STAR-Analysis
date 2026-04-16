@@ -80,7 +80,8 @@ void For1atatime (TH1D* corrected, TH1D* raw, const char* xtitle, double pullMin
     ratio->GetYaxis()->SetTitleOffset(0.5);
     ratio->GetYaxis()->SetNdivisions(505);
     ratio->GetYaxis()->SetRangeUser(pullMinY1, pullMaxY2);
-    ratio->GetXaxis()->SetTitle("m_{#pi^{+} #pi^{-}} (GeV/c^{2})");
+    //ratio->GetXaxis()->SetTitle("m_{#pi^{+} #pi^{-}} (GeV/c^{2})");
+    ratio->GetXaxis()->SetTitle(xtitle);
     ratio->GetXaxis()->SetTitleSize(0.15);
     ratio->GetXaxis()->SetLabelSize(0.15);
     ratio->GetXaxis()->SetTitleOffset(1.0);
@@ -222,7 +223,7 @@ void PlotInvMass(TH1D* corr,TH1D* raw, const char* xtitle, double fitmin, double
 
 void Plot_EffCorrections()
 {
-    string DataFile = "Phy8_WITHvz100pt02passfid.root";
+    string DataFile = "EffCorrWithNewEffFileWithNewCap.root"; //EffCorrWithOldEffSameAsResultsApril14 EffCorrWithNewEffFile
     TFile* fcorr = TFile::Open(DataFile.c_str(), "READ");
 
     // Load Histograms
@@ -271,33 +272,34 @@ void Plot_EffCorrections()
     TCanvas* cPt = new TCanvas("cPt", "pT Comparison", 2000, 1000);
     cPt->Divide(2);
     cPt->cd(1);
-    For1atatime(hPt_P_C, hPt_P_R, "p_{T} (GeV/c)", -1.0, 5.0);
+    //set x axis title
+    For1atatime(hPt_P_C, hPt_P_R, "p_{T} (GeV/c)", -1.0, 9.0);
     cPt->cd(2);
-    For1atatime(hPt_N_C, hPt_N_R, "p_{T} (GeV/c)", -1.0, 5.0);
-    cPt->SaveAs("EffCorrData_pT_PosNeg3.png");
+    For1atatime(hPt_N_C, hPt_N_R, "p_{T} (GeV/c)", -1.0, 9.0);
+    cPt->SaveAs("plots/EffCorrData_pT_PosNeg3.png");
 
     // --- Plotting ETA (Positive vs Negative) ---
     TCanvas* cEta = new TCanvas("cEta", "Eta Comparison", 2000, 1000);
     cEta->Divide(2);
     cEta->cd(1);
-    For1atatime(hEta_P_C, hEta_P_R, "#eta", -1.0, 5.0);
+    For1atatime(hEta_P_C, hEta_P_R, "#eta", -1.0, 9.0);
     cEta->cd(2);
-    For1atatime(hEta_N_C, hEta_N_R, "#eta", -1.0, 5.0);
-    cEta->SaveAs("EffCorrData_Eta_PosNeg3.png");
+    For1atatime(hEta_N_C, hEta_N_R, "#eta", -1.0, 9.0);
+    cEta->SaveAs("plots/EffCorrData_Eta_PosNeg3.png");
 
     TCanvas* cVerZ = new TCanvas("cVerZ", "VerZ Comparison", 2000, 1000);
     cVerZ->Divide(2);
     cVerZ->cd(1);
-    For1atatime(hVerZ_P_C, hVerZ_P_R, "Vz (cm)", -1.0, 5.0);
+    For1atatime(hVerZ_P_C, hVerZ_P_R, "Vz (cm)", -1.0, 9.0);
     cVerZ->cd(2);
-    For1atatime(hVerZ_N_C, hVerZ_N_R, "Vz (cm)", -1.0, 5.0);
-    cVerZ->SaveAs("EffCorrData_VerZ_PosNeg3.png");
+    For1atatime(hVerZ_N_C, hVerZ_N_R, "Vz (cm)", -1.0, 9.0);
+    cVerZ->SaveAs("plots/EffCorrData_VerZ_PosNeg3.png");
 
     //std::cout << "Raw entries: " << hInvMassRaw->GetEntries() << ", Max bin: " << hInvMassRaw->GetMaximum() << std::endl;
     //std::cout << "Corr entries: " << hInvMassCorr->GetEntries() << ", Max bin: " << hInvMassCorr->GetMaximum() << std::endl;
     // --- Plotting Final Mass ---
     TCanvas* cMass = new TCanvas("cMass", "Final Mass Distribution", 1000, 1000);
-    PlotInvMass(hInvMassCorr,hInvMassRaw, "m_{K_{S}^{0}K_{S}^{0}} (GeV/c^{2})", 1.0, 2.5, -2.0, 10.0);
+    PlotInvMass(hInvMassCorr,hInvMassRaw, "m_{K_{S}^{0}K_{S}^{0}} (GeV/c^{2})", 1.0, 2.5, -2.0, 15.0);
     //hInvMassCorr->SetTitle("Corrected");
     /*TH1D *hInvMassRaw_scaled = (TH1D*)hInvMassRaw->Clone("hInvMassRaw_scaled");
     //scaling the raw histogram to match the corrected one for better visual comparison
@@ -322,23 +324,30 @@ void Plot_EffCorrections()
     //leg->AddEntry(hInvMassRaw_scaled, Form("Scaled Raw (%.1f)", scaleFactor), "l");
     leg->AddEntry(hInvMassRaw, "Raw Data", "l");*/
     //leg->Draw();
-    cMass->SaveAs("EffCorrData_K0K0Mass3.png");
+    cMass->SaveAs("plots/EffCorrData_K0K0Mass3.png");
 
     TCanvas* cMassRaw = new TCanvas("cMassRaw", "Raw Mass Distribution", 1000, 1000);
     hInvMassRaw->SetLineColor(kGreen);
     hInvMassRaw->SetLineWidth(3);
     hInvMassRaw->SetMarkerStyle(21);
     hInvMassRaw->SetMarkerColor(kGreen);
-    hInvMassRaw->Draw("PE same");
-    cMassRaw->SaveAs("EffCorrData_Raw_K0K0Mass3.png");
+    hInvMassRaw->Draw("PE");
+    cMassRaw->SaveAs("plots/EffCorrData_Raw_K0K0Mass3.png");
 
     TCanvas* c4TOF = new TCanvas("c4TOF", "4 TOF Hits Comparison", 1000, 1000);
-    //PlotInvMass(h1D_Reco_InvMass_Corrected_4pi_4TOF, 1.1, 2.5);
-    h1D_Reco_InvMass_Corrected_4pi_4TOF->SetTitle("Corrected with 4 TOF Hits");
-    h1D_Reco_InvMass_Raw_4pi_4TOF->SetLineColor(kGreen);
-    h1D_Reco_InvMass_Raw_4pi_4TOF->SetLineWidth(3);
-    h1D_Reco_InvMass_Raw_4pi_4TOF->Draw("HIST same");
-    //c4TOF->SaveAs("test_4TOF3.png");
+    h1D_Reco_InvMass_Corrected_4pi_4TOF->SetTitle("4 TOF Hits");
+    PlotInvMass(h1D_Reco_InvMass_Corrected_4pi_4TOF, h1D_Reco_InvMass_Raw_4pi_4TOF, "m_{K_{S}^{0}K_{S}^{0}} (GeV/c^{2})", 1.1, 2.5, -2.0, 10.0);
+    c4TOF->SaveAs("plots/EffCorrData_4TOF.png");
+
+     TCanvas* c3TOF = new TCanvas("c3TOF", "3 TOF Hits Comparison", 1000, 1000);
+    h1D_Reco_InvMass_Corrected_4pi_3TOF->SetTitle("3 TOF Hits");
+    PlotInvMass(h1D_Reco_InvMass_Corrected_4pi_3TOF, h1D_Reco_InvMass_Raw_4pi_3TOF, "m_{K_{S}^{0}K_{S}^{0}} (GeV/c^{2})", 1.1, 2.5, -2.0, 10.0);
+    c3TOF->SaveAs("plots/EffCorrData_3TOF.png");
+
+    TCanvas* c2TOF = new TCanvas("c2TOF", "2 TOF Hits Comparison", 1000, 1000);
+    h1D_Reco_InvMass_Corrected_4pi_2TOF->SetTitle("2 TOF Hits");
+    PlotInvMass(h1D_Reco_InvMass_Corrected_4pi_2TOF, h1D_Reco_InvMass_Raw_4pi_2TOF, "m_{K_{S}^{0}K_{S}^{0}} (GeV/c^{2})", 1.1, 2.5, -2.0, 100.0);
+    c2TOF->SaveAs("plots/EffCorrData_2TOF.png");
 
 }
 
