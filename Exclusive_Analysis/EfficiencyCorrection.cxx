@@ -71,19 +71,22 @@ int main(int argc, char** argv)
     cout << "  UPC Data & MC Efficiency Correction - K0K0 Style" << endl;
     cout << "==============================================================" << endl;
 
+    //some constants & config
+    const double VzMax = 80.0; 
+
     CutConfig config("nominal");
 
     // ===================================================================
     // LOAD EFFICIENCY HISTOGRAMS
     // ===================================================================
-    string effFilePath = "~/Downloads/SPK0K0StylePions_March13_0.root";
+    string effFilePath = "~/Downloads/SPK0K0StylePions_April16_0.root";//SPK0K0StylePions_March13_0
     TFile* fEff = TFile::Open(effFilePath.c_str(), "READ");
     if (!fEff || fEff->IsZombie()) {
         cerr << "Error: Cannot open efficiency file " << effFilePath << endl;
         return 1;
     }
 
-    TH3F* h3D_TPC_Eff_P = (TH3F*)((TH3F*)fEff->Get("h3D_TPC_RecoMatchedPions_P"))->Clone("h3D_TPC_Eff_P");
+    /*TH3F* h3D_TPC_Eff_P = (TH3F*)((TH3F*)fEff->Get("h3D_TPC_RecoMatchedPions_P"))->Clone("h3D_TPC_Eff_P");
     h3D_TPC_Eff_P->Divide((TH3F*)fEff->Get("h3D_TPC_TruePions_P"));
 
     TH3F* h3D_TPC_Eff_N = (TH3F*)((TH3F*)fEff->Get("h3D_TPC_RecoMatchedPions_N"))->Clone("h3D_TPC_Eff_N");
@@ -93,9 +96,26 @@ int main(int argc, char** argv)
     h3D_TOF_Eff_P->Divide((TH3F*)fEff->Get("h3D_TOF_RecoMatchedPions_P"));
 
     TH3F* h3D_TOF_Eff_N = (TH3F*)((TH3F*)fEff->Get("h3D_TOF_RecoMatchedPionsWithTOF_N"))->Clone("h3D_TOF_Eff_N");
-    h3D_TOF_Eff_N->Divide((TH3F*)fEff->Get("h3D_TOF_RecoMatchedPions_N"));
+    h3D_TOF_Eff_N->Divide((TH3F*)fEff->Get("h3D_TOF_RecoMatchedPions_N"));*/
+   
+    
+    TH3F* h3D_TPC_Eff_P = (TH3F*)((TH3F*)fEff->Get("h3D_TPC_RecoMatchedParticles_P"))->Clone("h3D_TPC_Eff_P");
+    h3D_TPC_Eff_P->Divide((TH3F*)fEff->Get("h3D_TPC_TrueParticles_P"));
+    TH3F* h3D_TPC_Eff_N = (TH3F*)((TH3F*)fEff->Get("h3D_TPC_RecoMatchedParticles_N"))->Clone("h3D_TPC_Eff_N");
+    h3D_TPC_Eff_N->Divide((TH3F*)fEff->Get("h3D_TPC_TrueParticles_N"));
+    TH3F* h3D_TOF_Eff_P = (TH3F*)((TH3F*)fEff->Get("h3D_TOF_RecoMatchedParticlesWithTOF_P"))->Clone("h3D_TOF_Eff_P");
+    h3D_TOF_Eff_P->Divide((TH3F*)fEff->Get("h3D_TOF_RecoMatchedParticlesWithTOF_P"));
+    TH3F* h3D_TOF_Eff_N = (TH3F*)((TH3F*)fEff->Get("h3D_TOF_RecoMatchedParticlesWithTOF_N"))->Clone("h3D_TOF_Eff_N");
+    h3D_TOF_Eff_N->Divide((TH3F*)fEff->Get("h3D_TOF_RecoMatchedParticlesWithTOF_N"));
+    
     
     cout << "✅ Efficiency maps successfully loaded & divided." << endl;
+
+    // Print efficiency comparison
+    cout << "pi+ avg TPC efficiency: " << h3D_TPC_Eff_P->GetMean() << endl;
+    cout << "pi- avg TPC efficiency: " << h3D_TPC_Eff_N->GetMean() << endl;
+    cout << "pi+ avg TOF efficiency: " << h3D_TOF_Eff_P->GetMean() << endl;
+    cout << "pi- avg TOF efficiency: " << h3D_TOF_Eff_N->GetMean() << endl;
 
     // ===================================================================
     // SETUP CHAIN
@@ -158,8 +178,8 @@ int main(int argc, char** argv)
     const int nPtBins4pi = 10;
     double ptBinEdges4pi[nPtBins4pi + 1] = {0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.5, 2.0, 2.5, 3.0};
     // 4-TOF SAMPLE HISTOGRAMS
-    TH1F *h1D_Reco_InvMass_Raw_4pi_4TOF = new TH1F("h1D_Reco_InvMass_Raw_4pi_4TOF", "Raw Data 4#pi Mass;M_{4#pi} (GeV/c^{2});Counts",  21, 0.9, 3.0);
-    TH1F *h1D_Reco_InvMass_Corrected_4pi_4TOF = new TH1F("h1D_Reco_InvMass_Corrected_4pi_4TOF", "Corrected Data 4#pi Mass;M_{4#pi} (GeV/c^{2});Counts",  21, 0.9, 3.0);
+    TH1F *h1D_Reco_InvMass_Raw_4pi_4TOF = new TH1F("h1D_Reco_InvMass_Raw_4pi_4TOF", "Raw Data 4#pi Mass;M_{4#pi} (GeV/c^{2});Counts", 21, 0.9, 3.0);
+    TH1F *h1D_Reco_InvMass_Corrected_4pi_4TOF = new TH1F("h1D_Reco_InvMass_Corrected_4pi_4TOF", "Corrected Data 4#pi Mass;M_{4#pi} (GeV/c^{2});Counts", 21, 0.9, 3.0);
     h1D_Reco_InvMass_Corrected_4pi_4TOF->Sumw2();
     TH1F *h1D_Reco_Pt_Raw_4pi_4TOF = new TH1F("h1D_Reco_Pt_Raw_4pi_4TOF", "Raw Data 4#pi p_{T};p_{T,K_{0}K_{0}} (GeV/c);Counts", nPtBins4pi, ptBinEdges4pi);
     TH1F *h1D_Reco_Pt_Corrected_4pi_4TOF = new TH1F("h1D_Reco_Pt_Corrected_4pi_4TOF", "Corrected Data 4#pi p_{T};p_{T,K_{0}K_{0}} (GeV/c);Counts", nPtBins4pi, ptBinEdges4pi);
@@ -168,8 +188,8 @@ int main(int argc, char** argv)
     TH1F *h1D_Reco_Y_Corrected_4pi_4TOF = new TH1F("h1D_Reco_Y_Corrected_4pi_4TOF", "Corrected Data 4#pi Rapidity;y_{K_{0}K_{0}};Counts", 40, -1.0, 1.0);
     h1D_Reco_Y_Corrected_4pi_4TOF->Sumw2();
     // 3-TOF SAMPLE HISTOGRAMS
-    TH1F *h1D_Reco_InvMass_Raw_4pi_3TOF = new TH1F("h1D_Reco_InvMass_Raw_4pi_3TOF", "Raw Data 4#pi Mass (3 TOF);M_{4#pi} (GeV/c^{2});Counts",  21, 0.9, 3.0);
-    TH1F *h1D_Reco_InvMass_Corrected_4pi_3TOF = new TH1F("h1D_Reco_InvMass_Corrected_4pi_3TOF", "Corrected Data 4#pi Mass (3 TOF);M_{4#pi} (GeV/c^{2});Counts",  21, 0.9, 3.0);
+    TH1F *h1D_Reco_InvMass_Raw_4pi_3TOF = new TH1F("h1D_Reco_InvMass_Raw_4pi_3TOF", "Raw Data 4#pi Mass (3 TOF);M_{4#pi} (GeV/c^{2});Counts", 21, 0.9, 3.0);
+    TH1F *h1D_Reco_InvMass_Corrected_4pi_3TOF = new TH1F("h1D_Reco_InvMass_Corrected_4pi_3TOF", "Corrected Data 4#pi Mass (3 TOF);M_{4#pi} (GeV/c^{2});Counts", 21, 0.9, 3.0);
     h1D_Reco_InvMass_Corrected_4pi_3TOF->Sumw2();
     TH1F *h1D_Reco_Pt_Raw_4pi_3TOF = new TH1F("h1D_Reco_Pt_Raw_4pi_3TOF", "Raw Data 4#pi p_{T} (3 TOF);p_{T,4#pi} (GeV/c);Counts", nPtBins4pi, ptBinEdges4pi);
     TH1F *h1D_Reco_Pt_Corrected_4pi_3TOF = new TH1F("h1D_Reco_Pt_Corrected_4pi_3TOF", "Corrected Data 4#pi p_{T} (3 TOF);p_{T,4#pi} (GeV/c);Counts", nPtBins4pi, ptBinEdges4pi);
@@ -178,8 +198,8 @@ int main(int argc, char** argv)
     TH1F *h1D_Reco_Y_Corrected_4pi_3TOF = new TH1F("h1D_Reco_Y_Corrected_4pi_3TOF", "Corrected Data 4#pi Rapidity (3 TOF);y_{4#pi};Counts", 40, -1.0, 1.0);
     h1D_Reco_Y_Corrected_4pi_3TOF->Sumw2();
     // 2-TOF SAMPLE HISTOGRAMS
-    TH1F *h1D_Reco_InvMass_Raw_4pi_2TOF = new TH1F("h1D_Reco_InvMass_Raw_4pi_2TOF", "Raw Data 4#pi Mass (2 TOF);M_{4#pi} (GeV/c^{2});Counts",  21, 0.9, 3.0);
-    TH1F *h1D_Reco_InvMass_Corrected_4pi_2TOF = new TH1F("h1D_Reco_InvMass_Corrected_4pi_2TOF", "Corrected Data 4#pi Mass (2 TOF);M_{4#pi} (GeV/c^{2});Counts",  21, 0.9, 3.0);
+    TH1F *h1D_Reco_InvMass_Raw_4pi_2TOF = new TH1F("h1D_Reco_InvMass_Raw_4pi_2TOF", "Raw Data 4#pi Mass (2 TOF);M_{4#pi} (GeV/c^{2});Counts", 21, 0.9, 3.0);
+    TH1F *h1D_Reco_InvMass_Corrected_4pi_2TOF = new TH1F("h1D_Reco_InvMass_Corrected_4pi_2TOF", "Corrected Data 4#pi Mass (2 TOF);M_{4#pi} (GeV/c^{2});Counts", 21, 0.9, 3.0);
     h1D_Reco_InvMass_Corrected_4pi_2TOF->Sumw2();
     TH1F *h1D_Reco_Pt_Raw_4pi_2TOF = new TH1F("h1D_Reco_Pt_Raw_4pi_2TOF", "Raw Data 4#pi p_{T} (2 TOF);p_{T,4#pi} (GeV/c);Counts", nPtBins4pi, ptBinEdges4pi);
     TH1F *h1D_Reco_Pt_Corrected_4pi_2TOF = new TH1F("h1D_Reco_Pt_Corrected_4pi_2TOF", "Corrected Data 4#pi p_{T} (2 TOF);p_{T,4#pi} (GeV/c);Counts", nPtBins4pi, ptBinEdges4pi);
@@ -216,7 +236,7 @@ int main(int argc, char** argv)
         // Safely extract vertex for Data vs MC
         if (isMC == 0) {
             if (upcEvt->getNumberOfVertices() != 1) continue;
-            if (abs(upcEvt->getVertex(0)->getPosZ()) >= 80.0) continue;
+            if (abs(upcEvt->getVertex(0)->getPosZ()) >= VzMax) continue;
         } else {
             if (upcEvt->getNumberOfVertices() < 1) continue; // MC fallback safety
         }
@@ -225,7 +245,7 @@ int main(int argc, char** argv)
         // -------------------------------------------------------------------
         // 1D INCLUSIVE TRACK EFFICIENCY VERIFICATION (STRICT K0K0 CUTS)
         // -------------------------------------------------------------------
-        if (abs(eventVz) <= 100.0) { 
+        if (abs(eventVz) <= VzMax) { 
             for (int trkIdx = 0; trkIdx < upcEvt->getNumberOfTracks(); trkIdx++) {
                 StUPCTrack const* track = upcEvt->getTrack(trkIdx);
                 if (!track) continue;
@@ -234,8 +254,7 @@ int main(int argc, char** argv)
                 double eta = track->getEta();
                 
                 // STRICT K0K0 MAP CUTS: pT > 0.25 and diagonal fiducial cut
-                if (track->getNhitsFit() >= 20 && pt >= 0.25 && pt <= 3.0 && 
-                    abs(eta) <= 0.9 && passFiducialCut(eta, eventVz)) {
+                if (track->getNhitsFit() >= 20 && pt >= 0.2 && pt <= 3.0 && passFiducialCut(eta, eventVz) ) {// 
                     
                     bool hasTof = track->getFlag(StUPCTrack::kTof);
                     short charge = track->getCharge();
@@ -387,28 +406,27 @@ int main(int argc, char** argv)
         }
         else if (totalTOF == 3) {
             nEvents_3TOF++;
+            double weight_3TOF = eventWeight / 4.0;
             expectedYield_3TOF += eventWeight;
-
             // Fill 3-TOF plots
             h1D_Reco_InvMass_Raw_4pi_3TOF->Fill(massK0K0);
-            h1D_Reco_InvMass_Corrected_4pi_3TOF->Fill(massK0K0, eventWeight);
+            h1D_Reco_InvMass_Corrected_4pi_3TOF->Fill(massK0K0, weight_3TOF);
             h1D_Reco_Pt_Raw_4pi_3TOF->Fill(K0K0.Pt());
-            h1D_Reco_Pt_Corrected_4pi_3TOF->Fill(K0K0.Pt(), eventWeight);
+            h1D_Reco_Pt_Corrected_4pi_3TOF->Fill(K0K0.Pt(), weight_3TOF);
             h1D_Reco_Y_Raw_4pi_3TOF->Fill(K0K0.Rapidity());
-            h1D_Reco_Y_Corrected_4pi_3TOF->Fill(K0K0.Rapidity(), eventWeight);
+            h1D_Reco_Y_Corrected_4pi_3TOF->Fill(K0K0.Rapidity(), weight_3TOF);
         }
         else if (totalTOF == 2) {
             nEvents_2TOF++; 
+            double weight_2TOF = eventWeight / 4.0;
             expectedYield_2TOF += eventWeight;
-            // Note: you might want to add a nEvents_2TOF counter for your printout too!
-            
             // Fill 2-TOF plots
             h1D_Reco_InvMass_Raw_4pi_2TOF->Fill(massK0K0);
-            h1D_Reco_InvMass_Corrected_4pi_2TOF->Fill(massK0K0, eventWeight);
+            h1D_Reco_InvMass_Corrected_4pi_2TOF->Fill(massK0K0, weight_2TOF);
             h1D_Reco_Pt_Raw_4pi_2TOF->Fill(K0K0.Pt());
-            h1D_Reco_Pt_Corrected_4pi_2TOF->Fill(K0K0.Pt(), eventWeight);
+            h1D_Reco_Pt_Corrected_4pi_2TOF->Fill(K0K0.Pt(), weight_2TOF);
             h1D_Reco_Y_Raw_4pi_2TOF->Fill(K0K0.Rapidity());
-            h1D_Reco_Y_Corrected_4pi_2TOF->Fill(K0K0.Rapidity(), eventWeight);
+            h1D_Reco_Y_Corrected_4pi_2TOF->Fill(K0K0.Rapidity(), weight_2TOF);
         }
         else {
             count_K0si_Other++;
