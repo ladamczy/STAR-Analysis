@@ -162,7 +162,7 @@ void getCategoryHistograms(ProcessingOutsideLoop& out, vector<string> pairs, std
         printf("File with differential crossection ranges not opened!\n");
         return;
     } else{
-        printf("File with differential crossection ranges opened propery!\nLines found:\n");
+        printf("File with differential crossection ranges opened properly!\nLines found:\n");
     }
 
     std::string line, buf;
