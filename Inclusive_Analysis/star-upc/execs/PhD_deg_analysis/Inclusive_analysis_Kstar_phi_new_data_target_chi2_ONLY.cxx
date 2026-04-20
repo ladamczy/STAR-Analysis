@@ -61,7 +61,9 @@ int main(int argc, char** argv){
     //histograms
     ProcessingOutsideLoop outsideprocessing;
     outsideprocessing.AddHistogram(TH1D("pairInfoSignal", "", 1, 0, 1));
-    outsideprocessing.AddHistogram(TH1D("pairInfoBackground", "", 1, 0, 1));
+    outsideprocessing.AddHistogram(TH1D("pairInfoBackgroundSameSign", "", 1, 0, 1));
+    outsideprocessing.AddHistogram(TH1D("pairInfoBackgroundTrackRotation", "", 1, 0, 1));
+
     //adding chi2 histograms
     //file with sigma values:
     ifstream sigmaFile;
@@ -92,20 +94,36 @@ int main(int argc, char** argv){
     outsideprocessing.AddHistogram(TH1D("MpiKChi2Close", ";m_{#pi^{+}K^{-}} [GeV];Number of pairs", 50, 0.7, 1.1));
     //adding mass histograms grouped by category (signal)
     getCategoryHistograms(outsideprocessing, pairTab);
-    //mass histograms (background)
-    outsideprocessing.AddHistogram(TH1D("MKpiChi2Bcg", ";m_{K#pi} [GeV];Number of pairs", 200, 0.5, 2.0));
-    outsideprocessing.AddHistogram(TH1D("MpiKChi2Bcg", ";m_{#piK} [GeV];Number of pairs", 200, 0.5, 2.0));
-    outsideprocessing.AddHistogram(TH1D("MppiChi2Bcg", ";m_{p#pi} [GeV];Number of pairs", 500, 1.0, 2.5));
-    outsideprocessing.AddHistogram(TH1D("MpipChi2Bcg", ";m_{#pip} [GeV];Number of pairs", 500, 1.0, 2.5));
-    outsideprocessing.AddHistogram(TH1D("MKKChi2Bcg", ";m_{KK} [GeV];Number of pairs", 500, 0.9, 2.4));
-    outsideprocessing.AddHistogram(TH1D("MpipiChi2Bcg", ";m_{#pi#pi} [GeV];Number of pairs", 600, 0.2, 1.4));
-    outsideprocessing.AddHistogram(TH1D("MppChi2Bcg", ";m_{pp} [GeV];Number of pairs", 500, 1.5, 3.5));
-    //closer histograms (background)
-    outsideprocessing.AddHistogram(TH1D("MKKChi2BcgClose", ";m_{KK} [GeV];Number of pairs", 50, 0.99, 1.05));
-    outsideprocessing.AddHistogram(TH1D("MKpiChi2BcgClose", ";m_{K#pi} [GeV];Number of pairs", 50, 0.7, 1.1));
-    outsideprocessing.AddHistogram(TH1D("MpiKChi2BcgClose", ";m_{#piK} [GeV];Number of pairs", 50, 0.7, 1.1));
-    //adding mass histograms grouped by category (background)
-    getCategoryHistograms(outsideprocessing, pairTab, "Bcg");
+
+    //mass histograms (background, same sign)
+    outsideprocessing.AddHistogram(TH1D("MKpiChi2BcgSameSign", ";m_{K#pi} [GeV];Number of pairs", 200, 0.5, 2.0));
+    outsideprocessing.AddHistogram(TH1D("MpiKChi2BcgSameSign", ";m_{#piK} [GeV];Number of pairs", 200, 0.5, 2.0));
+    outsideprocessing.AddHistogram(TH1D("MppiChi2BcgSameSign", ";m_{p#pi} [GeV];Number of pairs", 500, 1.0, 2.5));
+    outsideprocessing.AddHistogram(TH1D("MpipChi2BcgSameSign", ";m_{#pip} [GeV];Number of pairs", 500, 1.0, 2.5));
+    outsideprocessing.AddHistogram(TH1D("MKKChi2BcgSameSign", ";m_{KK} [GeV];Number of pairs", 500, 0.9, 2.4));
+    outsideprocessing.AddHistogram(TH1D("MpipiChi2BcgSameSign", ";m_{#pi#pi} [GeV];Number of pairs", 600, 0.2, 1.4));
+    outsideprocessing.AddHistogram(TH1D("MppChi2BcgSameSign", ";m_{pp} [GeV];Number of pairs", 500, 1.5, 3.5));
+    //closer histograms (background, same sign)
+    outsideprocessing.AddHistogram(TH1D("MKKChi2BcgSameSignClose", ";m_{KK} [GeV];Number of pairs", 50, 0.99, 1.05));
+    outsideprocessing.AddHistogram(TH1D("MKpiChi2BcgSameSignClose", ";m_{K#pi} [GeV];Number of pairs", 50, 0.7, 1.1));
+    outsideprocessing.AddHistogram(TH1D("MpiKChi2BcgSameSignClose", ";m_{#piK} [GeV];Number of pairs", 50, 0.7, 1.1));
+    //adding mass histograms grouped by category (background, same sign)
+    getCategoryHistograms(outsideprocessing, pairTab, "BcgSameSign");
+
+    //mass histograms (background, track rotation)
+    outsideprocessing.AddHistogram(TH1D("MKpiChi2BcgTrackRotation", ";m_{K#pi} [GeV];Number of pairs", 200, 0.5, 2.0));
+    outsideprocessing.AddHistogram(TH1D("MpiKChi2BcgTrackRotation", ";m_{#piK} [GeV];Number of pairs", 200, 0.5, 2.0));
+    outsideprocessing.AddHistogram(TH1D("MppiChi2BcgTrackRotation", ";m_{p#pi} [GeV];Number of pairs", 500, 1.0, 2.5));
+    outsideprocessing.AddHistogram(TH1D("MpipChi2BcgTrackRotation", ";m_{#pip} [GeV];Number of pairs", 500, 1.0, 2.5));
+    outsideprocessing.AddHistogram(TH1D("MKKChi2BcgTrackRotation", ";m_{KK} [GeV];Number of pairs", 500, 0.9, 2.4));
+    outsideprocessing.AddHistogram(TH1D("MpipiChi2BcgTrackRotation", ";m_{#pi#pi} [GeV];Number of pairs", 600, 0.2, 1.4));
+    outsideprocessing.AddHistogram(TH1D("MppChi2BcgTrackRotation", ";m_{pp} [GeV];Number of pairs", 500, 1.5, 3.5));
+    //closer histograms (background, track rotation)
+    outsideprocessing.AddHistogram(TH1D("MKKChi2BcgTrackRotationClose", ";m_{KK} [GeV];Number of pairs", 50, 0.99, 1.05));
+    outsideprocessing.AddHistogram(TH1D("MKpiChi2BcgTrackRotationClose", ";m_{K#pi} [GeV];Number of pairs", 50, 0.7, 1.1));
+    outsideprocessing.AddHistogram(TH1D("MpiKChi2BcgTrackRotationClose", ";m_{#piK} [GeV];Number of pairs", 50, 0.7, 1.1));
+    //adding mass histograms grouped by category (background, track rotation)
+    getCategoryHistograms(outsideprocessing, pairTab, "BcgTrackRotation");
 
     //other histograms
     outsideprocessing.AddHistogram(TH1D("MKKSuspiciousPeakTestedAsPionPair", ";m_{#pi#pi} [GeV];Number of pairs", 400, 0.25, 0.65));
@@ -229,6 +247,8 @@ int main(int argc, char** argv){
                 chi2Map.insert({ imap.first, 0. });
             }
 
+            //########## SIGNAL EXTRACTION ###############
+
             //loop through identified particles (signal)
             for(long unsigned int i = 0; i<vector_Track_positive.size(); i++){
                 for(long unsigned int j = 0; j<vector_Track_negative.size(); j++){
@@ -351,21 +371,23 @@ int main(int argc, char** argv){
                 }
             }
 
+            //########## BACKGROUND EXTRACTION (SAME-SIGN) ###############
+
             //loop through identified particles (background, same-sign positive)
             for(long int i = 0; i+1<vector_Track_positive.size(); i++){
                 for(long int j = i+1; j<vector_Track_positive.size(); j++){
                     isdEdxOk = (vector_Track_positive[i]->getNhitsDEdx()>=15)&&(vector_Track_positive[j]->getNhitsDEdx()>=15);
                     isTOFOk = (vector_Track_positive[i]->getTofPathLength()>0)&&(vector_Track_positive[i]->getTofTime()>0)&&(vector_Track_positive[j]->getTofPathLength()>0)&&(vector_Track_positive[j]->getTofTime()>0);
                     if(isdEdxOk&&isTOFOk){
-                        insideprocessing.Fill("pairInfoBackground", "OK", 1.0);
+                        insideprocessing.Fill("pairInfoBackgroundSameSign", "OK", 1.0);
                     } else if(isdEdxOk&&!isTOFOk){
-                        insideprocessing.Fill("pairInfoBackground", "TOF wrong", 1.0);
+                        insideprocessing.Fill("pairInfoBackgroundSameSign", "TOF wrong", 1.0);
                         continue;
                     } else if(!isdEdxOk&&isTOFOk){
-                        insideprocessing.Fill("pairInfoBackground", "dEdx wrong", 1.0);
+                        insideprocessing.Fill("pairInfoBackgroundSameSign", "dEdx wrong", 1.0);
                         continue;
                     } else if(!isdEdxOk&&!isTOFOk){
-                        insideprocessing.Fill("pairInfoBackground", "Both wrong", 1.0);
+                        insideprocessing.Fill("pairInfoBackgroundSameSign", "Both wrong", 1.0);
                         continue;
                     }
 
@@ -384,10 +406,10 @@ int main(int argc, char** argv){
                         mass = (positive_track+positive_track2).M();
                         eta = (positive_track+positive_track2).Eta();
                         pT = (positive_track+positive_track2).Pt();
-                        insideprocessing.Fill("MKpiChi2Bcg", mass);
-                        insideprocessing.Fill("MKpiChi2BcgClose", mass);
-                        insideprocessing.Fill("MKpiChi2Bcgeta", mass, eta);
-                        insideprocessing.Fill("MKpiChi2BcgpT", mass, pT);
+                        insideprocessing.Fill("MKpiChi2BcgSameSign", mass);
+                        insideprocessing.Fill("MKpiChi2BcgSameSignClose", mass);
+                        insideprocessing.Fill("MKpiChi2BcgSameSigneta", mass, eta);
+                        insideprocessing.Fill("MKpiChi2BcgSameSignpT", mass, pT);
                     }
                     if(chi2Map["pi_K"]<9){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
@@ -395,10 +417,10 @@ int main(int argc, char** argv){
                         mass = (positive_track+positive_track2).M();
                         eta = (positive_track+positive_track2).Eta();
                         pT = (positive_track+positive_track2).Pt();
-                        insideprocessing.Fill("MpiKChi2Bcg", mass);
-                        insideprocessing.Fill("MpiKChi2BcgClose", mass);
-                        insideprocessing.Fill("MpiKChi2Bcgeta", mass, eta);
-                        insideprocessing.Fill("MpiKChi2BcgpT", mass, pT);
+                        insideprocessing.Fill("MpiKChi2BcgSameSign", mass);
+                        insideprocessing.Fill("MpiKChi2BcgSameSignClose", mass);
+                        insideprocessing.Fill("MpiKChi2BcgSameSigneta", mass, eta);
+                        insideprocessing.Fill("MpiKChi2BcgSameSignpT", mass, pT);
                     }
                     if(chi2Map["p_pi"]<9){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Proton]);
@@ -406,9 +428,9 @@ int main(int argc, char** argv){
                         mass = (positive_track+positive_track2).M();
                         eta = (positive_track+positive_track2).Eta();
                         pT = (positive_track+positive_track2).Pt();
-                        insideprocessing.Fill("MppiChi2Bcg", mass);
-                        insideprocessing.Fill("MppiChi2Bcgeta", mass, eta);
-                        insideprocessing.Fill("MppiChi2BcgpT", mass, pT);
+                        insideprocessing.Fill("MppiChi2BcgSameSign", mass);
+                        insideprocessing.Fill("MppiChi2BcgSameSigneta", mass, eta);
+                        insideprocessing.Fill("MppiChi2BcgSameSignpT", mass, pT);
                     }
                     if(chi2Map["pi_p"]<9){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
@@ -416,9 +438,9 @@ int main(int argc, char** argv){
                         mass = (positive_track+positive_track2).M();
                         eta = (positive_track+positive_track2).Eta();
                         pT = (positive_track+positive_track2).Pt();
-                        insideprocessing.Fill("MpipChi2Bcg", mass);
-                        insideprocessing.Fill("MpipChi2Bcgeta", mass, eta);
-                        insideprocessing.Fill("MpipChi2BcgpT", mass, pT);
+                        insideprocessing.Fill("MpipChi2BcgSameSign", mass);
+                        insideprocessing.Fill("MpipChi2BcgSameSigneta", mass, eta);
+                        insideprocessing.Fill("MpipChi2BcgSameSignpT", mass, pT);
                     }
                     if(chi2Map["K_K"]<9){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Kaon]);
@@ -426,10 +448,10 @@ int main(int argc, char** argv){
                         mass = (positive_track+positive_track2).M();
                         eta = (positive_track+positive_track2).Eta();
                         pT = (positive_track+positive_track2).Pt();
-                        insideprocessing.Fill("MKKChi2Bcg", mass);
-                        insideprocessing.Fill("MKKChi2BcgClose", mass);
-                        insideprocessing.Fill("MKKChi2Bcgeta", mass, eta);
-                        insideprocessing.Fill("MKKChi2BcgpT", mass, pT);
+                        insideprocessing.Fill("MKKChi2BcgSameSign", mass);
+                        insideprocessing.Fill("MKKChi2BcgSameSignClose", mass);
+                        insideprocessing.Fill("MKKChi2BcgSameSigneta", mass, eta);
+                        insideprocessing.Fill("MKKChi2BcgSameSignpT", mass, pT);
                     }
                     if(chi2Map["pi_pi"]<9){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
@@ -437,9 +459,9 @@ int main(int argc, char** argv){
                         mass = (positive_track+positive_track2).M();
                         eta = (positive_track+positive_track2).Eta();
                         pT = (positive_track+positive_track2).Pt();
-                        insideprocessing.Fill("MpipiChi2Bcg", mass);
-                        insideprocessing.Fill("MpipiChi2Bcgeta", mass, eta);
-                        insideprocessing.Fill("MpipiChi2BcgpT", mass, pT);
+                        insideprocessing.Fill("MpipiChi2BcgSameSign", mass);
+                        insideprocessing.Fill("MpipiChi2BcgSameSigneta", mass, eta);
+                        insideprocessing.Fill("MpipiChi2BcgSameSignpT", mass, pT);
                     }
                     if(chi2Map["p_p"]<9){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Proton]);
@@ -447,9 +469,9 @@ int main(int argc, char** argv){
                         mass = (positive_track+positive_track2).M();
                         eta = (positive_track+positive_track2).Eta();
                         pT = (positive_track+positive_track2).Pt();
-                        insideprocessing.Fill("MppChi2Bcg", mass);
-                        insideprocessing.Fill("MppChi2Bcgeta", mass, eta);
-                        insideprocessing.Fill("MppChi2BcgpT", mass, pT);
+                        insideprocessing.Fill("MppChi2BcgSameSign", mass);
+                        insideprocessing.Fill("MppChi2BcgSameSigneta", mass, eta);
+                        insideprocessing.Fill("MppChi2BcgSameSignpT", mass, pT);
                     }
                 }
             }
@@ -459,15 +481,15 @@ int main(int argc, char** argv){
                     isdEdxOk = (vector_Track_negative[i]->getNhitsDEdx()>=15)&&(vector_Track_negative[j]->getNhitsDEdx()>=15);
                     isTOFOk = (vector_Track_negative[i]->getTofPathLength()>0)&&(vector_Track_negative[i]->getTofTime()>0)&&(vector_Track_negative[j]->getTofPathLength()>0)&&(vector_Track_negative[j]->getTofTime()>0);
                     if(isdEdxOk&&isTOFOk){
-                        insideprocessing.Fill("pairInfoBackground", "OK", 1.0);
+                        insideprocessing.Fill("pairInfoBackgroundSameSign", "OK", 1.0);
                     } else if(isdEdxOk&&!isTOFOk){
-                        insideprocessing.Fill("pairInfoBackground", "TOF wrong", 1.0);
+                        insideprocessing.Fill("pairInfoBackgroundSameSign", "TOF wrong", 1.0);
                         continue;
                     } else if(!isdEdxOk&&isTOFOk){
-                        insideprocessing.Fill("pairInfoBackground", "dEdx wrong", 1.0);
+                        insideprocessing.Fill("pairInfoBackgroundSameSign", "dEdx wrong", 1.0);
                         continue;
                     } else if(!isdEdxOk&&!isTOFOk){
-                        insideprocessing.Fill("pairInfoBackground", "Both wrong", 1.0);
+                        insideprocessing.Fill("pairInfoBackgroundSameSign", "Both wrong", 1.0);
                         continue;
                     }
 
@@ -486,10 +508,10 @@ int main(int argc, char** argv){
                         mass = (negative_track+negative_track2).M();
                         eta = (negative_track+negative_track2).Eta();
                         pT = (negative_track+negative_track2).Pt();
-                        insideprocessing.Fill("MKpiChi2Bcgeta", mass, eta);
-                        insideprocessing.Fill("MKpiChi2Bcg", mass);
-                        insideprocessing.Fill("MKpiChi2BcgClose", mass);
-                        insideprocessing.Fill("MKpiChi2BcgpT", mass, pT);
+                        insideprocessing.Fill("MKpiChi2BcgSameSigneta", mass, eta);
+                        insideprocessing.Fill("MKpiChi2BcgSameSign", mass);
+                        insideprocessing.Fill("MKpiChi2BcgSameSignClose", mass);
+                        insideprocessing.Fill("MKpiChi2BcgSameSignpT", mass, pT);
                     }
                     if(chi2Map["pi_K"]<9){
                         vector_Track_negative[i]->getLorentzVector(negative_track, particleMass[Pion]);
@@ -497,10 +519,10 @@ int main(int argc, char** argv){
                         mass = (negative_track+negative_track2).M();
                         eta = (negative_track+negative_track2).Eta();
                         pT = (negative_track+negative_track2).Pt();
-                        insideprocessing.Fill("MpiKChi2Bcg", mass);
-                        insideprocessing.Fill("MpiKChi2BcgClose", mass);
-                        insideprocessing.Fill("MpiKChi2Bcgeta", mass, eta);
-                        insideprocessing.Fill("MpiKChi2BcgpT", mass, pT);
+                        insideprocessing.Fill("MpiKChi2BcgSameSign", mass);
+                        insideprocessing.Fill("MpiKChi2BcgSameSignClose", mass);
+                        insideprocessing.Fill("MpiKChi2BcgSameSigneta", mass, eta);
+                        insideprocessing.Fill("MpiKChi2BcgSameSignpT", mass, pT);
                     }
                     if(chi2Map["p_pi"]<9){
                         vector_Track_negative[i]->getLorentzVector(negative_track, particleMass[Proton]);
@@ -508,9 +530,9 @@ int main(int argc, char** argv){
                         mass = (negative_track+negative_track2).M();
                         eta = (negative_track+negative_track2).Eta();
                         pT = (negative_track+negative_track2).Pt();
-                        insideprocessing.Fill("MppiChi2Bcg", mass);
-                        insideprocessing.Fill("MppiChi2Bcgeta", mass, eta);
-                        insideprocessing.Fill("MppiChi2BcgpT", mass, pT);
+                        insideprocessing.Fill("MppiChi2BcgSameSign", mass);
+                        insideprocessing.Fill("MppiChi2BcgSameSigneta", mass, eta);
+                        insideprocessing.Fill("MppiChi2BcgSameSignpT", mass, pT);
                     }
                     if(chi2Map["pi_p"]<9){
                         vector_Track_negative[i]->getLorentzVector(negative_track, particleMass[Pion]);
@@ -518,9 +540,9 @@ int main(int argc, char** argv){
                         mass = (negative_track+negative_track2).M();
                         eta = (negative_track+negative_track2).Eta();
                         pT = (negative_track+negative_track2).Pt();
-                        insideprocessing.Fill("MpipChi2Bcg", mass);
-                        insideprocessing.Fill("MpipChi2Bcgeta", mass, eta);
-                        insideprocessing.Fill("MpipChi2BcgpT", mass, pT);
+                        insideprocessing.Fill("MpipChi2BcgSameSign", mass);
+                        insideprocessing.Fill("MpipChi2BcgSameSigneta", mass, eta);
+                        insideprocessing.Fill("MpipChi2BcgSameSignpT", mass, pT);
                     }
                     if(chi2Map["K_K"]<9){
                         vector_Track_negative[i]->getLorentzVector(negative_track, particleMass[Kaon]);
@@ -528,10 +550,10 @@ int main(int argc, char** argv){
                         mass = (negative_track+negative_track2).M();
                         eta = (negative_track+negative_track2).Eta();
                         pT = (negative_track+negative_track2).Pt();
-                        insideprocessing.Fill("MKKChi2Bcg", mass);
-                        insideprocessing.Fill("MKKChi2BcgClose", mass);
-                        insideprocessing.Fill("MKKChi2Bcgeta", mass, eta);
-                        insideprocessing.Fill("MKKChi2BcgpT", mass, pT);
+                        insideprocessing.Fill("MKKChi2BcgSameSign", mass);
+                        insideprocessing.Fill("MKKChi2BcgSameSignClose", mass);
+                        insideprocessing.Fill("MKKChi2BcgSameSigneta", mass, eta);
+                        insideprocessing.Fill("MKKChi2BcgSameSignpT", mass, pT);
                     }
                     if(chi2Map["pi_pi"]<9){
                         vector_Track_negative[i]->getLorentzVector(negative_track, particleMass[Pion]);
@@ -539,9 +561,9 @@ int main(int argc, char** argv){
                         mass = (negative_track+negative_track2).M();
                         eta = (negative_track+negative_track2).Eta();
                         pT = (negative_track+negative_track2).Pt();
-                        insideprocessing.Fill("MpipiChi2Bcg", mass);
-                        insideprocessing.Fill("MpipiChi2Bcgeta", mass, eta);
-                        insideprocessing.Fill("MpipiChi2BcgpT", mass, pT);
+                        insideprocessing.Fill("MpipiChi2BcgSameSign", mass);
+                        insideprocessing.Fill("MpipiChi2BcgSameSigneta", mass, eta);
+                        insideprocessing.Fill("MpipiChi2BcgSameSignpT", mass, pT);
                     }
                     if(chi2Map["p_p"]<9){
                         vector_Track_negative[i]->getLorentzVector(negative_track, particleMass[Proton]);
@@ -549,9 +571,137 @@ int main(int argc, char** argv){
                         mass = (negative_track+negative_track2).M();
                         eta = (negative_track+negative_track2).Eta();
                         pT = (negative_track+negative_track2).Pt();
-                        insideprocessing.Fill("MppChi2Bcg", mass);
-                        insideprocessing.Fill("MppChi2Bcgeta", mass, eta);
-                        insideprocessing.Fill("MppChi2BcgpT", mass, pT);
+                        insideprocessing.Fill("MppChi2BcgSameSign", mass);
+                        insideprocessing.Fill("MppChi2BcgSameSigneta", mass, eta);
+                        insideprocessing.Fill("MppChi2BcgSameSignpT", mass, pT);
+                    }
+                }
+            }
+
+            //########## BACKGROUND EXTRACTION (TRACK ROTATION) ###############
+
+            //loop through identified particles (track rotation)
+            for(long unsigned int i = 0; i<vector_Track_positive.size(); i++){
+                for(long unsigned int j = 0; j<vector_Track_negative.size(); j++){
+                    isdEdxOk = (vector_Track_positive[i]->getNhitsDEdx()>=15)&&(vector_Track_negative[j]->getNhitsDEdx()>=15);
+                    isTOFOk = (vector_Track_positive[i]->getTofPathLength()>0)&&(vector_Track_positive[i]->getTofTime()>0)&&(vector_Track_negative[j]->getTofPathLength()>0)&&(vector_Track_negative[j]->getTofTime()>0);
+                    if(isdEdxOk&&isTOFOk){
+                        insideprocessing.Fill("pairInfoBackgroundTrackRotation", "OK", 1.0);
+                    } else if(isdEdxOk&&!isTOFOk){
+                        insideprocessing.Fill("pairInfoBackgroundTrackRotation", "TOF wrong", 1.0);
+                        continue;
+                    } else if(!isdEdxOk&&isTOFOk){
+                        insideprocessing.Fill("pairInfoBackgroundTrackRotation", "dEdx wrong", 1.0);
+                        continue;
+                    } else if(!isdEdxOk&&!isTOFOk){
+                        insideprocessing.Fill("pairInfoBackgroundTrackRotation", "Both wrong", 1.0);
+                        continue;
+                    }
+
+                    //chi2
+                    for(size_t pos = 0; pos<nParticlesExtended; pos++){
+                        for(size_t neg = 0; neg<nParticlesExtended; neg++){
+                            tempPairName = particleNicks[pos]+"_"+particleNicks[neg];
+                            chi2Map[tempPairName] = getChi2(vector_Track_positive[i], vector_Track_negative[j], pos, neg, sigmaMap[tempPairName]);
+                        }
+                    }
+
+                    //track rotation (rotating only the negative one)
+
+                    //mass tests on different pairs
+                    if(chi2Map["K_pi"]<9){
+                        vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Kaon]);
+                        vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
+                        //track rotation (rotating only the negative one)
+                        negative_track.RotateZ(TMath::Pi());
+                        //the rest as usual
+                        mass = (positive_track+negative_track).M();
+                        eta = (positive_track+negative_track).Eta();
+                        pT = (positive_track+negative_track).Pt();
+                        insideprocessing.Fill("MKpiChi2BcgTrackRotation", mass);
+                        insideprocessing.Fill("MKpiChi2BcgTrackRotationClose", mass);
+                        insideprocessing.Fill("MKpiChi2BcgTrackRotationeta", mass, eta);
+                        insideprocessing.Fill("MKpiChi2BcgTrackRotationpT", mass, pT);
+                    }
+                    if(chi2Map["pi_K"]<9){
+                        vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
+                        vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Kaon]);
+                        //track rotation (rotating only the negative one)
+                        negative_track.RotateZ(TMath::Pi());
+                        //the rest as usual
+                        mass = (positive_track+negative_track).M();
+                        eta = (positive_track+negative_track).Eta();
+                        pT = (positive_track+negative_track).Pt();
+                        insideprocessing.Fill("MpiKChi2BcgTrackRotation", mass);
+                        insideprocessing.Fill("MpiKChi2BcgTrackRotationClose", mass);
+                        insideprocessing.Fill("MpiKChi2BcgTrackRotationeta", mass, eta);
+                        insideprocessing.Fill("MpiKChi2BcgTrackRotationpT", mass, pT);
+                    }
+                    if(chi2Map["p_pi"]<9){
+                        vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Proton]);
+                        vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
+                        //track rotation (rotating only the negative one)
+                        negative_track.RotateZ(TMath::Pi());
+                        //the rest as usual
+                        mass = (positive_track+negative_track).M();
+                        eta = (positive_track+negative_track).Eta();
+                        pT = (positive_track+negative_track).Pt();
+                        insideprocessing.Fill("MppiChi2BcgTrackRotation", mass);
+                        insideprocessing.Fill("MppiChi2BcgTrackRotationeta", mass, eta);
+                        insideprocessing.Fill("MppiChi2BcgTrackRotationpT", mass, pT);
+                    }
+                    if(chi2Map["pi_p"]<9){
+                        vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
+                        vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Proton]);
+                        //track rotation (rotating only the negative one)
+                        negative_track.RotateZ(TMath::Pi());
+                        //the rest as usual
+                        mass = (positive_track+negative_track).M();
+                        eta = (positive_track+negative_track).Eta();
+                        pT = (positive_track+negative_track).Pt();
+                        insideprocessing.Fill("MpipChi2BcgTrackRotation", mass);
+                        insideprocessing.Fill("MpipChi2BcgTrackRotationeta", mass, eta);
+                        insideprocessing.Fill("MpipChi2BcgTrackRotationpT", mass, pT);
+                    }
+                    if(chi2Map["K_K"]<9){
+                        vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Kaon]);
+                        vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Kaon]);
+                        //track rotation (rotating only the negative one)
+                        negative_track.RotateZ(TMath::Pi());
+                        //the rest as usual
+                        mass = (positive_track+negative_track).M();
+                        eta = (positive_track+negative_track).Eta();
+                        pT = (positive_track+negative_track).Pt();
+                        insideprocessing.Fill("MKKChi2BcgTrackRotation", mass);
+                        insideprocessing.Fill("MKKChi2BcgTrackRotationClose", mass);
+                        insideprocessing.Fill("MKKChi2BcgTrackRotationeta", mass, eta);
+                        insideprocessing.Fill("MKKChi2BcgTrackRotationpT", mass, pT);
+                    }
+                    if(chi2Map["pi_pi"]<9){
+                        vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
+                        vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
+                        //track rotation (rotating only the negative one)
+                        negative_track.RotateZ(TMath::Pi());
+                        //the rest as usual
+                        mass = (positive_track+negative_track).M();
+                        eta = (positive_track+negative_track).Eta();
+                        pT = (positive_track+negative_track).Pt();
+                        insideprocessing.Fill("MpipiChi2BcgTrackRotation", mass);
+                        insideprocessing.Fill("MpipiChi2BcgTrackRotationeta", mass, eta);
+                        insideprocessing.Fill("MpipiChi2BcgTrackRotationpT", mass, pT);
+                    }
+                    if(chi2Map["p_p"]<9){
+                        vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Proton]);
+                        vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Proton]);
+                        //track rotation (rotating only the negative one)
+                        negative_track.RotateZ(TMath::Pi());
+                        //the rest as usual
+                        mass = (positive_track+negative_track).M();
+                        eta = (positive_track+negative_track).Eta();
+                        pT = (positive_track+negative_track).Pt();
+                        insideprocessing.Fill("MppChi2BcgTrackRotation", mass);
+                        insideprocessing.Fill("MppChi2BcgTrackRotationeta", mass, eta);
+                        insideprocessing.Fill("MppChi2BcgTrackRotationpT", mass, pT);
                     }
                 }
             }

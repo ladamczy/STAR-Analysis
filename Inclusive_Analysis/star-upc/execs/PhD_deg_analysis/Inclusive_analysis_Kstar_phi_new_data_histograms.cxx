@@ -33,11 +33,33 @@ int main(int argc, char* argv[]){
     TApplication theApp("App", &argc, argv);
     argv = theApp.Argv();
 
+    //input file
     TFile* input = TFile::Open(static_cast<const char*>(argv[1]));
+    //type of background:
+    // 1 - same-sign
+    // 2 - track rotation
+    // 3 - mixed-event (not yet implemented)
+    std::string BcgType;
+    switch(atoi(argv[2])){
+    case 1:
+        BcgType = "SameSign";
+        break;
+    case 2:
+        BcgType = "TrackRotation";
+        break;
+    case 3:
+        // BcgType = "MixedEvent";
+        // break;
+    default:
+        printf("Background not chosen\n");
+        return 1;
+        break;
+    }
 
     //getting histograms out
     TH1D* pairInfoSignal = (TH1D*)input->Get("pairInfoSignal");
-    TH1D* pairInfoBackground = (TH1D*)input->Get("pairInfoBackground");
+    TH1D* pairInfoBackgroundSameSign = (TH1D*)input->Get("pairInfoBackgroundSameSign");
+    TH1D* pairInfoBackgroundTrackRotation = (TH1D*)input->Get("pairInfoBackgroundTrackRotation");
     TH1D* MKpiChi2 = (TH1D*)input->Get("MKpiChi2");
     TH1D* MpiKChi2 = (TH1D*)input->Get("MpiKChi2");
     TH1D* MppiChi2 = (TH1D*)input->Get("MppiChi2");
@@ -58,13 +80,13 @@ int main(int argc, char* argv[]){
     MppChi2
     */
     //getting background histograms out
-    TH1D* MKpiChi2bcg = (TH1D*)input->Get("MKpiChi2Bcg");
-    TH1D* MpiKChi2bcg = (TH1D*)input->Get("MpiKChi2Bcg");
-    TH1D* MppiChi2bcg = (TH1D*)input->Get("MppiChi2Bcg");
-    TH1D* MpipChi2bcg = (TH1D*)input->Get("MpipChi2Bcg");
-    TH1D* MKKChi2bcg = (TH1D*)input->Get("MKKChi2Bcg");
-    TH1D* MpipiChi2bcg = (TH1D*)input->Get("MpipiChi2Bcg");
-    TH1D* MppChi2bcg = (TH1D*)input->Get("MppChi2Bcg");
+    TH1D* MKpiChi2bcg = (TH1D*)input->Get(("MKpiChi2Bcg"+BcgType).c_str());
+    TH1D* MpiKChi2bcg = (TH1D*)input->Get(("MpiKChi2Bcg"+BcgType).c_str());
+    TH1D* MppiChi2bcg = (TH1D*)input->Get(("MppiChi2Bcg"+BcgType).c_str());
+    TH1D* MpipChi2bcg = (TH1D*)input->Get(("MpipChi2Bcg"+BcgType).c_str());
+    TH1D* MKKChi2bcg = (TH1D*)input->Get(("MKKChi2Bcg"+BcgType).c_str());
+    TH1D* MpipiChi2bcg = (TH1D*)input->Get(("MpipiChi2Bcg"+BcgType).c_str());
+    TH1D* MppChi2bcg = (TH1D*)input->Get(("MppChi2Bcg"+BcgType).c_str());
     //getting diffractive background and signal
     std::vector<std::string> pairTab = { "Kpi", "piK", "KK" };
     std::vector<double> bcgRegionStart = { 1.05, 1.05, 1.15 };
@@ -98,7 +120,7 @@ int main(int argc, char* argv[]){
     std::vector<TH1D*> width_vector, width_vector_nobcgfit, width_vector_nobcgremoval;
     std::vector<TH1D*> Chi2withbcg_vector, Chi2withoutbcg_vector, Chi2withoutremovingbcg_vector;
     std::string tempSignalName = "M$Chi2";
-    std::string tempBackgroundName = "M$Chi2Bcg";
+    std::string tempBackgroundName = "M$Chi2Bcg"+BcgType;
     std::string tempHistName;
     for(auto&& pair:pairTab){
         for(auto&& category:allCategories){
@@ -458,20 +480,35 @@ noBackground:
     gPad->Update();
     resultCanvas->SaveAs((folderWithDiagonal+"pairInfoSignal.pdf").c_str());
     resultCanvas->Clear();
-    //background
-    pairInfoBackground->SetMinimum(0);
-    pairInfoBackground->SetLineColor(kBlue+2);
-    pairInfoBackground->SetMarkerSize(2);
+    //background (same-sign)
+    pairInfoBackgroundSameSign->SetMinimum(0);
+    pairInfoBackgroundSameSign->SetLineColor(kBlue+2);
+    pairInfoBackgroundSameSign->SetMarkerSize(2);
     //TODO: add fitting
-    // pairInfoBackground->Draw("E");
-    pairInfoBackground->Draw("hist");
-    pairInfoBackground->Draw("same text0");
-    pairInfoBackground->SetLineWidth(2);
-    pairInfoBackground->GetXaxis()->SetLabelSize(0.06);
-    pairInfoBackground->GetXaxis()->SetTitleSize(0.06);
+    // pairInfoBackgroundSameSign->Draw("E");
+    pairInfoBackgroundSameSign->Draw("hist");
+    pairInfoBackgroundSameSign->Draw("same text0");
+    pairInfoBackgroundSameSign->SetLineWidth(2);
+    pairInfoBackgroundSameSign->GetXaxis()->SetLabelSize(0.06);
+    pairInfoBackgroundSameSign->GetXaxis()->SetTitleSize(0.06);
     resultCanvas->SetTopMargin(0.05);
     gPad->Update();
-    resultCanvas->SaveAs((folderWithDiagonal+"pairInfoBackground.pdf").c_str());
+    resultCanvas->SaveAs((folderWithDiagonal+"pairInfoBackgroundSameSign.pdf").c_str());
+    resultCanvas->Clear();
+    //background (track rotation)
+    pairInfoBackgroundTrackRotation->SetMinimum(0);
+    pairInfoBackgroundTrackRotation->SetLineColor(kBlue+2);
+    pairInfoBackgroundTrackRotation->SetMarkerSize(2);
+    //TODO: add fitting
+    // pairInfoBackgroundTrackRotation->Draw("E");
+    pairInfoBackgroundTrackRotation->Draw("hist");
+    pairInfoBackgroundTrackRotation->Draw("same text0");
+    pairInfoBackgroundTrackRotation->SetLineWidth(2);
+    pairInfoBackgroundTrackRotation->GetXaxis()->SetLabelSize(0.06);
+    pairInfoBackgroundTrackRotation->GetXaxis()->SetTitleSize(0.06);
+    resultCanvas->SetTopMargin(0.05);
+    gPad->Update();
+    resultCanvas->SaveAs((folderWithDiagonal+"pairInfoBackgroundTrackRotation.pdf").c_str());
     delete resultCanvas;
 
     printf("Second, the rest\n");
