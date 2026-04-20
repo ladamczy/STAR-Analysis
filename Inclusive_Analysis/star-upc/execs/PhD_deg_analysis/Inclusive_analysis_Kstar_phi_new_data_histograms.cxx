@@ -536,6 +536,33 @@ noBackground:
     draw_and_save(MpipiChi2bcg, folderWithDiagonal, "Mpipibcg", "#pi^{+}#pi^{-} background");
     draw_and_save(MppChi2bcg, folderWithDiagonal, "Mppbcg", "p^{+}p^{-} background");
 
+    //drawing results - chi2, number of detected decays and width of resonances
+    for(size_t i = 0; i<pairTab.size(); i++){
+        for(size_t j = 0; j<allCategories.size(); j++){
+            //Chi2
+            std::vector<TH1D*> AllvectorChi2;
+            AllvectorChi2.push_back(Chi2withbcg_vector[i*allCategories.size()+j]);
+            AllvectorChi2.push_back(Chi2withoutbcg_vector[i*allCategories.size()+j]);
+            AllvectorChi2.push_back(Chi2withoutremovingbcg_vector[i*allCategories.size()+j]);
+            draw_bulk(AllvectorChi2, folderWithDiagonal, "M"+pairTab[i]+allCategories[j]+"Chi2", pairTab[i]+" "+allCategories[j]+" #chi^{2}/ndf;"+allCategories[j]+";#chi^{2}/ndf", "hist");
+            //results & width
+            std::vector<TH1D*> AllvectorResults, AllvectorWidths;
+            if(!skippedFitting){
+                AllvectorResults.push_back(result_vector[i*allCategories.size()+j]);
+                AllvectorWidths.push_back(width_vector[i*allCategories.size()+j]);
+            }
+            if(!skippedFittingNoBackground){
+                AllvectorResults.push_back(result_vector_nobcgfit[i*allCategories.size()+j]);
+                AllvectorWidths.push_back(width_vector_nobcgfit[i*allCategories.size()+j]);
+            }
+            if(!skippedFittingNotRemovedBackground){
+                AllvectorResults.push_back(result_vector_nobcgremoval[i*allCategories.size()+j]);
+                AllvectorWidths.push_back(width_vector_nobcgremoval[i*allCategories.size()+j]);
+            }
+            draw_bulk(AllvectorResults, folderWithDiagonal, "M"+pairTab[i]+allCategories[j]+"Results", pairTab[i]+" "+allCategories[j]+" result;"+allCategories[j]+";entries", "e1");
+            draw_bulk(AllvectorWidths, folderWithDiagonal, "M"+pairTab[i]+allCategories[j]+"Widths", pairTab[i]+" "+allCategories[j]+" width;"+allCategories[j]+";#Gamma (GeV)", "e1");
+        }
+    }
 
     //the end
     theApp.Run();
