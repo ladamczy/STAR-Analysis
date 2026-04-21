@@ -48,8 +48,8 @@ int main(int argc, char* argv[]){
         BcgType = "TrackRotation";
         break;
     case 3:
-        // BcgType = "MixedEvent";
-        // break;
+        BcgType = "MixedEvent";
+        break;
     default:
         printf("Background not chosen\n");
         return 1;
