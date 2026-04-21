@@ -41,6 +41,10 @@ int main(int argc, char* argv[]){
     printf("3 - random track rotation\n");
     printf("4 - mixed-event\n");
     std::string BcgType;
+    if(argc<4){
+        printf("Background not chosen\n");
+        return 1;
+    }
     switch(atoi(argv[3])){
     case 1:
         BcgType = "SameSign";
