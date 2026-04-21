@@ -35,12 +35,12 @@ int main(int argc, char* argv[]){
 
     //input file
     TFile* input = TFile::Open(static_cast<const char*>(argv[1]));
-    //type of background:
-    // 1 - same-sign
-    // 2 - track rotation
-    // 3 - mixed-event (not yet implemented)
+    printf("Type of background (3rd argument):\n");
+    printf("1 - same-sign\n");
+    printf("2 - track rotation\n");
+    printf("3 - mixed-event\n");
     std::string BcgType;
-    switch(atoi(argv[2])){
+    switch(atoi(argv[3])){
     case 1:
         BcgType = "SameSign";
         break;
@@ -55,6 +55,7 @@ int main(int argc, char* argv[]){
         return 1;
         break;
     }
+    printf("Background option chosen: %s\n", BcgType.c_str());
 
     //getting histograms out
     TH1D* pairInfoSignal = (TH1D*)input->Get("pairInfoSignal");

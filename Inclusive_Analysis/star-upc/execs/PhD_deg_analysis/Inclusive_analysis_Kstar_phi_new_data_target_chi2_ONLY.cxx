@@ -135,9 +135,9 @@ int main(int argc, char** argv){
     outsideprocessing.AddHistogram(TH1D("MpipiChi2BcgMixedEvent", ";m_{#pi#pi} [GeV];Number of pairs", 600, 0.2, 1.4));
     outsideprocessing.AddHistogram(TH1D("MppChi2BcgMixedEvent", ";m_{pp} [GeV];Number of pairs", 500, 1.5, 3.5));
     //closer histograms (background, mixed events)
-    outsideprocessing.AddHistogram(TH1D("MKKChi2BcgTrackRotationClose", ";m_{KK} [GeV];Number of pairs", 50, 0.99, 1.05));
-    outsideprocessing.AddHistogram(TH1D("MKpiChi2BcgTrackRotationClose", ";m_{K#pi} [GeV];Number of pairs", 50, 0.7, 1.1));
-    outsideprocessing.AddHistogram(TH1D("MpiKChi2BcgTrackRotationClose", ";m_{#piK} [GeV];Number of pairs", 50, 0.7, 1.1));
+    outsideprocessing.AddHistogram(TH1D("MKKChi2BcgMixedEventClose", ";m_{KK} [GeV];Number of pairs", 50, 0.99, 1.05));
+    outsideprocessing.AddHistogram(TH1D("MKpiChi2BcgMixedEventClose", ";m_{K#pi} [GeV];Number of pairs", 50, 0.7, 1.1));
+    outsideprocessing.AddHistogram(TH1D("MpiKChi2BcgMixedEventClose", ";m_{#piK} [GeV];Number of pairs", 50, 0.7, 1.1));
     //adding mass histograms grouped by category (background, mixed events)
     getCategoryHistograms(outsideprocessing, pairTab, "BcgMixedEvent");
 
@@ -194,7 +194,7 @@ int main(int argc, char** argv){
         std::deque<std::vector<StUPCTrack*>> queue_of_previous_vector_Tracks_negative;
 
         //parameters
-        const int previous_events_in_queue = 10;
+        const int previous_events_in_queue = 1000;
 
         //actual loop
         while(myReader.Next()){
@@ -763,10 +763,10 @@ int main(int argc, char** argv){
                             mass = (positive_track+negative_track).M();
                             eta = (positive_track+negative_track).Eta();
                             pT = (positive_track+negative_track).Pt();
-                            insideprocessing.Fill("MKpiChi2BcgTrackRotation", mass);
-                            insideprocessing.Fill("MKpiChi2BcgTrackRotationClose", mass);
-                            insideprocessing.Fill("MKpiChi2BcgTrackRotationeta", mass, eta);
-                            insideprocessing.Fill("MKpiChi2BcgTrackRotationpT", mass, pT);
+                            insideprocessing.Fill("MKpiChi2BcgMixedEvent", mass);
+                            insideprocessing.Fill("MKpiChi2BcgMixedEventClose", mass);
+                            insideprocessing.Fill("MKpiChi2BcgMixedEventeta", mass, eta);
+                            insideprocessing.Fill("MKpiChi2BcgMixedEventpT", mass, pT);
                         }
                         if(chi2Map["pi_K"]<9){
                             vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
@@ -777,10 +777,10 @@ int main(int argc, char** argv){
                             mass = (positive_track+negative_track).M();
                             eta = (positive_track+negative_track).Eta();
                             pT = (positive_track+negative_track).Pt();
-                            insideprocessing.Fill("MpiKChi2BcgTrackRotation", mass);
-                            insideprocessing.Fill("MpiKChi2BcgTrackRotationClose", mass);
-                            insideprocessing.Fill("MpiKChi2BcgTrackRotationeta", mass, eta);
-                            insideprocessing.Fill("MpiKChi2BcgTrackRotationpT", mass, pT);
+                            insideprocessing.Fill("MpiKChi2BcgMixedEvent", mass);
+                            insideprocessing.Fill("MpiKChi2BcgMixedEventClose", mass);
+                            insideprocessing.Fill("MpiKChi2BcgMixedEventeta", mass, eta);
+                            insideprocessing.Fill("MpiKChi2BcgMixedEventpT", mass, pT);
                         }
                         if(chi2Map["p_pi"]<9){
                             vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Proton]);
@@ -791,9 +791,9 @@ int main(int argc, char** argv){
                             mass = (positive_track+negative_track).M();
                             eta = (positive_track+negative_track).Eta();
                             pT = (positive_track+negative_track).Pt();
-                            insideprocessing.Fill("MppiChi2BcgTrackRotation", mass);
-                            insideprocessing.Fill("MppiChi2BcgTrackRotationeta", mass, eta);
-                            insideprocessing.Fill("MppiChi2BcgTrackRotationpT", mass, pT);
+                            insideprocessing.Fill("MppiChi2BcgMixedEvent", mass);
+                            insideprocessing.Fill("MppiChi2BcgMixedEventeta", mass, eta);
+                            insideprocessing.Fill("MppiChi2BcgMixedEventpT", mass, pT);
                         }
                         if(chi2Map["pi_p"]<9){
                             vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
@@ -804,9 +804,9 @@ int main(int argc, char** argv){
                             mass = (positive_track+negative_track).M();
                             eta = (positive_track+negative_track).Eta();
                             pT = (positive_track+negative_track).Pt();
-                            insideprocessing.Fill("MpipChi2BcgTrackRotation", mass);
-                            insideprocessing.Fill("MpipChi2BcgTrackRotationeta", mass, eta);
-                            insideprocessing.Fill("MpipChi2BcgTrackRotationpT", mass, pT);
+                            insideprocessing.Fill("MpipChi2BcgMixedEvent", mass);
+                            insideprocessing.Fill("MpipChi2BcgMixedEventeta", mass, eta);
+                            insideprocessing.Fill("MpipChi2BcgMixedEventpT", mass, pT);
                         }
                         if(chi2Map["K_K"]<9){
                             vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Kaon]);
@@ -817,10 +817,10 @@ int main(int argc, char** argv){
                             mass = (positive_track+negative_track).M();
                             eta = (positive_track+negative_track).Eta();
                             pT = (positive_track+negative_track).Pt();
-                            insideprocessing.Fill("MKKChi2BcgTrackRotation", mass);
-                            insideprocessing.Fill("MKKChi2BcgTrackRotationClose", mass);
-                            insideprocessing.Fill("MKKChi2BcgTrackRotationeta", mass, eta);
-                            insideprocessing.Fill("MKKChi2BcgTrackRotationpT", mass, pT);
+                            insideprocessing.Fill("MKKChi2BcgMixedEvent", mass);
+                            insideprocessing.Fill("MKKChi2BcgMixedEventClose", mass);
+                            insideprocessing.Fill("MKKChi2BcgMixedEventeta", mass, eta);
+                            insideprocessing.Fill("MKKChi2BcgMixedEventpT", mass, pT);
                         }
                         if(chi2Map["pi_pi"]<9){
                             vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
@@ -831,9 +831,9 @@ int main(int argc, char** argv){
                             mass = (positive_track+negative_track).M();
                             eta = (positive_track+negative_track).Eta();
                             pT = (positive_track+negative_track).Pt();
-                            insideprocessing.Fill("MpipiChi2BcgTrackRotation", mass);
-                            insideprocessing.Fill("MpipiChi2BcgTrackRotationeta", mass, eta);
-                            insideprocessing.Fill("MpipiChi2BcgTrackRotationpT", mass, pT);
+                            insideprocessing.Fill("MpipiChi2BcgMixedEvent", mass);
+                            insideprocessing.Fill("MpipiChi2BcgMixedEventeta", mass, eta);
+                            insideprocessing.Fill("MpipiChi2BcgMixedEventpT", mass, pT);
                         }
                         if(chi2Map["p_p"]<9){
                             vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Proton]);
@@ -844,9 +844,9 @@ int main(int argc, char** argv){
                             mass = (positive_track+negative_track).M();
                             eta = (positive_track+negative_track).Eta();
                             pT = (positive_track+negative_track).Pt();
-                            insideprocessing.Fill("MppChi2BcgTrackRotation", mass);
-                            insideprocessing.Fill("MppChi2BcgTrackRotationeta", mass, eta);
-                            insideprocessing.Fill("MppChi2BcgTrackRotationpT", mass, pT);
+                            insideprocessing.Fill("MppChi2BcgMixedEvent", mass);
+                            insideprocessing.Fill("MppChi2BcgMixedEventeta", mass, eta);
+                            insideprocessing.Fill("MppChi2BcgMixedEventpT", mass, pT);
                         }
                     }
                 }
@@ -881,10 +881,10 @@ int main(int argc, char** argv){
                             mass = (positive_track+negative_track).M();
                             eta = (positive_track+negative_track).Eta();
                             pT = (positive_track+negative_track).Pt();
-                            insideprocessing.Fill("MKpiChi2BcgTrackRotation", mass);
-                            insideprocessing.Fill("MKpiChi2BcgTrackRotationClose", mass);
-                            insideprocessing.Fill("MKpiChi2BcgTrackRotationeta", mass, eta);
-                            insideprocessing.Fill("MKpiChi2BcgTrackRotationpT", mass, pT);
+                            insideprocessing.Fill("MKpiChi2BcgMixedEvent", mass);
+                            insideprocessing.Fill("MKpiChi2BcgMixedEventClose", mass);
+                            insideprocessing.Fill("MKpiChi2BcgMixedEventeta", mass, eta);
+                            insideprocessing.Fill("MKpiChi2BcgMixedEventpT", mass, pT);
                         }
                         if(chi2Map["pi_K"]<9){
                             queue_of_previous_vector_Tracks_positive[past_event][i]->getLorentzVector(positive_track, particleMass[Pion]);
@@ -895,10 +895,10 @@ int main(int argc, char** argv){
                             mass = (positive_track+negative_track).M();
                             eta = (positive_track+negative_track).Eta();
                             pT = (positive_track+negative_track).Pt();
-                            insideprocessing.Fill("MpiKChi2BcgTrackRotation", mass);
-                            insideprocessing.Fill("MpiKChi2BcgTrackRotationClose", mass);
-                            insideprocessing.Fill("MpiKChi2BcgTrackRotationeta", mass, eta);
-                            insideprocessing.Fill("MpiKChi2BcgTrackRotationpT", mass, pT);
+                            insideprocessing.Fill("MpiKChi2BcgMixedEvent", mass);
+                            insideprocessing.Fill("MpiKChi2BcgMixedEventClose", mass);
+                            insideprocessing.Fill("MpiKChi2BcgMixedEventeta", mass, eta);
+                            insideprocessing.Fill("MpiKChi2BcgMixedEventpT", mass, pT);
                         }
                         if(chi2Map["p_pi"]<9){
                             queue_of_previous_vector_Tracks_positive[past_event][i]->getLorentzVector(positive_track, particleMass[Proton]);
@@ -909,9 +909,9 @@ int main(int argc, char** argv){
                             mass = (positive_track+negative_track).M();
                             eta = (positive_track+negative_track).Eta();
                             pT = (positive_track+negative_track).Pt();
-                            insideprocessing.Fill("MppiChi2BcgTrackRotation", mass);
-                            insideprocessing.Fill("MppiChi2BcgTrackRotationeta", mass, eta);
-                            insideprocessing.Fill("MppiChi2BcgTrackRotationpT", mass, pT);
+                            insideprocessing.Fill("MppiChi2BcgMixedEvent", mass);
+                            insideprocessing.Fill("MppiChi2BcgMixedEventeta", mass, eta);
+                            insideprocessing.Fill("MppiChi2BcgMixedEventpT", mass, pT);
                         }
                         if(chi2Map["pi_p"]<9){
                             queue_of_previous_vector_Tracks_positive[past_event][i]->getLorentzVector(positive_track, particleMass[Pion]);
@@ -922,9 +922,9 @@ int main(int argc, char** argv){
                             mass = (positive_track+negative_track).M();
                             eta = (positive_track+negative_track).Eta();
                             pT = (positive_track+negative_track).Pt();
-                            insideprocessing.Fill("MpipChi2BcgTrackRotation", mass);
-                            insideprocessing.Fill("MpipChi2BcgTrackRotationeta", mass, eta);
-                            insideprocessing.Fill("MpipChi2BcgTrackRotationpT", mass, pT);
+                            insideprocessing.Fill("MpipChi2BcgMixedEvent", mass);
+                            insideprocessing.Fill("MpipChi2BcgMixedEventeta", mass, eta);
+                            insideprocessing.Fill("MpipChi2BcgMixedEventpT", mass, pT);
                         }
                         if(chi2Map["K_K"]<9){
                             queue_of_previous_vector_Tracks_positive[past_event][i]->getLorentzVector(positive_track, particleMass[Kaon]);
@@ -935,10 +935,10 @@ int main(int argc, char** argv){
                             mass = (positive_track+negative_track).M();
                             eta = (positive_track+negative_track).Eta();
                             pT = (positive_track+negative_track).Pt();
-                            insideprocessing.Fill("MKKChi2BcgTrackRotation", mass);
-                            insideprocessing.Fill("MKKChi2BcgTrackRotationClose", mass);
-                            insideprocessing.Fill("MKKChi2BcgTrackRotationeta", mass, eta);
-                            insideprocessing.Fill("MKKChi2BcgTrackRotationpT", mass, pT);
+                            insideprocessing.Fill("MKKChi2BcgMixedEvent", mass);
+                            insideprocessing.Fill("MKKChi2BcgMixedEventClose", mass);
+                            insideprocessing.Fill("MKKChi2BcgMixedEventeta", mass, eta);
+                            insideprocessing.Fill("MKKChi2BcgMixedEventpT", mass, pT);
                         }
                         if(chi2Map["pi_pi"]<9){
                             queue_of_previous_vector_Tracks_positive[past_event][i]->getLorentzVector(positive_track, particleMass[Pion]);
@@ -949,9 +949,9 @@ int main(int argc, char** argv){
                             mass = (positive_track+negative_track).M();
                             eta = (positive_track+negative_track).Eta();
                             pT = (positive_track+negative_track).Pt();
-                            insideprocessing.Fill("MpipiChi2BcgTrackRotation", mass);
-                            insideprocessing.Fill("MpipiChi2BcgTrackRotationeta", mass, eta);
-                            insideprocessing.Fill("MpipiChi2BcgTrackRotationpT", mass, pT);
+                            insideprocessing.Fill("MpipiChi2BcgMixedEvent", mass);
+                            insideprocessing.Fill("MpipiChi2BcgMixedEventeta", mass, eta);
+                            insideprocessing.Fill("MpipiChi2BcgMixedEventpT", mass, pT);
                         }
                         if(chi2Map["p_p"]<9){
                             queue_of_previous_vector_Tracks_positive[past_event][i]->getLorentzVector(positive_track, particleMass[Proton]);
@@ -962,9 +962,9 @@ int main(int argc, char** argv){
                             mass = (positive_track+negative_track).M();
                             eta = (positive_track+negative_track).Eta();
                             pT = (positive_track+negative_track).Pt();
-                            insideprocessing.Fill("MppChi2BcgTrackRotation", mass);
-                            insideprocessing.Fill("MppChi2BcgTrackRotationeta", mass, eta);
-                            insideprocessing.Fill("MppChi2BcgTrackRotationpT", mass, pT);
+                            insideprocessing.Fill("MppChi2BcgMixedEvent", mass);
+                            insideprocessing.Fill("MppChi2BcgMixedEventeta", mass, eta);
+                            insideprocessing.Fill("MppChi2BcgMixedEventpT", mass, pT);
                         }
                     }
                 }
