@@ -41,7 +41,7 @@ int main(int argc, char* argv[]){
     printf("3 - random track rotation\n");
     printf("4 - mixed-event\n");
     std::string BcgType;
-    if(argc<4){
+    if(argc<3){
         printf("Background not chosen\n");
         return 1;
     }
