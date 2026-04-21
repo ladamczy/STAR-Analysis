@@ -38,7 +38,8 @@ int main(int argc, char* argv[]){
     printf("Type of background (3rd argument):\n");
     printf("1 - same-sign\n");
     printf("2 - track rotation\n");
-    printf("3 - mixed-event\n");
+    printf("3 - random track rotation\n");
+    printf("4 - mixed-event\n");
     std::string BcgType;
     switch(atoi(argv[3])){
     case 1:
@@ -48,6 +49,9 @@ int main(int argc, char* argv[]){
         BcgType = "TrackRotation";
         break;
     case 3:
+        BcgType = "RandomTrackRotation";
+        break;
+    case 4:
         BcgType = "MixedEvent";
         break;
     default:
@@ -55,7 +59,7 @@ int main(int argc, char* argv[]){
         return 1;
         break;
     }
-    printf("Background option chosen: %s\n", BcgType.c_str());
+    printf("Background option chosen: %d (%s)\n", atoi(argv[3]), BcgType.c_str());
 
     //getting histograms out
     TH1D* pairInfoSignal = (TH1D*)input->Get("pairInfoSignal");

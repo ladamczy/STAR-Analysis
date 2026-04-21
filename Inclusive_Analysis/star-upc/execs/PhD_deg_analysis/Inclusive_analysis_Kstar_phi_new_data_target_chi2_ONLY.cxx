@@ -7,6 +7,7 @@
 #include <ROOT/TThreadedObject.hxx>
 #include <TTreeReader.h>
 #include <ROOT/TTreeProcessorMT.hxx>
+#include <TRandom3.h>
 
 // picoDst headers
 #include "StRPEvent.h"
@@ -64,6 +65,7 @@ int main(int argc, char** argv){
     outsideprocessing.AddHistogram(TH1D("pairInfoSignal", "", 1, 0, 1));
     outsideprocessing.AddHistogram(TH1D("pairInfoBackgroundSameSign", "", 1, 0, 1));
     outsideprocessing.AddHistogram(TH1D("pairInfoBackgroundTrackRotation", "", 1, 0, 1));
+    outsideprocessing.AddHistogram(TH1D("pairInfoBackgroundRandomTrackRotation", "", 1, 0, 1));
 
     //adding chi2 histograms
     //file with sigma values:
@@ -125,6 +127,21 @@ int main(int argc, char** argv){
     outsideprocessing.AddHistogram(TH1D("MpiKChi2BcgTrackRotationClose", ";m_{#piK} [GeV];Number of pairs", 50, 0.7, 1.1));
     //adding mass histograms grouped by category (background, track rotation)
     getCategoryHistograms(outsideprocessing, pairTab, "BcgTrackRotation");
+
+    //mass histograms (background, random track rotation)
+    outsideprocessing.AddHistogram(TH1D("MKpiChi2BcgRandomTrackRotation", ";m_{K#pi} [GeV];Number of pairs", 200, 0.5, 2.0));
+    outsideprocessing.AddHistogram(TH1D("MpiKChi2BcgRandomTrackRotation", ";m_{#piK} [GeV];Number of pairs", 200, 0.5, 2.0));
+    outsideprocessing.AddHistogram(TH1D("MppiChi2BcgRandomTrackRotation", ";m_{p#pi} [GeV];Number of pairs", 500, 1.0, 2.5));
+    outsideprocessing.AddHistogram(TH1D("MpipChi2BcgRandomTrackRotation", ";m_{#pip} [GeV];Number of pairs", 500, 1.0, 2.5));
+    outsideprocessing.AddHistogram(TH1D("MKKChi2BcgRandomTrackRotation", ";m_{KK} [GeV];Number of pairs", 500, 0.9, 2.4));
+    outsideprocessing.AddHistogram(TH1D("MpipiChi2BcgRandomTrackRotation", ";m_{#pi#pi} [GeV];Number of pairs", 600, 0.2, 1.4));
+    outsideprocessing.AddHistogram(TH1D("MppChi2BcgRandomTrackRotation", ";m_{pp} [GeV];Number of pairs", 500, 1.5, 3.5));
+    //closer histograms (background, random track rotation)
+    outsideprocessing.AddHistogram(TH1D("MKKChi2BcgRandomTrackRotationClose", ";m_{KK} [GeV];Number of pairs", 50, 0.99, 1.05));
+    outsideprocessing.AddHistogram(TH1D("MKpiChi2BcgRandomTrackRotationClose", ";m_{K#pi} [GeV];Number of pairs", 50, 0.7, 1.1));
+    outsideprocessing.AddHistogram(TH1D("MpiKChi2BcgRandomTrackRotationClose", ";m_{#piK} [GeV];Number of pairs", 50, 0.7, 1.1));
+    //adding mass histograms grouped by category (background, random track rotation)
+    getCategoryHistograms(outsideprocessing, pairTab, "BcgRandomTrackRotation");
 
     //mass histograms (background, mixed events)
     outsideprocessing.AddHistogram(TH1D("MKpiChi2BcgMixedEvent", ";m_{K#pi} [GeV];Number of pairs", 200, 0.5, 2.0));
@@ -190,6 +207,7 @@ int main(int argc, char** argv){
         map<string, double> chi2Map;
         bool isdEdxOk, isTOFOk;
         string tempPairName;
+        TRandom3 random_generator;
         std::deque<std::vector<StUPCTrack*>> queue_of_previous_vector_Tracks_positive;
         std::deque<std::vector<StUPCTrack*>> queue_of_previous_vector_Tracks_negative;
 
@@ -628,8 +646,6 @@ int main(int argc, char** argv){
                         }
                     }
 
-                    //track rotation (rotating only the negative one)
-
                     //mass tests on different pairs
                     if(chi2Map["K_pi"]<9){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Kaon]);
@@ -724,6 +740,132 @@ int main(int argc, char** argv){
                         insideprocessing.Fill("MppChi2BcgTrackRotation", mass);
                         insideprocessing.Fill("MppChi2BcgTrackRotationeta", mass, eta);
                         insideprocessing.Fill("MppChi2BcgTrackRotationpT", mass, pT);
+                    }
+                }
+            }
+
+            //########## BACKGROUND EXTRACTION (RANDOM TRACK ROTATION) ###############
+
+            //loop through identified particles (track rotation)
+            for(long unsigned int i = 0; i<vector_Track_positive.size(); i++){
+                for(long unsigned int j = 0; j<vector_Track_negative.size(); j++){
+                    isdEdxOk = (vector_Track_positive[i]->getNhitsDEdx()>=15)&&(vector_Track_negative[j]->getNhitsDEdx()>=15);
+                    isTOFOk = (vector_Track_positive[i]->getTofPathLength()>0)&&(vector_Track_positive[i]->getTofTime()>0)&&(vector_Track_negative[j]->getTofPathLength()>0)&&(vector_Track_negative[j]->getTofTime()>0);
+                    if(isdEdxOk&&isTOFOk){
+                        insideprocessing.Fill("pairInfoBackgroundRandomTrackRotation", "OK", 1.0);
+                    } else if(isdEdxOk&&!isTOFOk){
+                        insideprocessing.Fill("pairInfoBackgroundRandomTrackRotation", "TOF wrong", 1.0);
+                        continue;
+                    } else if(!isdEdxOk&&isTOFOk){
+                        insideprocessing.Fill("pairInfoBackgroundRandomTrackRotation", "dEdx wrong", 1.0);
+                        continue;
+                    } else if(!isdEdxOk&&!isTOFOk){
+                        insideprocessing.Fill("pairInfoBackgroundRandomTrackRotation", "Both wrong", 1.0);
+                        continue;
+                    }
+
+                    //chi2
+                    for(size_t pos = 0; pos<nParticlesExtended; pos++){
+                        for(size_t neg = 0; neg<nParticlesExtended; neg++){
+                            tempPairName = particleNicks[pos]+"_"+particleNicks[neg];
+                            chi2Map[tempPairName] = getChi2(vector_Track_positive[i], vector_Track_negative[j], pos, neg, sigmaMap[tempPairName]);
+                        }
+                    }
+
+                    //mass tests on different pairs
+                    if(chi2Map["K_pi"]<9){
+                        vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Kaon]);
+                        vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
+                        //track rotation (rotating only the negative one)
+                        negative_track.RotateZ(random_generator.Uniform(2*TMath::Pi()));
+                        //the rest as usual
+                        mass = (positive_track+negative_track).M();
+                        eta = (positive_track+negative_track).Eta();
+                        pT = (positive_track+negative_track).Pt();
+                        insideprocessing.Fill("MKpiChi2BcgRandomTrackRotation", mass);
+                        insideprocessing.Fill("MKpiChi2BcgRandomTrackRotationClose", mass);
+                        insideprocessing.Fill("MKpiChi2BcgRandomTrackRotationeta", mass, eta);
+                        insideprocessing.Fill("MKpiChi2BcgRandomTrackRotationpT", mass, pT);
+                    }
+                    if(chi2Map["pi_K"]<9){
+                        vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
+                        vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Kaon]);
+                        //track rotation (rotating only the negative one)
+                        negative_track.RotateZ(random_generator.Uniform(2*TMath::Pi()));
+                        //the rest as usual
+                        mass = (positive_track+negative_track).M();
+                        eta = (positive_track+negative_track).Eta();
+                        pT = (positive_track+negative_track).Pt();
+                        insideprocessing.Fill("MpiKChi2BcgRandomTrackRotation", mass);
+                        insideprocessing.Fill("MpiKChi2BcgRandomTrackRotationClose", mass);
+                        insideprocessing.Fill("MpiKChi2BcgRandomTrackRotationeta", mass, eta);
+                        insideprocessing.Fill("MpiKChi2BcgRandomTrackRotationpT", mass, pT);
+                    }
+                    if(chi2Map["p_pi"]<9){
+                        vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Proton]);
+                        vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
+                        //track rotation (rotating only the negative one)
+                        negative_track.RotateZ(random_generator.Uniform(2*TMath::Pi()));
+                        //the rest as usual
+                        mass = (positive_track+negative_track).M();
+                        eta = (positive_track+negative_track).Eta();
+                        pT = (positive_track+negative_track).Pt();
+                        insideprocessing.Fill("MppiChi2BcgRandomTrackRotation", mass);
+                        insideprocessing.Fill("MppiChi2BcgRandomTrackRotationeta", mass, eta);
+                        insideprocessing.Fill("MppiChi2BcgRandomTrackRotationpT", mass, pT);
+                    }
+                    if(chi2Map["pi_p"]<9){
+                        vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
+                        vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Proton]);
+                        //track rotation (rotating only the negative one)
+                        negative_track.RotateZ(random_generator.Uniform(2*TMath::Pi()));
+                        //the rest as usual
+                        mass = (positive_track+negative_track).M();
+                        eta = (positive_track+negative_track).Eta();
+                        pT = (positive_track+negative_track).Pt();
+                        insideprocessing.Fill("MpipChi2BcgRandomTrackRotation", mass);
+                        insideprocessing.Fill("MpipChi2BcgRandomTrackRotationeta", mass, eta);
+                        insideprocessing.Fill("MpipChi2BcgRandomTrackRotationpT", mass, pT);
+                    }
+                    if(chi2Map["K_K"]<9){
+                        vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Kaon]);
+                        vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Kaon]);
+                        //track rotation (rotating only the negative one)
+                        negative_track.RotateZ(random_generator.Uniform(2*TMath::Pi()));
+                        //the rest as usual
+                        mass = (positive_track+negative_track).M();
+                        eta = (positive_track+negative_track).Eta();
+                        pT = (positive_track+negative_track).Pt();
+                        insideprocessing.Fill("MKKChi2BcgRandomTrackRotation", mass);
+                        insideprocessing.Fill("MKKChi2BcgRandomTrackRotationClose", mass);
+                        insideprocessing.Fill("MKKChi2BcgRandomTrackRotationeta", mass, eta);
+                        insideprocessing.Fill("MKKChi2BcgRandomTrackRotationpT", mass, pT);
+                    }
+                    if(chi2Map["pi_pi"]<9){
+                        vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
+                        vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
+                        //track rotation (rotating only the negative one)
+                        negative_track.RotateZ(random_generator.Uniform(2*TMath::Pi()));
+                        //the rest as usual
+                        mass = (positive_track+negative_track).M();
+                        eta = (positive_track+negative_track).Eta();
+                        pT = (positive_track+negative_track).Pt();
+                        insideprocessing.Fill("MpipiChi2BcgRandomTrackRotation", mass);
+                        insideprocessing.Fill("MpipiChi2BcgRandomTrackRotationeta", mass, eta);
+                        insideprocessing.Fill("MpipiChi2BcgRandomTrackRotationpT", mass, pT);
+                    }
+                    if(chi2Map["p_p"]<9){
+                        vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Proton]);
+                        vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Proton]);
+                        //track rotation (rotating only the negative one)
+                        negative_track.RotateZ(random_generator.Uniform(2*TMath::Pi()));
+                        //the rest as usual
+                        mass = (positive_track+negative_track).M();
+                        eta = (positive_track+negative_track).Eta();
+                        pT = (positive_track+negative_track).Pt();
+                        insideprocessing.Fill("MppChi2BcgRandomTrackRotation", mass);
+                        insideprocessing.Fill("MppChi2BcgRandomTrackRotationeta", mass, eta);
+                        insideprocessing.Fill("MppChi2BcgRandomTrackRotationpT", mass, pT);
                     }
                 }
             }
