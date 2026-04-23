@@ -32,6 +32,7 @@ int main(int argc, char* argv[]){
     //https://stackoverflow.com/questions/30932725/painting-a-tcanvas-to-the-screen-in-a-compiled-root-cern-application
     TApplication theApp("App", &argc, argv);
     argv = theApp.Argv();
+    argc = theApp.Argc();
 
     //input file
     TFile* input = TFile::Open(static_cast<const char*>(argv[1]));
@@ -41,7 +42,7 @@ int main(int argc, char* argv[]){
     printf("3 - random track rotation\n");
     printf("4 - mixed-event\n");
     std::string BcgType;
-    if(argc<3){
+    if(argc<4){
         printf("Background not chosen\n");
         return 1;
     }
