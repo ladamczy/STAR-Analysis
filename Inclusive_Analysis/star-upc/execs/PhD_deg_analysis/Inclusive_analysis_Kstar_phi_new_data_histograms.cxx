@@ -18,10 +18,12 @@
 #include "TApplication.h"
 #include "TFitResult.h"
 #include "THStack.h"
+#include "TLine.h"
 
 #include "MyStyles.h"
 
 int GetFirstNonzeroBinNumber(TH1* input);
+void set_background_fitting(TPad* pad, TH1D* data, TH1D* bcg, double& bcgRegionStart, double& bcgRegionStop, std::string name, std::string title, std::string draw_full_path = "");
 void draw_and_save(TH1D* data, std::string folderWithDiagonal, std::string name, std::string title, std::string options = "");
 void draw_and_save_minus_background(TH1D* data, TH1D* bcg, std::string folderWithDiagonal, std::string name, std::string title, double bcg_region);
 void draw_bulk(std::vector<TH1D*> data, std::string folderWithDiagonal, std::string name, std::string title, std::string options);
@@ -207,45 +209,10 @@ int main(int argc, char* argv[]){
     differential_crossection_fit(result, MpiKChi2Close, &fit_func_custom_sig, &fit_func_custom_bcg, folderWithDiagonal+"MpiKwhole.pdf");
 skipOneTimeFitting:
 
-    std::string inputString;
     //checking fitting bounds
-    //Kpi
-    TH1D KpiRatio(*MKpiChi2bcg);
-    MKpiChi2->Sumw2();
-    KpiRatio.Divide(MKpiChi2);
-    KpiRatio.SetTitle("Kpi mixed/single events ratio");
-    result->cd();
-    KpiRatio.Draw("e1");
-    result->Update();
-    printf("Write lower & higher bound of the background fit\nOr press \"Enter\" to keep current: %lf, %lf\n", bcgRegionStart[0], bcgRegionStop[0]);
-    std::getline(std::cin, inputString);
-    sscanf(inputString.c_str(), "%lf %lf", &bcgRegionStart[0], &bcgRegionStop[0]);
-    printf("Chosen bounds: %lf, %lf\n", bcgRegionStart[0], bcgRegionStop[0]);
-    result->Clear();
-    //piK
-    TH1D piKRatio(*MpiKChi2bcg);
-    MpiKChi2->Sumw2();
-    piKRatio.Divide(MpiKChi2);
-    piKRatio.SetTitle("piK mixed/single events ratio");
-    piKRatio.Draw("e1");
-    result->Update();
-    printf("Write lower & higher bound of the background fit\nOr press \"Enter\" to keep current: %lf, %lf\n", bcgRegionStart[1], bcgRegionStop[1]);
-    std::getline(std::cin, inputString);
-    sscanf(inputString.c_str(), "%lf %lf", &bcgRegionStart[1], &bcgRegionStop[1]);
-    printf("Chosen bounds: %lf, %lf\n", bcgRegionStart[1], bcgRegionStop[1]);
-    result->Clear();
-    //KK
-    TH1D KKRatio(*MKKChi2bcg);
-    MKKChi2->Sumw2();
-    KKRatio.Divide(MKKChi2);
-    KKRatio.SetTitle("KK mixed/single events ratio");
-    KKRatio.Draw("e1");
-    result->Update();
-    printf("Write lower & higher bound of the background fit\nOr press \"Enter\" to keep current: %lf, %lf\n", bcgRegionStart[2], bcgRegionStop[2]);
-    std::getline(std::cin, inputString);
-    sscanf(inputString.c_str(), "%lf %lf", &bcgRegionStart[2], &bcgRegionStop[2]);
-    printf("Chosen bounds: %lf, %lf\n", bcgRegionStart[2], bcgRegionStop[2]);
-    result->Clear();
+    set_background_fitting(result, MKpiChi2, MKpiChi2bcg, bcgRegionStart[0], bcgRegionStop[0], "KpiRatio", "K^{+}#pi^{-} Background/Signal ratio", folderWithDiagonal+"MKpiRatio.pdf");
+    set_background_fitting(result, MpiKChi2, MpiKChi2bcg, bcgRegionStart[1], bcgRegionStop[1], "piKRatio", "#pi^{+}K^{-} Background/Signal ratio", folderWithDiagonal+"MpiKRatio.pdf");
+    set_background_fitting(result, MKKChi2, MKKChi2bcg, bcgRegionStart[2], bcgRegionStop[2], "KKRatio", "K^{+}K^{-} Background/Signal ratio", folderWithDiagonal+"MKKRatio.pdf");
 
     //fitting functions
     TF1* fit_func_sig = new TF1("fit_func_sig", "breitwigner", 0.8, 1.0);
@@ -585,6 +552,64 @@ int GetFirstNonzeroBinNumber(TH1* input){
             return i;
     }
     return -1;
+}
+
+void set_background_fitting(TPad* pad, TH1D* data, TH1D* bcg, double& bcgRegionStart, double& bcgRegionStop, std::string name, std::string title, std::string draw_full_path){
+    //preparing for drawing
+    pad->Clear();
+    gROOT->SetSelectedPad(pad);
+    gStyle->SetOptStat(0);
+    gStyle->SetHistMinimumZero();
+    gStyle->SetOptFit();
+    gStyle->SetStatBorderSize(0.);
+    gStyle->SetStatX(0.94);
+    gStyle->SetStatY(0.89);
+    gStyle->SetStatW(0.18);
+    gStyle->SetFitFormat("6.5g");
+    gStyle->SetStatColor(0);
+    gPad->SetMargin(0.1, 0.05, 0.1, 0.1);
+    //preparing and drawing ratio plot
+    TH1D SigBcgRatio(*bcg);
+    SigBcgRatio.SetMarkerStyle(kFullCircle);
+    SigBcgRatio.SetMarkerColor(kBlue);
+    SigBcgRatio.SetLineColor(kBlue+2);
+    data->Sumw2();
+    SigBcgRatio.Divide(data);
+    SigBcgRatio.SetNameTitle(name.c_str(), title.c_str());
+    pad->cd();
+    SigBcgRatio.Draw("e1");
+    pad->Update();
+    //drawing two lines at proper coordinates
+    TLine line1(bcgRegionStart, pad->GetUymin(), bcgRegionStart, pad->GetUymax());
+    TLine line2(bcgRegionStop, pad->GetUymin(), bcgRegionStop, pad->GetUymax());
+    line1.SetLineColor(kRed);
+    line1.SetLineStyle(kDashed);
+    line1.SetLineWidth(3);
+    line1.Draw("same");
+    line2.SetLineColor(kRed);
+    line2.SetLineStyle(kDashed);
+    line2.SetLineWidth(3);
+    line2.Draw("same");
+    //interactive part
+    std::string inputString;
+    printf("Write lower & higher bound of the background fit and press \"Enter\"\n");
+    printf("Or just press \"Enter\" to keep current: %lf, %lf\n", bcgRegionStart, bcgRegionStop);
+    do{
+        sscanf(inputString.c_str(), "%lf %lf", &bcgRegionStart, &bcgRegionStop);
+        printf("Chosen bounds for \"%s\" histogram: %lf, %lf\n", name.c_str(), bcgRegionStart, bcgRegionStop);
+        line1.SetX1(bcgRegionStart);
+        line1.SetX2(bcgRegionStart);
+        line2.SetX1(bcgRegionStop);
+        line2.SetX2(bcgRegionStop);
+        pad->ModifiedUpdate();
+        std::getline(std::cin, inputString);
+    } while(inputString.size()!=0);
+    //saving and clearing the pad
+    if(draw_full_path.size()!=0){
+        pad->SaveAs(draw_full_path.c_str());
+    }
+    gStyle->SetOptStat(1);
+    pad->Clear();
 }
 
 void draw_and_save(TH1D* data, std::string folderWithDiagonal, std::string name, std::string title, std::string options){
