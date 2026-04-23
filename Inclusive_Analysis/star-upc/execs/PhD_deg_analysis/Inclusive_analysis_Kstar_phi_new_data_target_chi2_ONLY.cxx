@@ -208,6 +208,27 @@ int main(int argc, char** argv){
         bool isdEdxOk, isTOFOk;
         string tempPairName;
         TRandom3 random_generator;
+
+        //queues for vectors of tracks from previous events assigned to particular pairs
+        // std::deque<std::vector<StUPCTrack*>> queue_of_previous_vector_Tracks_Kpi_positive;
+        // std::deque<std::vector<StUPCTrack*>> queue_of_previous_vector_Tracks_piK_positive;
+        // std::deque<std::vector<StUPCTrack*>> queue_of_previous_vector_Tracks_ppi_positive;
+        // std::deque<std::vector<StUPCTrack*>> queue_of_previous_vector_Tracks_pip_positive;
+        // std::deque<std::vector<StUPCTrack*>> queue_of_previous_vector_Tracks_KK_positive;
+        // std::deque<std::vector<StUPCTrack*>> queue_of_previous_vector_Tracks_pipi_positive;
+        // std::deque<std::vector<StUPCTrack*>> queue_of_previous_vector_Tracks_pp_positive;
+        // std::deque<std::vector<StUPCTrack*>> queue_of_previous_vector_Tracks_Kpi_negative;
+        // std::deque<std::vector<StUPCTrack*>> queue_of_previous_vector_Tracks_piK_negative;
+        // std::deque<std::vector<StUPCTrack*>> queue_of_previous_vector_Tracks_ppi_negative;
+        // std::deque<std::vector<StUPCTrack*>> queue_of_previous_vector_Tracks_pip_negative;
+        // std::deque<std::vector<StUPCTrack*>> queue_of_previous_vector_Tracks_KK_negative;
+        // std::deque<std::vector<StUPCTrack*>> queue_of_previous_vector_Tracks_pipi_negative;
+        // std::deque<std::vector<StUPCTrack*>> queue_of_previous_vector_Tracks_pp_negative;
+
+        //TODO
+        //Teraz mamy wszystkie pary cząstek i nie mamy dobrego tła mixed events, jak ograniczymy pary to dobrego tła mieć nie będziemy na 100%
+        //funkcja na dopasowywanie rejonu dopasowywania tła
+
         std::deque<std::vector<StUPCTrack*>> queue_of_previous_vector_Tracks_positive;
         std::deque<std::vector<StUPCTrack*>> queue_of_previous_vector_Tracks_negative;
 
