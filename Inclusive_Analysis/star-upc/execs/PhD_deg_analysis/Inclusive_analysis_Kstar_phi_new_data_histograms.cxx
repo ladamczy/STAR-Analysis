@@ -210,9 +210,9 @@ int main(int argc, char* argv[]){
 skipOneTimeFitting:
 
     //checking fitting bounds
-    set_background_fitting(result, MKpiChi2, MKpiChi2bcg, bcgRegionStart[0], bcgRegionStop[0], "KpiRatio", "K^{+}#pi^{-} Background/Signal ratio", folderWithDiagonal+"MKpiRatio.pdf");
-    set_background_fitting(result, MpiKChi2, MpiKChi2bcg, bcgRegionStart[1], bcgRegionStop[1], "piKRatio", "#pi^{+}K^{-} Background/Signal ratio", folderWithDiagonal+"MpiKRatio.pdf");
-    set_background_fitting(result, MKKChi2, MKKChi2bcg, bcgRegionStart[2], bcgRegionStop[2], "KKRatio", "K^{+}K^{-} Background/Signal ratio", folderWithDiagonal+"MKKRatio.pdf");
+    set_background_fitting(result, MKpiChi2, MKpiChi2bcg, bcgRegionStart[0], bcgRegionStop[0], "KpiRatio", "K^{+}#pi^{-} Background/Signal ratio with "+BcgType+" background", folderWithDiagonal+"MKpiRatio.pdf");
+    set_background_fitting(result, MpiKChi2, MpiKChi2bcg, bcgRegionStart[1], bcgRegionStop[1], "piKRatio", "#pi^{+}K^{-} Background/Signal ratio with "+BcgType+" background", folderWithDiagonal+"MpiKRatio.pdf");
+    set_background_fitting(result, MKKChi2, MKKChi2bcg, bcgRegionStart[2], bcgRegionStop[2], "KKRatio", "K^{+}K^{-} Background/Signal ratio with "+BcgType+" background", folderWithDiagonal+"MKKRatio.pdf");
 
     //fitting functions
     TF1* fit_func_sig = new TF1("fit_func_sig", "breitwigner", 0.8, 1.0);
