@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <job fileListSyntax="paths" name="strange_generator_&filter_name;_total_chain_&number;_">
+<shell>singularity exec -e -B /direct -B /star -B /afs -B /gpfs -B /sdcc/lustre02 /cvmfs/star.sdcc.bnl.gov/containers/rhic_sl7.sif</shell>
 <command>
         starver pro
         mkdir results

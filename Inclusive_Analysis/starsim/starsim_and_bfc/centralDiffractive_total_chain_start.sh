@@ -17,7 +17,7 @@ if [ "$OPTIND" -lt "2" ]; then
     :
 elif [[ "$2" != -* ]]; then
     run_number=$2
-    # run_number="${run_number:-0}"
+    run_number="${run_number:-0}"
     OPTIND=3
 fi
 #3
@@ -26,7 +26,7 @@ if [ "$OPTIND" -lt "3" ]; then
     :
 elif [[ "$3" != -* ]]; then
     seed=$3
-    # seed="${seed:-0}"
+    seed="${seed:-0}"
     OPTIND=4
 fi
 
