@@ -37,7 +37,8 @@ extension="root"
 remove_everything_but_MuDst_and_pythia=0
 filter=""
 NO_RUNNING=0
-while getopts "e:f:p:st" flag
+n=100
+while getopts "e:f:p:n:st" flag
 do
     #just in case an argument for -e got forgot and there is -e -t now or sth
     if [[ "$OPTARG" == -* ]]; then
@@ -83,6 +84,9 @@ do
         #case for changing result folder name
         p)  output_folder=$OPTARG
             ;;
+        #case for changing default (100) number of events in a job
+        n)  n=$OPTARG
+            ;;
         #case for sending results to scrap space instead of results/ folder
         s)  output_directory="/star/data05/scratch/adamwatroba/results"
             ;;
@@ -112,6 +116,7 @@ if [[ -z "$filter" ]]; then
 else
     echo -e "filter:\t\t\t$filter"
 fi
+echo -e "events in a job:\t$n"
 
 #show help if there is 0 arguments provided
 if [ "$#" -eq "0" ]; then
@@ -131,6 +136,8 @@ if [ "$#" -eq "0" ]; then
     echo -e "    anything else:\t applies filter for K0S, Lambda0, K*(892) and phi(1020) particles only"
     echo
     echo -e "-p: foldername \t\t changes folder name to \"foldername\" (without quotes)"
+    echo
+    echo -e "-n: number \t\t changes number of events in the job (default 100)"
     echo
     echo -e "-s: \t\t\t changes output for general scrap space instead of default results/ folder"
     echo
@@ -178,7 +185,6 @@ fi
 
 
 # modulo to cut it into pieces of n events
-n=100
 full_events=$(($length / $n))
 partial_events=$(($length % $n))
 
