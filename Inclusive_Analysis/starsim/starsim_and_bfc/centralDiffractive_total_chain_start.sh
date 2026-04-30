@@ -81,6 +81,7 @@ do
                     filter="Strange"
                     ;;
                 *)
+                    filter=""
                     ;;
             esac
             ;;
@@ -115,6 +116,8 @@ else
     echo -e "extension:\t\t$extension"
 fi
 if [[ -z "$filter" ]]; then
+    echo -e "filter:\t\t\tgeneral production"
+elif [[ "$filter" = "strange" ]]; then
     echo -e "filter:\t\t\tstrange particles (K0S, Lambda0, K*, phi)"
 else
     echo -e "filter:\t\t\t$filter"
@@ -180,8 +183,11 @@ echo $extension >> $newfile
 echo Filter used: >> $newfile
 #also adding filter name to the job name
 if [[ -z "$filter" ]]; then
+    echo "General filter" >> $newfile
+    filter_name=general
+elif [[ "$filter" = "strange" ]]; then
     echo "Strange particles (K0S, Lambda0, K*, phi)" >> $newfile
-    filter_name=all
+    filter_name=$filter
 else
     echo $filter >> $newfile
     filter_name=$filter
