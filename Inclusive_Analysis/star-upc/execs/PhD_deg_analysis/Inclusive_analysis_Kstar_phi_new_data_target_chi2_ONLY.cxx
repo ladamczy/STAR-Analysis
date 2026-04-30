@@ -43,10 +43,22 @@ double getChi2(StUPCTrack* positive, StUPCTrack* negative, int positiveId, int n
 
 int main(int argc, char** argv){
 
+    //argv:
+    //1 - .root file or .list list
+    //2 - output folder
+    //3 - number of cores
+    //4 - number of events to look back for (default 1 to speed things up, 1000 gives good results for mixed background)
+
     int nthreads = 1;
-    if(argc==4){
+    if(argc>=4){
         nthreads = atoi(argv[3]);
     }
+    if(argc>4){
+        printf("Previous events to combine for mixed background: %d\n", atoi(argv[4]));
+    } else{
+        printf("Previous events to combine for mixed background: 1\n");
+    }
+
 
     cout<<"Program is running on "<<nthreads<<" threads"<<endl;
     ROOT::EnableThreadSafety();
@@ -244,7 +256,10 @@ int main(int argc, char** argv){
         std::deque<std::vector<StUPCTrack*>> queue_of_previous_vector_Tracks_negative;
 
         //parameters
-        const int previous_events_in_queue = 1000;
+        int previous_events_in_queue = 1;
+        if(argc>4){
+            previous_events_in_queue = atoi(argv[4]);
+        }
 
         //actual loop
         while(myReader.Next()){
