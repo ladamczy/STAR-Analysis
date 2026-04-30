@@ -78,14 +78,14 @@ int main(int argc, char** argv)
     // ===================================================================
     // LOAD EFFICIENCY HISTOGRAMS
     // ===================================================================
-    string effFilePath = "~/Downloads/SPK0K0StylePions_April16_0.root";//SPK0K0StylePions_March13_0  SPK0K0StylePions_April16_0
+    string effFilePath = "~/Downloads/SPK0K0StylePions_April20_0.root";//SPK0K0StylePions_April20_0.root//SPK0K0StylePions_April24_nHist17_0.root//SPK0K0StylePions_April20_0.root//SPK0K0StylePions_April16_0.root //SPK0K0StylePions_March13_0  SPK0K0StylePions_April16_0
     TFile* fEff = TFile::Open(effFilePath.c_str(), "READ");
     if (!fEff || fEff->IsZombie()) {
         cerr << "Error: Cannot open efficiency file " << effFilePath << endl;
         return 1;
     }
 
-    /*TH3F* h3D_TPC_Eff_P = (TH3F*)((TH3F*)fEff->Get("h3D_TPC_RecoMatchedPions_P"))->Clone("h3D_TPC_Eff_P");
+    TH3F* h3D_TPC_Eff_P = (TH3F*)((TH3F*)fEff->Get("h3D_TPC_RecoMatchedPions_P"))->Clone("h3D_TPC_Eff_P");
     h3D_TPC_Eff_P->Divide((TH3F*)fEff->Get("h3D_TPC_TruePions_P"));
 
     TH3F* h3D_TPC_Eff_N = (TH3F*)((TH3F*)fEff->Get("h3D_TPC_RecoMatchedPions_N"))->Clone("h3D_TPC_Eff_N");
@@ -96,7 +96,7 @@ int main(int argc, char** argv)
 
     TH3F* h3D_TOF_Eff_N = (TH3F*)((TH3F*)fEff->Get("h3D_TOF_RecoMatchedPionsWithTOF_N"))->Clone("h3D_TOF_Eff_N");
     h3D_TOF_Eff_N->Divide((TH3F*)fEff->Get("h3D_TOF_RecoMatchedPions_N"));
-    */
+    /*
     TH3F* h3D_TPC_Eff_P = (TH3F*)((TH3F*)fEff->Get("h3D_TPC_RecoMatchedParticles_P"))->Clone("h3D_TPC_Eff_P");
     h3D_TPC_Eff_P->Divide((TH3F*)fEff->Get("h3D_TPC_TrueParticles_P"));
     TH3F* h3D_TPC_Eff_N = (TH3F*)((TH3F*)fEff->Get("h3D_TPC_RecoMatchedParticles_N"))->Clone("h3D_TPC_Eff_N");
@@ -105,7 +105,7 @@ int main(int argc, char** argv)
     h3D_TOF_Eff_P->Divide((TH3F*)fEff->Get("h3D_TOF_RecoMatchedParticlesWithTOF_P"));
     TH3F* h3D_TOF_Eff_N = (TH3F*)((TH3F*)fEff->Get("h3D_TOF_RecoMatchedParticlesWithTOF_N"))->Clone("h3D_TOF_Eff_N");
     h3D_TOF_Eff_N->Divide((TH3F*)fEff->Get("h3D_TOF_RecoMatchedParticlesWithTOF_N"));
-    
+    */
     cout << "✅ Efficiency maps successfully loaded & divided." << endl;
 
     // Print efficiency comparison
@@ -140,7 +140,7 @@ int main(int argc, char** argv)
     // ===================================================================
     // 1D TRACK LEVEL VERIFICATION HISTOGRAMS (pT, eta, Vz)
     // ===================================================================
-    Double_t ptBins[] = {0.20, 0.25, 0.30, 0.35, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.6, 2.0, 3.0};
+    Double_t ptBins[] = {0.1, 0.15, 0.20, 0.25, 0.30, 0.35, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.6, 2.0, 3.0};
     Int_t nPtBins = sizeof(ptBins)/sizeof(ptBins[0]) - 1;
     Double_t etaBins[] = {-1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0};
     Int_t nEtaBins = sizeof(etaBins)/sizeof(etaBins[0]) - 1;
@@ -164,14 +164,15 @@ int main(int argc, char** argv)
     TH1F *h1D_CorrectedVz_N  = new TH1F("h1D_CorrectedVz_N",  "Corrected V_{z} (#pi^{-});V_{z} (cm);Counts", nVzBins, vzBins); h1D_CorrectedVz_N->Sumw2();
 
     //Weighted Missing pT Histogram
+    TH1F *hPtMiss_Raw = new TH1F("hPtMiss_Raw", "Raw Missing p_{T};p_{T}^{miss} [GeV/c];Counts", 50, 0.0, 1.0);
     TH1F *hPtMiss_Corrected = new TH1F("hPtMiss_Corrected", "Corrected Missing p_{T};p_{T}^{miss} [GeV/c];Counts", 50, 0.0, 1.0);
     hPtMiss_Corrected->Sumw2();
 
     // ===================================================================
     // 4-PION SYSTEM HISTOGRAMS
     // ===================================================================
-    Double_t massBins4pi[] = {0.3, 0.6, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.8, 2.0, 2.5, 3.8};
-    Int_t nMassBins4pi = sizeof(massBins4pi)/sizeof(massBins4pi[0]) - 1;
+    //Double_t massBins4pi[] = {0.2, 0.4, 0.6, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.8, 2.0, 2.5, 3.8};
+    //Int_t nMassBins4pi = sizeof(massBins4pi)/sizeof(massBins4pi[0]) - 1;
     const int nPtBins4pi = 10;
     double ptBinEdges4pi[nPtBins4pi + 1] = {0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.5, 2.0, 2.5, 3.0};
     // 4-TOF SAMPLE HISTOGRAMS
@@ -184,6 +185,9 @@ int main(int argc, char** argv)
     TH1F *h1D_Reco_Y_Raw_4pi_4TOF = new TH1F("h1D_Reco_Y_Raw_4pi_4TOF", "Raw Data 4#pi Rapidity;y_{K_{0}K_{0}};Counts", 40, -1.0, 1.0);
     TH1F *h1D_Reco_Y_Corrected_4pi_4TOF = new TH1F("h1D_Reco_Y_Corrected_4pi_4TOF", "Corrected Data 4#pi Rapidity;y_{K_{0}K_{0}};Counts", 40, -1.0, 1.0);
     h1D_Reco_Y_Corrected_4pi_4TOF->Sumw2();
+    TH1F *h1D_Reco_PtMiss_Raw_4pi_4TOF = new TH1F("h1D_Reco_PtMiss_Raw_4pi_4TOF", "Raw Data 4#pi Missing p_{T};p_{T}^{miss} (GeV/c);Counts", 50, 0.0, 1.0);
+    TH1F *h1D_Reco_PtMiss_Corrected_4pi_4TOF = new TH1F("h1D_Reco_PtMiss_Corrected_4pi_4TOF", "Corrected Data 4#pi Missing p_{T};p_{T}^{miss} (GeV/c);Counts", 50, 0.0, 1.0);
+    h1D_Reco_PtMiss_Corrected_4pi_4TOF->Sumw2();
     // 3-TOF SAMPLE HISTOGRAMS
     TH1F *h1D_Reco_InvMass_Raw_4pi_3TOF = new TH1F("h1D_Reco_InvMass_Raw_4pi_3TOF", "Raw Data 4#pi Mass (3 TOF);M_{4#pi} (GeV/c^{2});Counts", 21, 0.9, 3.0);
     TH1F *h1D_Reco_InvMass_Corrected_4pi_3TOF = new TH1F("h1D_Reco_InvMass_Corrected_4pi_3TOF", "Corrected Data 4#pi Mass (3 TOF);M_{4#pi} (GeV/c^{2});Counts", 21, 0.9, 3.0);
@@ -194,6 +198,9 @@ int main(int argc, char** argv)
     TH1F *h1D_Reco_Y_Raw_4pi_3TOF = new TH1F("h1D_Reco_Y_Raw_4pi_3TOF", "Raw Data 4#pi Rapidity (3 TOF);y_{4#pi};Counts", 40, -1.0, 1.0);
     TH1F *h1D_Reco_Y_Corrected_4pi_3TOF = new TH1F("h1D_Reco_Y_Corrected_4pi_3TOF", "Corrected Data 4#pi Rapidity (3 TOF);y_{4#pi};Counts", 40, -1.0, 1.0);
     h1D_Reco_Y_Corrected_4pi_3TOF->Sumw2();
+    TH1F *h1D_Reco_PtMiss_Raw_4pi_3TOF = new TH1F("h1D_Reco_PtMiss_Raw_4pi_3TOF", "Raw Data 4#pi Missing p_{T};p_{T}^{miss} (GeV/c);Counts", 50, 0.0, 1.0);
+    TH1F *h1D_Reco_PtMiss_Corrected_4pi_3TOF = new TH1F("h1D_Reco_PtMiss_Corrected_4pi_3TOF", "Corrected Data 4#pi Missing p_{T};p_{T}^{miss} (GeV/c);Counts", 50, 0.0, 1.0);
+    h1D_Reco_PtMiss_Corrected_4pi_3TOF->Sumw2();
     // 2-TOF SAMPLE HISTOGRAMS
     TH1F *h1D_Reco_InvMass_Raw_4pi_2TOF = new TH1F("h1D_Reco_InvMass_Raw_4pi_2TOF", "Raw Data 4#pi Mass (2 TOF);M_{4#pi} (GeV/c^{2});Counts", 21, 0.9, 3.0);
     TH1F *h1D_Reco_InvMass_Corrected_4pi_2TOF = new TH1F("h1D_Reco_InvMass_Corrected_4pi_2TOF", "Corrected Data 4#pi Mass (2 TOF);M_{4#pi} (GeV/c^{2});Counts", 21, 0.9, 3.0);
@@ -204,6 +211,15 @@ int main(int argc, char** argv)
     TH1F *h1D_Reco_Y_Raw_4pi_2TOF = new TH1F("h1D_Reco_Y_Raw_4pi_2TOF", "Raw Data 4#pi Rapidity (2 TOF);y_{4#pi};Counts", 40, -1.0, 1.0);
     TH1F *h1D_Reco_Y_Corrected_4pi_2TOF = new TH1F("h1D_Reco_Y_Corrected_4pi_2TOF", "Corrected Data 4#pi Rapidity (2 TOF);y_{4#pi};Counts", 40, -1.0, 1.0);
     h1D_Reco_Y_Corrected_4pi_2TOF->Sumw2();
+    TH1F *h1D_Reco_PtMiss_Raw_4pi_2TOF = new TH1F("h1D_Reco_PtMiss_Raw_4pi_2TOF", "Raw Data 4#pi Missing p_{T};p_{T}^{miss} (GeV/c);Counts", 50, 0.0, 1.0);
+    TH1F *h1D_Reco_PtMiss_Corrected_4pi_2TOF = new TH1F("h1D_Reco_PtMiss_Corrected_4pi_2TOF", "Corrected Data 4#pi Missing p_{T};p_{T}^{miss} (GeV/c);Counts", 50, 0.0, 1.0);
+    h1D_Reco_PtMiss_Corrected_4pi_2TOF->Sumw2();
+
+    TH2D* h2_PtMiss_Vs_Mass = new TH2D("h2_PtMiss_Vs_Mass", "Missing p_{T} vs Mass;M(K_{S}^{0}K_{S}^{0}) [GeV/c^{2}];p_{T}^{miss} [GeV/c]", 
+                                   21, 0.9, 3.0, 50, 0.0, 1.0);
+    TH2D* h2_PtMiss_Vs_Mass_Corrected = new TH2D("h2_PtMiss_Vs_Mass_Corrected", "Corrected Missing p_{T} vs Mass;M(K_{S}^{0}K_{S}^{0}) [GeV/c^{2}];p_{T}^{miss} [GeV/c]", 
+                                   21, 0.9, 3.0, 50, 0.0, 1.0);   
+    h2_PtMiss_Vs_Mass_Corrected->Sumw2();
 
     // -------------------------------------------------------------------
     TH1D* d1 = new TH1D("d1","",1,0,1); TH1D* d2 = new TH1D("d2","",1,0,1);
@@ -307,7 +323,9 @@ int main(int argc, char** argv)
         if (!(lkMass > config.massWinLow && lkMass < config.massWinHigh && skMass > config.massWinLow && skMass < config.massWinHigh)) continue;
         
         double pTmiss;
-        if (!CheckPtMiss(leadingKaon, subLeadingKaon, protonE, protonW, pTmiss) || pTmiss > config.ptMissMax) continue;
+        //if (!CheckPtMiss(leadingKaon, subLeadingKaon, protonE, protonW, pTmiss) || pTmiss > config.ptMissMax) continue; 
+        // Just calculate it. Ignore the boolean return and DO NOT 'continue' yet!
+        CheckPtMiss(leadingKaon, subLeadingKaon, protonE, protonW, pTmiss);
 
         int totalCluster = 0;
         CheckNumberOfClusters(upcEvt, tracksWithTofHit, totalCluster);
@@ -378,9 +396,30 @@ int main(int argc, char** argv)
         double w_SK_N = GetK0TrackWeight(vPosNegPionSubLeadingKaon[1], eventVz, h3D_TPC_Eff_N, h3D_TOF_Eff_N, hasTof(vPosNegPionSubLeadingKaon[1]), dummyRej);
 
         double eventWeight = w_LK_P * w_LK_N * w_SK_P * w_SK_N;
-        if (eventWeight <= 0.0) continue; 
+        if (eventWeight <= 0.0) continue;   
 
         int totalTOF = hasTof(vPosNegPionLeadingKaon[0]) + hasTof(vPosNegPionLeadingKaon[1]) + hasTof(vPosNegPionSubLeadingKaon[0]) + hasTof(vPosNegPionSubLeadingKaon[1]);
+        
+        //if (massK0K0 > 1.4 && massK0K0 < 1.9) { 
+        hPtMiss_Raw->Fill(pTmiss);
+        hPtMiss_Corrected->Fill(pTmiss, eventWeight); 
+        if (totalTOF == 4) {
+            h1D_Reco_PtMiss_Raw_4pi_4TOF->Fill(pTmiss);
+            h1D_Reco_PtMiss_Corrected_4pi_4TOF->Fill(pTmiss, eventWeight);
+        } else if (totalTOF == 3) {
+            double weight_3TOF = eventWeight / 4.0;
+            h1D_Reco_PtMiss_Raw_4pi_3TOF->Fill(pTmiss);
+            h1D_Reco_PtMiss_Corrected_4pi_3TOF->Fill(pTmiss, weight_3TOF);
+        } else if (totalTOF == 2) {
+            double weight_2TOF = eventWeight / 4.0;
+            h1D_Reco_PtMiss_Raw_4pi_2TOF->Fill(pTmiss);
+            h1D_Reco_PtMiss_Corrected_4pi_2TOF->Fill(pTmiss, weight_2TOF);
+        }
+        //}
+        h2_PtMiss_Vs_Mass->Fill(massK0K0, pTmiss);
+        h2_PtMiss_Vs_Mass_Corrected->Fill(massK0K0, pTmiss, eventWeight);
+
+        if (pTmiss > config.ptMissMax) continue;
 
         count_4pi_Total++;
         // ===================================================================
@@ -397,9 +436,6 @@ int main(int argc, char** argv)
             h1D_Reco_Pt_Corrected_4pi_4TOF->Fill(K0K0.Pt(), eventWeight);
             h1D_Reco_Y_Raw_4pi_4TOF->Fill(K0K0.Rapidity());
             h1D_Reco_Y_Corrected_4pi_4TOF->Fill(K0K0.Rapidity(), eventWeight);
-            
-            // Missing pT (Usually kept for 4-TOF, but you can add it to others if needed)
-            hPtMiss_Corrected->Fill(pTmiss, eventWeight);    
         }
         else if (totalTOF == 3) {
             nEvents_3TOF++;
@@ -477,7 +513,7 @@ int main(int argc, char** argv)
     cout << "\n=== PHYSICS OBSERVABLES CHECK (4-TOF Base) ===" << endl;
     if (h1D_Reco_InvMass_Corrected_4pi_4TOF->GetEntries() > 0) {
         cout << "4-Pion Mass Mean: " << h1D_Reco_InvMass_Corrected_4pi_4TOF->GetMean() << " GeV/c^2" << endl;
-        cout << "Missing pT Mean:  " << hPtMiss_Corrected->GetMean() << " GeV/c" << endl;
+        cout << "Missing pT Mean:  " << h1D_Reco_PtMiss_Corrected_4pi_4TOF->GetMean() << " GeV/c" << endl;
     }
 
     outfile->cd();
@@ -488,6 +524,10 @@ int main(int argc, char** argv)
     h1D_RawPt_N->Write();  h1D_CorrectedPt_N->Write();
     h1D_RawEta_N->Write(); h1D_CorrectedEta_N->Write();
     h1D_RawVz_N->Write();  h1D_CorrectedVz_N->Write();
+    hPtMiss_Raw->Write();
+    hPtMiss_Corrected->Write();
+    h2_PtMiss_Vs_Mass->Write();
+    h2_PtMiss_Vs_Mass_Corrected->Write();
     // Write Final 4p output
     h1D_Reco_InvMass_Raw_4pi_4TOF->Write();
     h1D_Reco_InvMass_Corrected_4pi_4TOF->Write();
@@ -495,7 +535,8 @@ int main(int argc, char** argv)
     h1D_Reco_Pt_Corrected_4pi_4TOF->Write();
     h1D_Reco_Y_Raw_4pi_4TOF->Write();
     h1D_Reco_Y_Corrected_4pi_4TOF->Write();
-    hPtMiss_Corrected->Write();
+    h1D_Reco_PtMiss_Raw_4pi_4TOF->Write();
+    h1D_Reco_PtMiss_Corrected_4pi_4TOF->Write();
     // Write 3-TOF output
     h1D_Reco_InvMass_Raw_4pi_3TOF->Write();
     h1D_Reco_InvMass_Corrected_4pi_3TOF->Write();
@@ -503,6 +544,8 @@ int main(int argc, char** argv)
     h1D_Reco_Pt_Corrected_4pi_3TOF->Write();
     h1D_Reco_Y_Raw_4pi_3TOF->Write();
     h1D_Reco_Y_Corrected_4pi_3TOF->Write();
+    h1D_Reco_PtMiss_Raw_4pi_3TOF->Write();
+    h1D_Reco_PtMiss_Corrected_4pi_3TOF->Write();
     // Write 2-TOF output
     h1D_Reco_InvMass_Raw_4pi_2TOF->Write();
     h1D_Reco_InvMass_Corrected_4pi_2TOF->Write();
@@ -510,6 +553,8 @@ int main(int argc, char** argv)
     h1D_Reco_Pt_Corrected_4pi_2TOF->Write();
     h1D_Reco_Y_Raw_4pi_2TOF->Write();
     h1D_Reco_Y_Corrected_4pi_2TOF->Write();
+    h1D_Reco_PtMiss_Raw_4pi_2TOF->Write();
+    h1D_Reco_PtMiss_Corrected_4pi_2TOF->Write();
 
     // Clean up
     delete d1; delete d2;

@@ -12,7 +12,123 @@
 #include <TMath.h>
 #include <TLatex.h>
 #include <iomanip>
+#include <iostream>
+#include <cmath>
+#include "TH1D.h"
+#include "TF1.h"
+#include "TCanvas.h"
+#include "TLegend.h"
 
+void EvaluatePtMissSystematics(TH1D* hPtMiss) {
+    // ---------------------------------------------------------
+    // 1. Define Regions
+    // ---------------------------------------------------------
+    double sigMin = 0.0;
+    double sigMax = 0.15;
+    double binWidth = hPtMiss->GetBinWidth(1);
+
+    // Calculate total events in the signal region
+    int binMin = hPtMiss->FindBin(sigMin);
+    int binMax = hPtMiss->FindBin(sigMax - 0.0001); // Avoid double-counting the boundary
+    double totalEvents = hPtMiss->Integral(binMin, binMax);
+
+    std::cout << "======================================================\n";
+    std::cout << "Total Events in Signal Region (0 - 0.15): " << totalEvents << "\n";
+    std::cout << "======================================================\n";
+
+    // Create a canvas to draw all the fits
+    TCanvas* cSys = new TCanvas("cSys", "pTmiss Systematics", 800, 600);
+    hPtMiss->SetMarkerStyle(20);
+    hPtMiss->SetLineColor(kBlack);
+    hPtMiss->Draw("E1");
+
+    TLegend* leg = new TLegend(0.45, 0.65, 0.88, 0.88);
+    leg->SetBorderSize(0);
+
+    // ---------------------------------------------------------
+    // 2. NOMINAL FIT: Rayleigh-like function, Range [0.20, 0.80]
+    // ---------------------------------------------------------
+    TF1* fitNominal = new TF1("fitNominal", "[0]*x*exp(-[1]*x)", 0.20, 0.80);
+    fitNominal->SetParameters(10000, 5); // Starting guesses
+    fitNominal->SetLineColor(kRed);
+    fitNominal->SetLineWidth(2);
+    
+    hPtMiss->Fit(fitNominal, "RQ"); // 'R' = use range, 'Q' = quiet mode
+    
+    double bgNominal = fitNominal->Integral(sigMin, sigMax) / binWidth;
+    double sigNominal = totalEvents - bgNominal;
+    
+    leg->AddEntry(fitNominal, Form("Nominal: Sig = %.1f", sigNominal), "l");
+
+    // ---------------------------------------------------------
+    // 3. SYS 1: Rayleigh-like function, Shifted Range High [0.25, 0.90]
+    // ---------------------------------------------------------
+    TF1* fitSys1 = new TF1("fitSys1", "[0]*x*exp(-[1]*x)", 0.25, 0.90);
+    fitSys1->SetParameters(10000, 5);
+    fitSys1->SetLineColor(kBlue);
+    fitSys1->SetLineStyle(2); // Dashed line
+    
+    hPtMiss->Fit(fitSys1, "RQ+"); // '+' = add to existing drawing
+    
+    double bgSys1 = fitSys1->Integral(sigMin, sigMax) / binWidth;
+    double sigSys1 = totalEvents - bgSys1;
+    
+    leg->AddEntry(fitSys1, Form("Sys1 (Range High): Sig = %.1f", sigSys1), "l");
+
+    // ---------------------------------------------------------
+    // 4. SYS 2: Rayleigh-like function, Shifted Range Low [0.18, 0.70]
+    // ---------------------------------------------------------
+    TF1* fitSys2 = new TF1("fitSys2", "[0]*x*exp(-[1]*x)", 0.18, 0.70);
+    fitSys2->SetParameters(10000, 5);
+    fitSys2->SetLineColor(kGreen+2);
+    fitSys2->SetLineStyle(3); // Dotted line
+    
+    hPtMiss->Fit(fitSys2, "RQ+");
+    
+    double bgSys2 = fitSys2->Integral(sigMin, sigMax) / binWidth;
+    double sigSys2 = totalEvents - bgSys2;
+    
+    leg->AddEntry(fitSys2, Form("Sys2 (Range Low): Sig = %.1f", sigSys2), "l");
+
+    // ---------------------------------------------------------
+    // 5. SYS 3: Change Mathematical Function to a Modified Rayleigh
+    // ---------------------------------------------------------
+    // Adds a quadratic term to the exponent: x * exp(-B*x - C*x^2)
+    TF1* fitSys3 = new TF1("fitSys3", "[0]*x*exp(-[1]*x - [2]*x*x)", 0.20, 0.80);
+    fitSys3->SetParameters(10000, 5, 0.1); // Starting guesses
+    fitSys3->SetLineColor(kMagenta);
+    fitSys3->SetLineStyle(4); 
+    
+    hPtMiss->Fit(fitSys3, "RQ+");
+    
+    double bgSys3 = fitSys3->Integral(sigMin, sigMax) / binWidth;
+    double sigSys3 = totalEvents - bgSys3;
+    
+    leg->AddEntry(fitSys3, Form("Sys3 (Mod. Rayleigh): Sig = %.1f", sigSys3), "l");
+
+    // ---------------------------------------------------------
+    // 6. Calculate Final Systematic Error
+    // ---------------------------------------------------------
+    double diff1 = std::abs(sigNominal - sigSys1);
+    double diff2 = std::abs(sigNominal - sigSys2);
+    double diff3 = std::abs(sigNominal - sigSys3);
+
+    // Find the maximum deviation
+    double maxSysError = std::max({diff1, diff2, diff3});
+
+    leg->Draw();
+    cSys->Update();
+    cSys->SaveAs("plots/pTmiss_Systematics.png");
+
+    std::cout << "\n=== BACKGROUND SUBTRACTION RESULTS ===\n";
+    std::cout << "Nominal Yield:      " << sigNominal << " events\n";
+    std::cout << "Sys 1 Yield (Diff): " << sigSys1 << " (" << diff1 << ")\n";
+    std::cout << "Sys 2 Yield (Diff): " << sigSys2 << " (" << diff2 << ")\n";
+    std::cout << "Sys 3 Yield (Diff): " << sigSys3 << " (" << diff3 << ")\n";
+    std::cout << "------------------------------------------------------\n";
+    std::cout << "FINAL REPORTED YIELD: " << sigNominal << " +/- " << maxSysError << " (syst.)\n";
+    std::cout << "======================================================\n";
+}
 
 void sethist(TH1* h1, TH1* h2) {
     h1->SetLineColor(kRed);
@@ -221,9 +337,135 @@ void PlotInvMass(TH1D* corr,TH1D* raw, const char* xtitle, double fitmin, double
     line1sigma_down->Draw("SAME");   
 }
 
+void ExtractDifferentialCrossSection(TH2D* h2) {
+    int nBins = h2->GetNbinsX();
+
+    // 2. Create the final output histograms
+    // One for the signal yield (statistical errors), one for the systematic boxes
+    TH1D* hFinalYield = (TH1D*)h2->ProjectionX("hFinalYield");
+    hFinalYield->Reset(); // Clear the contents, keep the binning
+    hFinalYield->SetTitle("Pure K_{S}^{0}K_{S}^{0} Yield;M(K_{S}^{0}K_{S}^{0}) [GeV/c^{2}];Events");
+
+    // We use a TGraphErrors to draw the grey systematic boxes later
+    TGraphErrors* grSystematics = new TGraphErrors(nBins);
+
+    // 3. Define your fit functions (Modified Rayleigh)
+    TF1* fitNominal = new TF1("fitNominal", "[0]*x*exp(-[1]*x - [2]*x*x)", 0.20, 0.80);
+    TF1* fitSys1    = new TF1("fitSys1",    "[0]*x*exp(-[1]*x - [2]*x*x)", 0.25, 0.90);
+    TF1* fitSys2    = new TF1("fitSys2",    "[0]*x*exp(-[1]*x - [2]*x*x)", 0.18, 0.70);
+
+    // 4. THE LOOP
+    for (int i = 1; i <= nBins; i++) {
+        // Slice the 2D histogram to get the pTmiss for THIS mass bin only
+        TH1D* hPtMiss = h2->ProjectionY(Form("ptMiss_bin_%d", i), i, i);
+        double binWidth = hPtMiss->GetBinWidth(1);
+
+        int binMin = hPtMiss->FindBin(0.0);
+        int binMax = hPtMiss->FindBin(0.1499);
+        double totalEvents = hPtMiss->Integral(binMin, binMax);
+
+        // -> ADD THIS: Check how many events are actually in the tail!
+        int tailMin = hPtMiss->FindBin(0.20);
+        int tailMax = hPtMiss->FindBin(0.80);
+        double tailEvents = hPtMiss->Integral(tailMin, tailMax);
+
+        // --- NEW SAFETY CHECK ---
+        // If there are very few events in the signal region, OR the tail is too empty to fit:
+        if (totalEvents < 5 || tailEvents < 10) {
+            // Set yield to 0 (or totalEvents if you prefer an upper limit)
+            hFinalYield->SetBinContent(i, 0); 
+            hFinalYield->SetBinError(i, 0);                        
+            // Set systematic error to 0 to prevent giant grey boxes
+            grSystematics->SetPoint(i-1, hFinalYield->GetBinCenter(i), 0);
+            grSystematics->SetPointError(i-1, hFinalYield->GetBinWidth(i)/2.0, 0);
+            
+            std::cout << "Bin " << i << " skipped due to low stats.\n";
+            continue; // Skip the fitting entirely!
+        }
+
+        // --- Fit Nominal ---
+        fitNominal->SetParameters(1000, 5, 0.1); 
+        // Optional: Stop the fitter from guessing insane negative slopes
+        fitNominal->SetParLimits(1, 0.0, 50.0); 
+        hPtMiss->Fit(fitNominal, "RQ0"); 
+        
+        double bgNominal = fitNominal->Integral(0.0, 0.15) / binWidth;
+        if (bgNominal > totalEvents) bgNominal = totalEvents; // THE REALITY CAP
+        if (bgNominal < 0) bgNominal = 0; // Prevent negative background guesses
+        double sigNominal = totalEvents - bgNominal;
+
+        // --- Fit Sys 1 ---
+        fitSys1->SetParameters(1000, 5, 0.1);
+        fitSys1->SetParLimits(1, 0.0, 50.0);
+        hPtMiss->Fit(fitSys1, "RQ0");
+        
+        double bgSys1 = fitSys1->Integral(0.0, 0.15) / binWidth;
+        if (bgSys1 > totalEvents) bgSys1 = totalEvents; // THE REALITY CAP
+        if (bgSys1 < 0) bgSys1 = 0;
+        double sigSys1 = totalEvents - bgSys1;
+
+        // --- Fit Sys 2 ---
+        fitSys2->SetParameters(1000, 5, 0.1);
+        fitSys2->SetParLimits(1, 0.0, 50.0);
+        hPtMiss->Fit(fitSys2, "RQ0");
+        
+        double bgSys2 = fitSys2->Integral(0.0, 0.15) / binWidth;
+        if (bgSys2 > totalEvents) bgSys2 = totalEvents; // THE REALITY CAP
+        if (bgSys2 < 0) bgSys2 = 0;
+        double sigSys2 = totalEvents - bgSys2;
+
+        // --- Calculate Systematics ---
+        double diff1 = std::abs(sigNominal - sigSys1);
+        double diff2 = std::abs(sigNominal - sigSys2);
+        double maxSysError = std::max(diff1, diff2);
+
+        // Prevent negative yields in pure noise bins
+        if (sigNominal < 0) sigNominal = 0; 
+
+        // 5. STORE THE RESULTS
+        // Set the statistical data point
+        hFinalYield->SetBinContent(i, sigNominal);
+        
+        // The statistical error of the background subtraction is roughly sqrt(Total + Bg)
+        double statError = sqrt(totalEvents + bgNominal); 
+        hFinalYield->SetBinError(i, statError);
+
+        // Set the systematic grey box
+        double massCenter = hFinalYield->GetBinCenter(i);
+        double massWidth  = hFinalYield->GetBinWidth(i) / 2.0;
+        
+        grSystematics->SetPoint(i-1, massCenter, sigNominal);
+        // X-error is the bin width, Y-error is your systematic error
+        grSystematics->SetPointError(i-1, massWidth, maxSysError); 
+
+        std::cout << "Bin " << i << " (Mass " << massCenter << "): Yield = " 
+                  << sigNominal << " +/- " << statError << " (stat) +/- " 
+                  << maxSysError << " (syst)\n";
+    }
+
+    gStyle->SetOptTitle(0); // Removes the default "Graph" title box at the top
+
+    // 6. DRAW THE FINAL PLOT
+    TCanvas* cFinal = new TCanvas("cFinal", "Differential Cross Section", 800, 600);
+    
+    // Draw the grey systematic boxes first
+    grSystematics->SetFillColor(kGray);
+    grSystematics->Draw("A2"); // 'A2' draws boxes
+    
+    // Draw the statistical points on top
+    hFinalYield->SetMarkerStyle(20);
+    hFinalYield->SetLineColor(kBlack);
+    hFinalYield->SetMinimum(0.0);
+    hFinalYield->SetTitle("Central Exclusive Production: K_{S}^{0}K_{S}^{0}; M(K_{S}^{0}K_{S}^{0}) [GeV/c^{2}]; Corrected Yield / Bin");
+
+    hFinalYield->Draw("E1 SAME");
+    
+    cFinal->SaveAs("Final_K0K0_Spectrum.png");
+}
+
 void Plot_EffCorrections()
 {
-    string DataFile = "EffCorrWithNewEffFileWithNewCap.root"; //EffCorrWithOldEffSameAsResultsApril14 EffCorrWithNewEffFile
+    string DataFile = "EffCorr_nHits20_AorB_pTmiss3.root"; //EffCorrWithOldEffSameAsResultsApril14 EffCorrWithNewEffFile
     TFile* fcorr = TFile::Open(DataFile.c_str(), "READ");
 
     // Load Histograms
@@ -250,6 +492,13 @@ void Plot_EffCorrections()
     TH1D* h1D_Reco_InvMass_Raw_4pi_3TOF = (TH1D*)fcorr->Get("h1D_Reco_InvMass_Raw_4pi_3TOF");
     TH1D* h1D_Reco_InvMass_Raw_4pi_2TOF = (TH1D*)fcorr->Get("h1D_Reco_InvMass_Raw_4pi_2TOF");
 
+    TH1D *h1D_PtMiss_Raw = (TH1D*)fcorr->Get("hPtMiss_Raw");
+    TH1D *h1D_PtMiss_Corrected = (TH1D*)fcorr->Get("hPtMiss_Corrected");
+    TH2D *h2_PtMiss_Vs_Mass = (TH2D*)fcorr->Get("h2_PtMiss_Vs_Mass");
+    TH2D *h2_PtMiss_Vs_Mass_Corrected = (TH2D*)fcorr->Get("h2_PtMiss_Vs_Mass_Corrected");
+
+    ExtractDifferentialCrossSection(h2_PtMiss_Vs_Mass_Corrected);
+
     TH1D *hInvMassCorr = (TH1D*)h1D_Reco_InvMass_Corrected_4pi_4TOF->Clone("hInvMassCorr");
     hInvMassCorr->Add(h1D_Reco_InvMass_Corrected_4pi_3TOF);
     hInvMassCorr->Add(h1D_Reco_InvMass_Corrected_4pi_2TOF);
@@ -267,6 +516,7 @@ void Plot_EffCorrections()
     sethist(hVerZ_N_C, hVerZ_N_R);
 
     gStyle->SetOptStat(0); // Disable stats box for cleaner plots
+
 
     // --- Plotting PT (Positive vs Negative) ---
     TCanvas* cPt = new TCanvas("cPt", "pT Comparison", 2000, 1000);
@@ -294,6 +544,12 @@ void Plot_EffCorrections()
     cVerZ->cd(2);
     For1atatime(hVerZ_N_C, hVerZ_N_R, "Vz (cm)", -1.0, 9.0);
     cVerZ->SaveAs("plots/EffCorrData_VerZ_PosNeg3.png");
+
+    
+
+    TCanvas* cPtMiss = new TCanvas("cPtMiss", "pTmiss Comparison", 1000, 1000);
+    For1atatime(h1D_PtMiss_Corrected, h1D_PtMiss_Raw, "p_{T}^{miss} (GeV/c)", -1.0, 100.0);
+    cPtMiss->SaveAs("plots/EffCorrData_pTmiss3.png");
 
     //std::cout << "Raw entries: " << hInvMassRaw->GetEntries() << ", Max bin: " << hInvMassRaw->GetMaximum() << std::endl;
     //std::cout << "Corr entries: " << hInvMassCorr->GetEntries() << ", Max bin: " << hInvMassCorr->GetMaximum() << std::endl;
@@ -348,6 +604,8 @@ void Plot_EffCorrections()
     h1D_Reco_InvMass_Corrected_4pi_2TOF->SetTitle("2 TOF Hits");
     PlotInvMass(h1D_Reco_InvMass_Corrected_4pi_2TOF, h1D_Reco_InvMass_Raw_4pi_2TOF, "m_{K_{S}^{0}K_{S}^{0}} (GeV/c^{2})", 1.1, 2.5, -2.0, 100.0);
     c2TOF->SaveAs("plots/EffCorrData_2TOF.png");
+
+    EvaluatePtMissSystematics(h1D_PtMiss_Corrected);
 
 }
 
