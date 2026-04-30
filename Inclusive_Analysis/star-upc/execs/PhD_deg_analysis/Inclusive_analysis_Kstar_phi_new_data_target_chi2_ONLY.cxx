@@ -67,6 +67,8 @@ int main(int argc, char** argv){
     outsideprocessing.AddHistogram(TH1D("pairInfoBackgroundTrackRotation", "", 1, 0, 1));
     outsideprocessing.AddHistogram(TH1D("pairInfoBackgroundRandomTrackRotation", "", 1, 0, 1));
 
+    outsideprocessing.AddHistogram(TH1D("Flowchart", "", 1, 0, 1));
+
     //adding chi2 histograms
     //file with sigma values:
     ifstream sigmaFile;
@@ -195,6 +197,15 @@ int main(int argc, char** argv){
         // StRPEvent* tempRPpointer;
         insideprocessing.GetLocalHistograms(&outsideprocessing);
 
+        //filling pairInfo histograms in correct order of bins
+        for(auto&& histlastname:{ "Signal", "BackgroundSameSign", "BackgroundTrackRotation", "BackgroundRandomTrackRotation" }){
+            std::string histfirstname = "pairInfo";
+            insideprocessing.Fill((histfirstname+histlastname).c_str(), "OK", 0.0);
+            insideprocessing.Fill((histfirstname+histlastname).c_str(), "TOF wrong", 0.0);
+            insideprocessing.Fill((histfirstname+histlastname).c_str(), "dEdx wrong", 0.0);
+            insideprocessing.Fill((histfirstname+histlastname).c_str(), "Both wrong", 0.0);
+        }
+
         //helpful variables
         std::vector<StUPCTrack*> vector_Track_positive;
         std::vector<StUPCTrack*> vector_Track_negative;
@@ -254,9 +265,11 @@ int main(int argc, char** argv){
             //additional cuts that normally are used in only-RP-cuts examples
             //cause the data i used isn't properly filtered
             //making sure i don't get garbage from zerobias trigger
+            insideprocessing.Fill("Flowchart", "All", 1.0);
             if(tempUPCpointer->isTrigger(570704)){
                 continue;
             }
+            insideprocessing.Fill("Flowchart", "Not zerobias", 1.0);
             //at least 2 good tracks
             int nOfGoodTracks = 0;
             for(int i = 0; i<tempUPCpointer->getNumberOfTracks(); i++){
@@ -268,10 +281,12 @@ int main(int argc, char** argv){
             if(nOfGoodTracks<2){
                 continue;
             }
+            insideprocessing.Fill("Flowchart", "#geq 2 ToF tracks", 1.0);
             //exactly one vertex
             if(tempUPCpointer->getNumberOfVertices()!=1){
                 continue;
             }
+            insideprocessing.Fill("Flowchart", "One vertex", 1.0);
 
             //cuts & histogram filling
             //selecting tracks matching criteria:
