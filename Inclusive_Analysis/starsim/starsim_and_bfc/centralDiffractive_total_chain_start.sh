@@ -77,6 +77,9 @@ do
                 "phi")
                     filter="Phi"
                     ;;
+                "strange")
+                    filter="Strange"
+                    ;;
                 *)
                     ;;
             esac
@@ -133,7 +136,8 @@ if [ "$#" -eq "0" ]; then
     echo -e "    Lambda0 \t\t applies filter for Lambda0 particles only"
     echo -e "    Kstar \t\t applies filter for K*(892) particles only"
     echo -e "    phi \t\t applies filter for phi(1020) particles only"
-    echo -e "    anything else:\t applies filter for K0S, Lambda0, K*(892) and phi(1020) particles only"
+    echo -e "    strange \t\t applies filter for K0S, Lambda0, K*(892) and phi(1020) particles only"
+    echo -e "    anything else:\t no filter, just general central diffraction simulation"
     echo
     echo -e "-p: foldername \t\t changes folder name to \"foldername\" (without quotes)"
     echo

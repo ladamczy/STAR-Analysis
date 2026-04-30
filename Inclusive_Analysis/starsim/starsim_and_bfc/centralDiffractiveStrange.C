@@ -127,25 +127,25 @@ void Pythia8(){
 
     //setting only charged decay products
     //K0S
-    // pythia8->Set("310:onMode=0");
-    // pythia8->Set("310:OnIfMatch=211 -211");
-    // pythia8->Set("-310:onMode=0");
-    // pythia8->Set("-310:OnIfMatch=-211 211");
-    // //Lambda0
-    // pythia8->Set("3122:onMode=0");
-    // pythia8->Set("3122:OnIfMatch=2212 -211");
-    // pythia8->Set("-3122:onMode=0");
-    // pythia8->Set("-3122:OnIfMatch=-2212 211");
-    // //K*(892)
-    // pythia8->Set("313:onMode=0");
-    // pythia8->Set("313:OnIfMatch=321 -211");
-    // pythia8->Set("-313:onMode=0");
-    // pythia8->Set("-313:OnIfMatch=-321 211");
-    // //phi
-    // pythia8->Set("333:onMode=0");
-    // pythia8->Set("333:OnIfMatch=321 -321");
-    // pythia8->Set("-333:onMode=0");
-    // pythia8->Set("-333:OnIfMatch=-321 321");
+    pythia8->Set("310:onMode=0");
+    pythia8->Set("310:OnIfMatch=211 -211");
+    pythia8->Set("-310:onMode=0");
+    pythia8->Set("-310:OnIfMatch=-211 211");
+    //Lambda0
+    pythia8->Set("3122:onMode=0");
+    pythia8->Set("3122:OnIfMatch=2212 -211");
+    pythia8->Set("-3122:onMode=0");
+    pythia8->Set("-3122:OnIfMatch=-2212 211");
+    //K*(892)
+    pythia8->Set("313:onMode=0");
+    pythia8->Set("313:OnIfMatch=321 -211");
+    pythia8->Set("-313:onMode=0");
+    pythia8->Set("-313:OnIfMatch=-321 211");
+    //phi
+    pythia8->Set("333:onMode=0");
+    pythia8->Set("333:OnIfMatch=321 -321");
+    pythia8->Set("-333:onMode=0");
+    pythia8->Set("-333:OnIfMatch=-321 321");
 
     _primary->AddGenerator(pythia8);
 }
@@ -181,7 +181,7 @@ void centralDiffractive(Int_t nevents = 10, Int_t runNumber = 18091010, Int_t rn
     chain->AddBefore("geant", _primary);
 
     //addig filter to primary event maker
-    filter = new GeneralHadronFilter();
+    filter = new StrangeHadronFilter();
     filter->SetAttr(".Privilege", 1);
     _primary->AddFilter(filter);
     //not needed, set to 1 if you want to keep all despite filter working
