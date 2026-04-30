@@ -59,7 +59,8 @@ Int_t GeneralHadronFilter::Filter(StarGenEvent* event){
         double d_eta = 0.3;
         double pT = 0.2;
         double d_pT = 0.05;
-        if(fabs(particle->Eta())>=eta+d_eta||particle->Pt()<pT-d_pT){
+        TLorentzVector particleFourmomentum = particle->momentum();
+        if(fabs(particleFourmomentum.Eta())>=eta+d_eta||particleFourmomentum.Pt()<pT-d_pT){
             continue;
         }
         //decision
