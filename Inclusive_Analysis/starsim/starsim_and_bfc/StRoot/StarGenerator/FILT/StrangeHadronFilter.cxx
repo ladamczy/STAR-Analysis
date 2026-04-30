@@ -27,9 +27,7 @@ Int_t StrangeHadronFilter::Filter(StarGenEvent* event){
     StarGenParticle* particle = nullptr;
     for(size_t i = 0; i<event->GetNumberOfParticles(); i++){
         particle = (*event)[i];
-        if(particle->GetStatus()!=1){
-            continue;
-        }
+
         //strange particle check
         switch(abs(particle->GetId())){
         case 310:       //K0S
