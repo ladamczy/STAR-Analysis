@@ -19,6 +19,18 @@
 #include "TCanvas.h"
 #include "TLegend.h"
 
+
+void sethist(TH1* h1, TH1* h2) {
+    h1->SetLineColor(kRed);
+    h1->SetMarkerStyle(20);
+    h1->SetMarkerSize(1.2); // Reduced size for side-by-side visibility
+    h1->SetMarkerColor(kRed);
+    h2->SetLineColor(kBlue);
+    h2->SetMarkerStyle(21);
+    h2->SetMarkerSize(1.2);
+    h2->SetMarkerColor(kBlue);
+}
+
 void EvaluatePtMissSystematics(TH1D* hPtMiss) {
     // ---------------------------------------------------------
     // 1. Define Regions
@@ -37,13 +49,15 @@ void EvaluatePtMissSystematics(TH1D* hPtMiss) {
     std::cout << "======================================================\n";
 
     // Create a canvas to draw all the fits
-    TCanvas* cSys = new TCanvas("cSys", "pTmiss Systematics", 800, 600);
+    TCanvas* cSys = new TCanvas("cSys", "pTmiss Systematics", 1000, 800);
     hPtMiss->SetMarkerStyle(20);
     hPtMiss->SetLineColor(kBlack);
+    hPtMiss->GetXaxis()->SetLabelSize(0.05);
     hPtMiss->Draw("E1");
 
-    TLegend* leg = new TLegend(0.45, 0.65, 0.88, 0.88);
+    TLegend* leg = new TLegend(0.11, 0.71, 0.48, 0.88);
     leg->SetBorderSize(0);
+    leg->SetTextSize(0.045);
 
     // ---------------------------------------------------------
     // 2. NOMINAL FIT: Rayleigh-like function, Range [0.20, 0.80]
@@ -51,7 +65,7 @@ void EvaluatePtMissSystematics(TH1D* hPtMiss) {
     TF1* fitNominal = new TF1("fitNominal", "[0]*x*exp(-[1]*x)", 0.20, 0.80);
     fitNominal->SetParameters(10000, 5); // Starting guesses
     fitNominal->SetLineColor(kRed);
-    fitNominal->SetLineWidth(2);
+    fitNominal->SetLineWidth(3);
     
     hPtMiss->Fit(fitNominal, "RQ"); // 'R' = use range, 'Q' = quiet mode
     
@@ -67,13 +81,14 @@ void EvaluatePtMissSystematics(TH1D* hPtMiss) {
     fitSys1->SetParameters(10000, 5);
     fitSys1->SetLineColor(kBlue);
     fitSys1->SetLineStyle(2); // Dashed line
+    fitSys1->SetLineWidth(2);
     
     hPtMiss->Fit(fitSys1, "RQ+"); // '+' = add to existing drawing
     
     double bgSys1 = fitSys1->Integral(sigMin, sigMax) / binWidth;
     double sigSys1 = totalEvents - bgSys1;
     
-    leg->AddEntry(fitSys1, Form("Sys1 (Range High): Sig = %.1f", sigSys1), "l");
+    leg->AddEntry(fitSys1, Form("Sys1: Sig = %.1f", sigSys1), "l");
 
     // ---------------------------------------------------------
     // 4. SYS 2: Rayleigh-like function, Shifted Range Low [0.18, 0.70]
@@ -82,13 +97,14 @@ void EvaluatePtMissSystematics(TH1D* hPtMiss) {
     fitSys2->SetParameters(10000, 5);
     fitSys2->SetLineColor(kGreen+2);
     fitSys2->SetLineStyle(3); // Dotted line
+    fitSys2->SetLineWidth(2);
     
     hPtMiss->Fit(fitSys2, "RQ+");
     
     double bgSys2 = fitSys2->Integral(sigMin, sigMax) / binWidth;
     double sigSys2 = totalEvents - bgSys2;
     
-    leg->AddEntry(fitSys2, Form("Sys2 (Range Low): Sig = %.1f", sigSys2), "l");
+    leg->AddEntry(fitSys2, Form("Sys2: Sig = %.1f", sigSys2), "l");
 
     // ---------------------------------------------------------
     // 5. SYS 3: Change Mathematical Function to a Modified Rayleigh
@@ -98,6 +114,7 @@ void EvaluatePtMissSystematics(TH1D* hPtMiss) {
     fitSys3->SetParameters(10000, 5, 0.1); // Starting guesses
     fitSys3->SetLineColor(kMagenta);
     fitSys3->SetLineStyle(4); 
+    fitSys3->SetLineWidth(2);
     
     hPtMiss->Fit(fitSys3, "RQ+");
     
@@ -128,17 +145,6 @@ void EvaluatePtMissSystematics(TH1D* hPtMiss) {
     std::cout << "------------------------------------------------------\n";
     std::cout << "FINAL REPORTED YIELD: " << sigNominal << " +/- " << maxSysError << " (syst.)\n";
     std::cout << "======================================================\n";
-}
-
-void sethist(TH1* h1, TH1* h2) {
-    h1->SetLineColor(kRed);
-    h1->SetMarkerStyle(20);
-    h1->SetMarkerSize(1.2); // Reduced size for side-by-side visibility
-    h1->SetMarkerColor(kRed);
-    h2->SetLineColor(kBlue);
-    h2->SetMarkerStyle(21);
-    h2->SetMarkerSize(1.2);
-    h2->SetMarkerColor(kBlue);
 }
 
 void For1atatime (TH1D* corrected, TH1D* raw, const char* xtitle, double pullMinY1, double pullMaxY2) {
@@ -338,6 +344,7 @@ void PlotInvMass(TH1D* corr,TH1D* raw, const char* xtitle, double fitmin, double
 }
 
 void ExtractDifferentialCrossSection(TH2D* h2) {
+
     int nBins = h2->GetNbinsX();
 
     // 2. Create the final output histograms
@@ -450,18 +457,24 @@ void ExtractDifferentialCrossSection(TH2D* h2) {
     
     // Draw the grey systematic boxes first
     grSystematics->SetFillColor(kGray);
+    //set axis titles and ranges for the graph (since it's just boxes, it won't auto-set them)
+    grSystematics->GetXaxis()->SetTitle("m_{K_{S}^{0}K_{S}^{0}} [GeV/c^{2}]");
+    grSystematics->GetYaxis()->SetTitle("Corrected Yield / Bin");
+    //grSystematics->GetXaxis()->SetLimits(0.9, 3.0);
+    //grSystematics->GetYaxis()->SetRangeUser(0, hFinalYield->GetMaximum() * 1.5);
     grSystematics->Draw("A2"); // 'A2' draws boxes
     
     // Draw the statistical points on top
     hFinalYield->SetMarkerStyle(20);
     hFinalYield->SetLineColor(kBlack);
     hFinalYield->SetMinimum(0.0);
-    hFinalYield->SetTitle("Central Exclusive Production: K_{S}^{0}K_{S}^{0}; M(K_{S}^{0}K_{S}^{0}) [GeV/c^{2}]; Corrected Yield / Bin");
+    hFinalYield->SetTitle("Central Exclusive Production: K_{S}^{0}K_{S}^{0}; m_{K_{S}^{0}K_{S}^{0}} [GeV/c^{2}]; Corrected Yield / Bin");
 
     hFinalYield->Draw("E1 SAME");
     
-    cFinal->SaveAs("Final_K0K0_Spectrum.png");
+    cFinal->SaveAs("plots/Final_K0K0_Spectrum.png");
 }
+
 
 void Plot_EffCorrections()
 {
@@ -606,6 +619,18 @@ void Plot_EffCorrections()
     c2TOF->SaveAs("plots/EffCorrData_2TOF.png");
 
     EvaluatePtMissSystematics(h1D_PtMiss_Corrected);
+
+    gStyle->SetPaintTextFormat(".0f"); // Set text format for 2 decimal places in the 2D histogram
+   
+    TCanvas* c2D = new TCanvas("c2D", "pTmiss vs Mass", 2000, 1000);
+    c2D->Divide(2);
+    c2D->cd(1);
+    h2_PtMiss_Vs_Mass->SetTitle("Raw p_{T}^{miss} vs Mass");
+    h2_PtMiss_Vs_Mass->Draw("TEXT COLZ");
+    c2D->cd(2);
+    h2_PtMiss_Vs_Mass_Corrected->SetTitle("Corrected p_{T}^{miss} vs Mass");
+    h2_PtMiss_Vs_Mass_Corrected->Draw("TEXT COLZ");
+    c2D->SaveAs("plots/pTmiss_vs_Mass.png");
 
 }
 
