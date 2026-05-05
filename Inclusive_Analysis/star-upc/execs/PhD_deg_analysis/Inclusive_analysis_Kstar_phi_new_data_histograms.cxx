@@ -22,6 +22,7 @@
 
 #include "MyStyles.h"
 
+std::string rountToNSignificantFigures(double input, int n = 2);
 int GetFirstNonzeroBinNumber(TH1* input);
 void set_background_fitting(TPad* pad, TH1D* data, TH1D* bcg, double& bcgRegionStart, double& bcgRegionStop, std::string name, std::string title, std::string draw_full_path = "");
 void draw_and_save(TH1D* data, std::string folderWithDiagonal, std::string name, std::string title, std::string options = "");
@@ -101,10 +102,10 @@ int main(int argc, char* argv[]){
     TH1D* MppChi2bcg = (TH1D*)input->Get(("MppChi2Bcg"+BcgType).c_str());
     //getting diffractive background and signal
     std::vector<std::string> pairTab = { "Kpi", "piK", "KK" };
-    std::vector<double> bcgRegionStart = { 1.05, 1.05, 1.15 };
-    std::vector<double> bcgRegionStop = { 1.25, 1.25, 1.45 };
+    std::vector<double> bcgRegionStart = { 1.05, 1.05, 1.8 };
+    std::vector<double> bcgRegionStop = { 1.25, 1.25, 2.4 };
     std::vector<double> fitMaximum = { 0.892, 0.892, 1.02 };
-    std::vector<double> fitWidth = { 0.0514, 0.0514, 0.004 };//51.4 MeV for K*(892), 4.43 MeV for phi(1020)
+    std::vector<double> fitWidth = { 0.0514, 0.0514, 0.00443 };//51.4 MeV for K*(892), 4.43 MeV for phi(1020)
     //creating list of categories
     std::vector<std::string> allCategories;
     std::ifstream infile("STAR-Analysis/Inclusive_Analysis/star-upc/execs/PhD_deg_analysis/Differential_crossection_values.txt");
@@ -185,7 +186,7 @@ int main(int argc, char* argv[]){
     fit_func_custom_sig.FixParameter(4, 0.);
     fit_func_custom_sig.SetParameter(5, 0.0013);
     fit_func_custom_sig.SetParNames("N_{BW}", "m_{0}", "#Gamma_{0,BW}", "N_{Gauss}", "m_{0,Gauss}", "#sigma_{Gauss}");
-    fit_func_custom_bcg.SetParNames("c", "b", "a");
+    fit_func_custom_bcg.SetParNames("a_{0}", "a_{1}", "a_{2}");
     differential_crossection_fit(result, MKKChi2Close, &fit_func_custom_sig, &fit_func_custom_bcg, folderWithDiagonal+"MKKwhole.pdf");
     //fitting ONCE the total m_Kpi
     fit_func_custom_sig.SetRange(0.7, 1.1);
@@ -216,6 +217,7 @@ skipOneTimeFitting:
 
     //fitting functions
     TF1* fit_func_sig = new TF1("fit_func_sig", "breitwigner", 0.8, 1.0);
+    fit_func_sig->SetParNames("N", "m_{0}", "#Gamma");
     //backgrounds - one custom, with parameters p0, p1
     //being values at ends (p2, p3)
     auto custom_background = [&](double* x, double* p){
@@ -228,7 +230,8 @@ skipOneTimeFitting:
         return a*(x[0]-p[2])+p[0];
     };
     TF1* fit_func_bcg = new TF1("fit_func_bcg", custom_background, 0.8, 1.0, 4);
-    TF1* fit_func_empty_bcg = new TF1("fit_func_bcg", "0.", 0.8, 1.0);
+    fit_func_bcg->SetParNames("bcg(x_{1})", "bcg(x_{2})");
+    TF1* fit_func_empty_bcg = new TF1("fit_func_empty_bcg", "0.", 0.8, 1.0);
     //custom backgroundfrom the paper
     auto even_more_custom_background = [&](double* x, double* p){
         double A = p[0];
@@ -239,8 +242,11 @@ skipOneTimeFitting:
         return (1-exp((2*mK-m)/C))*pow(m/(2*mK), A)+B*(m/(2*mK)-1);
     };
     TF1* fit_func_paper_bcg = new TF1("fit_func_paper_bcg", even_more_custom_background, 0.8, 1.0, 3);
+    fit_func_paper_bcg->SetParNames("A", "B", "C");
     TF1* fit_func_for_Kstar = new TF1("fit_func_for_Kstar", "pol3", 0.8, 1.0);
+    fit_func_for_Kstar->SetParNames("a_{0}", "a_{1}", "a_{2}", "a_{3}");
     TF1* fit_func_for_phi = new TF1("fit_func_for_phi", "pol2", 0.8, 1.0);
+    fit_func_for_phi->SetParNames("a_{0}", "a_{1}", "a_{2}");
     //substracting one from another
     //fitting the difference
     //and filling the result
@@ -281,8 +287,8 @@ skipOneTimeFitting:
                 fit_func_bcg->FixParameter(3, fit_func_bcg->GetXmax());
                 double par_value, par_error;
                 std::string newTitle = baseOfTitle;
-                newTitle += std::to_string(sig_pointer->GetYaxis()->GetBinLowEdge(k+1))+" - ";
-                newTitle += std::to_string(sig_pointer->GetYaxis()->GetBinUpEdge(k+1));
+                newTitle += "("+rountToNSignificantFigures(sig_pointer->GetYaxis()->GetBinLowEdge(k+1))+", ";
+                newTitle += rountToNSignificantFigures(sig_pointer->GetYaxis()->GetBinUpEdge(k+1))+")";
                 sig_slice->SetTitle(newTitle.c_str());
                 TFitResult tempResult = differential_crossection_fit(result, sig_slice, fit_func_sig, fit_func_bcg);
                 if(tempResult.Chi2()==0){
@@ -338,8 +344,8 @@ fittingBackground:
                 fit_func_empty_bcg->SetRange(lower_range, 1.1);
                 double par_value, par_error;
                 std::string newTitle = baseOfTitle;
-                newTitle += std::to_string(sig_pointer->GetYaxis()->GetBinLowEdge(k+1))+" - ";
-                newTitle += std::to_string(sig_pointer->GetYaxis()->GetBinUpEdge(k+1));
+                newTitle += "("+rountToNSignificantFigures(sig_pointer->GetYaxis()->GetBinLowEdge(k+1))+", ";
+                newTitle += rountToNSignificantFigures(sig_pointer->GetYaxis()->GetBinUpEdge(k+1))+")";
                 newTitle += " ZERO BACKGROUND";
                 sig_slice->SetTitle(newTitle.c_str());
                 TFitResult tempResult = differential_crossection_fit(result, sig_slice, fit_func_sig, fit_func_empty_bcg);
@@ -408,8 +414,8 @@ notFittingBackground:
                 //fitting and filling result
                 double par_value, par_error;
                 std::string newTitle = baseOfTitle;
-                newTitle += std::to_string(sig_pointer->GetYaxis()->GetBinLowEdge(k+1))+" - ";
-                newTitle += std::to_string(sig_pointer->GetYaxis()->GetBinUpEdge(k+1));
+                newTitle += "("+rountToNSignificantFigures(sig_pointer->GetYaxis()->GetBinLowEdge(k+1))+", ";
+                newTitle += rountToNSignificantFigures(sig_pointer->GetYaxis()->GetBinUpEdge(k+1))+")";
                 newTitle += " NOT REMOVED BACKGROUND";
                 sig_slice->SetTitle(newTitle.c_str());
                 TFitResult tempResult = differential_crossection_fit(result, sig_slice, fit_func_sig, bcg_func);
@@ -544,6 +550,12 @@ noBackground:
     //the end
     theApp.Run();
     return 0;
+}
+
+std::string rountToNSignificantFigures(double input, int n){
+    char buffer[100];
+    sprintf(buffer, ("%."+std::to_string(n)+"f").c_str(), input);
+    return std::string(buffer);
 }
 
 int GetFirstNonzeroBinNumber(TH1* input){
