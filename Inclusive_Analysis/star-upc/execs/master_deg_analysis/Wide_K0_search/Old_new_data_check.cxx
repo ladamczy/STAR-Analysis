@@ -44,13 +44,13 @@ struct DataHolder{
         fill(fill), run(run), event(event), RP_px(RP_px), RP_py(RP_py), TPC_pt(TPC_pt),
         TPC_eta(TPC_eta), TPC_phi(TPC_phi){}
 
-    bool operator==(const DataHolder& rhs){
+    bool operator==(const DataHolder& rhs) const{
         return std::tie(fill, run, event, RP_px, RP_py, TPC_pt, TPC_eta, TPC_phi, nonPrimaryWithNoAdditionalFlags)==std::tie(rhs.fill, rhs.run, rhs.event, rhs.RP_px, rhs.RP_py, rhs.TPC_pt, rhs.TPC_eta, rhs.TPC_phi, rhs.nonPrimaryWithNoAdditionalFlags);
     }
-    bool operator<(const DataHolder& rhs){
+    bool operator<(const DataHolder& rhs) const{
         return std::tie(fill, run, event, RP_px, RP_py, TPC_pt, TPC_eta, TPC_phi, nonPrimaryWithNoAdditionalFlags)<std::tie(rhs.fill, rhs.run, rhs.event, rhs.RP_px, rhs.RP_py, rhs.TPC_pt, rhs.TPC_eta, rhs.TPC_phi, rhs.nonPrimaryWithNoAdditionalFlags);
     }
-    bool operator>(const DataHolder& rhs){
+    bool operator>(const DataHolder& rhs) const{
         return std::tie(fill, run, event, RP_px, RP_py, TPC_pt, TPC_eta, TPC_phi, nonPrimaryWithNoAdditionalFlags)>std::tie(rhs.fill, rhs.run, rhs.event, rhs.RP_px, rhs.RP_py, rhs.TPC_pt, rhs.TPC_eta, rhs.TPC_phi, rhs.nonPrimaryWithNoAdditionalFlags);
     }
 };
