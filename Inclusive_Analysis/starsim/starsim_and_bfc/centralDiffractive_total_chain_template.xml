@@ -10,7 +10,10 @@
         root4star -q -b addPythiaParticles.C\(\"centralDiffractive.MuDst.root\",\"centralDiffractive.root\",&run_number;\)
         rename centralDiffractive centralDiffractive&number; centralDiffractive.*
         rm vpdana.root
-        ./remove_everything_but_MuDst_and_pythia.sh &remove_everything_but_MuDst_and_pythia;
+        rename .MuDst.root .save *.*
+        rename .root .delete *.*.root
+        rm *.delete
+        rename .save .MuDst.root *.*
 </command>
 <Generator>
         <Location>/star/u/adamwatroba/STAR-Analysis/Inclusive_Analysis/starsim/starsim_and_bfc/star_scheduler_logs</Location>

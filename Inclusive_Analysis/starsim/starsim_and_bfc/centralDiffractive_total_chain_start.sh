@@ -33,12 +33,11 @@ fi
 # setting values based on additional parameters
 output_directory="/star/u/adamwatroba/STAR-Analysis/Inclusive_Analysis/starsim/starsim_and_bfc/results"
 output_folder=$(date -Iseconds)
-extension="root"
-remove_everything_but_MuDst_and_pythia=0
+extension="MuDst.root"
 filter=""
 NO_RUNNING=0
 n=100
-while getopts "e:f:p:n:st" flag
+while getopts "f:p:n:st" flag
 do
     #just in case an argument for -e got forgot and there is -e -t now or sth
     if [[ "$OPTARG" == -* ]]; then
@@ -51,18 +50,6 @@ do
     fi
     #in case there is an empty argument
     case $flag in
-        #case for checking all extensions i'd like to copy
-        e)  case $OPTARG in
-                "Mu")
-                    extension="MuDst.root"
-                    ;;
-                "MuPythia")
-                    remove_everything_but_MuDst_and_pythia=1
-                    ;;
-                *)
-                    ;;
-            esac
-            ;;
         #case for checking active filters
         f)  case $OPTARG in
                 "K0S")
@@ -110,11 +97,7 @@ echo -e "output_folder:\t\t$output_folder"
 echo -e "length:\t\t\t$length"
 echo -e "run_number:\t\t$run_number"
 echo -e "seed:\t\t\t$seed"
-if [ "$remove_everything_but_MuDst_and_pythia" -eq "1" ]; then
-    echo -e "extension:\t\tMuDst.root and Pythia root"
-else
-    echo -e "extension:\t\t$extension"
-fi
+echo -e "extension:\t\t$extension"
 if [[ -z "$filter" ]]; then
     echo -e "filter:\t\t\tgeneral production"
 elif [[ "$filter" = "strange" ]]; then
@@ -130,10 +113,6 @@ if [ "$#" -eq "0" ]; then
     echo ./centralDiffractive_total_chain_start.sh [number of events] [run number \(optional, default 18091010\)] ["seed" \(optional, default 0\)] [optional arguments]
     echo
     echo Optional arguments:
-    echo
-    echo -e "-e: Mu \t\t\t copies .MuDst.root files only"
-    echo -e "    MuPythia \t\t copies .MuDst.root and Pythia .root files only"
-    echo -e "    anything else:\t copies .root files"
     echo
     echo -e "-f: K0S \t\t applies filter for K0S particles only"
     echo -e "    Lambda0 \t\t applies filter for Lambda0 particles only"
