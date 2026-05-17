@@ -81,6 +81,26 @@ int main(int argc, char* argv[]){
                                     {KminusPDGid, 0.493677},
                                     {pplusPDGid, 0.938272},
                                     {pminusPDGid, 0.938272} };
+    //histogram names
+    std::map<int, std::string> namemap = { {K0SPDGid, "K^{0}_{S}"},
+                                    {LambdaPDGid, "#Lambda^0"},
+                                    {LambdabarPDGid, "#bar{#Lambda}^{0}"},
+                                    {KstarPDGid, "K^{*}(892)"},
+                                    {KstarbarPDGid, "#bar{K}^{*}(892)"},
+                                    {phiPDGid, "#phi(1020)"},
+                                    {piplusPDGid, "#pi^{+}"},
+                                    {piminusPDGid, "#pi^{-}"},
+                                    {KplusPDGid, "K^{+}"},
+                                    {KminusPDGid, "K^{-}"},
+                                    {pplusPDGid, "p^{+}"},
+                                    {pminusPDGid, "p^{-}"} };
+    //deltaT width times
+    std::map<int, double> sigmaTmap = { {K0SPDGid, 0.13124272289253383},
+                                {LambdaPDGid, 0.16761990972301405},
+                                {LambdabarPDGid, 0.15911655471031255},
+                                {KstarPDGid, 0.1251159662169776},
+                                {KstarbarPDGid, 0.12956977399721734},
+                                {phiPDGid, 0.13707309430776241} };
 
     int PDGmain, eventToPrint = -1;
     int PDGpositive, PDGnegative;
@@ -155,12 +175,55 @@ int main(int argc, char* argv[]){
     const string& outputFolder = argv[2];
 
     //histograms
-    TH1D FlowChart("FlowChart", "Number of #phi(1020) passing criteria;;particles", 1, 0, 1);
-    TH1D Chi2Signal("Chi2Signal", "#chi^{2} characteristic of the signal (with #sigma subtracted by 2.3);#chi^{2};pairs of tracks", 100, 0, 100);
+    TH1D FlowChart("FlowChart", ("Number of "+namemap[PDGmain]+" passing criteria;;particles").c_str(), 1, 0, 1);
+    TH1D Chi2Signal("Chi2Signal", "#chi^{2} characteristic of the signal;#chi^{2};pairs of tracks", 100, 0, 100);
     TH1D Chi2All("Chi2All", "#chi^{2} characteristic of the signal+background;#chi^{2};pairs of tracks", 100, 0, 100);
-    TH1D NSigmaTestKaon("NSigmaTestKaon", "n#sigma_{K} histogram for tests;n#sigma_{K};tracks", 120, -3, 9);
-    TH1D NSigmaTestPion("NSigmaTestPion", "n#sigma_{#pi} histogram for tests;n#sigma_{#pi};tracks", 120, -3, 33);
-
+    std::vector<TH1D*> histograms;
+    for(auto&& sign:{ 1, -1 }){
+        for(auto&& particle:{ 0,1,2,3 }){
+            std::string mainTitle = "NSigmaTest";
+            std::string axisTitle = "n#sigma_{";
+            switch(particle){
+            case 0:
+                axisTitle += "e";
+                mainTitle += "Electron";
+                break;
+            case 1:
+                axisTitle += "#pi";
+                mainTitle += "Pion";
+                break;
+            case 2:
+                axisTitle += "K";
+                mainTitle += "Kaon";
+                break;
+            case 3:
+                axisTitle += "p";
+                mainTitle += "Proton";
+                break;
+            default:
+                axisTitle += "X";
+                mainTitle += "Mysterious";
+                break;
+            }
+            axisTitle += "^{";
+            switch(sign){
+            case 1:
+                axisTitle += "+";
+                mainTitle += "Positive";
+                break;
+            case -1:
+                axisTitle += "-";
+                mainTitle += "Negative";
+                break;
+            default:
+                axisTitle += "#pm";
+                mainTitle += "Unknown";
+                break;
+            }
+            axisTitle += "}}";
+            histograms.push_back(new TH1D(mainTitle.c_str(), (axisTitle+" histogram for tests;"+axisTitle+";tracks").c_str(), 320, -40, 40));
+        }
+    }
 
     //setting up TTreeReader without multithread processing
     TTreeReader myReader(eventFiles);
@@ -169,9 +232,6 @@ int main(int argc, char* argv[]){
     //getting values from TChain, in-loop histogram initialization
     TTreeReaderValue<StUPCEvent> StUPCEventInstance(myReader, "mUPCEvent");
     StUPCEvent* tempUPCpointer;
-
-    //TODO change for proper stuff
-    int searchedPDGid = 333;
 
     while(myReader.Next()){
         tempUPCpointer = StUPCEventInstance.Get();
@@ -184,28 +244,38 @@ int main(int argc, char* argv[]){
         //loop for tracks with confirmed proper parent
         for(size_t MC_main_particle_index = 0; MC_main_particle_index<tempUPCpointer->getNumberOfMCParticles(); MC_main_particle_index++){
             // looking for a decayed particle
-            if(tempUPCpointer->getMCParticle(MC_main_particle_index)->GetPdgCode()!=searchedPDGid){
+            if(tempUPCpointer->getMCParticle(MC_main_particle_index)->GetPdgCode()!=PDGmain){
                 continue;
             }
-            FlowChart.Fill("All #phi(1020)", 1.0);
+            FlowChart.Fill(("All "+namemap[PDGmain]).c_str(), 1.0);
 
 
             //looking for decay products correlated to TPC tracks
             std::vector<int> MC_decay;
             MC_decay.clear();
+            //loop through all MC particles in search of main particle daughters
             for(size_t MC_product_particle_index = 0; MC_product_particle_index<tempUPCpointer->getNumberOfMCParticles(); MC_product_particle_index++){
-                if(tempUPCpointer->getMCParticle(MC_main_particle_index)->GetFirstDaughter()==tempUPCpointer->getMCParticle(MC_product_particle_index)->GetFirstMother()){
+                //mother and daughter here refer to vertex numbers!!!
+                int motherDecayVertex = tempUPCpointer->getMCParticle(MC_main_particle_index)->GetFirstDaughter();
+                int daugterProductionVertex = tempUPCpointer->getMCParticle(MC_product_particle_index)->GetFirstMother();
+                //if we found a daughter (a particle whose production vertex is its mothers' decay vertex) we save its MC container number
+                if(motherDecayVertex==daugterProductionVertex){
                     MC_decay.push_back(MC_product_particle_index);
                 }
             }
             std::vector<StUPCTrack*> TPC_tracks;
             TPC_tracks.clear();
+            TPC_tracks.assign(MC_decay.size(), nullptr);
             for(size_t TPC_track_index = 0; TPC_track_index<tempUPCpointer->getNumberOfTracks(); TPC_track_index++){
-                if(std::find(MC_decay.begin(), MC_decay.end(), tempUPCpointer->getTrack(TPC_track_index)->getIdTruth()-1)!=MC_decay.end()){
-                    TPC_tracks.push_back(tempUPCpointer->getTrack(TPC_track_index));
+                //check which index MC track correlated with this tpc track has in MC_decay table
+                //if it has one, we write StUPCTrack pointer at the same location 
+                int MC_decay_index = std::find(MC_decay.begin(), MC_decay.end(), tempUPCpointer->getTrack(TPC_track_index)->getIdTruth()-1)-MC_decay.begin();
+                if(MC_decay_index<MC_decay.size()){
+                    TPC_tracks[MC_decay_index] = (tempUPCpointer->getTrack(TPC_track_index));
                 }
             }
-            if(TPC_tracks.size()!=2){
+            //if we find that there exist MC track that has no TPC track assigned (nullptr) we skip this one
+            if(std::find(TPC_tracks.begin(), TPC_tracks.end(), nullptr)!=TPC_tracks.end()){
                 continue;
             }
             FlowChart.Fill("#splitline{Decay products detected in TPC}{(MC track has associated StUPCTrack)}", 1.0);
@@ -228,7 +298,7 @@ int main(int argc, char* argv[]){
             //fiducial cuts
             bool allTracksWithinFiducial = true;
             for(size_t TPC_track_index = 0; TPC_track_index<TPC_tracks.size(); TPC_track_index++){
-                if(fabs(TPC_tracks[TPC_track_index]->getEta())>0.9||TPC_tracks[TPC_track_index]->getPt()<0.2){
+                if(fabs(TPC_tracks[TPC_track_index]->getEta())>0.9||TPC_tracks[TPC_track_index]->getPt()<0.2||TPC_tracks[TPC_track_index]->getCharge()==0){
                     allTracksWithinFiducial = false;
                     break;
                 }
@@ -236,7 +306,7 @@ int main(int argc, char* argv[]){
             if(!allTracksWithinFiducial){
                 continue;
             }
-            FlowChart.Fill("#splitline{Decay products inside TPC fiducial region}{(|#eta|<0.9 & p_{T}>0.2)}", 1.0);
+            FlowChart.Fill("#splitline{Decay products inside TPC fiducial region}{(|#eta|<0.9 & p_{T}>0.2 & q #neq 0)}", 1.0);
 
 
             //TOF flag
@@ -272,25 +342,71 @@ int main(int argc, char* argv[]){
 
 
             //deltaT section
-            //TODO fix that
-            double deltaT = DeltaT0(TPC_tracks[0], TPC_tracks[1], massmap[KplusPDGid], massmap[KplusPDGid]);
+            //only for decay into 2 tracks
+            if(TPC_tracks.size()!=2){
+                continue;
+            }
+            StUPCTrack* positiveTrack;
+            StUPCTrack* negativeTrack;
+            TParticle* positiveMCParticle;
+            TParticle* negativeMCParticle;
+            if(TPC_tracks[0]->getCharge()>0){
+                positiveTrack = TPC_tracks[0];
+                positiveMCParticle = tempUPCpointer->getMCParticle(MC_decay[0]);
+                negativeTrack = TPC_tracks[1];
+                negativeMCParticle = tempUPCpointer->getMCParticle(MC_decay[1]);
+            } else{
+                positiveTrack = TPC_tracks[1];
+                positiveMCParticle = tempUPCpointer->getMCParticle(MC_decay[1]);
+                negativeTrack = TPC_tracks[0];
+                negativeMCParticle = tempUPCpointer->getMCParticle(MC_decay[0]);
+            }
+            //checking if particles are correct
+            if(positiveMCParticle->GetPdgCode()!=PDGpositive||negativeMCParticle->GetPdgCode()!=PDGnegative){
+                continue;
+            }
+            //the rest of deltaT0 calculations
+            double deltaT = DeltaT0(positiveTrack, negativeTrack, massmap[PDGpositive], massmap[PDGnegative]);
             //fixing the +-1ns peaks
-            if(fabs(deltaT-1)<deltaT){
+            if(fabs(deltaT-1)<fabs(deltaT)){
                 deltaT -= 1;
-            } else if(fabs(deltaT+1)<deltaT){
+            } else if(fabs(deltaT+1)<fabs(deltaT)){
                 deltaT += 1;
             }
-            //TODO change for better
-            double sigmaT = 0.13555533188873461;
-            double sigmaParticle1 = TPC_tracks[0]->getNSigmasTPCKaon();
-            double sigmaParticle2 = TPC_tracks[1]->getNSigmasTPCKaon();
-            //TODO get proper number in there instead of temporary 2.3
-            double Chi2 = pow(deltaT/sigmaT, 2)+(sigmaParticle1-2.3)*(sigmaParticle1-2.3)+(sigmaParticle2-2.3)*(sigmaParticle2-2.3);
+            double sigmaT = sigmaTmap[PDGmain];
+            double sigmaParticle1, sigmaParticle2;
+            switch(PDGpositive){
+            case piplusPDGid:
+                sigmaParticle1 = positiveTrack->getNSigmasTPCPion();
+                break;
+            case KplusPDGid:
+                sigmaParticle1 = positiveTrack->getNSigmasTPCKaon();
+                break;
+            case pplusPDGid:
+                sigmaParticle1 = positiveTrack->getNSigmasTPCProton();
+                break;
+            default:
+                sigmaParticle1 = 0;
+                break;
+            }
+            switch(PDGnegative){
+            case piminusPDGid:
+                sigmaParticle2 = negativeTrack->getNSigmasTPCPion();
+                break;
+            case KminusPDGid:
+                sigmaParticle2 = negativeTrack->getNSigmasTPCKaon();
+                break;
+            case pminusPDGid:
+                sigmaParticle2 = negativeTrack->getNSigmasTPCProton();
+                break;
+            default:
+                sigmaParticle2 = 0;
+                break;
+            }
+
+            //chi2 histogram
+            double Chi2 = pow(deltaT/sigmaT, 2)+pow(sigmaParticle1, 2)+pow(sigmaParticle2, 2);
             Chi2Signal.Fill(Chi2);
-            NSigmaTestKaon.Fill(sigmaParticle1);
-            NSigmaTestKaon.Fill(sigmaParticle2);
-            NSigmaTestPion.Fill(TPC_tracks[0]->getNSigmasTPCPion());
-            NSigmaTestPion.Fill(TPC_tracks[1]->getNSigmasTPCPion());
         }
 
 
@@ -331,27 +447,89 @@ int main(int argc, char* argv[]){
                 if(tempTrack2->getNhitsFit()<=20||tempTrack2->getNhitsDEdx()<15){
                     continue;
                 }
+                //check if the pair is of opposite charges
+                if(tempTrack1->getCharge()*tempTrack2->getCharge()>=0){
+                    continue;
+                }
 
-                //actual filling
                 //deltaT section
-                //TODO fix that
-                double deltaT = DeltaT0(tempTrack1, tempTrack2, massmap[KplusPDGid], massmap[KplusPDGid]);
+                StUPCTrack* positiveTrack;
+                StUPCTrack* negativeTrack;
+                if(tempTrack1->getCharge()>0){
+                    positiveTrack = tempTrack1;
+                    negativeTrack = tempTrack2;
+                } else{
+                    positiveTrack = tempTrack2;
+                    negativeTrack = tempTrack1;
+                }
+                double deltaT = DeltaT0(positiveTrack, negativeTrack, massmap[PDGpositive], massmap[PDGnegative]);
                 //fixing the +-1ns peaks
-                if(fabs(deltaT-1)<deltaT){
+                if(fabs(deltaT-1)<fabs(deltaT)){
                     deltaT -= 1;
-                } else if(fabs(deltaT+1)<deltaT){
+                } else if(fabs(deltaT+1)<fabs(deltaT)){
                     deltaT += 1;
                 }
-                //TODO change for better
-                double sigmaT = 0.13555533188873461;
-                double sigmaParticle1 = tempTrack1->getNSigmasTPCKaon();
-                double sigmaParticle2 = tempTrack2->getNSigmasTPCKaon();
-                double Chi2 = pow(deltaT/sigmaT, 2)+sigmaParticle1*sigmaParticle1+sigmaParticle2*sigmaParticle2;
+                double sigmaT = sigmaTmap[PDGmain];
+                double sigmaParticle1, sigmaParticle2;
+                switch(PDGpositive){
+                case piplusPDGid:
+                    sigmaParticle1 = positiveTrack->getNSigmasTPCPion();
+                    break;
+                case KplusPDGid:
+                    sigmaParticle1 = positiveTrack->getNSigmasTPCKaon();
+                    break;
+                case pplusPDGid:
+                    sigmaParticle1 = positiveTrack->getNSigmasTPCProton();
+                    break;
+                default:
+                    sigmaParticle1 = 0;
+                    break;
+                }
+                switch(PDGnegative){
+                case piminusPDGid:
+                    sigmaParticle2 = negativeTrack->getNSigmasTPCPion();
+                    break;
+                case KminusPDGid:
+                    sigmaParticle2 = negativeTrack->getNSigmasTPCKaon();
+                    break;
+                case pminusPDGid:
+                    sigmaParticle2 = negativeTrack->getNSigmasTPCProton();
+                    break;
+                default:
+                    sigmaParticle2 = 0;
+                    break;
+                }
+                //chi2 histogram
+                double Chi2 = pow(deltaT/sigmaT, 2)+pow(sigmaParticle1, 2)+pow(sigmaParticle2, 2);
                 Chi2All.Fill(Chi2);
             }
         }
 
-
+        //loop for all tracks
+        for(int i = 0; i<tempUPCpointer->getNumberOfTracks(); i++){
+            //check if track okay
+            StUPCTrack* tempTrack = tempUPCpointer->getTrack(i);
+            if(!tempTrack->getFlag(StUPCTrack::kTof)){
+                continue;
+            }
+            if(tempTrack->getTofPathLength()<=0){
+                continue;
+            }
+            if(tempTrack->getTofTime()<=0){
+                continue;
+            }
+            if(fabs(tempTrack->getEta())>0.9||tempTrack->getPt()<0.2){
+                continue;
+            }
+            if(tempTrack->getNhitsFit()<=20||tempTrack->getNhitsDEdx()<15){
+                continue;
+            }
+            //fill all the nsigma histograms
+            int addDependingOnSign = tempTrack->getCharge()>0 ? 0 : 1;
+            for(auto&& particle:{ 0,1,2,3 }){
+                histograms[particle+4*addDependingOnSign]->Fill(tempTrack->getNSigmasTPC(static_cast<StUPCTrack::Part>(particle)));
+            }
+        }
 
 
 
@@ -464,8 +642,9 @@ int main(int argc, char* argv[]){
     FlowChart.Write();
     Chi2Signal.Write();
     Chi2All.Write();
-    NSigmaTestKaon.Write();
-    NSigmaTestPion.Write();
+    for(size_t i = 0; i<histograms.size(); i++){
+        histograms[i]->Write();
+    }
 
     outputFileHist->Close();
 
