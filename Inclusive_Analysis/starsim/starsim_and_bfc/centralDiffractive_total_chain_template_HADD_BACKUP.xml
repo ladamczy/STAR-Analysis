@@ -19,9 +19,11 @@
                 root4star -q -b preselectionMuDst.C
                 @ events+=$?
                 rm centralDiffractive.MuDst.root
-                rename centralDiffractivePreselected centralDiffractivePreselected_"$filenumber"_&number; centralDiffractivePreselected.MuDst.root
+                rename centralDiffractivePreselected centralDiffractivePreselected$filenumber centralDiffractivePreselected.MuDst.root
                 @ filenumber++
         end
+        hadd centralDiffractive&number;.MuDst.root centralDiffractivePreselected*.MuDst.root
+        rm centralDiffractivePreselected*.MuDst.root
 </command>
 <Generator>
         <Location>/star/u/adamwatroba/STAR-Analysis/Inclusive_Analysis/starsim/starsim_and_bfc/star_scheduler_logs</Location>

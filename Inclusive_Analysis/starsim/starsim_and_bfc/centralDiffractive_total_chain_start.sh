@@ -125,6 +125,8 @@ if [ "$#" -eq "0" ]; then
     echo
     echo -e "-n: number \t\t changes number of events in the job (default 100)"
     echo
+    echo -e "-x: \t\t\t removes preselection (NOT IMPLEMENTED YET, DON'T EVEN TRY)"
+    echo
     echo -e "-s: \t\t\t changes output for general scrap space instead of default results/ folder"
     echo
     echo -e "-t: \t\t\t prints out taken options and does not schedule"
@@ -181,13 +183,13 @@ partial_events=$(($length % $n))
 if [ "$full_events" -ne "0" ]; then
     for i in $( eval echo {0..$(($full_events-1))} );
     do
-        star-submit-template -template centralDiffractive_total_chain_template.xml -entities number=$i,events_number=$n,run_number=$run_number,seed=$seed,output_directory=$output_directory/$output_folder,extension=$extension,filter=$filter,filter_name=$filter_name,remove_everything_but_MuDst_and_pythia=$remove_everything_but_MuDst_and_pythia
+        star-submit-template -template centralDiffractive_total_chain_template.xml -entities number=$i,events_number=$n,run_number=$run_number,seed=$seed,output_directory=$output_directory/$output_folder,extension=$extension,filter=$filter,filter_name=$filter_name
     done
 fi
 
 # doing last, not-full batch
 if [ "$partial_events" -ne "0" ]; then
-    star-submit-template -template centralDiffractive_total_chain_template.xml -entities number=$full_events,events_number=$partial_events,run_number=$run_number,seed=$seed,output_directory=$output_directory/$output_folder,extension=$extension,filter=$filter,filter_name=$filter_name,remove_everything_but_MuDst_and_pythia=$remove_everything_but_MuDst_and_pythia
+    star-submit-template -template centralDiffractive_total_chain_template.xml -entities number=$full_events,events_number=$partial_events,run_number=$run_number,seed=$seed,output_directory=$output_directory/$output_folder,extension=$extension,filter=$filter,filter_name=$filter_name
 fi
 
 mv strange_generator*.* ./star_scheduler_logs/
