@@ -97,13 +97,13 @@ int main(int argc, char** argv){
     outsideprocessing.AddHistogram(TH1D("MpipiChi2", ";m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 600, 0.2, 1.4));
     outsideprocessing.AddHistogram(TH1D("MppChi2", ";m_{p^{+}p^{-}} [GeV];Number of pairs", 500, 1.5, 3.5));
     //mass histograms (signal) with identification of the mothers
-    outsideprocessing.AddHistogram(TH2D("MKpiMothersChi2", ";m_{K^{+}#pi^{-}} [GeV];Mother symbol", 1, 0, 1, 200, 0.5, 2.0));
-    outsideprocessing.AddHistogram(TH2D("MpiKMothersChi2", ";m_{#pi^{+}K^{-}} [GeV];Mother symbol", 1, 0, 1, 200, 0.5, 2.0));
-    outsideprocessing.AddHistogram(TH2D("MppiMothersChi2", ";m_{p^{+}#pi^{-}} [GeV];Mother symbol", 1, 0, 1, 500, 1.0, 2.5));
-    outsideprocessing.AddHistogram(TH2D("MpipMothersChi2", ";m_{#pi^{+}p^{-}} [GeV];Mother symbol", 1, 0, 1, 500, 1.0, 2.5));
-    outsideprocessing.AddHistogram(TH2D("MKKMothersChi2", ";m_{K^{+}K^{-}} [GeV];Mother symbol", 1, 0, 1, 500, 0.9, 2.4));
-    outsideprocessing.AddHistogram(TH2D("MpipiMothersChi2", ";m_{#pi^{+}#pi^{-}} [GeV];Mother symbol", 1, 0, 1, 600, 0.2, 1.4));
-    outsideprocessing.AddHistogram(TH2D("MppMothersChi2", ";m_{p^{+}p^{-}} [GeV];Mother symbol", 1, 0, 1, 500, 1.5, 3.5));
+    outsideprocessing.AddHistogram(TH2D("MKpiMothersChi2", ";m_{K^{+}#pi^{-}} [GeV];Mother symbol", 200, 0.5, 2.0, 1, 0, 1));
+    outsideprocessing.AddHistogram(TH2D("MpiKMothersChi2", ";m_{#pi^{+}K^{-}} [GeV];Mother symbol", 200, 0.5, 2.0, 1, 0, 1));
+    outsideprocessing.AddHistogram(TH2D("MppiMothersChi2", ";m_{p^{+}#pi^{-}} [GeV];Mother symbol", 500, 1.0, 2.5, 1, 0, 1));
+    outsideprocessing.AddHistogram(TH2D("MpipMothersChi2", ";m_{#pi^{+}p^{-}} [GeV];Mother symbol", 500, 1.0, 2.5, 1, 0, 1));
+    outsideprocessing.AddHistogram(TH2D("MKKMothersChi2", ";m_{K^{+}K^{-}} [GeV];Mother symbol", 500, 0.9, 2.4, 1, 0, 1));
+    outsideprocessing.AddHistogram(TH2D("MpipiMothersChi2", ";m_{#pi^{+}#pi^{-}} [GeV];Mother symbol", 600, 0.2, 1.4, 1, 0, 1));
+    outsideprocessing.AddHistogram(TH2D("MppMothersChi2", ";m_{p^{+}p^{-}} [GeV];Mother symbol", 500, 1.5, 3.5, 1, 0, 1));
 
     //other histograms
     outsideprocessing.AddHistogram(TH1D("MKKSuspiciousPeakTestedAsPionPair", ";m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 400, 0.25, 0.65));
@@ -298,7 +298,11 @@ int main(int argc, char** argv){
                         eta = (positive_track+negative_track).Eta();
                         pT = (positive_track+negative_track).Pt();
                         insideprocessing.Fill("MKpiChi2", mass);
-                        insideprocessing.Fill("MKpiMothersChi2", getMother(tempUPCpointer, vector_MC_Track_positive[i], vector_MC_Track_negative[j])->GetName(), mass, 1.0);
+                        std::string motherName = "nonresonant";
+                        if(getMother(tempUPCpointer, vector_MC_Track_positive[i], vector_MC_Track_negative[j])!=nullptr){
+                            motherName = std::string(getMother(tempUPCpointer, vector_MC_Track_positive[i], vector_MC_Track_negative[j])->GetName());
+                        }
+                        insideprocessing.Fill("MKpiMothersChi2", mass, motherName.c_str(), 1.0);
                     }
                     if(chi2Map["pi_K"]<9){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
@@ -307,7 +311,11 @@ int main(int argc, char** argv){
                         eta = (positive_track+negative_track).Eta();
                         pT = (positive_track+negative_track).Pt();
                         insideprocessing.Fill("MpiKChi2", mass);
-                        insideprocessing.Fill("MpiKMothersChi2", getMother(tempUPCpointer, vector_MC_Track_positive[i], vector_MC_Track_negative[j])->GetName(), mass, 1.0);
+                        std::string motherName = "nonresonant";
+                        if(getMother(tempUPCpointer, vector_MC_Track_positive[i], vector_MC_Track_negative[j])!=nullptr){
+                            motherName = std::string(getMother(tempUPCpointer, vector_MC_Track_positive[i], vector_MC_Track_negative[j])->GetName());
+                        }
+                        insideprocessing.Fill("MpiKMothersChi2", mass, motherName.c_str(), 1.0);
                     }
                     if(chi2Map["p_pi"]<9){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Proton]);
@@ -316,7 +324,11 @@ int main(int argc, char** argv){
                         eta = (positive_track+negative_track).Eta();
                         pT = (positive_track+negative_track).Pt();
                         insideprocessing.Fill("MppiChi2", mass);
-                        insideprocessing.Fill("MppiMothersChi2", getMother(tempUPCpointer, vector_MC_Track_positive[i], vector_MC_Track_negative[j])->GetName(), mass, 1.0);
+                        std::string motherName = "nonresonant";
+                        if(getMother(tempUPCpointer, vector_MC_Track_positive[i], vector_MC_Track_negative[j])!=nullptr){
+                            motherName = std::string(getMother(tempUPCpointer, vector_MC_Track_positive[i], vector_MC_Track_negative[j])->GetName());
+                        }
+                        insideprocessing.Fill("MppiMothersChi2", mass, motherName.c_str(), 1.0);
                     }
                     if(chi2Map["pi_p"]<9){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
@@ -325,7 +337,11 @@ int main(int argc, char** argv){
                         eta = (positive_track+negative_track).Eta();
                         pT = (positive_track+negative_track).Pt();
                         insideprocessing.Fill("MpipChi2", mass);
-                        insideprocessing.Fill("MpipMothersChi2", getMother(tempUPCpointer, vector_MC_Track_positive[i], vector_MC_Track_negative[j])->GetName(), mass, 1.0);
+                        std::string motherName = "nonresonant";
+                        if(getMother(tempUPCpointer, vector_MC_Track_positive[i], vector_MC_Track_negative[j])!=nullptr){
+                            motherName = std::string(getMother(tempUPCpointer, vector_MC_Track_positive[i], vector_MC_Track_negative[j])->GetName());
+                        }
+                        insideprocessing.Fill("MpipMothersChi2", mass, motherName.c_str(), 1.0);
                     }
                     if(chi2Map["K_K"]<9){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Kaon]);
@@ -334,7 +350,11 @@ int main(int argc, char** argv){
                         eta = (positive_track+negative_track).Eta();
                         pT = (positive_track+negative_track).Pt();
                         insideprocessing.Fill("MKKChi2", mass);
-                        insideprocessing.Fill("MKKMothersChi2", getMother(tempUPCpointer, vector_MC_Track_positive[i], vector_MC_Track_negative[j])->GetName(), mass, 1.0);
+                        std::string motherName = "nonresonant";
+                        if(getMother(tempUPCpointer, vector_MC_Track_positive[i], vector_MC_Track_negative[j])!=nullptr){
+                            motherName = std::string(getMother(tempUPCpointer, vector_MC_Track_positive[i], vector_MC_Track_negative[j])->GetName());
+                        }
+                        insideprocessing.Fill("MKKMothersChi2", mass, motherName.c_str(), 1.0);
                         //test of suspicious peak and its neighbourhood
                         // if(chi2Map["K_K"]<3){
                         //     insideprocessing.Fill("MKKSuspiciousPeakTestedWithStrictChi2LessThan3", mass);
@@ -362,7 +382,11 @@ int main(int argc, char** argv){
                         eta = (positive_track+negative_track).Eta();
                         pT = (positive_track+negative_track).Pt();
                         insideprocessing.Fill("MpipiChi2", mass);
-                        insideprocessing.Fill("MpipiMothersChi2", getMother(tempUPCpointer, vector_MC_Track_positive[i], vector_MC_Track_negative[j])->GetName(), mass, 1.0);
+                        std::string motherName = "nonresonant";
+                        if(getMother(tempUPCpointer, vector_MC_Track_positive[i], vector_MC_Track_negative[j])!=nullptr){
+                            motherName = std::string(getMother(tempUPCpointer, vector_MC_Track_positive[i], vector_MC_Track_negative[j])->GetName());
+                        }
+                        insideprocessing.Fill("MpipiMothersChi2", mass, motherName.c_str(), 1.0);
                     }
                     if(chi2Map["p_p"]<9){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Proton]);
@@ -371,7 +395,11 @@ int main(int argc, char** argv){
                         eta = (positive_track+negative_track).Eta();
                         pT = (positive_track+negative_track).Pt();
                         insideprocessing.Fill("MppChi2", mass);
-                        insideprocessing.Fill("MppMothersChi2", getMother(tempUPCpointer, vector_MC_Track_positive[i], vector_MC_Track_negative[j])->GetName(), mass, 1.0);
+                        std::string motherName = "nonresonant";
+                        if(getMother(tempUPCpointer, vector_MC_Track_positive[i], vector_MC_Track_negative[j])!=nullptr){
+                            motherName = std::string(getMother(tempUPCpointer, vector_MC_Track_positive[i], vector_MC_Track_negative[j])->GetName());
+                        }
+                        insideprocessing.Fill("MppMothersChi2", mass, motherName.c_str(), 1.0);
                     }
                 }
             }
@@ -387,7 +415,6 @@ int main(int argc, char** argv){
     outsideprocessing.Merge();
     for(auto&& histpair:pairTab){
         outsideprocessing.GetPointerAfterMerge2D(("M"+histpair+"MothersChi2").c_str())->LabelsDeflate("Y");
-        outsideprocessing.GetPointerAfterMerge2D(("M"+histpair+"MothersChi2").c_str())->LabelsOption("a", "Y");
     }
 
     //setting up a tree & output file
