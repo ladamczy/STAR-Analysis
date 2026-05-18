@@ -20,6 +20,8 @@ public:
     void Fill(const char*, const char*, double);
     void Fill(int, const char*, double, double);
     void Fill(const char*, const char*, double, double);
+    void Fill(int, double, const char*, double);
+    void Fill(const char*, double, const char*, double);
     void Fill(int, const char*, const char*, double);
     void Fill(const char*, const char*, const char*, double);
     void Fill(int, const char*, double, double, double);
@@ -118,7 +120,7 @@ void ProcessingInsideLoop::Fill(int hist_number, const char* key, double y, doub
     if(hist2dtabLocal[hist_number]!=nullptr){
         hist2dtabLocal[hist_number]->Fill(key, y, w);
     } else{
-        throw std::invalid_argument("1D histogram with number \""+std::to_string(hist_number)+"\" does not exist.");
+        throw std::invalid_argument("2D histogram with number \""+std::to_string(hist_number)+"\" does not exist.");
     }
 }
 void ProcessingInsideLoop::Fill(const char* hist_name, const char* key, double y, double w){
@@ -131,13 +133,30 @@ void ProcessingInsideLoop::Fill(const char* hist_name, const char* key, double y
     }
     throw std::invalid_argument("Histogram with name \""+std::string(hist_name)+"\" could not be found.");
 }
+void ProcessingInsideLoop::Fill(int hist_number, double x, const char* value, double w){
+    if(hist2dtabLocal[hist_number]!=nullptr){
+        hist2dtabLocal[hist_number]->Fill(x, value, w);
+    } else{
+        throw std::invalid_argument("2D histogram with number \""+std::to_string(hist_number)+"\" does not exist.");
+    }
+}
+void ProcessingInsideLoop::Fill(const char* hist_name, double x, const char* value, double w){
+    //looking through 2d histograms
+    for(long unsigned int i = 0; i<hist2dtabLocal.size(); i++){
+        if(hist2dtabLocal[i]!=nullptr&&strcmp(hist_name, hist2dtabLocal[i]->GetName())==0){
+            ProcessingInsideLoop::Fill(i, x, value, w);
+            return;
+        }
+    }
+    throw std::invalid_argument("Histogram with name \""+std::string(hist_name)+"\" could not be found.");
+}
 
 //2d histogram, 2xalphanumeric, with weight
 void ProcessingInsideLoop::Fill(int hist_number, const char* key_x, const char* key_y, double w){
     if(hist2dtabLocal[hist_number]!=nullptr){
         hist2dtabLocal[hist_number]->Fill(key_x, key_y, w);
     } else{
-        throw std::invalid_argument("1D histogram with number \""+std::to_string(hist_number)+"\" does not exist.");
+        throw std::invalid_argument("2D histogram with number \""+std::to_string(hist_number)+"\" does not exist.");
     }
 }
 void ProcessingInsideLoop::Fill(const char* hist_name, const char* key_x, const char* key_y, double w){
