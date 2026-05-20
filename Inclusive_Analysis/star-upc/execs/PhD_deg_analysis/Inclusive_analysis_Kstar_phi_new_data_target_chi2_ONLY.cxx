@@ -102,7 +102,7 @@ int main(int argc, char** argv){
     outsideprocessing.AddHistogram(TH1D("MpiKChi2", ";m_{#pi^{+}K^{-}} [GeV];Number of pairs", 200, 0.5, 2.0));
     outsideprocessing.AddHistogram(TH1D("MppiChi2", ";m_{p^{+}#pi^{-}} [GeV];Number of pairs", 500, 1.0, 2.5));
     outsideprocessing.AddHistogram(TH1D("MpipChi2", ";m_{#pi^{+}p^{-}} [GeV];Number of pairs", 500, 1.0, 2.5));
-    outsideprocessing.AddHistogram(TH1D("MKKChi2", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 500, 0.9, 2.4));
+    outsideprocessing.AddHistogram(TH1D("MKKChi2", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 50, 0.99, 1.05));
     outsideprocessing.AddHistogram(TH1D("MpipiChi2", ";m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 600, 0.2, 1.4));
     outsideprocessing.AddHistogram(TH1D("MppChi2", ";m_{p^{+}p^{-}} [GeV];Number of pairs", 500, 1.5, 3.5));
     //closer histograms (signal)
@@ -117,7 +117,7 @@ int main(int argc, char** argv){
     outsideprocessing.AddHistogram(TH1D("MpiKChi2BcgSameSign", ";m_{#pi^{+}K^{-}} [GeV];Number of pairs", 200, 0.5, 2.0));
     outsideprocessing.AddHistogram(TH1D("MppiChi2BcgSameSign", ";m_{p^{+}#pi^{-}} [GeV];Number of pairs", 500, 1.0, 2.5));
     outsideprocessing.AddHistogram(TH1D("MpipChi2BcgSameSign", ";m_{#pi^{+}p^{-}} [GeV];Number of pairs", 500, 1.0, 2.5));
-    outsideprocessing.AddHistogram(TH1D("MKKChi2BcgSameSign", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 500, 0.9, 2.4));
+    outsideprocessing.AddHistogram(TH1D("MKKChi2BcgSameSign", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 50, 0.99, 1.05));
     outsideprocessing.AddHistogram(TH1D("MpipiChi2BcgSameSign", ";m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 600, 0.2, 1.4));
     outsideprocessing.AddHistogram(TH1D("MppChi2BcgSameSign", ";m_{p^{+}p^{-}} [GeV];Number of pairs", 500, 1.5, 3.5));
     //closer histograms (background, same sign)
@@ -132,7 +132,7 @@ int main(int argc, char** argv){
     outsideprocessing.AddHistogram(TH1D("MpiKChi2BcgTrackRotation", ";m_{#pi^{+}K^{-}} [GeV];Number of pairs", 200, 0.5, 2.0));
     outsideprocessing.AddHistogram(TH1D("MppiChi2BcgTrackRotation", ";m_{p^{+}#pi^{-}} [GeV];Number of pairs", 500, 1.0, 2.5));
     outsideprocessing.AddHistogram(TH1D("MpipChi2BcgTrackRotation", ";m_{#pi^{+}p^{-}} [GeV];Number of pairs", 500, 1.0, 2.5));
-    outsideprocessing.AddHistogram(TH1D("MKKChi2BcgTrackRotation", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 500, 0.9, 2.4));
+    outsideprocessing.AddHistogram(TH1D("MKKChi2BcgTrackRotation", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 50, 0.99, 1.05));
     outsideprocessing.AddHistogram(TH1D("MpipiChi2BcgTrackRotation", ";m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 600, 0.2, 1.4));
     outsideprocessing.AddHistogram(TH1D("MppChi2BcgTrackRotation", ";m_{p^{+}p^{-}} [GeV];Number of pairs", 500, 1.5, 3.5));
     //closer histograms (background, track rotation)
@@ -147,7 +147,7 @@ int main(int argc, char** argv){
     outsideprocessing.AddHistogram(TH1D("MpiKChi2BcgRandomTrackRotation", ";m_{#pi^{+}K^{-}} [GeV];Number of pairs", 200, 0.5, 2.0));
     outsideprocessing.AddHistogram(TH1D("MppiChi2BcgRandomTrackRotation", ";m_{p^{+}#pi^{-}} [GeV];Number of pairs", 500, 1.0, 2.5));
     outsideprocessing.AddHistogram(TH1D("MpipChi2BcgRandomTrackRotation", ";m_{#pi^{+}p^{-}} [GeV];Number of pairs", 500, 1.0, 2.5));
-    outsideprocessing.AddHistogram(TH1D("MKKChi2BcgRandomTrackRotation", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 500, 0.9, 2.4));
+    outsideprocessing.AddHistogram(TH1D("MKKChi2BcgRandomTrackRotation", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 50, 0.99, 1.05));
     outsideprocessing.AddHistogram(TH1D("MpipiChi2BcgRandomTrackRotation", ";m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 600, 0.2, 1.4));
     outsideprocessing.AddHistogram(TH1D("MppChi2BcgRandomTrackRotation", ";m_{p^{+}p^{-}} [GeV];Number of pairs", 500, 1.5, 3.5));
     //closer histograms (background, random track rotation)
@@ -162,7 +162,7 @@ int main(int argc, char** argv){
     outsideprocessing.AddHistogram(TH1D("MpiKChi2BcgMixedEvent", ";m_{#pi^{+}K^{-}} [GeV];Number of pairs", 200, 0.5, 2.0));
     outsideprocessing.AddHistogram(TH1D("MppiChi2BcgMixedEvent", ";m_{p^{+}#pi^{-}} [GeV];Number of pairs", 500, 1.0, 2.5));
     outsideprocessing.AddHistogram(TH1D("MpipChi2BcgMixedEvent", ";m_{#pi^{+}p^{-}} [GeV];Number of pairs", 500, 1.0, 2.5));
-    outsideprocessing.AddHistogram(TH1D("MKKChi2BcgMixedEvent", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 500, 0.9, 2.4));
+    outsideprocessing.AddHistogram(TH1D("MKKChi2BcgMixedEvent", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 50, 0.99, 1.05));
     outsideprocessing.AddHistogram(TH1D("MpipiChi2BcgMixedEvent", ";m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 600, 0.2, 1.4));
     outsideprocessing.AddHistogram(TH1D("MppChi2BcgMixedEvent", ";m_{p^{+}p^{-}} [GeV];Number of pairs", 500, 1.5, 3.5));
     //closer histograms (background, mixed events)
@@ -173,11 +173,12 @@ int main(int argc, char** argv){
     getCategoryHistograms(outsideprocessing, pairTab, "BcgMixedEvent");
 
 
-    //other histograms
+    //other mass histograms
     outsideprocessing.AddHistogram(TH1D("MKKSuspiciousPeakTestedAsPionPair", ";m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 400, 0.25, 0.65));
     outsideprocessing.AddHistogram(TH1D("MKKSuspiciousPeakTestedAsPionPairNeighbourhood", ";m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 400, 0.25, 0.65));
     outsideprocessing.AddHistogram(TH1D("MKKSuspiciousPeakTestedWithStrictChi2LessThan3", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 500, 0.9, 2.4));
     outsideprocessing.AddHistogram(TH1D("MKKSuspiciousPeakTestedWithStrictChi2LessThan1", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 500, 0.9, 2.4));
+    outsideprocessing.AddHistogram(TH2D("dEdxTPCEnergyLoss", "dE/dx TPC Energy loss distribution;pq [GeV/c];dE/dx [keV/cm]", 300, -3, 3, 100, 0, 40));
 
     for(size_t i = 0; i<outsideprocessing.GetNumberOfHistograms(); i++){
         if(&outsideprocessing.GetPointer1D(i)!=nullptr){
@@ -325,12 +326,19 @@ int main(int argc, char** argv){
                 if(tempTrack->getNhits()<=20){
                     continue;
                 }
+                //grouping properly reconstructed particles by their charge
                 if(tempTrack->getCharge()>0){
                     vector_Track_positive.push_back(tempTrack);
                 } else{
                     vector_Track_negative.push_back(tempTrack);
                 }
                 nOfGoodTracks++;
+                //filling dE/dx (with the same cuts as in MC_signal_id etc.)
+                if(tempTrack->getNhitsDEdx()>=15&&tempTrack->getTofPathLength()>0&&tempTrack->getTofTime()>0){
+                    TVector3 temp_momentum;
+                    tempTrack->getMomentum(temp_momentum);
+                    insideprocessing.Fill("dEdxTPCEnergyLoss", temp_momentum.Mag()*tempTrack->getCharge(), tempTrack->getDEdxSignal()*1e6);
+                }
             }
 
             //filling a chi2 map with keys for all the possibilities
