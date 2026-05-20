@@ -180,50 +180,72 @@ int main(int argc, char* argv[]){
     TH1D Chi2All("Chi2All", "#chi^{2} characteristic of the signal+background;#chi^{2};pairs of tracks", 100, 0, 100);
     std::vector<TH1D*> histograms;
     for(auto&& sign:{ 1, -1 }){
-        for(auto&& particle:{ 0,1,2,3 }){
-            std::string mainTitle = "NSigmaTest";
-            std::string axisTitle = "n#sigma_{";
-            switch(particle){
-            case 0:
-                axisTitle += "e";
-                mainTitle += "Electron";
-                break;
-            case 1:
-                axisTitle += "#pi";
-                mainTitle += "Pion";
-                break;
-            case 2:
-                axisTitle += "K";
-                mainTitle += "Kaon";
-                break;
-            case 3:
-                axisTitle += "p";
-                mainTitle += "Proton";
-                break;
-            default:
-                axisTitle += "X";
-                mainTitle += "Mysterious";
-                break;
+        for(auto&& MCparticle:{ 0,1,2,3,4 }){
+            for(auto&& particle:{ 0,1,2,3 }){
+                std::string mainTitle = "NSigmaTestMC";
+                std::string axisTitle = "n#sigma_{";
+                switch(MCparticle){
+                case 0:
+                    mainTitle += "Electron";
+                    break;
+                case 1:
+                    mainTitle += "Pion";
+                    break;
+                case 2:
+                    mainTitle += "Kaon";
+                    break;
+                case 3:
+                    mainTitle += "Proton";
+                    break;
+                default:
+                    mainTitle += "Unidentified";
+                    break;
+                }
+                mainTitle += "TPCPID";
+                switch(particle){
+                case 0:
+                    axisTitle += "e";
+                    mainTitle += "Electron";
+                    break;
+                case 1:
+                    axisTitle += "#pi";
+                    mainTitle += "Pion";
+                    break;
+                case 2:
+                    axisTitle += "K";
+                    mainTitle += "Kaon";
+                    break;
+                case 3:
+                    axisTitle += "p";
+                    mainTitle += "Proton";
+                    break;
+                default:
+                    axisTitle += "X";
+                    mainTitle += "Mysterious";
+                    break;
+                }
+                axisTitle += "^{";
+                switch(sign){
+                case 1:
+                    axisTitle += "+";
+                    mainTitle += "Positive";
+                    break;
+                case -1:
+                    axisTitle += "-";
+                    mainTitle += "Negative";
+                    break;
+                default:
+                    axisTitle += "#pm";
+                    mainTitle += "Unknown";
+                    break;
+                }
+                axisTitle += "}}";
+                histograms.push_back(new TH1D(mainTitle.c_str(), (axisTitle+" histogram for tests;"+axisTitle+";tracks").c_str(), 320, -40, 40));
             }
-            axisTitle += "^{";
-            switch(sign){
-            case 1:
-                axisTitle += "+";
-                mainTitle += "Positive";
-                break;
-            case -1:
-                axisTitle += "-";
-                mainTitle += "Negative";
-                break;
-            default:
-                axisTitle += "#pm";
-                mainTitle += "Unknown";
-                break;
-            }
-            axisTitle += "}}";
-            histograms.push_back(new TH1D(mainTitle.c_str(), (axisTitle+" histogram for tests;"+axisTitle+";tracks").c_str(), 320, -40, 40));
         }
     }
+    TH1D UnidentifiedPositive("UnidentifiedPositive", "Names of unidentified particles;;counts", 1, 0, 1);
+    TH1D UnidentifiedNegative("UnidentifiedNegative", "Names of unidentified particles;;counts", 1, 0, 1);
 
     //setting up TTreeReader without multithread processing
     TTreeReader myReader(eventFiles);
@@ -526,8 +548,39 @@ int main(int argc, char* argv[]){
             }
             //fill all the nsigma histograms
             int addDependingOnSign = tempTrack->getCharge()>0 ? 0 : 1;
+            int MCparticleId = 4;
+            //fill particle id in a way that will make histograms fillable
+            for(size_t MC_particle_id = 0; MC_particle_id<tempUPCpointer->getNumberOfMCParticles(); MC_particle_id++){
+                if((tempTrack->getIdTruth()-1)==MC_particle_id){
+                    switch(abs(tempUPCpointer->getMCParticle(MC_particle_id)->GetPdgCode())){
+                    case 11://electron
+                        MCparticleId = 0;
+                        break;
+                    case piplusPDGid:
+                        MCparticleId = 1;
+                        break;
+                    case KplusPDGid:
+                        MCparticleId = 2;
+                        break;
+                    case pplusPDGid:
+                        MCparticleId = 3;
+                        break;
+                    default:
+                        MCparticleId = 4;
+                        if(tempTrack->getCharge()>0){
+                            UnidentifiedPositive.Fill(tempUPCpointer->getMCParticle(MC_particle_id)->GetName(), 1.0);
+                        } else{
+                            UnidentifiedNegative.Fill(tempUPCpointer->getMCParticle(MC_particle_id)->GetName(), 1.0);
+                        }
+                        break;
+                    }
+                    //we identified the particle, we no longer need the loop
+                    break;
+                }
+            }
+
             for(auto&& particle:{ 0,1,2,3 }){
-                histograms[particle+4*addDependingOnSign]->Fill(tempTrack->getNSigmasTPC(static_cast<StUPCTrack::Part>(particle)));
+                histograms[particle+4*MCparticleId+20*addDependingOnSign]->Fill(tempTrack->getNSigmasTPC(static_cast<StUPCTrack::Part>(particle)));
             }
         }
 
@@ -645,6 +698,12 @@ int main(int argc, char* argv[]){
     for(size_t i = 0; i<histograms.size(); i++){
         histograms[i]->Write();
     }
+    UnidentifiedPositive.LabelsDeflate();
+    UnidentifiedPositive.LabelsOption("a");
+    UnidentifiedPositive.Write();
+    UnidentifiedNegative.LabelsDeflate();
+    UnidentifiedNegative.LabelsOption("a");
+    UnidentifiedNegative.Write();
 
     outputFileHist->Close();
 
