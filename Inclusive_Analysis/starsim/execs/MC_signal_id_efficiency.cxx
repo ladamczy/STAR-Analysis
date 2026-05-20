@@ -178,7 +178,9 @@ int main(int argc, char* argv[]){
     TH1D FlowChart("FlowChart", ("Number of "+namemap[PDGmain]+" passing criteria;;particles").c_str(), 1, 0, 1);
     TH1D Chi2Signal("Chi2Signal", "#chi^{2} characteristic of the signal;#chi^{2};pairs of tracks", 100, 0, 100);
     TH1D Chi2All("Chi2All", "#chi^{2} characteristic of the signal+background;#chi^{2};pairs of tracks", 100, 0, 100);
-    std::vector<TH1D*> histograms;
+    std::vector<TH1D*> histogramsNSigma;
+    std::vector<TH1D*> histogramsdEdx;
+    //nsigma histograms
     for(auto&& sign:{ 1, -1 }){
         for(auto&& MCparticle:{ 0,1,2,3,4 }){
             for(auto&& particle:{ 0,1,2,3 }){
@@ -240,10 +242,57 @@ int main(int argc, char* argv[]){
                     break;
                 }
                 axisTitle += "}}";
-                histograms.push_back(new TH1D(mainTitle.c_str(), (axisTitle+" histogram for tests;"+axisTitle+";tracks").c_str(), 320, -40, 40));
+                histogramsNSigma.push_back(new TH1D(mainTitle.c_str(), (axisTitle+" histogram for tests;"+axisTitle+";tracks").c_str(), 320, -40, 40));
             }
         }
     }
+    //dE/dx histograms
+    for(auto&& sign:{ 1, -1 }){
+        for(auto&& MCparticle:{ 0,1,2,3,4 }){
+            std::string mainTitle = "";
+            std::string mainName = "dEdxTestMC";
+            switch(MCparticle){
+            case 0:
+                mainTitle += "e";
+                mainName += "Electron";
+                break;
+            case 1:
+                mainTitle += "#pi";
+                mainName += "Pion";
+                break;
+            case 2:
+                mainTitle += "K";
+                mainName += "Kaon";
+                break;
+            case 3:
+                mainTitle += "p";
+                mainName += "Proton";
+                break;
+            default:
+                mainTitle += "Unidentified";
+                mainName += "Unidentified";
+                break;
+            }
+            mainTitle += "^{";
+            switch(sign){
+            case 1:
+                mainTitle += "+";
+                mainName += "Positive";
+                break;
+            case -1:
+                mainTitle += "-";
+                mainName += "Negative";
+                break;
+            default:
+                mainTitle += "#pm";
+                mainName += "Unknown";
+                break;
+            }
+            mainTitle += "} dE/dx distribution";
+            histogramsdEdx.push_back(new TH1D(mainName.c_str(), (mainTitle+";dE/dx [keV/cm];Counts").c_str(), 200, 0.0, 10.0));
+        }
+    }
+    TH2D dEdxTPCEnergyLoss("dEdxTPCEnergyLoss", "dE/dx TPC Energy loss distribution;pq [GeV/c];dE/dx [keV/cm]", 300, -3, 3, 100, 0, 40);
     TH1D UnidentifiedPositive("UnidentifiedPositive", "Names of unidentified particles;;counts", 1, 0, 1);
     TH1D UnidentifiedNegative("UnidentifiedNegative", "Names of unidentified particles;;counts", 1, 0, 1);
 
@@ -580,8 +629,12 @@ int main(int argc, char* argv[]){
             }
 
             for(auto&& particle:{ 0,1,2,3 }){
-                histograms[particle+4*MCparticleId+20*addDependingOnSign]->Fill(tempTrack->getNSigmasTPC(static_cast<StUPCTrack::Part>(particle)));
+                histogramsNSigma[particle+4*MCparticleId+20*addDependingOnSign]->Fill(tempTrack->getNSigmasTPC(static_cast<StUPCTrack::Part>(particle)));
             }
+            histogramsdEdx[MCparticleId+5*addDependingOnSign]->Fill(tempTrack->getDEdxSignal()*1e6);
+            TVector3 momentum;
+            tempTrack->getMomentum(momentum);
+            dEdxTPCEnergyLoss.Fill(tempTrack->getCharge()* momentum.Mag(), tempTrack->getDEdxSignal()*1e6);
         }
 
 
@@ -695,8 +748,8 @@ int main(int argc, char* argv[]){
     FlowChart.Write();
     Chi2Signal.Write();
     Chi2All.Write();
-    for(size_t i = 0; i<histograms.size(); i++){
-        histograms[i]->Write();
+    for(size_t i = 0; i<histogramsNSigma.size(); i++){
+        histogramsNSigma[i]->Write();
     }
     UnidentifiedPositive.LabelsDeflate();
     UnidentifiedPositive.LabelsOption("a");
@@ -704,6 +757,10 @@ int main(int argc, char* argv[]){
     UnidentifiedNegative.LabelsDeflate();
     UnidentifiedNegative.LabelsOption("a");
     UnidentifiedNegative.Write();
+    for(size_t i = 0; i<histogramsdEdx.size(); i++){
+        histogramsdEdx[i]->Write();
+    }
+    dEdxTPCEnergyLoss.Write();
 
     outputFileHist->Close();
 
