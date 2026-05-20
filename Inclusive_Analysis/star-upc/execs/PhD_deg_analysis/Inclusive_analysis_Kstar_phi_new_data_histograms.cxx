@@ -243,8 +243,25 @@ skipOneTimeFitting:
     };
     TF1* fit_func_paper_bcg = new TF1("fit_func_paper_bcg", even_more_custom_background, 0.8, 1.0, 3);
     fit_func_paper_bcg->SetParNames("A", "B", "C");
-    TF1* fit_func_for_Kstar = new TF1("fit_func_for_Kstar", "pol3", 0.8, 1.0);
-    fit_func_for_Kstar->SetParNames("a_{0}", "a_{1}", "a_{2}", "a_{3}");
+    // TF1* fit_func_for_Kstar = new TF1("fit_func_for_Kstar", "pol3", 0.8, 1.0);
+    // fit_func_for_Kstar->SetParNames("a_{0}", "a_{1}", "a_{2}", "a_{3}");
+    auto weibull = [&](double* x, double* p){
+        double N = p[0];
+        double k = p[1];
+        double lambda = p[2];
+        double x0 = p[3];
+        double xi = x[0]-x0;
+        if(xi<=0){
+            return 0.;
+        }
+        return N*k/lambda*pow(xi/lambda, k-1)*exp(-pow(xi/lambda, k));
+    };
+    TF1* fit_func_for_Kstar = new TF1("fit_func_for_Kstar", weibull, 0.8, 1.0, 4);
+    fit_func_for_Kstar->SetParNames("N_{bcg}", "k", "#lambda", "x_{0}");
+    fit_func_for_Kstar->SetParLimits(0, 0, 100000);
+    fit_func_for_Kstar->SetParLimits(1, 0, 100000);
+    fit_func_for_Kstar->SetParLimits(2, 0, 100000);
+    fit_func_for_Kstar->SetParLimits(3, 0.6, 1.0);
     TF1* fit_func_for_phi = new TF1("fit_func_for_phi", "pol2", 0.8, 1.0);
     fit_func_for_phi->SetParNames("a_{0}", "a_{1}", "a_{2}");
     //substracting one from another
@@ -407,10 +424,20 @@ notFittingBackground:
                 }
                 //prefitting linear background seed for  the polynomial
                 fit_func_sig->SetParameters(10., fitMaximum[i], fitWidth[i]);
-                double y1, y2;
-                y1 = sig_slice->GetBinContent(sig_slice->GetXaxis()->FindBin(0.8));
-                y2 = sig_slice->GetBinContent(sig_slice->GetXaxis()->FindBin(0.8));
-                bcg_func->SetParameters((y1+y2)/2, (y2-y1)/0.2, 0., 0.);
+                //TODO: fix
+                // double y1, y2;
+                // y1 = sig_slice->GetBinContent(sig_slice->GetXaxis()->FindBin(0.8));
+                // y2 = sig_slice->GetBinContent(sig_slice->GetXaxis()->FindBin(0.8));
+                // bcg_func->SetParameters((y1+y2)/2, (y2-y1)/0.2, 0., 0.);
+                if(i!=2){
+                    //"N_{bcg}", "k", "#lambda", "x_{0}"
+                    bcg_func->SetParameters(110., 2.1, 0.26, 0.795);
+                } else{
+                    double y1, y2;
+                    y1 = sig_slice->GetBinContent(sig_slice->GetXaxis()->FindBin(0.8));
+                    y2 = sig_slice->GetBinContent(sig_slice->GetXaxis()->FindBin(0.8));
+                    bcg_func->SetParameters((y1+y2)/2, (y2-y1)/0.2, 0., 0.);
+                }
                 //fitting and filling result
                 double par_value, par_error;
                 std::string newTitle = baseOfTitle;
@@ -795,10 +822,10 @@ TFitResult differential_crossection_fit(TPad* pad, TH1D* slice, TF1* fitting_fun
             double change, relative;
             if(response.find("abs")==std::string::npos){
                 relative = 1.;
-                sscanf(response.c_str(), "%d%lf", &coeff_number, &change);
+                sscanf(response.c_str(), "%d %lf", &coeff_number, &change);
             } else{
                 relative = 0.;
-                sscanf(response.c_str(), "abs %d%lf", &coeff_number, &change);
+                sscanf(response.c_str(), "abs %d %lf", &coeff_number, &change);
             }
             fitting_function_total_COPY->SetParameter(coeff_number, fitting_function_total_COPY->GetParameter(coeff_number)*relative+change);
             if(coeff_number>=signalparams)
@@ -813,6 +840,9 @@ TFitResult differential_crossection_fit(TPad* pad, TH1D* slice, TF1* fitting_fun
         gPad->Update();
         //interactive part
         std::cout<<"Chi2 after edit/fit: "<<slice->Chisquare(fitting_function_total_COPY, "R")<<", ndof: "<<fitting_function_total_COPY->GetNDF()<<std::endl;
+        for(size_t i = 0; i<totalparams; i++){
+            printf("%s\t\t%lf\n", fitting_function_total_COPY->GetParName(i), fitting_function_total_COPY->GetParameter(i));
+        }
         std::cout<<"Enter which parameter and how much change"<<std::endl;
         std::cout<<"Writing \"abs\" before just sets the parameter"<<std::endl;
         std::cout<<"Or write \"fit\" to fit"<<std::endl;
