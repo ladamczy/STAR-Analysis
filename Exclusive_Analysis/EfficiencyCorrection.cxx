@@ -72,6 +72,7 @@ int main(int argc, char** argv)
 
     //some constants & config
     const double VzMax = 80.0; 
+    const int NFitHitsCut = 20; //17;//20;  check in ExclusiveCode.h
 
     CutConfig config("nominal");
 
@@ -276,8 +277,8 @@ int main(int argc, char** argv)
                 double pt = track->getPt();
                 double eta = track->getEta();
                 
-                // STRICT K0K0 MAP CUTS: pT > 0.25 and diagonal fiducial cut
-                if (track->getNhitsFit() >= 20 && pt >= 0.2 && pt <= 3.0 && passFiducialCut(eta, eventVz) ) {// 
+                // STRICT K0K0 MAP CUTS: pT > 0.2 and diagonal fiducial cut
+                if (track->getNhitsFit() >= NFitHitsCut && pt >= 0.2 && pt <= 3.0 && passFiducialCut(eta, eventVz) ) {// 
                     
                     bool hasTof = track->getFlag(StUPCTrack::kTof);
                     short charge = track->getCharge();
