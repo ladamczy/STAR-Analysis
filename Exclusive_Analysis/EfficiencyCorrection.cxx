@@ -215,11 +215,21 @@ int main(int argc, char** argv)
     TH1F *h1D_Reco_PtMiss_Corrected_4pi_2TOF = new TH1F("h1D_Reco_PtMiss_Corrected_4pi_2TOF", "Corrected Data 4#pi Missing p_{T};p_{T}^{miss} (GeV/c);Counts", 50, 0.0, 1.0);
     h1D_Reco_PtMiss_Corrected_4pi_2TOF->Sumw2();
 
-    TH2D* h2_PtMiss_Vs_Mass = new TH2D("h2_PtMiss_Vs_Mass", "Missing p_{T} vs Mass;M(K_{S}^{0}K_{S}^{0}) [GeV/c^{2}];p_{T}^{miss} [GeV/c]", 
-                                   21, 0.9, 3.0, 50, 0.0, 1.0);
-    TH2D* h2_PtMiss_Vs_Mass_Corrected = new TH2D("h2_PtMiss_Vs_Mass_Corrected", "Corrected Missing p_{T} vs Mass;M(K_{S}^{0}K_{S}^{0}) [GeV/c^{2}];p_{T}^{miss} [GeV/c]", 
-                                   21, 0.9, 3.0, 50, 0.0, 1.0);   
+    TH2D* h2_PtMiss_Vs_Mass = new TH2D("h2_PtMiss_Vs_Mass", "Missing p_{T} vs Mass;M(K_{S}^{0}K_{S}^{0}) [GeV/c^{2}];p_{T}^{miss} [GeV/c]", 21, 0.9, 3.0, 50, 0.0, 1.0);
+    TH2D* h2_PtMiss_Vs_Mass_Corrected = new TH2D("h2_PtMiss_Vs_Mass_Corrected", "Corrected Missing p_{T} vs Mass;M(K_{S}^{0}K_{S}^{0}) [GeV/c^{2}];p_{T}^{miss} [GeV/c]", 21, 0.9, 3.0, 50, 0.0, 1.0);   
     h2_PtMiss_Vs_Mass_Corrected->Sumw2();
+
+    TH2D* h2_PtMiss_Vs_Mass_2TOF = new TH2D("h2_PtMiss_Vs_Mass_2TOF", "Missing p_{T} vs Mass (2 TOF);M(K_{S}^{0}K_{S}^{0}) [GeV/c^{2}];p_{T}^{miss} [GeV/c]", 21, 0.9, 3.0, 50, 0.0, 1.0);
+    TH2D* h2_PtMiss_Vs_Mass_2TOF_Corrected = new TH2D("h2_PtMiss_Vs_Mass_2TOF_Corrected", "Corrected Missing p_{T} vs Mass (2 TOF);M(K_{S}^{0}K_{S}^{0}) [GeV/c^{2}];p_{T}^{miss} [GeV/c]", 21, 0.9, 3.0, 50, 0.0, 1.0);
+    h2_PtMiss_Vs_Mass_2TOF_Corrected->Sumw2();
+
+    TH2D* h2_PtMiss_Vs_Mass_3TOF = new TH2D("h2_PtMiss_Vs_Mass_3TOF", "Missing p_{T} vs Mass (3 TOF);M(K_{S}^{0}K_{S}^{0}) [GeV/c^{2}];p_{T}^{miss} [GeV/c]", 21, 0.9, 3.0, 50, 0.0, 1.0);
+    TH2D* h2_PtMiss_Vs_Mass_3TOF_Corrected = new TH2D("h2_PtMiss_Vs_Mass_3TOF_Corrected", "Corrected Missing p_{T} vs Mass (3 TOF);M(K_{S}^{0}K_{S}^{0}) [GeV/c^{2}];p_{T}^{miss} [GeV/c]", 21, 0.9, 3.0, 50, 0.0, 1.0);
+    h2_PtMiss_Vs_Mass_3TOF_Corrected->Sumw2();
+
+    TH2D* h2_PtMiss_Vs_Mass_4TOF = new TH2D("h2_PtMiss_Vs_Mass_4TOF", "Missing p_{T} vs Mass (4 TOF);M(K_{S}^{0}K_{S}^{0}) [GeV/c^{2}];p_{T}^{miss} [GeV/c]", 21, 0.9, 3.0, 50, 0.0, 1.0);
+    TH2D* h2_PtMiss_Vs_Mass_4TOF_Corrected = new TH2D("h2_PtMiss_Vs_Mass_4TOF_Corrected", "Corrected Missing p_{T} vs Mass (4 TOF);M(K_{S}^{0}K_{S}^{0}) [GeV/c^{2}];p_{T}^{miss} [GeV/c]", 21, 0.9, 3.0, 50, 0.0, 1.0);
+    h2_PtMiss_Vs_Mass_4TOF_Corrected->Sumw2();
 
     // -------------------------------------------------------------------
     TH1D* d1 = new TH1D("d1","",1,0,1); TH1D* d2 = new TH1D("d2","",1,0,1);
@@ -406,14 +416,20 @@ int main(int argc, char** argv)
         if (totalTOF == 4) {
             h1D_Reco_PtMiss_Raw_4pi_4TOF->Fill(pTmiss);
             h1D_Reco_PtMiss_Corrected_4pi_4TOF->Fill(pTmiss, eventWeight);
+            h2_PtMiss_Vs_Mass_4TOF->Fill(massK0K0, pTmiss);
+            h2_PtMiss_Vs_Mass_4TOF_Corrected->Fill(massK0K0, pTmiss, eventWeight);
         } else if (totalTOF == 3) {
             double weight_3TOF = eventWeight / 4.0;
             h1D_Reco_PtMiss_Raw_4pi_3TOF->Fill(pTmiss);
             h1D_Reco_PtMiss_Corrected_4pi_3TOF->Fill(pTmiss, weight_3TOF);
+            h2_PtMiss_Vs_Mass_3TOF->Fill(massK0K0, pTmiss);
+            h2_PtMiss_Vs_Mass_3TOF_Corrected->Fill(massK0K0, pTmiss, weight_3TOF);
         } else if (totalTOF == 2) {
             double weight_2TOF = eventWeight / 4.0;
             h1D_Reco_PtMiss_Raw_4pi_2TOF->Fill(pTmiss);
             h1D_Reco_PtMiss_Corrected_4pi_2TOF->Fill(pTmiss, weight_2TOF);
+            h2_PtMiss_Vs_Mass_2TOF->Fill(massK0K0, pTmiss);
+            h2_PtMiss_Vs_Mass_2TOF_Corrected->Fill(massK0K0, pTmiss, weight_2TOF);  
         }
         //}
         h2_PtMiss_Vs_Mass->Fill(massK0K0, pTmiss);
@@ -528,6 +544,12 @@ int main(int argc, char** argv)
     hPtMiss_Corrected->Write();
     h2_PtMiss_Vs_Mass->Write();
     h2_PtMiss_Vs_Mass_Corrected->Write();
+    h2_PtMiss_Vs_Mass_4TOF->Write();
+    h2_PtMiss_Vs_Mass_4TOF_Corrected->Write();
+    h2_PtMiss_Vs_Mass_3TOF->Write();
+    h2_PtMiss_Vs_Mass_3TOF_Corrected->Write();
+    h2_PtMiss_Vs_Mass_2TOF->Write();
+    h2_PtMiss_Vs_Mass_2TOF_Corrected->Write();
     // Write Final 4p output
     h1D_Reco_InvMass_Raw_4pi_4TOF->Write();
     h1D_Reco_InvMass_Corrected_4pi_4TOF->Write();
