@@ -72,14 +72,14 @@ int main(int argc, char** argv)
 
     //some constants & config
     const double VzMax = 80.0; 
-    const int NFitHitsCut = 20; //17;//20;  check in ExclusiveCode.h
+    const int NFitHitsCut = 20; //17;//20 // 22;  check in ExclusiveCode.h
 
     CutConfig config("nominal");
 
     // ===================================================================
     // LOAD EFFICIENCY HISTOGRAMS
     // ===================================================================
-    string effFilePath = "~/Downloads/SPK0K0StylePions_April20_0.root";//SPK0K0StylePions_April20_0.root//SPK0K0StylePions_April24_nHist17_0.root//SPK0K0StylePions_April20_0.root//SPK0K0StylePions_April16_0.root //SPK0K0StylePions_March13_0  SPK0K0StylePions_April16_0
+    string effFilePath = "~/Downloads/SPK0K0StylePions_April20_0.root";//SPK0K0StylePions_April23_nHist22_0.root SPK0K0StylePions_April20_0.root//SPK0K0StylePions_April24_nHist17_0.root//SPK0K0StylePions_April20_0.root//SPK0K0StylePions_April16_0.root //SPK0K0StylePions_March13_0  SPK0K0StylePions_April16_0
     TFile* fEff = TFile::Open(effFilePath.c_str(), "READ");
     if (!fEff || fEff->IsZombie()) {
         cerr << "Error: Cannot open efficiency file " << effFilePath << endl;
@@ -409,8 +409,15 @@ int main(int argc, char** argv)
         double eventWeight = w_LK_P * w_LK_N * w_SK_P * w_SK_N;
         if (eventWeight <= 0.0) continue;   
 
-        int totalTOF = hasTof(vPosNegPionLeadingKaon[0]) + hasTof(vPosNegPionLeadingKaon[1]) + hasTof(vPosNegPionSubLeadingKaon[0]) + hasTof(vPosNegPionSubLeadingKaon[1]);
+        //int totalTOF = hasTof(vPosNegPionLeadingKaon[0]) + hasTof(vPosNegPionLeadingKaon[1]) + hasTof(vPosNegPionSubLeadingKaon[0]) + hasTof(vPosNegPionSubLeadingKaon[1]);
         
+        int nTofLK = hasTof(vPosNegPionLeadingKaon[0]) + hasTof(vPosNegPionLeadingKaon[1]);
+        int nTofSK = hasTof(vPosNegPionSubLeadingKaon[0]) + hasTof(vPosNegPionSubLeadingKaon[1]);
+        int totalTOF = nTofLK + nTofSK;
+
+        // Require exactly 1 TOF hit from the leading kaon AND 1 from the subleading kaon
+        bool isSymmetric2TOF = (totalTOF == 2 && nTofLK == 1 && nTofSK == 1);
+
         //if (massK0K0 > 1.4 && massK0K0 < 1.9) { 
         hPtMiss_Raw->Fill(pTmiss);
         hPtMiss_Corrected->Fill(pTmiss, eventWeight); 
@@ -420,13 +427,13 @@ int main(int argc, char** argv)
             h2_PtMiss_Vs_Mass_4TOF->Fill(massK0K0, pTmiss);
             h2_PtMiss_Vs_Mass_4TOF_Corrected->Fill(massK0K0, pTmiss, eventWeight);
         } else if (totalTOF == 3) {
-            double weight_3TOF = eventWeight / 4.0;
+            double weight_3TOF = eventWeight;// / 4.0;
             h1D_Reco_PtMiss_Raw_4pi_3TOF->Fill(pTmiss);
             h1D_Reco_PtMiss_Corrected_4pi_3TOF->Fill(pTmiss, weight_3TOF);
             h2_PtMiss_Vs_Mass_3TOF->Fill(massK0K0, pTmiss);
             h2_PtMiss_Vs_Mass_3TOF_Corrected->Fill(massK0K0, pTmiss, weight_3TOF);
         } else if (totalTOF == 2) {
-            double weight_2TOF = eventWeight / 4.0;
+            double weight_2TOF = eventWeight;// / 4.0;
             h1D_Reco_PtMiss_Raw_4pi_2TOF->Fill(pTmiss);
             h1D_Reco_PtMiss_Corrected_4pi_2TOF->Fill(pTmiss, weight_2TOF);
             h2_PtMiss_Vs_Mass_2TOF->Fill(massK0K0, pTmiss);
@@ -466,7 +473,8 @@ int main(int argc, char** argv)
             h1D_Reco_Y_Raw_4pi_3TOF->Fill(K0K0.Rapidity());
             h1D_Reco_Y_Corrected_4pi_3TOF->Fill(K0K0.Rapidity(), weight_3TOF);
         }
-        else if (totalTOF == 2) {
+        //else if (totalTOF == 2) {
+        else if (isSymmetric2TOF) {
             nEvents_2TOF++; 
             double weight_2TOF = eventWeight / 4.0;
             expectedYield_2TOF += eventWeight;

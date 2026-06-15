@@ -71,7 +71,7 @@ namespace ExclusiveK0K0{
 
     const double PION_PT = 0.2;
     const double PION_ETA = 0.9;
-    const double N_FIT = 20;//17;//20;  //check in EfficiencyCorrection.cxx and EventAnalyzer.cxx
+    const double N_FIT = 20;//17;//20;//22  //check in EfficiencyCorrection.cxx and EventAnalyzer.cxx
     const float MASS_PION = 0.13957061;
     const double MASS_KAON =  497.611/1000.0;
     const double BEAM_ENERGY = 254.867;
