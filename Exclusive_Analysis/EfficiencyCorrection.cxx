@@ -268,6 +268,18 @@ int main(int argc, char** argv)
     int nEvents_LS_2TOF = 0;
 
     // ===================================================================
+    // DEBUG: TOPOLOGY YIELD SPLITS (NO DIVISION BY 4)
+    // ===================================================================
+    TH1D* hDebug_3TOF[4];
+    TH1D* hDebug_2TOF[4];
+    for(int i=0; i<4; ++i) {
+        hDebug_3TOF[i] = new TH1D(Form("hDebug_3TOF_Topo%d", i), Form("3-TOF Sub-topology %d;M_{4#pi} (GeV/c^{2})", i), 21, 0.9, 3.0);
+        hDebug_2TOF[i] = new TH1D(Form("hDebug_2TOF_Topo%d", i), Form("2-TOF Sub-topology %d;M_{4#pi} (GeV/c^{2})", i), 21, 0.9, 3.0);
+        hDebug_3TOF[i]->Sumw2();
+        hDebug_2TOF[i]->Sumw2();
+    }
+
+    // ===================================================================
     // EVENT LOOP
     // ===================================================================
     for (Long64_t i = 0; i < nEntries; ++i)
@@ -520,6 +532,8 @@ int main(int argc, char** argv)
         double w_SK_N = GetK0TrackWeight(vPosNegPionSubLeadingKaon[1], eventVz, h3D_TPC_Eff_N, h3D_TOF_Eff_N, hasTof(vPosNegPionSubLeadingKaon[1]), dummyRej);
 
         double eventWeight = w_LK_P * w_LK_N * w_SK_P * w_SK_N;
+
+
         if (eventWeight <= 0.0) continue;   
 
         //int totalTOF = hasTof(vPosNegPionLeadingKaon[0]) + hasTof(vPosNegPionLeadingKaon[1]) + hasTof(vPosNegPionSubLeadingKaon[0]) + hasTof(vPosNegPionSubLeadingKaon[1]);
@@ -530,6 +544,31 @@ int main(int argc, char** argv)
 
         // Require exactly 1 TOF hit from the leading kaon AND 1 from the subleading kaon
         bool isSymmetric2TOF = (totalTOF == 2 && nTofLK == 1 && nTofSK == 1);
+
+        // -------------------------------------------------------------------
+        // DEBUG: PROVING THE FACTOR OF 4
+        // -------------------------------------------------------------------
+        bool tLK_P = hasTof(vPosNegPionLeadingKaon[0]);
+        bool tLK_N = hasTof(vPosNegPionLeadingKaon[1]);
+        bool tSK_P = hasTof(vPosNegPionSubLeadingKaon[0]);
+        bool tSK_N = hasTof(vPosNegPionSubLeadingKaon[1]);
+
+        if (totalTOF == 3) {
+            // Fill with raw, undivided eventWeight
+            if (!tLK_P) hDebug_3TOF[0]->Fill(massK0K0, eventWeight);
+            if (!tLK_N) hDebug_3TOF[1]->Fill(massK0K0, eventWeight);
+            if (!tSK_P) hDebug_3TOF[2]->Fill(massK0K0, eventWeight);
+            if (!tSK_N) hDebug_3TOF[3]->Fill(massK0K0, eventWeight);
+        }
+
+        if (isSymmetric2TOF) {
+            // Fill with raw, undivided eventWeight
+            if (tLK_P && !tLK_N && tSK_P && !tSK_N) hDebug_2TOF[0]->Fill(massK0K0, eventWeight);
+            if (tLK_P && !tLK_N && !tSK_P && tSK_N) hDebug_2TOF[1]->Fill(massK0K0, eventWeight);
+            if (!tLK_P && tLK_N && tSK_P && !tSK_N) hDebug_2TOF[2]->Fill(massK0K0, eventWeight);
+            if (!tLK_P && tLK_N && !tSK_P && tSK_N) hDebug_2TOF[3]->Fill(massK0K0, eventWeight);
+        }
+        // -------------------------------------------------------------------
 
         //if (massK0K0 > 1.4 && massK0K0 < 1.9) { 
         hPtMiss_Raw->Fill(pTmiss);
@@ -678,6 +717,14 @@ int main(int argc, char** argv)
         cout << "  [+] SUCCESS: Like-Sign background successfully modeled." << endl;
     }
 
+    cout << "\n=== DEBUG: TOPOLOGY SPLIT VERIFICATION ===" << endl;
+    cout << "If efficiency maps are accurate, all 4 sub-topologies should yield approx the same integral." << endl;
+    cout << "3-TOF Undivided Integrals:" << endl;
+    for(int i=0; i<4; ++i) cout << "  Topo " << i << " Yield: " << hDebug_3TOF[i]->Integral() << endl;
+    
+    cout << "2-TOF Symmetric Undivided Integrals:" << endl;
+    for(int i=0; i<4; ++i) cout << "  Topo " << i << " Yield: " << hDebug_2TOF[i]->Integral() << endl;
+
     outfile->cd();
     // Write 1D verifications
     h1D_RawPt_P->Write();  h1D_CorrectedPt_P->Write();
@@ -732,6 +779,12 @@ int main(int argc, char** argv)
     h2_PtMiss_Vs_Mass_Corrected_3TOF_LS->Write();
     h2_PtMiss_Vs_Mass_Raw_2TOF_LS->Write();
     h2_PtMiss_Vs_Mass_Corrected_2TOF_LS->Write();
+    //debug histos
+    for(int i=0; i<4; ++i) {
+        hDebug_3TOF[i]->Write();
+        hDebug_2TOF[i]->Write();
+    }
+
     // Clean up
     delete d1; delete d2;
     for(auto d : dVec) delete d;
