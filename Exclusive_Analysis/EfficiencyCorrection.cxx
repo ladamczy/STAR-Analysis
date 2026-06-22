@@ -79,7 +79,7 @@ int main(int argc, char** argv)
     // ===================================================================
     // LOAD EFFICIENCY HISTOGRAMS
     // ===================================================================
-    string effFilePath = "~/Downloads/SPK0K0StylePions_April20_0.root";//SPK0K0StylePions_April23_nHist22_0.root SPK0K0StylePions_April20_0.root//SPK0K0StylePions_April24_nHist17_0.root//SPK0K0StylePions_April20_0.root//SPK0K0StylePions_April16_0.root //SPK0K0StylePions_March13_0  SPK0K0StylePions_April16_0
+    string effFilePath = "~/Downloads/RootFiles/SPK0K0StylePions_April20_0.root";//SPK0K0StylePions_April23_nHist22_0.root SPK0K0StylePions_April20_0.root//SPK0K0StylePions_April24_nHist17_0.root//SPK0K0StylePions_April20_0.root//SPK0K0StylePions_April16_0.root //SPK0K0StylePions_March13_0  SPK0K0StylePions_April16_0
     TFile* fEff = TFile::Open(effFilePath.c_str(), "READ");
     if (!fEff || fEff->IsZombie()) {
         cerr << "Error: Cannot open efficiency file " << effFilePath << endl;
@@ -232,6 +232,21 @@ int main(int argc, char** argv)
     TH2D* h2_PtMiss_Vs_Mass_4TOF_Corrected = new TH2D("h2_PtMiss_Vs_Mass_4TOF_Corrected", "Corrected Missing p_{T} vs Mass (4 TOF);M(K_{S}^{0}K_{S}^{0}) [GeV/c^{2}];p_{T}^{miss} [GeV/c]", 21, 0.9, 3.0, 50, 0.0, 1.0);
     h2_PtMiss_Vs_Mass_4TOF_Corrected->Sumw2();
 
+    // 2-TOF LIKE-SIGN (LS) BACKGROUND HISTOGRAM
+    TH1D* h1D_Reco_InvMass_Raw_LS_4pi_2TOF = new TH1D("h1D_Reco_InvMass_Raw_LS_4pi_2TOF", "Like-Sign Raw Background (2 TOF);M_{4#pi} (GeV/c^{2});Counts", 21, 0.9, 3.0); 
+    TH1D* h1D_Reco_InvMass_Corrected_LS_4pi_2TOF = new TH1D("h1D_Reco_InvMass_Corrected_LS_4pi_2TOF", "Like-Sign Corrected Background (2 TOF);M_{4#pi} (GeV/c^{2});Counts", 21, 0.9, 3.0);
+    h1D_Reco_InvMass_Corrected_LS_4pi_2TOF->Sumw2();
+
+    TH2D* h2_PtMiss_Vs_Mass_Raw_4TOF_LS = new TH2D("h2_PtMiss_Vs_Mass_Raw_4TOF_LS", "LS Missing p_{T} vs Mass (4 TOF);M(K_{S}^{0}K_{S}^{0}) [GeV/c^{2}];p_{T}^{miss} [GeV/c]", 21, 0.9, 3.0, 50, 0.0, 1.0);
+    TH2D* h2_PtMiss_Vs_Mass_Corrected_4TOF_LS = new TH2D("h2_PtMiss_Vs_Mass_Corrected_4TOF_LS", "LS Missing p_{T} vs Mass (4 TOF);M(K_{S}^{0}K_{S}^{0}) [GeV/c^{2}];p_{T}^{miss} [GeV/c]", 21, 0.9, 3.0, 50, 0.0, 1.0);
+    h2_PtMiss_Vs_Mass_Corrected_4TOF_LS->Sumw2();
+    TH2D* h2_PtMiss_Vs_Mass_Raw_3TOF_LS = new TH2D("h2_PtMiss_Vs_Mass_Raw_3TOF_LS", "LS Missing p_{T} vs Mass (3 TOF);M(K_{S}^{0}K_{S}^{0}) [GeV/c^{2}];p_{T}^{miss} [GeV/c]", 21, 0.9, 3.0, 50, 0.0, 1.0);
+    TH2D* h2_PtMiss_Vs_Mass_Corrected_3TOF_LS = new TH2D("h2_PtMiss_Vs_Mass_Corrected_3TOF_LS", "LS Missing p_{T} vs Mass (3 TOF);M(K_{S}^{0}K_{S}^{0}) [GeV/c^{2}];p_{T}^{miss} [GeV/c]", 21, 0.9, 3.0, 50, 0.0, 1.0);
+    h2_PtMiss_Vs_Mass_Corrected_3TOF_LS->Sumw2();
+    TH2D* h2_PtMiss_Vs_Mass_Raw_2TOF_LS = new TH2D("h2_PtMiss_Vs_Mass_Raw_2TOF_LS", "LS Missing p_{T} vs Mass (2 TOF);M(K_{S}^{0}K_{S}^{0}) [GeV/c^{2}];p_{T}^{miss} [GeV/c]", 21, 0.9, 3.0, 50, 0.0, 1.0);
+    TH2D* h2_PtMiss_Vs_Mass_Corrected_2TOF_LS = new TH2D("h2_PtMiss_Vs_Mass_Corrected_2TOF_LS", "LS Missing p_{T} vs Mass (2 TOF);M(K_{S}^{0}K_{S}^{0}) [GeV/c^{2}];p_{T}^{miss} [GeV/c]", 21, 0.9, 3.0, 50, 0.0, 1.0);
+    h2_PtMiss_Vs_Mass_Corrected_2TOF_LS->Sumw2();
+
     // -------------------------------------------------------------------
     TH1D* d1 = new TH1D("d1","",1,0,1); TH1D* d2 = new TH1D("d2","",1,0,1);
     vector<TH1D*> dVec;
@@ -248,6 +263,9 @@ int main(int argc, char** argv)
     double expectedYield_3TOF = 0.0;
     double expectedYield_2TOF = 0.0;
     int count_K0si_Other = 0;
+
+    double expectedYield_LS_2TOF = 0.0;
+    int nEvents_LS_2TOF = 0;
 
     // ===================================================================
     // EVENT LOOP
@@ -327,6 +345,101 @@ int main(int argc, char** argv)
         TVector3 const tryVec(0,0,0);
         StUPCV0 leadingKaon(vPosNegPionLeadingKaon[0], vPosNegPionLeadingKaon[1], ExclusiveK0K0::MASS_PION, ExclusiveK0K0::MASS_PION, 1, 1, tryVec, beamPar, upcEvt->getMagneticField(), true);
         StUPCV0 subLeadingKaon(vPosNegPionSubLeadingKaon[0], vPosNegPionSubLeadingKaon[1], ExclusiveK0K0::MASS_PION, ExclusiveK0K0::MASS_PION, 1, 1, tryVec, beamPar, upcEvt->getMagneticField(), true);
+        
+    
+        // START OF LIKE-SIGN (LS) BACKGROUND EVALUATION
+        // 1. Map the tracks: [0] is positive, [1] is negative
+        StUPCTrack const* pi_plus_1  = vPosNegPionLeadingKaon[0];
+        StUPCTrack const* pi_minus_1 = vPosNegPionLeadingKaon[1];
+        StUPCTrack const* pi_plus_2  = vPosNegPionSubLeadingKaon[0];
+        StUPCTrack const* pi_minus_2 = vPosNegPionSubLeadingKaon[1];
+
+        // 2. Build the Fake Like-Sign Kaons (++, --)
+        StUPCV0 fakeKaonPlus(pi_plus_1, pi_plus_2, ExclusiveK0K0::MASS_PION, ExclusiveK0K0::MASS_PION, 1, 1, tryVec, beamPar, upcEvt->getMagneticField(), true);
+        StUPCV0 fakeKaonMinus(pi_minus_1, pi_minus_2, ExclusiveK0K0::MASS_PION, ExclusiveK0K0::MASS_PION, 1, 1, tryVec, beamPar, upcEvt->getMagneticField(), true);
+
+        // 3. Independent Boolean to track LS success (EXCLUDING pTmiss)
+        bool passLSCuts = true;
+
+        if (!(fakeKaonPlus.m() > config.massWinLow && fakeKaonPlus.m() < config.massWinHigh && 
+              fakeKaonMinus.m() > config.massWinLow && fakeKaonMinus.m() < config.massWinHigh)) passLSCuts = false;
+
+        double dcaBeamLeadingCutLS = (tracksWithTofHit.size() >= 3) ? config.dcaBeamline4 : config.dcaBeamline23;
+        double dcaDauLeadingCutLS  = (tracksWithTofHit.size() >= 3) ? config.dcaDaughters4 : config.dcaDaughters23;
+        double dcaBeamSubLeadingCutLS = (tracksWithTofHit.size() >= 4) ? config.dcaBeamline4 : config.dcaBeamline23;
+        double dcaDauSubLeadingCutLS  = (tracksWithTofHit.size() >= 4) ? config.dcaDaughters4 : config.dcaDaughters23;
+
+        if (fakeKaonPlus.dcaDaughters() > dcaDauLeadingCutLS || fakeKaonMinus.dcaDaughters() > dcaDauSubLeadingCutLS) passLSCuts = false;
+        if (fakeKaonPlus.DCABeamLine() > dcaBeamLeadingCutLS || fakeKaonMinus.DCABeamLine() > dcaBeamSubLeadingCutLS) passLSCuts = false;
+
+        bool lsPaPass = false;
+        if (tracksWithTofHit.size() == 5 || tracksWithTofHit.size() == 4) {
+            lsPaPass = (fakeKaonPlus.decayLengthHypo() <= config.decayLength || fakeKaonPlus.pointingAngleHypo() >= config.cosPA) &&
+                       (fakeKaonMinus.decayLengthHypo() <= config.decayLength || fakeKaonMinus.pointingAngleHypo() >= config.cosPA);
+        } else if (tracksWithTofHit.size() == 3) {
+            lsPaPass = (fakeKaonPlus.decayLengthHypo() <= config.decayLength || fakeKaonPlus.pointingAngleHypo() >= config.cosPA) &&
+                       fakeKaonMinus.pointingAngleHypo() >= config.cosPA23;
+        } else if (tracksWithTofHit.size() == 2) {
+            lsPaPass = (fakeKaonPlus.pointingAngleHypo() >= config.cosPA23 && fakeKaonMinus.pointingAngleHypo() >= config.cosPA23);
+        }
+        if (!lsPaPass) passLSCuts = false;
+
+        // CALCULATE pTmiss BUT DO NOT CUT YET
+        double pTmiss_LS;
+        CheckPtMiss(fakeKaonPlus, fakeKaonMinus, protonE, protonW, pTmiss_LS);
+
+        double zdiff_LS = fakeKaonPlus.decayVertex().Z() - fakeKaonMinus.decayVertex().Z();
+        double zmean_LS = (fakeKaonPlus.decayVertex().Z() + fakeKaonMinus.decayVertex().Z()) / 2.0;
+        if (abs(zmean_LS) > config.zmeanMax || abs(zdiff_LS) > config.zdiffMax) passLSCuts = false;
+
+        if (abs(fakeKaonPlus.cosThetaStar()) > config.cosThetaStarMax || abs(fakeKaonMinus.cosThetaStar()) > config.cosThetaStarMax) passLSCuts = false;
+
+        // 4. Fill 2D and 1D Histograms
+        if (passLSCuts) {
+            auto hasTofLS = [&](StUPCTrack const* trk) {
+                return std::find(tracksWithTofHit.begin(), tracksWithTofHit.end(), trk) != tracksWithTofHit.end();
+            };
+
+            int dummyRejLS = 0;
+            double w_LK_P_LS = GetK0TrackWeight(pi_plus_1, eventVz, h3D_TPC_Eff_P, h3D_TOF_Eff_P, hasTofLS(pi_plus_1), dummyRejLS);
+            double w_LK_N_LS = GetK0TrackWeight(pi_minus_1, eventVz, h3D_TPC_Eff_N, h3D_TOF_Eff_N, hasTofLS(pi_minus_1), dummyRejLS);
+            double w_SK_P_LS = GetK0TrackWeight(pi_plus_2, eventVz, h3D_TPC_Eff_P, h3D_TOF_Eff_P, hasTofLS(pi_plus_2), dummyRejLS);
+            double w_SK_N_LS = GetK0TrackWeight(pi_minus_2, eventVz, h3D_TPC_Eff_N, h3D_TOF_Eff_N, hasTofLS(pi_minus_2), dummyRejLS);
+
+            double lsEventWeight = w_LK_P_LS * w_LK_N_LS * w_SK_P_LS * w_SK_N_LS;
+
+            if (lsEventWeight > 0.0) {
+                int nTofLK_LS = hasTofLS(pi_plus_1) + hasTofLS(pi_minus_1);
+                int nTofSK_LS = hasTofLS(pi_plus_2) + hasTofLS(pi_minus_2);
+                int totalTOF_LS = nTofLK_LS + nTofSK_LS;
+                TLorentzVector K0K0_LS = fakeKaonPlus.lorentzVector() + fakeKaonMinus.lorentzVector();
+                double massK0K0_LS = K0K0_LS.M();
+
+                // FILL 2D HISTOGRAMS (No pTmiss cut applied yet)
+                if (totalTOF_LS == 4) {
+                    h2_PtMiss_Vs_Mass_Corrected_4TOF_LS->Fill(massK0K0_LS, pTmiss_LS, lsEventWeight);
+                    h2_PtMiss_Vs_Mass_Raw_4TOF_LS->Fill(massK0K0_LS, pTmiss_LS);
+                } else if (totalTOF_LS == 3) {
+                    double weight_3TOF_LS = lsEventWeight / 4.0;
+                    h2_PtMiss_Vs_Mass_Corrected_3TOF_LS->Fill(massK0K0_LS, pTmiss_LS, weight_3TOF_LS);
+                    h2_PtMiss_Vs_Mass_Raw_3TOF_LS->Fill(massK0K0_LS, pTmiss_LS);
+                } else if (totalTOF_LS == 2 && nTofLK_LS == 1 && nTofSK_LS == 1) {
+                    double weight_2TOF_LS = lsEventWeight / 4.0;
+                    h2_PtMiss_Vs_Mass_Corrected_2TOF_LS->Fill(massK0K0_LS, pTmiss_LS, weight_2TOF_LS);
+                    h2_PtMiss_Vs_Mass_Raw_2TOF_LS->Fill(massK0K0_LS, pTmiss_LS);
+
+                    // FILL 1D HISTOGRAM AND TRACKERS (Apply pTmiss cut here!)
+                    if (pTmiss_LS <= config.ptMissMax) {
+                        h1D_Reco_InvMass_Raw_LS_4pi_2TOF->Fill(massK0K0_LS);
+                        h1D_Reco_InvMass_Corrected_LS_4pi_2TOF->Fill(massK0K0_LS, weight_2TOF_LS);
+                        expectedYield_LS_2TOF += weight_2TOF_LS;
+                        nEvents_LS_2TOF++;
+                    }
+                }
+            }
+        }
+
+        // END OF LIKE-SIGN (LS) BACKGROUND EVALUATION 
 
         // --- FULL EXCLUSIVITY CUTS (SC4 - SC9) ---
         double lkMass = leadingKaon.m();
@@ -427,13 +540,13 @@ int main(int argc, char** argv)
             h2_PtMiss_Vs_Mass_4TOF->Fill(massK0K0, pTmiss);
             h2_PtMiss_Vs_Mass_4TOF_Corrected->Fill(massK0K0, pTmiss, eventWeight);
         } else if (totalTOF == 3) {
-            double weight_3TOF = eventWeight;// / 4.0;
+            double weight_3TOF = eventWeight / 4.0;
             h1D_Reco_PtMiss_Raw_4pi_3TOF->Fill(pTmiss);
             h1D_Reco_PtMiss_Corrected_4pi_3TOF->Fill(pTmiss, weight_3TOF);
             h2_PtMiss_Vs_Mass_3TOF->Fill(massK0K0, pTmiss);
             h2_PtMiss_Vs_Mass_3TOF_Corrected->Fill(massK0K0, pTmiss, weight_3TOF);
         } else if (totalTOF == 2) {
-            double weight_2TOF = eventWeight;// / 4.0;
+            double weight_2TOF = eventWeight / 4.0;
             h1D_Reco_PtMiss_Raw_4pi_2TOF->Fill(pTmiss);
             h1D_Reco_PtMiss_Corrected_4pi_2TOF->Fill(pTmiss, weight_2TOF);
             h2_PtMiss_Vs_Mass_2TOF->Fill(massK0K0, pTmiss);
@@ -541,6 +654,30 @@ int main(int argc, char** argv)
         cout << "Missing pT Mean:  " << h1D_Reco_PtMiss_Corrected_4pi_4TOF->GetMean() << " GeV/c" << endl;
     }
 
+    cout << "\n=== 2-TOF SAMPLE DIAGNOSTICS (LIKE-SIGN METHOD) ===" << endl;
+    cout << "Opposite-Sign (OS) Candidates (Signal + Background):" << endl;
+    cout << "  Raw OS Events:                 " << nEvents_2TOF << endl;
+    cout << "  Corrected OS Yield:            " << expectedYield_2TOF << endl;
+    
+    cout << "\nLike-Sign (LS) Candidates (Pure Combinatorial Background):" << endl;
+    cout << "  Raw LS Events:                 " << nEvents_LS_2TOF << endl;
+    cout << "  Corrected LS Yield:            " << expectedYield_LS_2TOF << endl;
+
+    cout << "\nNet Extraction:" << endl;
+    double netYield_2TOF = expectedYield_2TOF - expectedYield_LS_2TOF;
+    double bgFraction_2TOF = (expectedYield_2TOF > 0) ? (expectedYield_LS_2TOF / expectedYield_2TOF) * 100.0 : 0.0;
+    
+    cout << "  Calculated Net Signal:         " << netYield_2TOF << endl;
+    cout << "  Combinatorial Background %:    " << bgFraction_2TOF << " %" << endl;
+
+    if (bgFraction_2TOF > 100.0) {
+        cout << "  [!] WARNING: Background exceeds signal. Check LS scaling or acceptance." << endl;
+    } else if (nEvents_LS_2TOF == 0 && nEvents_2TOF > 0) {
+        cout << "  [!] WARNING: Zero LS background found. Check StUPCV0 charge logic." << endl;
+    } else {
+        cout << "  [+] SUCCESS: Like-Sign background successfully modeled." << endl;
+    }
+
     outfile->cd();
     // Write 1D verifications
     h1D_RawPt_P->Write();  h1D_CorrectedPt_P->Write();
@@ -586,7 +723,15 @@ int main(int argc, char** argv)
     h1D_Reco_Y_Corrected_4pi_2TOF->Write();
     h1D_Reco_PtMiss_Raw_4pi_2TOF->Write();
     h1D_Reco_PtMiss_Corrected_4pi_2TOF->Write();
-
+    //LS
+    h1D_Reco_InvMass_Raw_LS_4pi_2TOF->Write();
+    h1D_Reco_InvMass_Corrected_LS_4pi_2TOF->Write();
+    h2_PtMiss_Vs_Mass_Raw_4TOF_LS->Write();
+    h2_PtMiss_Vs_Mass_Corrected_4TOF_LS->Write();
+    h2_PtMiss_Vs_Mass_Raw_3TOF_LS->Write();
+    h2_PtMiss_Vs_Mass_Corrected_3TOF_LS->Write();
+    h2_PtMiss_Vs_Mass_Raw_2TOF_LS->Write();
+    h2_PtMiss_Vs_Mass_Corrected_2TOF_LS->Write();
     // Clean up
     delete d1; delete d2;
     for(auto d : dVec) delete d;
