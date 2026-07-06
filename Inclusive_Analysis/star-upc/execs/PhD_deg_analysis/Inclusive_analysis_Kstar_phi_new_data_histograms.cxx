@@ -652,6 +652,11 @@ void set_background_fitting(TPad* pad, TH1D* data, TH1D* bcg, double& bcgRegionS
 }
 
 void draw_and_save(TH1D* data, std::string folderWithDiagonal, std::string name, std::string title, std::string options){
+    //failsave in case nullptr was passed
+    if(data==nullptr){
+        printf("WARNING!!! A (data) nullptr has been passed to draw_and_save_minus_background function!\n");
+    }
+    //normal proceeding
     MyStyles styleLibrary;
     TStyle tempStyle = styleLibrary.Hist2DQuarterSize(true);
     tempStyle.cd();
@@ -670,6 +675,13 @@ void draw_and_save(TH1D* data, std::string folderWithDiagonal, std::string name,
 }
 
 void draw_and_save_minus_background(TH1D* data, TH1D* bcg, std::string folderWithDiagonal, std::string name, std::string title, double bcg_region){
+    //failsave in case nullptr was passed
+    if(data==nullptr){
+        printf("WARNING!!! A (data) nullptr has been passed to draw_and_save_minus_background function!\n");
+    } else if(bcg==nullptr){
+        printf("WARNING!!! A (bcg) nullptr has been passed to draw_and_save_minus_background function!\n");
+    }
+    //normal proceeding
     MyStyles styleLibrary;
     TStyle tempStyle = styleLibrary.Hist2DQuarterSize(true);
     tempStyle.cd();
@@ -721,6 +733,14 @@ void draw_bulk(std::vector<TH1D*> data, std::string folderWithDiagonal, std::str
 }
 
 TFitResult differential_crossection_fit(TPad* pad, TH1D* slice, TF1* fitting_function_signal, TF1* fitting_function_bcg, std::string draw_full_path){
+    //failsave in case nullptr was passed
+    if(slice==nullptr){
+        printf("WARNING!!! A nullptr has been passed to differential_crossection_fit function!\n");
+        TFitResult zeroResult;
+        zeroResult.SetChi2AndNdf(0., 1.);
+        return zeroResult;
+    }
+    //normal proceeding
     //setting up the functions
     pad->Clear();
     gROOT->SetSelectedPad(pad);
