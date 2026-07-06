@@ -87,6 +87,7 @@ int main(int argc, char** argv){
     sigmaFile.close();
 
     std::vector<std::string> pairTab = { "Kpi", "piK", "ppi", "pip", "KK", "pipi", "pp" };
+    std::vector<std::string> shortenedPairTab = { "Kpi", "piK", "KK" };
 
     //mass histograms (signal)
     outsideprocessing.AddHistogram(TH1D("MKpiChi2", ";m_{K^{+}#pi^{-}} [GeV];Number of pairs", 200, 0.5, 2.0));
@@ -104,6 +105,17 @@ int main(int argc, char** argv){
     outsideprocessing.AddHistogram(TH2D("MKKMothersChi2", ";m_{K^{+}K^{-}} [GeV];Mother symbol", 500, 0.9, 2.4, 1, 0, 1));
     outsideprocessing.AddHistogram(TH2D("MpipiMothersChi2", ";m_{#pi^{+}#pi^{-}} [GeV];Mother symbol", 600, 0.2, 1.4, 1, 0, 1));
     outsideprocessing.AddHistogram(TH2D("MppMothersChi2", ";m_{p^{+}p^{-}} [GeV];Mother symbol", 500, 1.5, 3.5, 1, 0, 1));
+
+    //mass histograms (identified signal)
+    outsideprocessing.AddHistogram(TH1D("MKpiChi2Identified", ";m_{K^{+}#pi^{-}} [GeV];Number of pairs", 200, 0.5, 2.0));
+    outsideprocessing.AddHistogram(TH1D("MpiKChi2Identified", ";m_{#pi^{+}K^{-}} [GeV];Number of pairs", 200, 0.5, 2.0));
+    outsideprocessing.AddHistogram(TH1D("MKKChi2Identified", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 500, 0.9, 2.4));
+    //adding mass histograms grouped by category (identified signal)
+    getCategoryHistograms(outsideprocessing, shortenedPairTab, "Identified");
+    //deltaT (identified signal)
+    outsideprocessing.AddHistogram(TH1D("deltaT0Kpi", ";#Delta t_{K^{+}#pi^{-}} [ns];Number of pairs", 200, -10, 10));
+    outsideprocessing.AddHistogram(TH1D("deltaT0piK", ";#Delta t_{#pi^{+}K^{-}} [ns];Number of pairs", 200, -10, 10));
+    outsideprocessing.AddHistogram(TH1D("deltaT0KK", ";#Delta t_{K^{+}K^{-}} [ns];Number of pairs", 200, -10, 10));
 
     //other histograms
     outsideprocessing.AddHistogram(TH1D("MKKSuspiciousPeakTestedAsPionPair", ";m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 400, 0.25, 0.65));
@@ -301,6 +313,13 @@ int main(int argc, char** argv){
                         std::string motherName = "nonresonant";
                         if(getMother(tempUPCpointer, vector_MC_Track_positive[i], vector_MC_Track_negative[j])!=nullptr){
                             motherName = std::string(getMother(tempUPCpointer, vector_MC_Track_positive[i], vector_MC_Track_negative[j])->GetName());
+                            //filling only histograms with confirmed mothers
+                            if(motherName=="K*0"){
+                                insideprocessing.Fill("MKpiChi2Identified", mass);
+                                insideprocessing.Fill("MKpiChi2Identifiedeta", mass, eta);
+                                insideprocessing.Fill("MKpiChi2IdentifiedpT", mass, pT);
+                                insideprocessing.Fill("deltaT0Kpi", DeltaT0(vector_Track_positive[i], vector_Track_negative[j], particleMass[Kaon], particleMass[Pion]));
+                            }
                         }
                         insideprocessing.Fill("MKpiMothersChi2", mass, motherName.c_str(), 1.0);
                     }
@@ -314,6 +333,12 @@ int main(int argc, char** argv){
                         std::string motherName = "nonresonant";
                         if(getMother(tempUPCpointer, vector_MC_Track_positive[i], vector_MC_Track_negative[j])!=nullptr){
                             motherName = std::string(getMother(tempUPCpointer, vector_MC_Track_positive[i], vector_MC_Track_negative[j])->GetName());
+                            if(motherName=="K*0_bar"){
+                                insideprocessing.Fill("MpiKChi2Identified", mass);
+                                insideprocessing.Fill("MpiKChi2Identifiedeta", mass, eta);
+                                insideprocessing.Fill("MpiKChi2IdentifiedpT", mass, pT);
+                                insideprocessing.Fill("deltaT0piK", DeltaT0(vector_Track_positive[i], vector_Track_negative[j], particleMass[Pion], particleMass[Kaon]));
+                            }
                         }
                         insideprocessing.Fill("MpiKMothersChi2", mass, motherName.c_str(), 1.0);
                     }
@@ -353,27 +378,14 @@ int main(int argc, char** argv){
                         std::string motherName = "nonresonant";
                         if(getMother(tempUPCpointer, vector_MC_Track_positive[i], vector_MC_Track_negative[j])!=nullptr){
                             motherName = std::string(getMother(tempUPCpointer, vector_MC_Track_positive[i], vector_MC_Track_negative[j])->GetName());
+                            if(motherName=="phi"){
+                                insideprocessing.Fill("MKKChi2Identified", mass);
+                                insideprocessing.Fill("MKKChi2Identifiedeta", mass, eta);
+                                insideprocessing.Fill("MKKChi2IdentifiedpT", mass, pT);
+                                insideprocessing.Fill("deltaT0KK", DeltaT0(vector_Track_positive[i], vector_Track_negative[j], particleMass[Kaon], particleMass[Kaon]));
+                            }
                         }
                         insideprocessing.Fill("MKKMothersChi2", mass, motherName.c_str(), 1.0);
-                        //test of suspicious peak and its neighbourhood
-                        // if(chi2Map["K_K"]<3){
-                        //     insideprocessing.Fill("MKKSuspiciousPeakTestedWithStrictChi2LessThan3", mass);
-                        // }
-                        // if(chi2Map["K_K"]<1){
-                        //     insideprocessing.Fill("MKKSuspiciousPeakTestedWithStrictChi2LessThan1", mass);
-                        // }
-                        // if(1.06<mass&&mass<1.08){
-                        //     vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
-                        //     vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
-                        //     mass = (positive_track+negative_track).M();
-                        //     insideprocessing.Fill("MKKSuspiciousPeakTestedAsPionPair", mass);
-                        // }
-                        // if((1.05<mass&&mass<1.06)||(1.08<mass&&mass<1.09)){
-                        //     vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
-                        //     vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
-                        //     mass = (positive_track+negative_track).M();
-                        //     insideprocessing.Fill("MKKSuspiciousPeakTestedAsPionPairNeighbourhood", mass);
-                        // }
                     }
                     if(chi2Map["pi_pi"]<9){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
@@ -454,8 +466,58 @@ TParticle* getMother(StUPCEvent* inputUPCpointer, TParticle* particle1, TParticl
 }
 
 double getChi2(StUPCTrack* positive, StUPCTrack* negative, int positiveId, int negativeId, double sigmaT){
-    double sigma1 = pow(positive->getNSigmasTPC(static_cast<StUPCTrack::Part>(positiveId)), 2);
-    double sigma2 = pow(negative->getNSigmasTPC(static_cast<StUPCTrack::Part>(negativeId)), 2);
-    double sigma3 = pow(DeltaT0(positive, negative, particleMassExtended[positiveId], particleMassExtended[negativeId])/sigmaT, 2);
+    // TODO: undo this when simulation will be fixed
+    //data taken from MC_signal_id_efficiency performed on a huge general sample
+    double positiveParticleOffset, negativeParticleOffset;
+    switch(positiveId){
+    case ExtElectron:
+        positiveParticleOffset = -0.3756;
+        break;
+    case ExtPion:
+        positiveParticleOffset = 1.217;
+        break;
+    case ExtKaon:
+        positiveParticleOffset = 1.258;
+        break;
+    case ExtProton:
+        positiveParticleOffset = 1.400;
+        break;
+    default:
+        positiveParticleOffset = 0;
+        break;
+    }
+    switch(negativeId){
+    case ExtElectron:
+        negativeParticleOffset = -0.307;
+        break;
+    case ExtPion:
+        negativeParticleOffset = 1.263;
+        break;
+    case ExtKaon:
+        negativeParticleOffset = 1.277;
+        break;
+    case ExtProton:
+        negativeParticleOffset = 1.366;
+        break;
+    default:
+        negativeParticleOffset = 0;
+        break;
+    }
+    double sigma1 = pow(positive->getNSigmasTPC(static_cast<StUPCTrack::Part>(positiveId))-positiveParticleOffset, 2);
+    double sigma2 = pow(negative->getNSigmasTPC(static_cast<StUPCTrack::Part>(negativeId))-negativeParticleOffset, 2);
+    double deltaTfixed = DeltaT0(positive, negative, particleMassExtended[positiveId], particleMassExtended[negativeId]);
+    if(fabs(deltaTfixed-1.)<fabs(deltaTfixed)){
+        //if its closer to +1ns peak than 0ns peak, we subtract that one nanosecond
+        deltaTfixed += -1.;
+    } else     if(fabs(deltaTfixed+1.)<fabs(deltaTfixed)){
+        //if its closer to -1ns peak than 0ns peak, we add that one nanosecond
+        deltaTfixed += 1.;
+    }
+    double sigma3 = pow(deltaTfixed/sigmaT, 2);
+
+    //the original way
+    // double sigma1 = pow(positive->getNSigmasTPC(static_cast<StUPCTrack::Part>(positiveId)), 2);
+    // double sigma2 = pow(negative->getNSigmasTPC(static_cast<StUPCTrack::Part>(negativeId)), 2);
+    // double sigma3 = pow(DeltaT0(positive, negative, particleMassExtended[positiveId], particleMassExtended[negativeId])/sigmaT, 2);
     return sigma1+sigma2+sigma3;
 }
