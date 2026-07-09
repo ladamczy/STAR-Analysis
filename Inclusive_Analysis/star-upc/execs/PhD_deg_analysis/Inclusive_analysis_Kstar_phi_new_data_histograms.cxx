@@ -19,6 +19,7 @@
 #include "TFitResult.h"
 #include "THStack.h"
 #include "TLine.h"
+#include "TLegend.h"
 
 #include "MyStyles.h"
 
@@ -606,7 +607,7 @@ void set_background_fitting(TPad* pad, TH1D* data, TH1D* bcg, double& bcgRegionS
     gStyle->SetStatW(0.18);
     gStyle->SetFitFormat("6.5g");
     gStyle->SetStatColor(0);
-    gPad->SetMargin(0.1, 0.05, 0.1, 0.1);
+    pad->SetMargin(0.1, 0.05, 0.1, 0.1);
     //preparing and drawing ratio plot
     TH1D SigBcgRatio(*bcg);
     SigBcgRatio.SetMarkerStyle(kFullCircle);
@@ -615,7 +616,8 @@ void set_background_fitting(TPad* pad, TH1D* data, TH1D* bcg, double& bcgRegionS
     data->Sumw2();
     SigBcgRatio.Divide(data);
     SigBcgRatio.SetNameTitle(name.c_str(), title.c_str());
-    pad->cd();
+    // pad->cd();
+    SigBcgRatio.Rebin(2);
     SigBcgRatio.Draw("e1");
     pad->Update();
     //drawing two lines at proper coordinates
@@ -629,7 +631,14 @@ void set_background_fitting(TPad* pad, TH1D* data, TH1D* bcg, double& bcgRegionS
     line2.SetLineStyle(kDashed);
     line2.SetLineWidth(3);
     line2.Draw("same");
-    //interactive part
+    //drawing the legend
+    TLegend legend_for_background_fitting(0.65, 0.2, 0.84, 0.39);
+    legend_for_background_fitting.SetTextSize(0.025);
+    // legend_for_background_fitting.SetHeader("#bf{pp, #sqrt{s} = 510 GeV}", "C");
+    legend_for_background_fitting.AddEntry(&SigBcgRatio, "Background to signal ratio");
+    legend_for_background_fitting.AddEntry(&line1, "Tested background region", "l");
+    legend_for_background_fitting.SetBorderSize(0);
+    legend_for_background_fitting.DrawClone("SAME");
     std::string inputString;
     printf("Write lower & higher bound of the background fit and press \"Enter\"\n");
     printf("Or just press \"Enter\" to keep current: %lf, %lf\n", bcgRegionStart, bcgRegionStop);
@@ -645,10 +654,26 @@ void set_background_fitting(TPad* pad, TH1D* data, TH1D* bcg, double& bcgRegionS
     } while(inputString.size()!=0);
     //saving and clearing the pad
     if(draw_full_path.size()!=0){
+        TStyle temp_style(*gStyle);
+        // //setting new style
+        MyStyles styleLibrary;
+        TStyle mystyle = styleLibrary.Hist2DQuarterSize();
+        mystyle.SetFrameLineWidth(2);
+        mystyle.SetEndErrorSize(1.); //turns off ends of error bars
+        mystyle.cd();
+        SigBcgRatio.SetDrawOption("e0");
+        SigBcgRatio.UseCurrentStyle();
+        pad->ModifiedUpdate();
+        pad->RedrawAxis();
+        //drawing
         pad->SaveAs(draw_full_path.c_str());
     }
+    //resetting style and pad
+    gROOT->SetStyle("Modern");//needed because really WEIRD things were happening (somehow BELLE@ style set itself up)
     gStyle->SetOptStat(1);
     pad->Clear();
+    pad->UseCurrentStyle();
+    gROOT->ForceStyle();
 }
 
 void draw_and_save(TH1D* data, std::string folderWithDiagonal, std::string name, std::string title, std::string options){
@@ -724,6 +749,9 @@ void draw_bulk(std::vector<TH1D*> data, std::string folderWithDiagonal, std::str
         ((TH1D*)hists->At(i))->UseCurrentStyle();
         ((TH1D*)hists->At(i))->SetLineColor(i+2+(i+2>=10));
         ((TH1D*)hists->At(i))->SetMarkerColor(TColor::GetColorDark(i+2+(i+2>=10)));
+        //writing the output, to just copy the fitted values already
+        ((TH1D*)hists->At(i))->Print("all");
+
     }
     resultCanvas->BuildLegend();
     resultCanvas->Update();
@@ -753,7 +781,7 @@ TFitResult differential_crossection_fit(TPad* pad, TH1D* slice, TF1* fitting_fun
     gStyle->SetStatW(0.18);
     gStyle->SetFitFormat("6.5g");
     gStyle->SetStatColor(0);
-    gPad->SetMargin(0.1, 0.05, 0.1, 0.1);
+    pad->SetMargin(0.1, 0.05, 0.1, 0.1);
     TFitResultPtr fitPointer;
     int signalparams, bcgparams, totalparams;
     double rangemin, rangemax;
@@ -877,6 +905,7 @@ TFitResult differential_crossection_fit(TPad* pad, TH1D* slice, TF1* fitting_fun
         pad->SaveAs(draw_full_path.c_str());
     }
     gStyle->SetOptStat(1);
+    pad->Clear();
     //giving result
     //if there is no particles to fit
     //then chi2=0 is set as a sign
