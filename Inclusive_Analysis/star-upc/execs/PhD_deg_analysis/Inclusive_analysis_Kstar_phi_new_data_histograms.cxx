@@ -25,7 +25,7 @@
 
 std::string rountToNSignificantFigures(double input, int n = 2);
 int GetFirstNonzeroBinNumber(TH1* input);
-void set_background_fitting(TPad* pad, TH1D* data, TH1D* bcg, double& bcgRegionStart, double& bcgRegionStop, std::string name, std::string title, std::string draw_full_path = "");
+void set_background_fitting(TCanvas* canvas, TH1D* data, TH1D* bcg, double& bcgRegionStart, double& bcgRegionStop, std::string name, std::string title, std::string draw_full_path = "");
 void draw_and_save(TH1D* data, std::string folderWithDiagonal, std::string name, std::string title, std::string options = "");
 void draw_and_save_minus_background(TH1D* data, TH1D* bcg, std::string folderWithDiagonal, std::string name, std::string title, double bcg_region);
 void draw_bulk(std::vector<TH1D*> data, std::string folderWithDiagonal, std::string name, std::string title, std::string options);
@@ -169,7 +169,12 @@ int main(int argc, char* argv[]){
     //###########################################################
     //                FITTING
     //###########################################################
-    TCanvas* result = new TCanvas("result", "result", -1, 0, 1600, 900);
+    TCanvas* result = MyStyles::DefaultCanvas("result");
+    MyStyles styleLibrary;
+    TStyle mystyle = styleLibrary.Hist2DDisplay(false);
+    mystyle.cd();
+    result->UseCurrentStyle();
+    // gROOT->ForceStyle();
     //fitting ONCE the total m_KK
     TF1Convolution conv_sig("breitwigner", "gausn", 0.5, 1.5); //extra range for all your convolution needs
     conv_sig.SetNofPointsFFT(10000);
@@ -212,8 +217,15 @@ int main(int argc, char* argv[]){
 skipOneTimeFitting:
 
     //checking fitting bounds
+    TStyle mystyle2 = styleLibrary.Hist2DDisplay(true);
+    mystyle2.cd();
+    result->UseCurrentStyle();
     set_background_fitting(result, MKpiChi2, MKpiChi2bcg, bcgRegionStart[0], bcgRegionStop[0], "KpiRatio", "K^{+}#pi^{-} Background/Signal ratio with "+BcgType+" background", folderWithDiagonal+"MKpiRatio.pdf");
+    mystyle2.cd();
+    result->UseCurrentStyle();
     set_background_fitting(result, MpiKChi2, MpiKChi2bcg, bcgRegionStart[1], bcgRegionStop[1], "piKRatio", "#pi^{+}K^{-} Background/Signal ratio with "+BcgType+" background", folderWithDiagonal+"MpiKRatio.pdf");
+    mystyle2.cd();
+    result->UseCurrentStyle();
     set_background_fitting(result, MKKChi2, MKKChi2bcg, bcgRegionStart[2], bcgRegionStop[2], "KKRatio", "K^{+}K^{-} Background/Signal ratio with "+BcgType+" background", folderWithDiagonal+"MKKRatio.pdf");
 
     //fitting functions
@@ -594,20 +606,10 @@ int GetFirstNonzeroBinNumber(TH1* input){
     return -1;
 }
 
-void set_background_fitting(TPad* pad, TH1D* data, TH1D* bcg, double& bcgRegionStart, double& bcgRegionStop, std::string name, std::string title, std::string draw_full_path){
+void set_background_fitting(TCanvas* canvas, TH1D* data, TH1D* bcg, double& bcgRegionStart, double& bcgRegionStop, std::string name, std::string title, std::string draw_full_path){
     //preparing for drawing
-    pad->Clear();
-    gROOT->SetSelectedPad(pad);
-    gStyle->SetOptStat(0);
-    gStyle->SetHistMinimumZero();
-    gStyle->SetOptFit();
-    gStyle->SetStatBorderSize(0.);
-    gStyle->SetStatX(0.94);
-    gStyle->SetStatY(0.89);
-    gStyle->SetStatW(0.18);
-    gStyle->SetFitFormat("6.5g");
-    gStyle->SetStatColor(0);
-    pad->SetMargin(0.1, 0.05, 0.1, 0.1);
+    canvas->Clear();
+    printf("%d\n", gStyle->GetLegendFont());
     //preparing and drawing ratio plot
     TH1D SigBcgRatio(*bcg);
     SigBcgRatio.SetMarkerStyle(kFullCircle);
@@ -616,26 +618,24 @@ void set_background_fitting(TPad* pad, TH1D* data, TH1D* bcg, double& bcgRegionS
     data->Sumw2();
     SigBcgRatio.Divide(data);
     SigBcgRatio.SetNameTitle(name.c_str(), title.c_str());
-    // pad->cd();
     SigBcgRatio.Rebin(2);
     SigBcgRatio.Draw("e1");
-    pad->Update();
+    canvas->Update();
     //drawing two lines at proper coordinates
-    TLine line1(bcgRegionStart, pad->GetUymin(), bcgRegionStart, pad->GetUymax());
-    TLine line2(bcgRegionStop, pad->GetUymin(), bcgRegionStop, pad->GetUymax());
+    TLine line1(bcgRegionStart, canvas->GetUymin(), bcgRegionStart, canvas->GetUymax());
+    TLine line2(bcgRegionStop, canvas->GetUymin(), bcgRegionStop, canvas->GetUymax());
     line1.SetLineColor(kRed);
     line1.SetLineStyle(kDashed);
-    line1.SetLineWidth(3);
+    line1.SetLineWidth(2);
     line1.Draw("same");
     line2.SetLineColor(kRed);
     line2.SetLineStyle(kDashed);
-    line2.SetLineWidth(3);
+    line2.SetLineWidth(2);
     line2.Draw("same");
     //drawing the legend
-    TLegend legend_for_background_fitting(0.65, 0.2, 0.84, 0.39);
-    legend_for_background_fitting.SetTextSize(0.025);
-    // legend_for_background_fitting.SetHeader("#bf{pp, #sqrt{s} = 510 GeV}", "C");
-    legend_for_background_fitting.AddEntry(&SigBcgRatio, "Background to signal ratio");
+    TLegend legend_for_background_fitting(0.56, 0.2, 0.89, 0.39);
+    legend_for_background_fitting.SetTextSize(0.04);
+    legend_for_background_fitting.AddEntry(&SigBcgRatio, "Background to total ratio");
     legend_for_background_fitting.AddEntry(&line1, "Tested background region", "l");
     legend_for_background_fitting.SetBorderSize(0);
     legend_for_background_fitting.DrawClone("SAME");
@@ -649,37 +649,33 @@ void set_background_fitting(TPad* pad, TH1D* data, TH1D* bcg, double& bcgRegionS
         line1.SetX2(bcgRegionStart);
         line2.SetX1(bcgRegionStop);
         line2.SetX2(bcgRegionStop);
-        pad->ModifiedUpdate();
+        canvas->ModifiedUpdate();
         std::getline(std::cin, inputString);
     } while(inputString.size()!=0);
-    //saving and clearing the pad
+    //saving and clearing the canvas
     if(draw_full_path.size()!=0){
-        TStyle temp_style(*gStyle);
-        // //setting new style
+        //setting new style
         MyStyles styleLibrary;
         TStyle mystyle = styleLibrary.Hist2DQuarterSize();
-        mystyle.SetFrameLineWidth(2);
-        mystyle.SetEndErrorSize(1.); //turns off ends of error bars
         mystyle.cd();
-        SigBcgRatio.SetDrawOption("e0");
+        canvas->UseCurrentStyle();
+        SigBcgRatio.SetDrawOption("e1");
         SigBcgRatio.UseCurrentStyle();
-        pad->ModifiedUpdate();
-        pad->RedrawAxis();
+        canvas->ModifiedUpdate();
+        canvas->RedrawAxis();
         //drawing
-        pad->SaveAs(draw_full_path.c_str());
+        canvas->SaveAs(draw_full_path.c_str());
     }
-    //resetting style and pad
-    gROOT->SetStyle("Modern");//needed because really WEIRD things were happening (somehow BELLE@ style set itself up)
-    gStyle->SetOptStat(1);
-    pad->Clear();
-    pad->UseCurrentStyle();
-    gROOT->ForceStyle();
+    //resetting style and canvas
+    //needed because really WEIRD things were happening (somehow BELLE2 style set itself up)
+    //TODO fix that
+    canvas->Clear();
 }
 
 void draw_and_save(TH1D* data, std::string folderWithDiagonal, std::string name, std::string title, std::string options){
     //failsave in case nullptr was passed
     if(data==nullptr){
-        printf("WARNING!!! A (data) nullptr has been passed to draw_and_save_minus_background function!\n");
+        printf("WARNING!!! A (data) nullptr has been passed to draw_and_save function!\n");
     }
     //normal proceeding
     MyStyles styleLibrary;
@@ -769,19 +765,9 @@ TFitResult differential_crossection_fit(TPad* pad, TH1D* slice, TF1* fitting_fun
         return zeroResult;
     }
     //normal proceeding
-    //setting up the functions
     pad->Clear();
     gROOT->SetSelectedPad(pad);
-    gStyle->SetOptStat(0);
-    gStyle->SetHistMinimumZero();
-    gStyle->SetOptFit();
-    gStyle->SetStatBorderSize(0.);
-    gStyle->SetStatX(0.94);
-    gStyle->SetStatY(0.89);
-    gStyle->SetStatW(0.18);
-    gStyle->SetFitFormat("6.5g");
-    gStyle->SetStatColor(0);
-    pad->SetMargin(0.1, 0.05, 0.1, 0.1);
+    //setting up the functions
     TFitResultPtr fitPointer;
     int signalparams, bcgparams, totalparams;
     double rangemin, rangemax;
@@ -904,7 +890,6 @@ TFitResult differential_crossection_fit(TPad* pad, TH1D* slice, TF1* fitting_fun
     if(draw_full_path.size()!=0){
         pad->SaveAs(draw_full_path.c_str());
     }
-    gStyle->SetOptStat(1);
     pad->Clear();
     //giving result
     //if there is no particles to fit
