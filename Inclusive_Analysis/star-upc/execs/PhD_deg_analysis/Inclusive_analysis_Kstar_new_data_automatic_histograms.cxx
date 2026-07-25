@@ -25,8 +25,7 @@
 
 std::string rountToNSignificantFigures(double input, int n = 2);
 int GetFirstNonzeroBinNumber(TH1* input);
-void custom_draw_and_save(TH1D* data, std::string folderWithDiagonal, std::string name, std::string title, std::string options = "");
-TFitResult differential_crossection_automatic_fit(TH1D* slice, TF1* fitting_function_signal, TF1* fitting_function_bcg, std::string folderWithDiagonal, std::string name);
+TFitResult fit_and_draw_and_save(TH1D* data, TF1* signal, TF1* background, std::string folderWithDiagonal, std::string name, std::string title, std::string options);
 
 int main(int argc, char* argv[]){
     //something used so that the histograms would draw
@@ -103,9 +102,9 @@ int main(int argc, char* argv[]){
     conv_sig.SetNofPointsFFT(10000);
     TF1 fit_func_sig("fit_func_sig", conv_sig, 0.99, 1.05, 6);
 
-    fit_func_sig.SetParameter(0, 1.);            //N_BW
+    fit_func_sig.SetParameter(0, 1.);           //N_BW
     fit_func_sig.SetParameter(1, fitMaximum);   //m0
-    fit_func_sig.FixParameter(2, fitWidth);     //gamma0
+    fit_func_sig.SetParameter(2, fitWidth);     //gamma0
     fit_func_sig.FixParameter(3, 1.);           //N_Gauss  (fixed to 1)
     fit_func_sig.FixParameter(4, 0.);           //mu_Gauss (fixed to 0)
     fit_func_sig.SetParameter(5, 0.0013);       //sigma_Gauss
@@ -120,12 +119,14 @@ int main(int argc, char* argv[]){
             std::string baseOfTitle = std::string(sig_pointer->GetTitle())+" ";
             for(Int_t k = 0; k<sig_pointer->GetNbinsY(); k++){
                 TH1D* sig_slice = sig_pointer->ProjectionX("_sig", k+1, k+1, "e1");
+                sig_slice->GetYaxis()->SetTitle("Number of pairs");
                 TH1D* bcg_slice = bcg_pointer->ProjectionX("_bcg", k+1, k+1, "e1");
                 //creating background function - a scaled slice of mixed event background
                 auto mixed_event_background = [&](double* x, double* p){
                     return p[0]*bcg_slice->GetBinContent(bcg_slice->FindBin(x[0]));
                 };
                 TF1 fit_func_bcg("fit_func_bcg", mixed_event_background, 0.99, 1.05, 1, 1);
+
                 //fitting and filling result
                 //setting lower range for m0-3*gamma
                 //if lower bound is lower than m0-4*gamma
@@ -137,32 +138,29 @@ int main(int argc, char* argv[]){
                 fit_func_sig.SetRange(lower_range, 1.5);
                 fit_func_bcg.SetRange(lower_range, 1.5);
                 fit_func_bcg.SetParNames("N_{bcg}");
+
                 //setting initial fitting values
                 double initial_bcg_scale = sig_slice->GetBinContent(sig_slice->FindBin(fitMaximum+fitWidth))/bcg_slice->GetBinContent(bcg_slice->FindBin(fitMaximum+fitWidth));
                 fit_func_bcg.SetParameters(initial_bcg_scale);
                 double initial_sig_height = (sig_slice->GetBinContent(sig_slice->FindBin(fitMaximum))-sig_slice->GetBinContent(sig_slice->FindBin(fitMaximum+fitWidth)))*TMath::PiOver2()*fitWidth;
                 fit_func_sig.SetParameters(initial_sig_height, fitMaximum, fitWidth);
+
                 //fitting singular slice
                 double par_value, par_error;
                 std::string newTitle = baseOfTitle;
                 newTitle += "("+rountToNSignificantFigures(sig_pointer->GetYaxis()->GetBinLowEdge(k+1))+", ";
                 newTitle += rountToNSignificantFigures(sig_pointer->GetYaxis()->GetBinUpEdge(k+1))+")";
                 sig_slice->SetTitle(newTitle.c_str());
-                TFitResult tempResult = differential_crossection_automatic_fit(sig_slice, &fit_func_sig, &fit_func_bcg, folderWithDiagonal, newTitle);
-                if(tempResult.Chi2()==0){
-                    result_vector[i*allCategories.size()+j]->SetBinContent(k+1, 0.);
-                    result_vector[i*allCategories.size()+j]->SetBinError(k+1, 0.);
-                    width_vector[i*allCategories.size()+j]->SetBinContent(k+1, 0.);
-                    width_vector[i*allCategories.size()+j]->SetBinError(k+1, 0.);
-                } else{
-                    double bin_width = result_vector[i*allCategories.size()+j]->GetBinWidth(k+1);
-                    par_value = fabs(tempResult.Parameter(0)/sig_slice->GetXaxis()->GetBinWidth(1)*bin_width);
-                    par_error = tempResult.ParError(0)/sig_slice->GetXaxis()->GetBinWidth(1)*bin_width;
-                    result_vector[i*allCategories.size()+j]->SetBinContent(k+1, par_value);
-                    result_vector[i*allCategories.size()+j]->SetBinError(k+1, par_error);
-                    width_vector[i*allCategories.size()+j]->SetBinContent(k+1, fabs(tempResult.Parameter(2)));
-                    width_vector[i*allCategories.size()+j]->SetBinError(k+1, tempResult.Error(2));
-                }
+                TFitResult tempResult = fit_and_draw_and_save(sig_slice, &fit_func_sig, &fit_func_bcg, folderWithDiagonal, newTitle, newTitle, "e1");
+
+                //saving fit results for further analysys
+                double bin_width = result_vector[i*allCategories.size()+j]->GetBinWidth(k+1);
+                par_value = fabs(tempResult.Parameter(0)/sig_slice->GetXaxis()->GetBinWidth(1)*bin_width);
+                par_error = tempResult.ParError(0)/sig_slice->GetXaxis()->GetBinWidth(1)*bin_width;
+                result_vector[i*allCategories.size()+j]->SetBinContent(k+1, par_value);
+                result_vector[i*allCategories.size()+j]->SetBinError(k+1, par_error);
+                width_vector[i*allCategories.size()+j]->SetBinContent(k+1, fabs(tempResult.Parameter(2)));
+                width_vector[i*allCategories.size()+j]->SetBinError(k+1, tempResult.Error(2));
                 Chi2withbcg_vector[i*allCategories.size()+j]->SetBinContent(k+1, tempResult.Chi2()/tempResult.Ndf());
             }
         }
@@ -197,82 +195,97 @@ int GetFirstNonzeroBinNumber(TH1* input){
     return -1;
 }
 
-void custom_draw_and_save(TH1D* data, std::string folderWithDiagonal, std::string name, std::string title, std::string options){
+TFitResult fit_and_draw_and_save(TH1D* data, TF1* signal, TF1* background, std::string folderWithDiagonal, std::string name, std::string title, std::string options){
     //failsave in case nullptr was passed
     if(data==nullptr){
-        printf("WARNING!!! A (data) nullptr has been passed to custom_draw_and_save function!\n");
+        printf("WARNING!!! A (data) nullptr has been passed to fit_and_draw_and_save function!\n");
     }
-    //normal proceeding
-    MyStyles styleLibrary;
-    TStyle tempStyle = styleLibrary.Hist2DNormalSize(true);
-    tempStyle.SetMarkerSize(0.5);
-    tempStyle.cd();
-    // gROOT->ForceStyle();
-    TCanvas* resultCanvas = MyStyles::DefaultCanvas("resultCanvas");
-    resultCanvas->UseCurrentStyle();
-    data->SetTitle(title.c_str());
-    data->SetMarkerStyle(kFullCircle);
-    data->SetMarkerColor(kBlue);
-    data->Draw(options.c_str());
-    TF1* function = static_cast<TF1*>(data->GetListOfFunctions()->At(0));
-    function->SetLineColor(kRed);
-    function->SetLineWidth(2);
-    function->Draw("csame");
-    resultCanvas->SaveAs((folderWithDiagonal+name+".pdf").c_str());
-    resultCanvas->Clear();
-    delete resultCanvas;
-}
 
-TFitResult differential_crossection_automatic_fit(TH1D* slice, TF1* fitting_function_signal, TF1* fitting_function_bcg, std::string folderWithDiagonal, std::string name){
-    //setting up the functions
-    TFitResultPtr fitPointer;
+    //creating total fitting function
     int signalparams, bcgparams, totalparams;
     double rangemin, rangemax;
-    signalparams = fitting_function_signal->GetNpar();
-    bcgparams = fitting_function_bcg->GetNpar();
+    signalparams = signal->GetNpar();
+    bcgparams = background->GetNpar();
     totalparams = signalparams+bcgparams;
-    fitting_function_signal->GetRange(rangemin, rangemax);
+    signal->GetRange(rangemin, rangemax);
     auto fitting_function_sum = [&](double* x, double* par){
-        return fitting_function_signal->EvalPar(x, par)+fitting_function_bcg->EvalPar(x, par+signalparams);
+        return signal->EvalPar(x, par)+background->EvalPar(x, par+signalparams);
     };
     TF1* fitting_function_total = new TF1("fitting_function_total", fitting_function_sum, rangemin, rangemax, totalparams);
     double lowlim, highlim;
     for(int i = 0; i<signalparams; i++){
-        fitting_function_signal->GetParLimits(i, lowlim, highlim);
+        signal->GetParLimits(i, lowlim, highlim);
         if(lowlim==highlim&&lowlim*highlim!=0){
             fitting_function_total->FixParameter(i, lowlim);
         } else{
             fitting_function_total->SetParLimits(i, lowlim, highlim);
         }
         //if not default name (beginning with p), copy it
-        if(std::string(fitting_function_signal->GetParName(i))[0]!='p')
-            fitting_function_total->SetParName(i, fitting_function_signal->GetParName(i));
+        if(std::string(signal->GetParName(i))[0]!='p')
+            fitting_function_total->SetParName(i, signal->GetParName(i));
     }
     for(int i = 0; i<bcgparams; i++){
-        fitting_function_bcg->GetParLimits(i, lowlim, highlim);
+        background->GetParLimits(i, lowlim, highlim);
         if(lowlim==highlim&&lowlim*highlim!=0){
             fitting_function_total->FixParameter(i+signalparams, lowlim);
         } else{
             fitting_function_total->SetParLimits(i+signalparams, lowlim, highlim);
         }
         //if not default name (beginning with p), copy it
-        if(std::string(fitting_function_bcg->GetParName(i))[0]!='p')
-            fitting_function_total->SetParName(i+signalparams, fitting_function_bcg->GetParName(i));
+        if(std::string(background->GetParName(i))[0]!='p')
+            fitting_function_total->SetParName(i+signalparams, background->GetParName(i));
     }
-
-    //setting beginning params for function
+    //setting parameters for total function
     Double_t params[totalparams];
-    fitting_function_signal->GetParameters(params);
-    fitting_function_bcg->GetParameters(params+signalparams);
+    signal->GetParameters(params);
+    background->GetParameters(params+signalparams);
     fitting_function_total->SetParameters(params);
+    //setting function look
+    fitting_function_total->SetLineColor(kRed);
+    fitting_function_total->SetLineWidth(2);
 
-    //fitting and drawing
-    fitPointer = slice->Fit(fitting_function_total, "0BRS");
-
-    //finishing touches
-    if(folderWithDiagonal.size()!=0){
-        custom_draw_and_save(slice, folderWithDiagonal, name, name, "e1");
-    }
-    //result result
+    //normal proceeding
+    TCanvas* resultCanvas = MyStyles::DefaultCanvas("resultCanvas");
+    MyStyles styleLibrary;
+    TStyle tempStyle = styleLibrary.Hist2DNormalSize(true);
+    tempStyle.SetMarkerSize(0.5);
+    tempStyle.cd();
+    tempStyle.SetOptFit();
+    resultCanvas->UseCurrentStyle();
+    //drawing data and function
+    data->SetTitle(title.c_str());
+    data->SetMarkerStyle(kFullCircle);
+    data->SetMarkerColor(kBlue);
+    TFitResultPtr fitPointer = data->Fit(fitting_function_total, "BRS");
+    data->Draw(options.c_str());
+    //drawing legend
+    double width = 0.3;
+    double height = 0.1;
+    double leftedge = 1.0-resultCanvas->GetRightMargin()-0.01-width;
+    double loweredge = 1.0-resultCanvas->GetTopMargin()-0.01-height;
+    TLegend legend_for_background_fitting(leftedge, loweredge, leftedge+width, loweredge+height);
+    legend_for_background_fitting.SetTextSize(0.03);
+    legend_for_background_fitting.AddEntry(data, "Data");
+    legend_for_background_fitting.AddEntry(fitting_function_total, "Mixed background + signal fit", "l");
+    legend_for_background_fitting.SetBorderSize(0);
+    legend_for_background_fitting.DrawClone("SAME");
+    //setting proper look of fitting parameters
+    double stats_height = 0.25;
+    gPad->Update();
+    TPaveStats* stats = static_cast<TPaveStats*>(data->GetListOfFunctions()->FindObject("stats"));
+    stats->SetX1NDC(leftedge);
+    stats->SetX2NDC(leftedge+width);
+    stats->SetY1NDC(loweredge-stats_height);
+    stats->SetY2NDC(loweredge);
+    stats->SetTextSize(0.03);
+    stats->SetBorderSize(0);
+    //drawing before saving
+    gPad->ModifiedUpdate();
+    //saving
+    resultCanvas->SaveAs((folderWithDiagonal+name+".pdf").c_str());
+    resultCanvas->Clear();
+    delete resultCanvas;
+    delete fitting_function_total;
+    //returning result for further analysis
     return *(fitPointer.Get());
 }
