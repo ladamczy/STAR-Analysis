@@ -89,12 +89,12 @@ int main(int argc, char* argv[]){
             tempHistName.replace(find(tempHistName.begin(), tempHistName.end(), '$')-tempHistName.begin(), 1, pair);
             signal_vector.push_back((TH2D*)input->Get((tempHistName+category).c_str()));
             //results, width, chi2
-            Chi2withbcg_vector.push_back(new TH1D((tempHistName+"_Chi2_"+category).c_str(), (pair+" "+category+" Chi2/NDF;"+category+";#chi^{2}/NDF").c_str(), signal_vector.back()->GetNbinsY(), signal_vector.back()->GetYaxis()->GetXmin(), signal_vector.back()->GetYaxis()->GetXmax()));
-            result_vector.push_back(new TH1D((tempHistName+"_Result_"+category).c_str(), (pair+" "+category+" results;"+category+";Number of pairs").c_str(), signal_vector.back()->GetNbinsY(), signal_vector.back()->GetYaxis()->GetXmin(), signal_vector.back()->GetYaxis()->GetXmax()));
-            mass_vector.push_back(new TH1D((tempHistName+"_Mass_"+category).c_str(), (pair+" "+category+" mass;"+category+";m_{0} [GeV/c^{2}]").c_str(), signal_vector.back()->GetNbinsY(), signal_vector.back()->GetYaxis()->GetXmin(), signal_vector.back()->GetYaxis()->GetXmax()));
-            width_vector.push_back(new TH1D((tempHistName+"_Width_"+category).c_str(), (pair+" "+category+" width;"+category+";Width [GeV/c^{2}]").c_str(), signal_vector.back()->GetNbinsY(), signal_vector.back()->GetYaxis()->GetXmin(), signal_vector.back()->GetYaxis()->GetXmax()));
-            resolution_vector.push_back(new TH1D((tempHistName+"_Resolution_"+category).c_str(), (pair+" "+category+" resolution;"+category+";Resolution [GeV/c^{2}]").c_str(), signal_vector.back()->GetNbinsY(), signal_vector.back()->GetYaxis()->GetXmin(), signal_vector.back()->GetYaxis()->GetXmax()));
-            background_normalisation_vector.push_back(new TH1D((tempHistName+"_Bcgnorm_"+category).c_str(), (pair+" "+category+" results;"+category+";Bcg norm").c_str(), signal_vector.back()->GetNbinsY(), signal_vector.back()->GetYaxis()->GetXmin(), signal_vector.back()->GetYaxis()->GetXmax()));
+            Chi2withbcg_vector.push_back(new TH1D((tempHistName+"_"+category+"_Chi2").c_str(), (pair+" "+category+" Chi2/NDF;"+category+";#chi^{2}/NDF").c_str(), signal_vector.back()->GetNbinsY(), signal_vector.back()->GetYaxis()->GetXmin(), signal_vector.back()->GetYaxis()->GetXmax()));
+            result_vector.push_back(new TH1D((tempHistName+"_"+category+"_Result").c_str(), (pair+" "+category+" results;"+category+";Number of pairs").c_str(), signal_vector.back()->GetNbinsY(), signal_vector.back()->GetYaxis()->GetXmin(), signal_vector.back()->GetYaxis()->GetXmax()));
+            mass_vector.push_back(new TH1D((tempHistName+"_"+category+"_Mass").c_str(), (pair+" "+category+" mass;"+category+";m_{0} [GeV/c^{2}]").c_str(), signal_vector.back()->GetNbinsY(), signal_vector.back()->GetYaxis()->GetXmin(), signal_vector.back()->GetYaxis()->GetXmax()));
+            width_vector.push_back(new TH1D((tempHistName+"_"+category+"_Width").c_str(), (pair+" "+category+" width;"+category+";Width [GeV/c^{2}]").c_str(), signal_vector.back()->GetNbinsY(), signal_vector.back()->GetYaxis()->GetXmin(), signal_vector.back()->GetYaxis()->GetXmax()));
+            resolution_vector.push_back(new TH1D((tempHistName+"_"+category+"_Resolution").c_str(), (pair+" "+category+" resolution;"+category+";Resolution [GeV/c^{2}]").c_str(), signal_vector.back()->GetNbinsY(), signal_vector.back()->GetYaxis()->GetXmin(), signal_vector.back()->GetYaxis()->GetXmax()));
+            background_normalisation_vector.push_back(new TH1D((tempHistName+"_"+category+"_Bcgnorm").c_str(), (pair+" "+category+" results;"+category+";Bcg norm").c_str(), signal_vector.back()->GetNbinsY(), signal_vector.back()->GetYaxis()->GetXmin(), signal_vector.back()->GetYaxis()->GetXmax()));
             //background
             tempHistName = tempBackgroundName;
             tempHistName.replace(find(tempHistName.begin(), tempHistName.end(), '$')-tempHistName.begin(), 1, pair);
@@ -105,18 +105,26 @@ int main(int argc, char* argv[]){
     //###########################################################
     //                FITTING
     //###########################################################
+
+    //creating convolution of BW and gauss
     TF1Convolution conv_sig("breitwigner", "gausn", 0.6, 2.4); //extra range for all your convolution needs
     conv_sig.SetNofPointsFFT(10000);
     TF1 fit_func_sig("fit_func_sig", conv_sig, 0.99, 1.05, 6);
-
-    fit_func_sig.SetParameter(0, 1.);           //N_BW
+    //naming parameters
+    fit_func_sig.SetParameter(0, 1.);           //N_sig
     fit_func_sig.SetParameter(1, fitMaximum);   //m0
     fit_func_sig.SetParameter(2, fitWidth);     //gamma0
     fit_func_sig.FixParameter(3, 1.);           //N_Gauss  (fixed to 1)
     fit_func_sig.FixParameter(4, 0.);           //mu_Gauss (fixed to 0)
     fit_func_sig.SetParameter(5, 0.0013);       //sigma_Gauss
-    fit_func_sig.SetParNames("N_{BW}", "m_{0}", "#Gamma_{0,BW}", "N_{Gauss}", "m_{0,Gauss}", "#sigma_{Gauss}");
+    fit_func_sig.SetParNames("N_{sig}", "m_{0}", "#Gamma_{BW}", "N_{Gauss}", "#mu_{Gauss}", "#sigma_{Gauss}");
+    //setting parameter limits
+    fit_func_sig.SetParLimits(0, 0., 1e3);
+    fit_func_sig.SetParLimits(1, fitMaximum-fitWidth, fitMaximum+fitWidth);
+    fit_func_sig.SetParLimits(2, 0., 2*fitWidth);
+    fit_func_sig.SetParLimits(5, 0., 1.);
 
+    //fitting loop
     for(size_t i = 0; i<pairTab.size(); i++){
         for(size_t j = 0; j<allCategories.size(); j++){
             //copying total histogram for given pair and cathegory
@@ -142,8 +150,9 @@ int main(int argc, char* argv[]){
                 if(sig_slice->GetBinLowEdge(GetFirstNonzeroBinNumber(sig_slice))>fitMaximum-4*fitWidth){
                     lower_range = fitMaximum-2*fitWidth;
                 }
-                fit_func_sig.SetRange(lower_range, 1.5);
-                fit_func_bcg.SetRange(lower_range, 1.5);
+                double upper_range = 1.2;
+                fit_func_sig.SetRange(lower_range, upper_range);
+                fit_func_bcg.SetRange(lower_range, upper_range);
                 fit_func_bcg.SetParNames("N_{bcg}");
 
                 //setting initial fitting values
