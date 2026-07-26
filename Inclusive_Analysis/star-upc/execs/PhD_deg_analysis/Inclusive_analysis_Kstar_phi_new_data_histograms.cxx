@@ -220,13 +220,13 @@ skipOneTimeFitting:
     TStyle mystyle2 = styleLibrary.Hist2DDisplay(true);
     mystyle2.cd();
     result->UseCurrentStyle();
-    set_background_fitting(result, MKpiChi2, MKpiChi2bcg, bcgRegionStart[0], bcgRegionStop[0], "KpiRatio", "K^{+}#pi^{-} Background/Signal ratio with "+BcgType+" background", folderWithDiagonal+"MKpiRatio.pdf");
+    set_background_fitting(result, MKpiChi2, MKpiChi2bcg, bcgRegionStart[0], bcgRegionStop[0], "KpiRatio", "K^{+}#pi^{-} Background/Total ratio with "+BcgType+" background", folderWithDiagonal+"MKpiRatio.pdf");
     mystyle2.cd();
     result->UseCurrentStyle();
-    set_background_fitting(result, MpiKChi2, MpiKChi2bcg, bcgRegionStart[1], bcgRegionStop[1], "piKRatio", "#pi^{+}K^{-} Background/Signal ratio with "+BcgType+" background", folderWithDiagonal+"MpiKRatio.pdf");
+    set_background_fitting(result, MpiKChi2, MpiKChi2bcg, bcgRegionStart[1], bcgRegionStop[1], "piKRatio", "#pi^{+}K^{-} Background/Total ratio with "+BcgType+" background", folderWithDiagonal+"MpiKRatio.pdf");
     mystyle2.cd();
     result->UseCurrentStyle();
-    set_background_fitting(result, MKKChi2, MKKChi2bcg, bcgRegionStart[2], bcgRegionStop[2], "KKRatio", "K^{+}K^{-} Background/Signal ratio with "+BcgType+" background", folderWithDiagonal+"MKKRatio.pdf");
+    set_background_fitting(result, MKKChi2, MKKChi2bcg, bcgRegionStart[2], bcgRegionStop[2], "KKRatio", "K^{+}K^{-} Background/Total ratio with "+BcgType+" background", folderWithDiagonal+"MKKRatio.pdf");
 
     //fitting functions
     TF1* fit_func_sig = new TF1("fit_func_sig", "breitwigner", 0.8, 1.0);
