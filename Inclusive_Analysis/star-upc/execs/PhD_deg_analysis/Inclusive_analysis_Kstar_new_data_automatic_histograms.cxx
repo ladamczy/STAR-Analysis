@@ -73,9 +73,12 @@ int main(int argc, char* argv[]){
     //filling vectors of background and signal
     //and Chi2 with and without the background
     std::vector<TH2D*> background_vector, signal_vector;
-    std::vector<TH1D*> result_vector;
-    std::vector<TH1D*> width_vector;
-    std::vector<TH1D*> Chi2withbcg_vector;
+    std::vector<TH1D*> Chi2withbcg_vector,
+        result_vector,
+        mass_vector,
+        width_vector,
+        resolution_vector,
+        background_normalisation_vector;
     std::string tempSignalName = "M$Chi2";
     std::string tempBackgroundName = "M$Chi2BcgMixedEvent";
     std::string tempHistName;
@@ -86,9 +89,12 @@ int main(int argc, char* argv[]){
             tempHistName.replace(find(tempHistName.begin(), tempHistName.end(), '$')-tempHistName.begin(), 1, pair);
             signal_vector.push_back((TH2D*)input->Get((tempHistName+category).c_str()));
             //results, width, chi2
-            result_vector.push_back(new TH1D((tempHistName+"_Result_"+category).c_str(), (pair+" "+category+" results;"+category+";Number of pairs").c_str(), signal_vector.back()->GetNbinsY(), signal_vector.back()->GetYaxis()->GetXmin(), signal_vector.back()->GetYaxis()->GetXmax()));
-            width_vector.push_back(new TH1D((tempHistName+"_Width_"+category).c_str(), (pair+" "+category+" width;"+category+";Width [GeV]").c_str(), signal_vector.back()->GetNbinsY(), signal_vector.back()->GetYaxis()->GetXmin(), signal_vector.back()->GetYaxis()->GetXmax()));
             Chi2withbcg_vector.push_back(new TH1D((tempHistName+"_Chi2_"+category).c_str(), (pair+" "+category+" Chi2/NDF;"+category+";#chi^{2}/NDF").c_str(), signal_vector.back()->GetNbinsY(), signal_vector.back()->GetYaxis()->GetXmin(), signal_vector.back()->GetYaxis()->GetXmax()));
+            result_vector.push_back(new TH1D((tempHistName+"_Result_"+category).c_str(), (pair+" "+category+" results;"+category+";Number of pairs").c_str(), signal_vector.back()->GetNbinsY(), signal_vector.back()->GetYaxis()->GetXmin(), signal_vector.back()->GetYaxis()->GetXmax()));
+            mass_vector.push_back(new TH1D((tempHistName+"_Mass_"+category).c_str(), (pair+" "+category+" mass;"+category+";m_{0} [GeV/c^{2}]").c_str(), signal_vector.back()->GetNbinsY(), signal_vector.back()->GetYaxis()->GetXmin(), signal_vector.back()->GetYaxis()->GetXmax()));
+            width_vector.push_back(new TH1D((tempHistName+"_Width_"+category).c_str(), (pair+" "+category+" width;"+category+";Width [GeV/c^{2}]").c_str(), signal_vector.back()->GetNbinsY(), signal_vector.back()->GetYaxis()->GetXmin(), signal_vector.back()->GetYaxis()->GetXmax()));
+            resolution_vector.push_back(new TH1D((tempHistName+"_Resolution_"+category).c_str(), (pair+" "+category+" resolution;"+category+";Resolution [GeV/c^{2}]").c_str(), signal_vector.back()->GetNbinsY(), signal_vector.back()->GetYaxis()->GetXmin(), signal_vector.back()->GetYaxis()->GetXmax()));
+            background_normalisation_vector.push_back(new TH1D((tempHistName+"_Bcgnorm_"+category).c_str(), (pair+" "+category+" results;"+category+";Bcg norm").c_str(), signal_vector.back()->GetNbinsY(), signal_vector.back()->GetYaxis()->GetXmin(), signal_vector.back()->GetYaxis()->GetXmax()));
             //background
             tempHistName = tempBackgroundName;
             tempHistName.replace(find(tempHistName.begin(), tempHistName.end(), '$')-tempHistName.begin(), 1, pair);
@@ -155,14 +161,26 @@ int main(int argc, char* argv[]){
                 TFitResult tempResult = fit_and_draw_and_save(sig_slice, &fit_func_sig, &fit_func_bcg, folderWithDiagonal, newTitle, newTitle, "e1");
 
                 //saving fit results for further analysys
+                //Chi2
+                Chi2withbcg_vector[i*allCategories.size()+j]->SetBinContent(k+1, tempResult.Chi2()/tempResult.Ndf());
+                //result
                 double bin_width = result_vector[i*allCategories.size()+j]->GetBinWidth(k+1);
                 par_value = fabs(tempResult.Parameter(0)/sig_slice->GetXaxis()->GetBinWidth(1)*bin_width);
                 par_error = tempResult.ParError(0)/sig_slice->GetXaxis()->GetBinWidth(1)*bin_width;
                 result_vector[i*allCategories.size()+j]->SetBinContent(k+1, par_value);
                 result_vector[i*allCategories.size()+j]->SetBinError(k+1, par_error);
+                //mass
+                mass_vector[i*allCategories.size()+j]->SetBinContent(k+1, fabs(tempResult.Parameter(1)));
+                mass_vector[i*allCategories.size()+j]->SetBinError(k+1, tempResult.Error(1));
+                //width
                 width_vector[i*allCategories.size()+j]->SetBinContent(k+1, fabs(tempResult.Parameter(2)));
                 width_vector[i*allCategories.size()+j]->SetBinError(k+1, tempResult.Error(2));
-                Chi2withbcg_vector[i*allCategories.size()+j]->SetBinContent(k+1, tempResult.Chi2()/tempResult.Ndf());
+                //resolution
+                resolution_vector[i*allCategories.size()+j]->SetBinContent(k+1, fabs(tempResult.Parameter(5)));
+                resolution_vector[i*allCategories.size()+j]->SetBinError(k+1, tempResult.Error(5));
+                //background normalisation
+                background_normalisation_vector[i*allCategories.size()+j]->SetBinContent(k+1, fabs(tempResult.Parameter(6)));
+                background_normalisation_vector[i*allCategories.size()+j]->SetBinError(k+1, tempResult.Error(6));
             }
         }
     }
@@ -170,9 +188,12 @@ int main(int argc, char* argv[]){
     //drawing results - chi2, number of detected decays and width of resonances
     for(size_t i = 0; i<pairTab.size(); i++){
         for(size_t j = 0; j<allCategories.size(); j++){
-            custom_draw_and_save(result_vector[i*allCategories.size()+j], -1., folderWithDiagonal, "", "", "e1");
-            custom_draw_and_save(width_vector[i*allCategories.size()+j], fitWidth, folderWithDiagonal, "", "", "e1");
-            custom_draw_and_save(Chi2withbcg_vector[i*allCategories.size()+j], 1., folderWithDiagonal, "", "", "hist");
+            custom_draw_and_save(Chi2withbcg_vector[i*allCategories.size()+j], 1., folderWithDiagonal, "", "", "hist min0");
+            custom_draw_and_save(result_vector[i*allCategories.size()+j], 0., folderWithDiagonal, "", "", "e1 min0");
+            custom_draw_and_save(mass_vector[i*allCategories.size()+j], fitMaximum, folderWithDiagonal, "", "", "e1");
+            custom_draw_and_save(width_vector[i*allCategories.size()+j], fitWidth, folderWithDiagonal, "", "", "e1 min0");
+            custom_draw_and_save(resolution_vector[i*allCategories.size()+j], 0., folderWithDiagonal, "", "", "e1 min0");
+            custom_draw_and_save(background_normalisation_vector[i*allCategories.size()+j], 0., folderWithDiagonal, "", "", "e1 min0");
         }
     }
 
@@ -310,7 +331,6 @@ void custom_draw_and_save(TH1D* data, double expected_value, std::string folderW
         data->SetTitle(title.c_str());
     }
     //drawing data
-    data->SetMinimum(0);
     data->SetMarkerStyle(kFullCircle);
     data->SetMarkerColor(kBlue);
     data->Draw(options.c_str());
