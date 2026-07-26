@@ -26,6 +26,7 @@
 std::string rountToNSignificantFigures(double input, int n = 2);
 int GetFirstNonzeroBinNumber(TH1* input);
 TFitResult fit_and_draw_and_save(TH1D* data, TF1* signal, TF1* background, std::string folderWithDiagonal, std::string name, std::string title, std::string options);
+void custom_draw_and_save(TH1D* data, double expected_value, std::string folderWithDiagonal, std::string name, std::string title, std::string options);
 
 int main(int argc, char* argv[]){
     //something used so that the histograms would draw
@@ -84,14 +85,14 @@ int main(int argc, char* argv[]){
             tempHistName = tempSignalName;
             tempHistName.replace(find(tempHistName.begin(), tempHistName.end(), '$')-tempHistName.begin(), 1, pair);
             signal_vector.push_back((TH2D*)input->Get((tempHistName+category).c_str()));
+            //results, width, chi2
+            result_vector.push_back(new TH1D((tempHistName+"_Result_"+category).c_str(), (pair+" "+category+" results;"+category+";Number of pairs").c_str(), signal_vector.back()->GetNbinsY(), signal_vector.back()->GetYaxis()->GetXmin(), signal_vector.back()->GetYaxis()->GetXmax()));
+            width_vector.push_back(new TH1D((tempHistName+"_Width_"+category).c_str(), (pair+" "+category+" width;"+category+";Width [GeV]").c_str(), signal_vector.back()->GetNbinsY(), signal_vector.back()->GetYaxis()->GetXmin(), signal_vector.back()->GetYaxis()->GetXmax()));
+            Chi2withbcg_vector.push_back(new TH1D((tempHistName+"_Chi2_"+category).c_str(), (pair+" "+category+" Chi2/NDF;"+category+";#chi^{2}/NDF").c_str(), signal_vector.back()->GetNbinsY(), signal_vector.back()->GetYaxis()->GetXmin(), signal_vector.back()->GetYaxis()->GetXmax()));
             //background
             tempHistName = tempBackgroundName;
             tempHistName.replace(find(tempHistName.begin(), tempHistName.end(), '$')-tempHistName.begin(), 1, pair);
             background_vector.push_back((TH2D*)input->Get((tempHistName+category).c_str()));
-            //results, width, chi2
-            result_vector.push_back(new TH1D((tempHistName+"Result"+category).c_str(), (pair+" "+category+" bcg").c_str(), signal_vector.back()->GetNbinsY(), signal_vector.back()->GetYaxis()->GetXmin(), signal_vector.back()->GetYaxis()->GetXmax()));
-            width_vector.push_back(new TH1D((tempHistName+"Width"+category).c_str(), (pair+" "+category+" bcg").c_str(), signal_vector.back()->GetNbinsY(), signal_vector.back()->GetYaxis()->GetXmin(), signal_vector.back()->GetYaxis()->GetXmax()));
-            Chi2withbcg_vector.push_back(new TH1D((tempHistName+"Chi2withbcg"+category).c_str(), (pair+" "+category+" bcg").c_str(), signal_vector.back()->GetNbinsY(), signal_vector.back()->GetYaxis()->GetXmin(), signal_vector.back()->GetYaxis()->GetXmax()));
         }
     }
 
@@ -167,14 +168,13 @@ int main(int argc, char* argv[]){
     }
 
     //drawing results - chi2, number of detected decays and width of resonances
-    // for(size_t i = 0; i<pairTab.size(); i++){
-    //     for(size_t j = 0; j<allCategories.size(); j++){
-    //         draw_and_save(Chi2withbcg_vector[i*allCategories.size()+j]);
-    //         AllvectorChi2.push_back();
-    //         AllvectorResults.push_back(result_vector[i*allCategories.size()+j]);
-    //         AllvectorWidths.push_back(width_vector[i*allCategories.size()+j]);
-    //     }
-    // }
+    for(size_t i = 0; i<pairTab.size(); i++){
+        for(size_t j = 0; j<allCategories.size(); j++){
+            custom_draw_and_save(result_vector[i*allCategories.size()+j], -1., folderWithDiagonal, "", "", "e1");
+            custom_draw_and_save(width_vector[i*allCategories.size()+j], fitWidth, folderWithDiagonal, "", "", "e1");
+            custom_draw_and_save(Chi2withbcg_vector[i*allCategories.size()+j], 1., folderWithDiagonal, "", "", "hist");
+        }
+    }
 
     //the end
     theApp.Run();
@@ -288,4 +288,45 @@ TFitResult fit_and_draw_and_save(TH1D* data, TF1* signal, TF1* background, std::
     delete fitting_function_total;
     //returning result for further analysis
     return *(fitPointer.Get());
+}
+
+void custom_draw_and_save(TH1D* data, double expected_value, std::string folderWithDiagonal, std::string name, std::string title, std::string options){
+    //failsave in case nullptr was passed
+    if(data==nullptr){
+        printf("WARNING!!! A (data) nullptr has been passed to custom_draw_and_save function!\n");
+    }
+    //normal proceeding
+    MyStyles styleLibrary;
+    TStyle tempStyle = styleLibrary.Hist2DNormalSize(true);
+    tempStyle.cd();
+    gROOT->ForceStyle();
+    TCanvas* resultCanvas = MyStyles::DefaultCanvas("resultCanvas");
+    resultCanvas->UseCurrentStyle();
+    //setting name and title
+    if(name.length()!=0){
+        data->SetName(name.c_str());
+    }
+    if(title.length()!=0){
+        data->SetTitle(title.c_str());
+    }
+    //drawing data
+    data->SetMinimum(0);
+    data->SetMarkerStyle(kFullCircle);
+    data->SetMarkerColor(kBlue);
+    data->Draw(options.c_str());
+    //drawing default lines and legend
+    resultCanvas->Update(); //needed to register the change in Ux values
+    TLine line1(resultCanvas->GetUxmin(), expected_value, resultCanvas->GetUxmax(), expected_value);
+    line1.SetLineColor(kRed);
+    line1.SetLineStyle(kDashed);
+    line1.SetLineWidth(2);
+    if(expected_value>0){
+        line1.Draw("same");
+    }
+    //saving
+    resultCanvas->ModifiedUpdate();
+    resultCanvas->RedrawAxis();
+    resultCanvas->SaveAs((folderWithDiagonal+std::string(data->GetName())+".pdf").c_str());
+    resultCanvas->Clear();
+    delete resultCanvas;
 }
