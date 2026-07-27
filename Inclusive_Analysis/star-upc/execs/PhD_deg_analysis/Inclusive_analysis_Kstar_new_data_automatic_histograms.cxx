@@ -20,6 +20,7 @@
 #include "THStack.h"
 #include "TLine.h"
 #include "TLegend.h"
+#include "TSystem.h"
 
 #include "MyStyles.h"
 
@@ -124,6 +125,13 @@ int main(int argc, char* argv[]){
     fit_func_sig.SetParLimits(2, 0., 2*fitWidth);
     fit_func_sig.SetParLimits(5, 0., 1.);
 
+    //creating folders for saving pdfs
+    for(auto&& pair:pairTab){
+        for(auto&& category:allCategories){
+            gSystem->mkdir((folderWithDiagonal+pair+"/"+category).c_str(), true);
+        }
+    }
+
     //fitting loop
     for(size_t i = 0; i<pairTab.size(); i++){
         for(size_t j = 0; j<allCategories.size(); j++){
@@ -167,7 +175,8 @@ int main(int argc, char* argv[]){
                 newTitle += "("+rountToNSignificantFigures(sig_pointer->GetYaxis()->GetBinLowEdge(k+1))+", ";
                 newTitle += rountToNSignificantFigures(sig_pointer->GetYaxis()->GetBinUpEdge(k+1))+")";
                 sig_slice->SetTitle(newTitle.c_str());
-                TFitResult tempResult = fit_and_draw_and_save(sig_slice, &fit_func_sig, &fit_func_bcg, folderWithDiagonal, newTitle, newTitle, "e1");
+                std::string folderToSave = folderWithDiagonal+pairTab[i]+"/"+allCategories[j]+"/";
+                TFitResult tempResult = fit_and_draw_and_save(sig_slice, &fit_func_sig, &fit_func_bcg, folderToSave, newTitle, newTitle, "e1");
 
                 //saving fit results for further analysys
                 //Chi2
@@ -197,12 +206,13 @@ int main(int argc, char* argv[]){
     //drawing results - chi2, number of detected decays and width of resonances
     for(size_t i = 0; i<pairTab.size(); i++){
         for(size_t j = 0; j<allCategories.size(); j++){
-            custom_draw_and_save(Chi2withbcg_vector[i*allCategories.size()+j], 1., folderWithDiagonal, "", "", "hist min0");
-            custom_draw_and_save(result_vector[i*allCategories.size()+j], 0., folderWithDiagonal, "", "", "e1 min0");
-            custom_draw_and_save(mass_vector[i*allCategories.size()+j], fitMaximum, folderWithDiagonal, "", "", "e1");
-            custom_draw_and_save(width_vector[i*allCategories.size()+j], fitWidth, folderWithDiagonal, "", "", "e1 min0");
-            custom_draw_and_save(resolution_vector[i*allCategories.size()+j], 0., folderWithDiagonal, "", "", "e1 min0");
-            custom_draw_and_save(background_normalisation_vector[i*allCategories.size()+j], 0., folderWithDiagonal, "", "", "e1 min0");
+            std::string folderToSave = folderWithDiagonal+pairTab[i]+"/"+allCategories[j]+"/";
+            custom_draw_and_save(Chi2withbcg_vector[i*allCategories.size()+j], 1., folderToSave, "", "", "hist min0");
+            custom_draw_and_save(result_vector[i*allCategories.size()+j], 0., folderToSave, "", "", "e1 min0");
+            custom_draw_and_save(mass_vector[i*allCategories.size()+j], fitMaximum, folderToSave, "", "", "e1");
+            custom_draw_and_save(width_vector[i*allCategories.size()+j], fitWidth, folderToSave, "", "", "e1 min0");
+            custom_draw_and_save(resolution_vector[i*allCategories.size()+j], 0., folderToSave, "", "", "e1 min0");
+            custom_draw_and_save(background_normalisation_vector[i*allCategories.size()+j], 0., folderToSave, "", "", "e1 min0");
         }
     }
 
