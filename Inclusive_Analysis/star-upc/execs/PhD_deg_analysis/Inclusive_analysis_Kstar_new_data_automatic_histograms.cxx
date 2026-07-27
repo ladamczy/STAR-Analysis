@@ -26,7 +26,7 @@
 
 std::string rountToNSignificantFigures(double input, int n = 2);
 int GetFirstNonzeroBinNumber(TH1* input);
-TFitResult fit_and_draw_and_save(TH1D* data, TF1* signal, TF1* background, std::string folderWithDiagonal, std::string name, std::string title, std::string options);
+TFitResult fit_and_draw_and_save(TH1D* data, TF1* signal, TF1* background, std::string folderWithDiagonal, std::string name, std::string title, std::string options, bool show_whole_background = false);
 void custom_draw_and_save(TH1D* data, double expected_value, std::string folderWithDiagonal, std::string name, std::string title, std::string options);
 
 int main(int argc, char* argv[]){
@@ -176,7 +176,7 @@ int main(int argc, char* argv[]){
                 newTitle += rountToNSignificantFigures(sig_pointer->GetYaxis()->GetBinUpEdge(k+1))+")";
                 sig_slice->SetTitle(newTitle.c_str());
                 std::string folderToSave = folderWithDiagonal+pairTab[i]+"/"+allCategories[j]+"/";
-                TFitResult tempResult = fit_and_draw_and_save(sig_slice, &fit_func_sig, &fit_func_bcg, folderToSave, newTitle, newTitle, "e1");
+                TFitResult tempResult = fit_and_draw_and_save(sig_slice, &fit_func_sig, &fit_func_bcg, folderToSave, newTitle, newTitle, "e1", true);
 
                 //saving fit results for further analysys
                 //Chi2
@@ -235,7 +235,7 @@ int GetFirstNonzeroBinNumber(TH1* input){
     return -1;
 }
 
-TFitResult fit_and_draw_and_save(TH1D* data, TF1* signal, TF1* background, std::string folderWithDiagonal, std::string name, std::string title, std::string options){
+TFitResult fit_and_draw_and_save(TH1D* data, TF1* signal, TF1* background, std::string folderWithDiagonal, std::string name, std::string title, std::string options, bool show_whole_background){
     //failsave in case nullptr was passed
     if(data==nullptr){
         printf("WARNING!!! A (data) nullptr has been passed to fit_and_draw_and_save function!\n");
@@ -283,6 +283,7 @@ TFitResult fit_and_draw_and_save(TH1D* data, TF1* signal, TF1* background, std::
     //setting function look
     fitting_function_total->SetLineColor(kRed);
     fitting_function_total->SetLineWidth(2);
+    fitting_function_total->SetNpx(1000);
 
     //normal proceeding
     TCanvas* resultCanvas = MyStyles::DefaultCanvas("resultCanvas");
@@ -308,7 +309,7 @@ TFitResult fit_and_draw_and_save(TH1D* data, TF1* signal, TF1* background, std::
     legend_for_background_fitting.AddEntry(data, "Data");
     legend_for_background_fitting.AddEntry(fitting_function_total, "Mixed background + signal fit", "l");
     legend_for_background_fitting.SetBorderSize(0);
-    legend_for_background_fitting.DrawClone("SAME");
+    legend_for_background_fitting.Draw("SAME");
     //setting proper look of fitting parameters
     double stats_height = 0.25;
     gPad->Update();
@@ -323,6 +324,35 @@ TFitResult fit_and_draw_and_save(TH1D* data, TF1* signal, TF1* background, std::
     gPad->ModifiedUpdate();
     //saving
     resultCanvas->SaveAs((folderWithDiagonal+name+".pdf").c_str());
+    if(show_whole_background){
+        //drawing two lines at proper coordinates
+        double lower_limit, upper_limit;
+        fitting_function_total->GetRange(lower_limit, upper_limit);
+        TLine line1(lower_limit, resultCanvas->GetUymin(), lower_limit, resultCanvas->GetUymax());
+        TLine line2(upper_limit, resultCanvas->GetUymin(), upper_limit, resultCanvas->GetUymax());
+        line1.SetLineColor(kRed);
+        line1.SetLineStyle(kDashed);
+        line1.SetLineWidth(2);
+        line1.Draw("same");
+        line2.SetLineColor(kRed);
+        line2.SetLineStyle(kDashed);
+        line2.SetLineWidth(2);
+        line2.Draw("same");
+        //redrawing fitting function, but full range
+        // fitting_function_total->SetRange(resultCanvas->GetUxmin(), resultCanvas->GetUxmax());
+        // fitting_function_total->Draw("same");
+        static_cast<TF1*>(data->GetListOfFunctions()->FindObject("fitting_function_total"))->SetRange(resultCanvas->GetUxmin(), resultCanvas->GetUxmax());
+        //adding fitting region markers to legend
+        legend_for_background_fitting.AddEntry(&line1, "Fitting region", "l");
+        //moving legend and statbox
+        legend_for_background_fitting.SetY1NDC(loweredge-0.05);
+        stats->SetY1NDC(loweredge-stats_height-0.05);
+        stats->SetY2NDC(loweredge-0.05);
+        //saving in subfolder
+        gPad->ModifiedUpdate();
+        gSystem->mkdir((folderWithDiagonal+"whole_background").c_str(), true);
+        resultCanvas->SaveAs((folderWithDiagonal+"whole_background/"+name+".pdf").c_str());
+    }
     resultCanvas->Clear();
     delete resultCanvas;
     delete fitting_function_total;
