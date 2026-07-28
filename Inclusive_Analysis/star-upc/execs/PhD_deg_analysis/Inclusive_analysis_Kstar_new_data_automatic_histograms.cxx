@@ -146,9 +146,9 @@ int main(int argc, char* argv[]){
                 TH1D* bcg_slice = bcg_pointer->ProjectionX("_bcg", k+1, k+1, "e1");
                 //creating background function - a scaled slice of mixed event background
                 auto mixed_event_background = [&](double* x, double* p){
-                    return p[0]*bcg_slice->GetBinContent(bcg_slice->FindBin(x[0]));
+                    return p[0]*bcg_slice->GetBinContent(bcg_slice->FindBin(x[0]))+p[1]*x[0]+p[2];
                 };
-                TF1 fit_func_bcg("fit_func_bcg", mixed_event_background, 0.99, 1.05, 1, 1);
+                TF1 fit_func_bcg("fit_func_bcg", mixed_event_background, 0.99, 1.05, 3, 1);
 
                 //fitting and filling result
                 //setting lower range for m0-3*gamma
@@ -161,11 +161,11 @@ int main(int argc, char* argv[]){
                 double upper_range = 1.2;
                 fit_func_sig.SetRange(lower_range, upper_range);
                 fit_func_bcg.SetRange(lower_range, upper_range);
-                fit_func_bcg.SetParNames("N_{bcg}");
+                fit_func_bcg.SetParNames("N_{bcg}", "a_{1}", "a_{0}");
 
                 //setting initial fitting values
                 double initial_bcg_scale = sig_slice->GetBinContent(sig_slice->FindBin(fitMaximum+fitWidth))/bcg_slice->GetBinContent(bcg_slice->FindBin(fitMaximum+fitWidth));
-                fit_func_bcg.SetParameters(initial_bcg_scale);
+                fit_func_bcg.SetParameters(initial_bcg_scale, 0., 0.);
                 double initial_sig_height = (sig_slice->GetBinContent(sig_slice->FindBin(fitMaximum))-sig_slice->GetBinContent(sig_slice->FindBin(fitMaximum+fitWidth)))*TMath::PiOver2()*fitWidth;
                 fit_func_sig.SetParameters(initial_sig_height, fitMaximum, fitWidth);
 
