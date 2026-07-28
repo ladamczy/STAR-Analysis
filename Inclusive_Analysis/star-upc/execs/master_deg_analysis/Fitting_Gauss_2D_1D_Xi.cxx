@@ -22,8 +22,7 @@ int main(int argc, char *argv[]){
     //https://stackoverflow.com/questions/30932725/painting-a-tcanvas-to-the-screen-in-a-compiled-root-cern-application
     // TApplication theApp("App", &argc, argv);
 
-    MyStyles styleLibrary;
-    TStyle mystyle = styleLibrary.Hist2DNormalSize(false);
+    TStyle mystyle = MyStyles::Hist2DNormalSize(false);
     mystyle.cd();
     gROOT->ForceStyle();
 

@@ -523,8 +523,7 @@ int GetFirstNonzeroBinNumber(TH1* input){
 }
 
 void draw_and_save(TH1D* data, std::string folderWithDiagonal, std::string name, std::string title, std::string options){
-    MyStyles styleLibrary;
-    TStyle tempStyle = styleLibrary.Hist2DQuarterSize(true);
+    TStyle tempStyle = MyStyles::Hist2DQuarterSize(true);
     tempStyle.cd();
     gROOT->ForceStyle();
     TCanvas* resultCanvas = new TCanvas("resultCanvas", "resultCanvas", 4000, 2400);
@@ -541,8 +540,7 @@ void draw_and_save(TH1D* data, std::string folderWithDiagonal, std::string name,
 }
 
 void draw_and_save_minus_background(TH1D* data, TH1D* bcg, std::string folderWithDiagonal, std::string name, std::string title, double bcg_region){
-    MyStyles styleLibrary;
-    TStyle tempStyle = styleLibrary.Hist2DQuarterSize(true);
+    TStyle tempStyle = MyStyles::Hist2DQuarterSize(true);
     tempStyle.cd();
     gROOT->ForceStyle();
     TCanvas* resultCanvas = new TCanvas("resultCanvas", "resultCanvas", 4000, 2400);
@@ -566,8 +564,7 @@ void draw_and_save_minus_background(TH1D* data, TH1D* bcg, std::string folderWit
 }
 
 void draw_bulk(std::vector<TH1D*> data, std::string folderWithDiagonal, std::string name, std::string title, std::string options){
-    MyStyles styleLibrary;
-    TStyle tempStyle = styleLibrary.Hist2DNormalSize(true);
+    TStyle tempStyle = MyStyles::Hist2DNormalSize(true);
     tempStyle.cd();
     gROOT->ForceStyle();
     TCanvas* resultCanvas = new TCanvas("resultCanvas", "resultCanvas", 4000, 2400);

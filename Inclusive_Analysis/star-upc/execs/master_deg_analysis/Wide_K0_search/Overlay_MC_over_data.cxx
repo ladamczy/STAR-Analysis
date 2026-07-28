@@ -61,8 +61,7 @@ int main(int argc, char const *argv[]){
 }
 
 void draw_and_save(TH1D *data, TH1D *sim, std::string fileTitle, double x1, double y1, double x2, double y2){
-    MyStyles styleLibrary;
-    TStyle mystyle = styleLibrary.Hist2DNormalSize(true);
+    TStyle mystyle = MyStyles::Hist2DNormalSize(true);
     mystyle.cd();
     gROOT->ForceStyle();
     TCanvas *resultCanvas = new TCanvas("resultCanvas", "resultCanvas", 1800, 1600);

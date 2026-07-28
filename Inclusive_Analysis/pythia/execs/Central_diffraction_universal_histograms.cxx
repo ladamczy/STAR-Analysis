@@ -47,8 +47,7 @@ int main(int argc, char const* argv[]){
 }
 
 void drawStack(TH2D* particles, TH1D* background, std::string folderWithDiagonal, std::string name, std::string title, double x1, double x2, double* legendPosition){
-    MyStyles styleLibrary;
-    TStyle mystyle = styleLibrary.Hist2DQuarterSize(true);
+    TStyle mystyle = MyStyles::Hist2DQuarterSize(true);
     mystyle.cd();
     gROOT->ForceStyle();
     THStack MStack(name.c_str(), title.c_str());

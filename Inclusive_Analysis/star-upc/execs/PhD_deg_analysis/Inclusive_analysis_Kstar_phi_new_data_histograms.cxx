@@ -170,8 +170,7 @@ int main(int argc, char* argv[]){
     //                FITTING
     //###########################################################
     TCanvas* result = MyStyles::DefaultCanvas("result");
-    MyStyles styleLibrary;
-    TStyle mystyle = styleLibrary.Hist2DDisplay(false);
+    TStyle mystyle = MyStyles::Hist2DDisplay(false);
     mystyle.cd();
     result->UseCurrentStyle();
     // gROOT->ForceStyle();
@@ -217,7 +216,7 @@ int main(int argc, char* argv[]){
 skipOneTimeFitting:
 
     //checking fitting bounds
-    TStyle mystyle2 = styleLibrary.Hist2DDisplay(true);
+    TStyle mystyle2 = MyStyles::Hist2DDisplay(true);
     mystyle2.cd();
     result->UseCurrentStyle();
     set_background_fitting(result, MKpiChi2, MKpiChi2bcg, bcgRegionStart[0], bcgRegionStop[0], "KpiRatio", "K^{+}#pi^{-} Background/Total ratio with "+BcgType+" background", folderWithDiagonal+"MKpiRatio.pdf");
@@ -655,8 +654,7 @@ void set_background_fitting(TCanvas* canvas, TH1D* data, TH1D* bcg, double& bcgR
     //saving and clearing the canvas
     if(draw_full_path.size()!=0){
         //setting new style
-        MyStyles styleLibrary;
-        TStyle mystyle = styleLibrary.Hist2DQuarterSize();
+        TStyle mystyle = MyStyles::Hist2DQuarterSize();
         mystyle.cd();
         canvas->UseCurrentStyle();
         SigBcgRatio.SetDrawOption("e1");
@@ -678,8 +676,7 @@ void draw_and_save(TH1D* data, std::string folderWithDiagonal, std::string name,
         printf("WARNING!!! A (data) nullptr has been passed to draw_and_save function!\n");
     }
     //normal proceeding
-    MyStyles styleLibrary;
-    TStyle tempStyle = styleLibrary.Hist2DQuarterSize(true);
+    TStyle tempStyle = MyStyles::Hist2DQuarterSize(true);
     tempStyle.cd();
     gROOT->ForceStyle();
     TCanvas* resultCanvas = new TCanvas("resultCanvas", "resultCanvas", 4000, 2400);
@@ -703,8 +700,7 @@ void draw_and_save_minus_background(TH1D* data, TH1D* bcg, std::string folderWit
         printf("WARNING!!! A (bcg) nullptr has been passed to draw_and_save_minus_background function!\n");
     }
     //normal proceeding
-    MyStyles styleLibrary;
-    TStyle tempStyle = styleLibrary.Hist2DQuarterSize(true);
+    TStyle tempStyle = MyStyles::Hist2DQuarterSize(true);
     tempStyle.cd();
     gROOT->ForceStyle();
     TCanvas* resultCanvas = new TCanvas("resultCanvas", "resultCanvas", 4000, 2400);
@@ -728,8 +724,7 @@ void draw_and_save_minus_background(TH1D* data, TH1D* bcg, std::string folderWit
 }
 
 void draw_bulk(std::vector<TH1D*> data, std::string folderWithDiagonal, std::string name, std::string title, std::string options){
-    MyStyles styleLibrary;
-    TStyle tempStyle = styleLibrary.Hist2DNormalSize(true);
+    TStyle tempStyle = MyStyles::Hist2DNormalSize(true);
     tempStyle.cd();
     gROOT->ForceStyle();
     TCanvas* resultCanvas = new TCanvas("resultCanvas", "resultCanvas", 4000, 2400);

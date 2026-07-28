@@ -4,32 +4,31 @@
 class MyStyles{
 private:
     static int internalCanvasCounter;
-    TStyle currentMyStyle;
-    void SetDefault();
+    static TStyle currentMyStyle;
+    static void SetDefault(TStyle& changedStyle);
 public:
     MyStyles(/* args */);
     ~MyStyles();
     //default canvas source, 16:9 ratio
     static TCanvas* DefaultCanvas(std::string name = "", std::string title = "");
     TStyle* GetPointer();
-    TStyle Hist2DDisplay(bool containsTitle = true);
-    TStyle Hist2DNormalSize(bool containsTitle = true);
-    TStyle Hist2DQuarterSize(bool containsTitle = true);
+    static TStyle Hist2DDisplay(bool containsTitle = true);
+    static TStyle Hist2DNormalSize(bool containsTitle = true);
+    static TStyle Hist2DQuarterSize(bool containsTitle = true);
 };
 
 //initialisation of canvas counter
 int MyStyles::internalCanvasCounter{ 1 };
+TStyle MyStyles::currentMyStyle{ TStyle() };
 
 //constructor & destructor
-
 MyStyles::MyStyles(/* args */){
-    this->SetDefault();
+    SetDefault(currentMyStyle);
 }
 
 MyStyles::~MyStyles(){}
 
 //all the other functions
-
 TCanvas* MyStyles::DefaultCanvas(std::string name, std::string title){
     //if name is empty, assign default one (c#)
     if(name.length()==0){
@@ -45,36 +44,32 @@ TCanvas* MyStyles::DefaultCanvas(std::string name, std::string title){
     return new TCanvas(name.c_str(), title.c_str(), -1, 0, 1600, 900);
 }
 
-void MyStyles::SetDefault(){
-    // TStyle* modernStyle = gROOT->GetStyle("Modern");
-    // currentMyStyle = TStyle("My style", "A style with some of my modifications");
-    // modernStyle->Copy(currentMyStyle);
+void MyStyles::SetDefault(TStyle& changedStyle){
     TStyle* modernStyle = gROOT->GetStyle("Modern");
-    currentMyStyle = TStyle();
-    modernStyle->Copy(currentMyStyle);
-    currentMyStyle.SetNameTitle("MyBaseStyle", "A style with some of my modifications");
+    modernStyle->Copy(changedStyle);
+    changedStyle.SetNameTitle("MyBaseStyle", "A style with some of my modifications");
     //changes from the default ("Modern") style
     //pad
-    currentMyStyle.SetPadLeftMargin(0.1);
-    currentMyStyle.SetPadRightMargin(0.05);
-    currentMyStyle.SetPadBottomMargin(0.1);
-    currentMyStyle.SetPadTopMargin(0.1);
-    currentMyStyle.SetFrameLineWidth(2);
+    changedStyle.SetPadLeftMargin(0.1);
+    changedStyle.SetPadRightMargin(0.05);
+    changedStyle.SetPadBottomMargin(0.1);
+    changedStyle.SetPadTopMargin(0.1);
+    changedStyle.SetFrameLineWidth(2);
     //histograms
-    currentMyStyle.SetOptStat(0);
-    currentMyStyle.SetLegendBorderSize(0);
-    currentMyStyle.SetLegendTextSize(0.04);
-    currentMyStyle.SetTitleFontSize(0.06);
-    currentMyStyle.SetTitleX(0.55);
-    currentMyStyle.SetHistLineWidth(1);
-    currentMyStyle.SetHistLineColor(kBlue+2);
-    currentMyStyle.SetMarkerStyle(kFullCircle);
-    currentMyStyle.SetMarkerColor(kBlue);
+    changedStyle.SetOptStat(0);
+    changedStyle.SetLegendBorderSize(0);
+    changedStyle.SetLegendTextSize(0.04);
+    changedStyle.SetTitleFontSize(0.06);
+    changedStyle.SetTitleX(0.55);
+    changedStyle.SetHistLineWidth(1);
+    changedStyle.SetHistLineColor(kBlue+2);
+    changedStyle.SetMarkerStyle(kFullCircle);
+    changedStyle.SetMarkerColor(kBlue);
     //axis
-    currentMyStyle.SetAxisMaxDigits(3);
-    currentMyStyle.SetLabelSize(0.045, "xyz");
-    currentMyStyle.SetTitleSize(0.045, "xyz");
-    currentMyStyle.SetTitleOffset(1.01, "Y");
+    changedStyle.SetAxisMaxDigits(3);
+    changedStyle.SetLabelSize(0.045, "xyz");
+    changedStyle.SetTitleSize(0.045, "xyz");
+    changedStyle.SetTitleOffset(1.01, "Y");
 }
 
 TStyle* MyStyles::GetPointer(){
@@ -82,7 +77,7 @@ TStyle* MyStyles::GetPointer(){
 }
 
 TStyle MyStyles::Hist2DDisplay(bool containsTitle){
-    this->SetDefault();
+    SetDefault(currentMyStyle);
     //additional, general settings
     currentMyStyle.SetNameTitle("2DDisplay", "A style to display (not save) things");
     currentMyStyle.SetHistMinimumZero();
@@ -102,7 +97,7 @@ TStyle MyStyles::Hist2DDisplay(bool containsTitle){
 }
 
 TStyle MyStyles::Hist2DNormalSize(bool containsTitle){
-    this->SetDefault();
+    SetDefault(currentMyStyle);
     currentMyStyle.SetNameTitle("2DNormalSize", "A style to save things to show at fullscreen");
     if(!containsTitle){
         currentMyStyle.SetPadTopMargin(0.05);
@@ -111,7 +106,7 @@ TStyle MyStyles::Hist2DNormalSize(bool containsTitle){
 }
 
 TStyle MyStyles::Hist2DQuarterSize(bool containsTitle){
-    this->SetDefault();
+    SetDefault(currentMyStyle);
     currentMyStyle.SetNameTitle("2DQuarterSize", "A style to save things to show at 1/4th of fullscreen");
     if(!containsTitle){
         currentMyStyle.SetPadTopMargin(0.05);

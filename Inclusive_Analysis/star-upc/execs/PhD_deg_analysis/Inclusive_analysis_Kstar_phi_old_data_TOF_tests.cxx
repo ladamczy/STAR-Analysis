@@ -319,8 +319,7 @@ int main(int argc, char** argv){
 }
 
 double drawFit(TH1D* hist, string outfileName, double mint0, double maxt0, double* params, string histName){
-    MyStyles styleLibrary;
-    TStyle mystyle = styleLibrary.Hist2DQuarterSize(true);
+    TStyle mystyle = MyStyles::Hist2DQuarterSize(true);
     mystyle.cd();
     gROOT->ForceStyle();
     TCanvas* result = new TCanvas("result", "result", 1800, 1600);

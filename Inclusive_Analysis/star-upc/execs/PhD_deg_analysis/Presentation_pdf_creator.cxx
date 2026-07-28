@@ -342,8 +342,7 @@ int main(int argc, char const *argv[]){
 }
 
 void draw_and_save(TH1D *data, TH1D *sim, std::string fileTitle, bool isYlogarithmic, double x1, double y1, double x2, double y2, double line1, double line2){
-    MyStyles styleLibrary;
-    TStyle mystyle = styleLibrary.Hist2DNormalSize(false);
+    TStyle mystyle = MyStyles::Hist2DNormalSize(false);
     mystyle.cd();
     gROOT->ForceStyle();
     TCanvas *resultCanvas = new TCanvas("resultCanvas", "resultCanvas", 1800, 1600);

@@ -287,8 +287,7 @@ TFitResult fit_and_draw_and_save(TH1D* data, TF1* signal, TF1* background, std::
 
     //normal proceeding
     TCanvas* resultCanvas = MyStyles::DefaultCanvas("resultCanvas");
-    MyStyles styleLibrary;
-    TStyle tempStyle = styleLibrary.Hist2DNormalSize(true);
+    TStyle tempStyle = MyStyles::Hist2DNormalSize(true);
     tempStyle.SetMarkerSize(0.5);
     tempStyle.cd();
     tempStyle.SetOptFit();
@@ -366,8 +365,7 @@ void custom_draw_and_save(TH1D* data, double expected_value, std::string folderW
         printf("WARNING!!! A (data) nullptr has been passed to custom_draw_and_save function!\n");
     }
     //normal proceeding
-    MyStyles styleLibrary;
-    TStyle tempStyle = styleLibrary.Hist2DNormalSize(true);
+    TStyle tempStyle = MyStyles::Hist2DNormalSize(true);
     tempStyle.cd();
     gROOT->ForceStyle();
     TCanvas* resultCanvas = MyStyles::DefaultCanvas("resultCanvas");
