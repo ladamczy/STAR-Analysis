@@ -46,6 +46,10 @@ int main(int argc, char** argv)
     chain->GetEntry(0);
     if (upcEvt->getRunNumber() == 1) isMC = 1;
     if (isMC == 0) chain->SetBranchAddress("correctedRpEvent", &correctedRpEvent);
+    //chain->SetBranchAddress("mUPCEvent", &upcEvt);
+    //chain->SetBranchAddress("correctedRpEvent", &correctedRpEvent);
+    //chain->GetEntry(0);
+    //if (upcEvt->getRunNumber() == 1) isMC = 1;
     cout << "Running on " << (isMC ? "MC" : "Real Data") << endl;
     cout << "Total entries: " << chain->GetEntries() << endl;
     int nEntries = chain->GetEntries();

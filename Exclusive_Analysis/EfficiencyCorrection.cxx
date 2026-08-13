@@ -373,6 +373,9 @@ int main(int argc, char** argv)
         // 3. Independent Boolean to track LS success (EXCLUDING pTmiss)
         bool passLSCuts = true;
 
+        //std::cout << "massWinLow = " << config.massWinLow 
+        //  << ", massWinHigh = " << config.massWinHigh << std::endl;
+
         if (!(fakeKaonPlus.m() > config.massWinLow && fakeKaonPlus.m() < config.massWinHigh && 
               fakeKaonMinus.m() > config.massWinLow && fakeKaonMinus.m() < config.massWinHigh)) passLSCuts = false;
 
