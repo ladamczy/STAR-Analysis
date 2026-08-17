@@ -43,7 +43,7 @@ double xi(TLorentzVector fourvec, double p = 254.867){
 
 bool readingAcceptanceFromFile(TH3F* Acceptance){
     TFile* file = TFile::Open("~/STAR-Analysis/share/etaPhiEfficiency_16_01_19_delta015_twoRuns.root");
-    for(size_t i = 0; i<nSigns*nParticles; i++){
+    for(size_t i = 0; i<int(nSigns)*int(nParticles); i++){
         Acceptance[i] = *dynamic_cast<TH3F*>(file->Get(("hTPCEffiCD"+std::to_string(i)+"121").c_str()));
     }
     file->Close();
@@ -53,7 +53,7 @@ bool readingAcceptanceFromFile(TH3F* Acceptance){
 bool isParticleDetected(Pythia8::Particle* particle){
     //filling the  histogram once at the beginning
     //and other static things
-    static TH3F Acceptance[nSigns*nParticles];
+    static TH3F Acceptance[int(nSigns)*int(nParticles)];
     //solving initialization in a prettier way
     static bool isInitialised = false;
     if(!isInitialised){
@@ -65,28 +65,28 @@ bool isParticleDetected(Pythia8::Particle* particle){
     int histID = -1;
     switch(particle->id()){
     case 211:
-        histID = Pion+nParticles*Plus;
+        histID = Pion+int(nParticles)*Plus;
         break;
     case -211:
-        histID = Pion+nParticles*Minus;
+        histID = Pion+int(nParticles)*Minus;
         break;
     case 321:
-        histID = Kaon+nParticles*Plus;
+        histID = Kaon+int(nParticles)*Plus;
         break;
     case -321:
-        histID = Kaon+nParticles*Minus;
+        histID = Kaon+int(nParticles)*Minus;
         break;
     case 2212:
-        histID = Proton+nParticles*Plus;
+        histID = Proton+int(nParticles)*Plus;
         break;
     case -2212:
-        histID = Proton+nParticles*Minus;
+        histID = Proton+int(nParticles)*Minus;
         break;
     default:
         if(particle->charge()>0){
-            histID = Pion+nParticles*Plus;
+            histID = Pion+int(nParticles)*Plus;
         } else if(particle->charge()<0){
-            histID = Pion+nParticles*Minus;
+            histID = Pion+int(nParticles)*Minus;
         }
     }
     TH3F* temp = &Acceptance[histID];
