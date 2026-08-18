@@ -26,7 +26,7 @@
 
 std::string rountToNSignificantFigures(double input, int n = 2);
 int GetFirstNonzeroBinNumber(TH1* input);
-TFitResult fit_and_draw_and_save(TH1D* data, TF1* signal, TF1* background, std::string folderWithDiagonal, std::string name, std::string title, std::string options, bool show_whole_background = false);
+TFitResult fit_and_draw_and_save(TH1D* data, TF1* signal, TF1* background, std::string folderWithDiagonal, std::string name, std::string title, std::string options, TH1D* only_mixed_background = nullptr);
 void custom_draw_and_save(TH1D* data, double expected_value, std::string folderWithDiagonal, std::string name, std::string title, std::string options);
 
 int main(int argc, char* argv[]){
@@ -108,7 +108,7 @@ int main(int argc, char* argv[]){
     //###########################################################
 
     //creating convolution of BW and gauss
-    TF1Convolution conv_sig("breitwigner", "gausn", 0.6, 2.4); //extra range for all your convolution needs
+    TF1Convolution conv_sig("breitwigner", "gausn", 0.0, 3.0); //extra range for all your convolution needs
     conv_sig.SetNofPointsFFT(10000);
     TF1 fit_func_sig("fit_func_sig", conv_sig, 0.99, 1.05, 6);
     //naming parameters
@@ -176,8 +176,7 @@ int main(int argc, char* argv[]){
                 newTitle += rountToNSignificantFigures(sig_pointer->GetYaxis()->GetBinUpEdge(k+1))+")";
                 sig_slice->SetTitle(newTitle.c_str());
                 std::string folderToSave = folderWithDiagonal+pairTab[i]+"/"+allCategories[j]+"/";
-                TFitResult tempResult = fit_and_draw_and_save(sig_slice, &fit_func_sig, &fit_func_bcg, folderToSave, newTitle, newTitle, "e1", true);
-
+                TFitResult tempResult = fit_and_draw_and_save(sig_slice, &fit_func_sig, &fit_func_bcg, folderToSave, newTitle, newTitle, "e1", bcg_slice);
                 //saving fit results for further analysys
                 //Chi2
                 Chi2withbcg_vector[i*allCategories.size()+j]->SetBinContent(k+1, tempResult.Chi2()/tempResult.Ndf());
@@ -235,7 +234,7 @@ int GetFirstNonzeroBinNumber(TH1* input){
     return -1;
 }
 
-TFitResult fit_and_draw_and_save(TH1D* data, TF1* signal, TF1* background, std::string folderWithDiagonal, std::string name, std::string title, std::string options, bool show_whole_background){
+TFitResult fit_and_draw_and_save(TH1D* data, TF1* signal, TF1* background, std::string folderWithDiagonal, std::string name, std::string title, std::string options, TH1D* only_mixed_background){
     //failsave in case nullptr was passed
     if(data==nullptr){
         printf("WARNING!!! A (data) nullptr has been passed to fit_and_draw_and_save function!\n");
@@ -323,7 +322,7 @@ TFitResult fit_and_draw_and_save(TH1D* data, TF1* signal, TF1* background, std::
     gPad->ModifiedUpdate();
     //saving
     resultCanvas->SaveAs((folderWithDiagonal+name+".pdf").c_str());
-    if(show_whole_background){
+    if(only_mixed_background!=nullptr){
         //drawing two lines at proper coordinates
         double lower_limit, upper_limit;
         fitting_function_total->GetRange(lower_limit, upper_limit);
@@ -337,13 +336,32 @@ TFitResult fit_and_draw_and_save(TH1D* data, TF1* signal, TF1* background, std::
         line2.SetLineStyle(kDashed);
         line2.SetLineWidth(2);
         line2.Draw("same");
-        //redrawing fitting function, but full range
-        // fitting_function_total->SetRange(resultCanvas->GetUxmin(), resultCanvas->GetUxmax());
-        // fitting_function_total->Draw("same");
-        static_cast<TF1*>(data->GetListOfFunctions()->FindObject("fitting_function_total"))->SetRange(resultCanvas->GetUxmin(), resultCanvas->GetUxmax());
-        //adding fitting region markers to legend
+        //redrawing fitting function in full range and adding drawing components
+        TF1* fitting_function_total = static_cast<TF1*>(data->GetListOfFunctions()->FindObject("fitting_function_total"));
+        fitting_function_total->SetRange(resultCanvas->GetUxmin(), resultCanvas->GetUxmax());
+        auto only_mixed_event_background = [&](double* x, double* p){
+            return p[0]*only_mixed_background->GetBinContent(only_mixed_background->FindBin(x[0]));
+        };
+        TF1 fitting_function_mixed_background("fitting_function_mixed_background", only_mixed_event_background, resultCanvas->GetUxmin(), resultCanvas->GetUxmax(), 1, 1);
+        fitting_function_mixed_background.SetParameter(0, fitting_function_total->GetParameter(signalparams));//we start from 0 here, so signalparams-1 is the last signal parameter
+        fitting_function_mixed_background.SetLineColor(kBlue);
+        fitting_function_mixed_background.SetLineStyle(kDashed);
+        fitting_function_mixed_background.SetNpx(1000);
+        fitting_function_mixed_background.Draw("same");
+        auto remaining_background = [&](double* x, double* p){
+            return background->EvalPar(x, fitting_function_total->GetParameters()+signalparams)-fitting_function_mixed_background.Eval(x[0]);
+        };
+        TF1 fitting_function_remaining_background("fitting_function_remaining_background", remaining_background, resultCanvas->GetUxmin(), resultCanvas->GetUxmax(), 0, 1);
+        fitting_function_remaining_background.SetLineColor(kGreen);
+        fitting_function_remaining_background.SetLineStyle(kDashed);
+        fitting_function_remaining_background.SetNpx(1000);
+        fitting_function_remaining_background.Draw("same");
+        //adding fitting region and other function markers to legend
+        legend_for_background_fitting.AddEntry(&fitting_function_mixed_background, "Mixed events background", "l");
+        legend_for_background_fitting.AddEntry(&fitting_function_remaining_background, "Other parts of the background", "l");
         legend_for_background_fitting.AddEntry(&line1, "Fitting region", "l");
         //moving legend and statbox
+        loweredge -= 0.1;
         legend_for_background_fitting.SetY1NDC(loweredge-0.05);
         stats->SetY1NDC(loweredge-stats_height-0.05);
         stats->SetY2NDC(loweredge-0.05);
