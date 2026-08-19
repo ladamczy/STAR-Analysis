@@ -143,7 +143,7 @@ int main(int argc, char** argv)
         vector<TH1D*> HistKsiEN1, HistKsiWN1;
         vector<TH1D*> HistSumProtonMomentaXN1, HistSumProtonMomentaYN1;
         vector<TH1D*> HistZDiffN1, HistZMeanN1, HistCosThetaStarN1;
-
+        vector<TH2D*> HistInvMassPiPi2DN1;
         for (int i = 2; i < 6; i++) {
             HistInvMassPiPiN1.push_back(         new TH1D(MakeHistName(Form("histInvMassPiPiN1%d",i),sf).c_str(),"",30,0.44,0.56));
             HistPtMissN1.push_back(              new TH1D(MakeHistName(Form("histPtMissN1%d",i),sf).c_str(),"",20,0,1));
@@ -163,6 +163,7 @@ int main(int argc, char** argv)
             HistZDiffN1.push_back(               new TH1D(MakeHistName(Form("histZDiffN1%d",i),sf).c_str(),"",101,-200,200));
             HistZMeanN1.push_back(               new TH1D(MakeHistName(Form("histZMeanN1%d",i),sf).c_str(),"",51,-200,200));
             HistCosThetaStarN1.push_back(        new TH1D(MakeHistName(Form("histCosThetaStarN1%d",i),sf).c_str(),"",50,-1.0,1.0));
+            HistInvMassPiPi2DN1.push_back(       new TH2D(MakeHistName(Form("histInvMassPiPi2DN1%d",i),sf).c_str(),";m_{lead} [GeV];m_{sublead} [GeV]",30,0.44,0.56,30,0.44,0.56));
         }
 
         TH1D* HistMassK0K0 = new TH1D(MakeHistName("HistMassK0K0",sf).c_str(), ";m_{K^{0}K^{0}} [GeV];events", 21, 0.9, 3);
@@ -479,8 +480,12 @@ int main(int argc, char** argv)
 
             // ---- N-1 histograms ----------------------------------------
             bool N1_mass = true; CheckN1(vCuts, areKaonsInNarrowMassWindow, N1_mass);
-            if (N1_mass) { HistInvMassPiPiN1[iH]->Fill(leadingKaonMass); HistInvMassPiPiN1[iH]->Fill(subleadingKaonMass); }
-
+            if (N1_mass) { 
+                HistInvMassPiPiN1[iH]->Fill(leadingKaonMass); 
+                HistInvMassPiPiN1[iH]->Fill(subleadingKaonMass); 
+                HistInvMassPiPi2DN1[iH]->Fill(leadingKaonMass, subleadingKaonMass); // ADD THIS EXACTLY HERE
+            }
+            
             bool N1_ptmiss = true; CheckN1(vCuts, isPtMissingSmall, N1_ptmiss);
             if (N1_ptmiss) {
                 HistPtMissN1[iH]->Fill(pTmiss);
@@ -641,7 +646,7 @@ int main(int argc, char** argv)
         cout << Form("║  %-42s  %10lld  (%6.2f%%)  rel:%5.1f%%  ║", "SC3.0: 1 vtx, |z_vtx|<80 cm",            cVertex,       pct(cVertex),       rel(cVertex,        cInput))        << endl;
         cout << Form("║  %-42s  %10lld  (%6.2f%%)  rel:%5.1f%%  ║", "SC3:   N_TOF in selected set",           cValidTracks,  pct(cValidTracks),  rel(cValidTracks,   cVertex))       << endl;
         cout << Form("║  %-42s  %10lld  (%6.2f%%)  rel:%5.1f%%  ║", "SC3.1-3.3: pT>0.2,|eta|<0.9,Nfit>=20",   cTofGood,      pct(cTofGood),      rel(cTofGood,       cValidTracks))  << endl;
-        cout << Form("║  %-42s  %10lld  (%6.2f%%)  rel:%5.1f%%  ║", "SC3.4: charge balance + nHitsDedx>=15",  cComplementary,pct(cComplementary),rel(cComplementary, cTofGood))     << endl;
+        cout << Form("║  %-42s  %10lld  (%6.2f%%)  rel:%5.1f%%  ║", "SC3.4: charge balance ",                 cComplementary,pct(cComplementary),rel(cComplementary, cTofGood))     << endl;
         cout << Form("║  %-42s  %10lld  (%6.2f%%)  rel:%5.1f%%  ║", "       Pion pairs reconstructed",        cPionsFound,   pct(cPionsFound),   rel(cPionsFound,    cComplementary)) << endl;
         cout << "╠══════════════════════════════════════════════════════════════════════════╣" << endl;
         cout << "║  -- SC 4: K0S exclusivity --                                             ║" << endl;
@@ -682,7 +687,7 @@ int main(int argc, char** argv)
             HistPtPionWithTof[i]->Write();   HistPtPionWithoutTof[i]->Write();
             HistEtaPionWithTof[i]->Write();  HistEtaPionWithoutTof[i]->Write();
             HistNfitPionWithTof[i]->Write(); HistNfitPionWithoutTof[i]->Write();
-
+            HistInvMassPiPi2DN1[i]->Write();
             HistInvMassPiPiN1[i]->Write();
             HistPtMissN1[i]->Write();        HistNTOFClusterN1[i]->Write();
             HistDCABeamlineN1[i]->Write();   HistDCADaughtersN1[i]->Write();
