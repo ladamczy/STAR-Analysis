@@ -291,6 +291,7 @@ TFitResult fit_and_draw_and_save(TH1D* data, TF1* signal, TF1* background, std::
     tempStyle.cd();
     tempStyle.SetOptFit();
     resultCanvas->UseCurrentStyle();
+    data->UseCurrentStyle();
     //drawing data and function
     data->SetTitle(title.c_str());
     data->SetMarkerStyle(kFullCircle);
@@ -303,10 +304,9 @@ TFitResult fit_and_draw_and_save(TH1D* data, TF1* signal, TF1* background, std::
     double leftedge = 1.0-resultCanvas->GetRightMargin()-0.01-width;
     double loweredge = 1.0-resultCanvas->GetTopMargin()-0.01-height;
     TLegend legend_for_background_fitting(leftedge, loweredge, leftedge+width, loweredge+height);
-    legend_for_background_fitting.SetTextSize(0.03);
+    legend_for_background_fitting.UseCurrentStyle();
     legend_for_background_fitting.AddEntry(data, "Data");
     legend_for_background_fitting.AddEntry(fitting_function_total, "Mixed background + signal fit", "l");
-    legend_for_background_fitting.SetBorderSize(0);
     legend_for_background_fitting.Draw("SAME");
     //setting proper look of fitting parameters
     double stats_height = 0.25;
@@ -316,8 +316,6 @@ TFitResult fit_and_draw_and_save(TH1D* data, TF1* signal, TF1* background, std::
     stats->SetX2NDC(leftedge+width);
     stats->SetY1NDC(loweredge-stats_height);
     stats->SetY2NDC(loweredge);
-    stats->SetTextSize(0.03);
-    stats->SetBorderSize(0);
     //drawing before saving
     gPad->ModifiedUpdate();
     //saving
@@ -388,6 +386,7 @@ void custom_draw_and_save(TH1D* data, double expected_value, std::string folderW
     gROOT->ForceStyle();
     TCanvas* resultCanvas = MyStyles::DefaultCanvas("resultCanvas");
     resultCanvas->UseCurrentStyle();
+    data->UseCurrentStyle();
     //setting name and title
     if(name.length()!=0){
         data->SetName(name.c_str());

@@ -57,14 +57,17 @@ void MyStyles::SetDefault(TStyle& changedStyle){
     changedStyle.SetFrameLineWidth(2);
     //histograms
     changedStyle.SetOptStat(0);
-    changedStyle.SetLegendBorderSize(0);
-    changedStyle.SetLegendTextSize(0.04);
     changedStyle.SetTitleFontSize(0.06);
     changedStyle.SetTitleX(0.55);
     changedStyle.SetHistLineWidth(1);
     changedStyle.SetHistLineColor(kBlue+2);
     changedStyle.SetMarkerStyle(kFullCircle);
     changedStyle.SetMarkerColor(kBlue);
+    //legend and stats
+    currentMyStyle.SetLegendTextSize(0.03);
+    currentMyStyle.SetLegendBorderSize(0);
+    currentMyStyle.SetStatFontSize(0.03);
+    currentMyStyle.SetStatBorderSize(0);
     //axis
     changedStyle.SetAxisMaxDigits(3);
     changedStyle.SetLabelSize(0.045, "xyz");
@@ -82,7 +85,6 @@ TStyle MyStyles::Hist2DDisplay(bool containsTitle){
     currentMyStyle.SetNameTitle("2DDisplay", "A style to display (not save) things");
     currentMyStyle.SetHistMinimumZero();
     currentMyStyle.SetOptFit();
-    currentMyStyle.SetStatBorderSize(0.);
     currentMyStyle.SetStatX(0.94);
     currentMyStyle.SetStatY(0.89);
     currentMyStyle.SetStatW(0.18);
@@ -115,10 +117,12 @@ TStyle MyStyles::Hist2DQuarterSize(bool containsTitle){
     currentMyStyle.SetPadLeftMargin(0.15);
     currentMyStyle.SetPadBottomMargin(0.15);
     //histograms
-    currentMyStyle.SetLegendTextSize(0.04);
     currentMyStyle.SetTitleFontSize(0.07);
     currentMyStyle.SetHistLineWidth(2);
     currentMyStyle.SetEndErrorSize(4.);
+    //legend and stats
+    currentMyStyle.SetLegendTextSize(0.04);
+    currentMyStyle.SetStatFontSize(0.04);
     //axis
     currentMyStyle.SetLabelSize(0.06, "xyz");
     currentMyStyle.SetTitleSize(0.06, "xyz");
