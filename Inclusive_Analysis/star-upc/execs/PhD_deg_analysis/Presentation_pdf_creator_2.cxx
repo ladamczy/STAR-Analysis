@@ -243,9 +243,9 @@ int main(int argc, char const* argv[]){
     MKKsimueta->Scale(MKKneweta->Integral()/MKKsimueta->Integral());
     MKKsimueta->Draw("hist same");
     legend = new TLegend(0.4, 0.29, 0.6, 0.49);
-    legend->SetTextSize(0.025);
+    legend->SetTextSize(0.04);
     legend->SetHeader("#bf{pp, #sqrt{s} = 510 GeV}", "C");
-    legend->AddEntry(MKKsimueta, "#bf{yield from starsim (scaled)}");
+    legend->AddEntry(MKKsimueta, "#bf{yield from Starsim (scaled)}");
     legend->AddEntry(MKKneweta, "#bf{yield from data}");
     legend->SetBorderSize(0);
     legend->DrawClone("SAME");
@@ -263,7 +263,7 @@ int main(int argc, char const* argv[]){
     chi2ndfOne->SetLineWidth(2);
     chi2ndfOne->Draw("same");
     legend = new TLegend(0.6, 0.25, 0.8, 0.45);
-    legend->SetTextSize(0.025);
+    legend->SetTextSize(0.04);
     legend->SetHeader("#bf{pp, #sqrt{s} = 510 GeV}", "C");
     legend->AddEntry(chi2ndfOne, "#bf{#chi^{2}/ndf = 1}", "l");
     legend->AddEntry(MKKnewetaChi2, "#bf{#chi^{2}/ndf of data fit}");
@@ -286,10 +286,10 @@ int main(int argc, char const* argv[]){
     //data
     MKKnewpT->SetLineColor(kBlue+2);
     MKKnewpT->Draw("e1 same");
-    legend = new TLegend(0.69, 0.67, 0.89, 0.87);
-    legend->SetTextSize(0.025);
+    legend = new TLegend(0.63, 0.67, 0.83, 0.87);
+    legend->SetTextSize(0.04);
     legend->SetHeader("#bf{pp, #sqrt{s} = 510 GeV}", "C");
-    legend->AddEntry(MKKsimupT, "#bf{yield from starsim (scaled)}");
+    legend->AddEntry(MKKsimupT, "#bf{yield from Starsim (scaled)}");
     legend->AddEntry(MKKnewpT, "#bf{yield from data}");
     legend->SetBorderSize(0);
     legend->DrawClone("SAME");
@@ -311,7 +311,7 @@ int main(int argc, char const* argv[]){
     chi2ndfOne->SetLineWidth(2);
     chi2ndfOne->Draw("same");
     legend = new TLegend(0.6, 0.25, 0.8, 0.45);
-    legend->SetTextSize(0.025);
+    legend->SetTextSize(0.04);
     legend->SetHeader("#bf{pp, #sqrt{s} = 510 GeV}", "C");
     legend->AddEntry(chi2ndfOne, "#bf{#chi^{2}/ndf = 1}", "l");
     legend->AddEntry(MKKnewpTChi2, "#bf{#chi^{2}/ndf of data fit}");
