@@ -84,9 +84,9 @@ int main(int argc, char** argv){
     //mass histograms
     std::vector<std::string> pairTab = { "Kpi", "piK", "ppi", "pip", "KK", "pipi", "pp" };
     outsideprocessing.AddHistogram(TH1D("MKpiChi2", ";m_{K^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 50, 0.5, 2.0));
-    outsideprocessing.AddHistogram(TH1D("MpiKChi2", ";m_{#pi^{+}K^{-}} [GeV/c^{2}];Number of pairs", 50, 0.5, 2.0));
+    outsideprocessing.AddHistogram(TH1D("MpiKChi2", ";m_{K^{-}#pi^{+}} [GeV/c^{2}];Number of pairs", 50, 0.5, 2.0));
     outsideprocessing.AddHistogram(TH1D("MppiChi2", ";m_{p^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 50, 1.0, 2.5));
-    outsideprocessing.AddHistogram(TH1D("MpipChi2", ";m_{#pi^{+}p^{-}} [GeV/c^{2}];Number of pairs", 50, 1.0, 2.5));
+    outsideprocessing.AddHistogram(TH1D("MpipChi2", ";m_{p^{-}#pi^{+}} [GeV/c^{2}];Number of pairs", 50, 1.0, 2.5));
     outsideprocessing.AddHistogram(TH1D("MKKChi2", ";m_{K^{+}K^{-}} [GeV/c^{2}];Number of pairs", 50, 0.9, 2.4));
     outsideprocessing.AddHistogram(TH1D("MpipiChi2", ";m_{#pi^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 60, 0.2, 1.4));
     outsideprocessing.AddHistogram(TH1D("MppChi2", ";m_{p^{+}p^{-}} [GeV/c^{2}];Number of pairs", 50, 1.5, 3.5));

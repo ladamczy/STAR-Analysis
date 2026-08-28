@@ -181,6 +181,7 @@ void getCategoryHistograms(ProcessingOutsideLoop& out, vector<string> pairs, std
         printf("File with differential crossection ranges opened properly!\nLines found:\n");
     }
 
+    //getting bin edges for every category
     std::string line, buf;
     while(std::getline(infile, line)){
         printf("%s\n", line.c_str());
@@ -202,6 +203,20 @@ void getCategoryHistograms(ProcessingOutsideLoop& out, vector<string> pairs, std
         }
         allCategories.push_back(std::pair<std::string, std::vector<double>>(category, values));
     }
+
+    //creating proper title parts for pairs and categories
+    std::map<std::string, std::string> pairTitle = { {"Kpi","K^{+}#pi^{-}"},
+                                                    {"piK","K^{-}#pi^{+}"},
+                                                    {"ppi","p^{+}#pi^{-}"},
+                                                    {"pip","p^{-}#pi^{+}"},
+                                                    {"KK","K^{+}K^{-}"},
+                                                    {"pipi","#pi^{+}#pi^{-}"},
+                                                    {"pp","p^{+}p^{-}"} };
+    std::map<std::string, std::string> categoryTitle = { {"pT","p_{T}"},
+                                                        {"eta","#eta"} };
+    std::map<std::string, std::string> categoryAxisTitle = { {"pT","p_{T} [GeV/c]"},
+                                                        {"eta","#eta"} };
+
     //creating histograms corresponding to the categories
     for(size_t i = 0; i<pairs.size(); i++){
         double binMin = out.GetPointer1D(("M"+pairs[i]+"Chi2"+nameAfterChi2).c_str())->GetXaxis()->GetXmin();
@@ -209,8 +224,16 @@ void getCategoryHistograms(ProcessingOutsideLoop& out, vector<string> pairs, std
         int binNumber = out.GetPointer1D(("M"+pairs[i]+"Chi2"+nameAfterChi2).c_str())->GetXaxis()->GetNbins();
         string axisTitle = out.GetPointer1D(("M"+pairs[i]+"Chi2"+nameAfterChi2).c_str())->GetXaxis()->GetTitle();
         for(size_t j = 0; j<allCategories.size(); j++){
+            //creating the name
             string name = "M"+pairs[i]+"Chi2"+nameAfterChi2+allCategories[j].first;
-            string title = pairs[i]+" "+allCategories[j].first+";"+axisTitle+";"+allCategories[j].first;
+            //creating the title
+            string title;
+            title += pairTitle[pairs[i]]+" "+categoryTitle[allCategories[j].first];
+            title += ";";
+            title += axisTitle;
+            title += ";";
+            title += categoryAxisTitle[allCategories[j].first];
+            //creating histogram
             out.AddHistogram(TH2D(name.c_str(), title.c_str(), binNumber, binMin, binMax, allCategories[j].second.size()-1, allCategories[j].second.data()));
             printf("Added histogram with name %s\n", name.c_str());
         }

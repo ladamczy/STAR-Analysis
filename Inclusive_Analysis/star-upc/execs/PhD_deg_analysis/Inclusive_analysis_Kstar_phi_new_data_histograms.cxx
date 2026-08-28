@@ -46,6 +46,7 @@ int main(int argc, char* argv[]){
     printf("3 - random track rotation\n");
     printf("4 - mixed-event\n");
     std::string BcgType;
+    std::string BcgTypeTitle;
     if(argc<4){
         printf("Background not chosen\n");
         return 1;
@@ -53,15 +54,19 @@ int main(int argc, char* argv[]){
     switch(atoi(argv[3])){
     case 1:
         BcgType = "SameSign";
+        BcgTypeTitle = "same-sign";
         break;
     case 2:
         BcgType = "TrackRotation";
+        BcgTypeTitle = "track rotation";
         break;
     case 3:
         BcgType = "RandomTrackRotation";
+        BcgTypeTitle = "random track rotation";
         break;
     case 4:
         BcgType = "MixedEvent";
+        BcgTypeTitle = "mixed-event";
         break;
     default:
         printf("Background not chosen\n");
@@ -219,13 +224,13 @@ skipOneTimeFitting:
     TStyle mystyle2 = MyStyles::Hist2DDisplay(true);
     mystyle2.cd();
     result->UseCurrentStyle();
-    set_background_fitting(result, MKpiChi2, MKpiChi2bcg, bcgRegionStart[0], bcgRegionStop[0], "KpiRatio", "K^{+}#pi^{-} Background/Total ratio with "+BcgType+" background", folderWithDiagonal+"MKpiRatio.pdf");
+    set_background_fitting(result, MKpiChi2, MKpiChi2bcg, bcgRegionStart[0], bcgRegionStop[0], "KpiRatio", "K^{+}#pi^{-} Background/Total ratio with "+BcgTypeTitle+" background;m_{K^{+}#pi^{-}} [GeV/c^{2}];Ratio", folderWithDiagonal+"MKpiRatio.pdf");
     mystyle2.cd();
     result->UseCurrentStyle();
-    set_background_fitting(result, MpiKChi2, MpiKChi2bcg, bcgRegionStart[1], bcgRegionStop[1], "piKRatio", "#pi^{+}K^{-} Background/Total ratio with "+BcgType+" background", folderWithDiagonal+"MpiKRatio.pdf");
+    set_background_fitting(result, MpiKChi2, MpiKChi2bcg, bcgRegionStart[1], bcgRegionStop[1], "piKRatio", "K^{-}#pi^{+} Background/Total ratio with "+BcgTypeTitle+" background;m_{K^{-}#pi^{+}} [GeV/c^{2}];Ratio", folderWithDiagonal+"MpiKRatio.pdf");
     mystyle2.cd();
     result->UseCurrentStyle();
-    set_background_fitting(result, MKKChi2, MKKChi2bcg, bcgRegionStart[2], bcgRegionStop[2], "KKRatio", "K^{+}K^{-} Background/Total ratio with "+BcgType+" background", folderWithDiagonal+"MKKRatio.pdf");
+    set_background_fitting(result, MKKChi2, MKKChi2bcg, bcgRegionStart[2], bcgRegionStop[2], "KKRatio", "K^{+}K^{-} Background/Total ratio with "+BcgTypeTitle+" background;m_{K^{+}K^{-}} [GeV/c^{2}];Ratio", folderWithDiagonal+"MKKRatio.pdf");
 
     //fitting functions
     TF1* fit_func_sig = new TF1("fit_func_sig", "breitwigner", 0.8, 1.0);
@@ -608,7 +613,6 @@ int GetFirstNonzeroBinNumber(TH1* input){
 void set_background_fitting(TCanvas* canvas, TH1D* data, TH1D* bcg, double& bcgRegionStart, double& bcgRegionStop, std::string name, std::string title, std::string draw_full_path){
     //preparing for drawing
     canvas->Clear();
-    printf("%d\n", gStyle->GetLegendFont());
     //preparing and drawing ratio plot
     TH1D SigBcgRatio(*bcg);
     SigBcgRatio.SetMarkerStyle(kFullCircle);
@@ -657,8 +661,11 @@ void set_background_fitting(TCanvas* canvas, TH1D* data, TH1D* bcg, double& bcgR
         TStyle mystyle = MyStyles::Hist2DQuarterSize();
         mystyle.cd();
         canvas->UseCurrentStyle();
+        SigBcgRatio.UseCurrentStyle();
         SigBcgRatio.SetDrawOption("e1");
         SigBcgRatio.UseCurrentStyle();
+        legend_for_background_fitting.SetTextFont(62);
+        legend_for_background_fitting.Draw("same");
         canvas->ModifiedUpdate();
         canvas->RedrawAxis();
         //drawing

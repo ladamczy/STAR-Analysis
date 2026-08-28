@@ -99,76 +99,76 @@ int main(int argc, char** argv){
 
     //mass histograms (signal)
     outsideprocessing.AddHistogram(TH1D("MKpiChi2", ";m_{K^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 200, 0.5, 2.0));
-    outsideprocessing.AddHistogram(TH1D("MpiKChi2", ";m_{#pi^{+}K^{-}} [GeV/c^{2}];Number of pairs", 200, 0.5, 2.0));
+    outsideprocessing.AddHistogram(TH1D("MpiKChi2", ";m_{K^{-}#pi^{+}} [GeV/c^{2}];Number of pairs", 200, 0.5, 2.0));
     outsideprocessing.AddHistogram(TH1D("MppiChi2", ";m_{p^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 500, 1.0, 2.5));
-    outsideprocessing.AddHistogram(TH1D("MpipChi2", ";m_{#pi^{+}p^{-}} [GeV/c^{2}];Number of pairs", 500, 1.0, 2.5));
+    outsideprocessing.AddHistogram(TH1D("MpipChi2", ";m_{p^{-}#pi^{+}} [GeV/c^{2}];Number of pairs", 500, 1.0, 2.5));
     outsideprocessing.AddHistogram(TH1D("MKKChi2", ";m_{K^{+}K^{-}} [GeV/c^{2}];Number of pairs", 50, 0.99, 1.05));
     outsideprocessing.AddHistogram(TH1D("MpipiChi2", ";m_{#pi^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 600, 0.2, 1.4));
     outsideprocessing.AddHistogram(TH1D("MppChi2", ";m_{p^{+}p^{-}} [GeV/c^{2}];Number of pairs", 500, 1.5, 3.5));
     //closer histograms (signal)
     outsideprocessing.AddHistogram(TH1D("MKKChi2Close", ";m_{K^{+}K^{-}} [GeV/c^{2}];Number of pairs", 50, 0.99, 1.05));
     outsideprocessing.AddHistogram(TH1D("MKpiChi2Close", ";m_{K^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 50, 0.7, 1.1));
-    outsideprocessing.AddHistogram(TH1D("MpiKChi2Close", ";m_{#pi^{+}K^{-}} [GeV/c^{2}];Number of pairs", 50, 0.7, 1.1));
+    outsideprocessing.AddHistogram(TH1D("MpiKChi2Close", ";m_{K^{-}#pi^{+}} [GeV/c^{2}];Number of pairs", 50, 0.7, 1.1));
     //adding mass histograms grouped by category (signal)
     getCategoryHistograms(outsideprocessing, pairTab);
 
     //mass histograms (background, same sign)
     outsideprocessing.AddHistogram(TH1D("MKpiChi2BcgSameSign", ";m_{K^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 200, 0.5, 2.0));
-    outsideprocessing.AddHistogram(TH1D("MpiKChi2BcgSameSign", ";m_{#pi^{+}K^{-}} [GeV/c^{2}];Number of pairs", 200, 0.5, 2.0));
+    outsideprocessing.AddHistogram(TH1D("MpiKChi2BcgSameSign", ";m_{K^{-}#pi^{+}} [GeV/c^{2}];Number of pairs", 200, 0.5, 2.0));
     outsideprocessing.AddHistogram(TH1D("MppiChi2BcgSameSign", ";m_{p^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 500, 1.0, 2.5));
-    outsideprocessing.AddHistogram(TH1D("MpipChi2BcgSameSign", ";m_{#pi^{+}p^{-}} [GeV/c^{2}];Number of pairs", 500, 1.0, 2.5));
+    outsideprocessing.AddHistogram(TH1D("MpipChi2BcgSameSign", ";m_{p^{-}#pi^{+}} [GeV/c^{2}];Number of pairs", 500, 1.0, 2.5));
     outsideprocessing.AddHistogram(TH1D("MKKChi2BcgSameSign", ";m_{K^{+}K^{-}} [GeV/c^{2}];Number of pairs", 50, 0.99, 1.05));
     outsideprocessing.AddHistogram(TH1D("MpipiChi2BcgSameSign", ";m_{#pi^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 600, 0.2, 1.4));
     outsideprocessing.AddHistogram(TH1D("MppChi2BcgSameSign", ";m_{p^{+}p^{-}} [GeV/c^{2}];Number of pairs", 500, 1.5, 3.5));
     //closer histograms (background, same sign)
     outsideprocessing.AddHistogram(TH1D("MKKChi2BcgSameSignClose", ";m_{K^{+}K^{-}} [GeV/c^{2}];Number of pairs", 50, 0.99, 1.05));
     outsideprocessing.AddHistogram(TH1D("MKpiChi2BcgSameSignClose", ";m_{K^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 50, 0.7, 1.1));
-    outsideprocessing.AddHistogram(TH1D("MpiKChi2BcgSameSignClose", ";m_{#pi^{+}K^{-}} [GeV/c^{2}];Number of pairs", 50, 0.7, 1.1));
+    outsideprocessing.AddHistogram(TH1D("MpiKChi2BcgSameSignClose", ";m_{K^{-}#pi^{+}} [GeV/c^{2}];Number of pairs", 50, 0.7, 1.1));
     //adding mass histograms grouped by category (background, same sign)
     getCategoryHistograms(outsideprocessing, pairTab, "BcgSameSign");
 
     //mass histograms (background, track rotation)
     outsideprocessing.AddHistogram(TH1D("MKpiChi2BcgTrackRotation", ";m_{K^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 200, 0.5, 2.0));
-    outsideprocessing.AddHistogram(TH1D("MpiKChi2BcgTrackRotation", ";m_{#pi^{+}K^{-}} [GeV/c^{2}];Number of pairs", 200, 0.5, 2.0));
+    outsideprocessing.AddHistogram(TH1D("MpiKChi2BcgTrackRotation", ";m_{K^{-}#pi^{+}} [GeV/c^{2}];Number of pairs", 200, 0.5, 2.0));
     outsideprocessing.AddHistogram(TH1D("MppiChi2BcgTrackRotation", ";m_{p^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 500, 1.0, 2.5));
-    outsideprocessing.AddHistogram(TH1D("MpipChi2BcgTrackRotation", ";m_{#pi^{+}p^{-}} [GeV/c^{2}];Number of pairs", 500, 1.0, 2.5));
+    outsideprocessing.AddHistogram(TH1D("MpipChi2BcgTrackRotation", ";m_{p^{-}#pi^{+}} [GeV/c^{2}];Number of pairs", 500, 1.0, 2.5));
     outsideprocessing.AddHistogram(TH1D("MKKChi2BcgTrackRotation", ";m_{K^{+}K^{-}} [GeV/c^{2}];Number of pairs", 50, 0.99, 1.05));
     outsideprocessing.AddHistogram(TH1D("MpipiChi2BcgTrackRotation", ";m_{#pi^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 600, 0.2, 1.4));
     outsideprocessing.AddHistogram(TH1D("MppChi2BcgTrackRotation", ";m_{p^{+}p^{-}} [GeV/c^{2}];Number of pairs", 500, 1.5, 3.5));
     //closer histograms (background, track rotation)
     outsideprocessing.AddHistogram(TH1D("MKKChi2BcgTrackRotationClose", ";m_{K^{+}K^{-}} [GeV/c^{2}];Number of pairs", 50, 0.99, 1.05));
     outsideprocessing.AddHistogram(TH1D("MKpiChi2BcgTrackRotationClose", ";m_{K^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 50, 0.7, 1.1));
-    outsideprocessing.AddHistogram(TH1D("MpiKChi2BcgTrackRotationClose", ";m_{#pi^{+}K^{-}} [GeV/c^{2}];Number of pairs", 50, 0.7, 1.1));
+    outsideprocessing.AddHistogram(TH1D("MpiKChi2BcgTrackRotationClose", ";m_{K^{-}#pi^{+}} [GeV/c^{2}];Number of pairs", 50, 0.7, 1.1));
     //adding mass histograms grouped by category (background, track rotation)
     getCategoryHistograms(outsideprocessing, pairTab, "BcgTrackRotation");
 
     //mass histograms (background, random track rotation)
     outsideprocessing.AddHistogram(TH1D("MKpiChi2BcgRandomTrackRotation", ";m_{K^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 200, 0.5, 2.0));
-    outsideprocessing.AddHistogram(TH1D("MpiKChi2BcgRandomTrackRotation", ";m_{#pi^{+}K^{-}} [GeV/c^{2}];Number of pairs", 200, 0.5, 2.0));
+    outsideprocessing.AddHistogram(TH1D("MpiKChi2BcgRandomTrackRotation", ";m_{K^{-}#pi^{+}} [GeV/c^{2}];Number of pairs", 200, 0.5, 2.0));
     outsideprocessing.AddHistogram(TH1D("MppiChi2BcgRandomTrackRotation", ";m_{p^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 500, 1.0, 2.5));
-    outsideprocessing.AddHistogram(TH1D("MpipChi2BcgRandomTrackRotation", ";m_{#pi^{+}p^{-}} [GeV/c^{2}];Number of pairs", 500, 1.0, 2.5));
+    outsideprocessing.AddHistogram(TH1D("MpipChi2BcgRandomTrackRotation", ";m_{p^{-}#pi^{+}} [GeV/c^{2}];Number of pairs", 500, 1.0, 2.5));
     outsideprocessing.AddHistogram(TH1D("MKKChi2BcgRandomTrackRotation", ";m_{K^{+}K^{-}} [GeV/c^{2}];Number of pairs", 50, 0.99, 1.05));
     outsideprocessing.AddHistogram(TH1D("MpipiChi2BcgRandomTrackRotation", ";m_{#pi^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 600, 0.2, 1.4));
     outsideprocessing.AddHistogram(TH1D("MppChi2BcgRandomTrackRotation", ";m_{p^{+}p^{-}} [GeV/c^{2}];Number of pairs", 500, 1.5, 3.5));
     //closer histograms (background, random track rotation)
     outsideprocessing.AddHistogram(TH1D("MKKChi2BcgRandomTrackRotationClose", ";m_{K^{+}K^{-}} [GeV/c^{2}];Number of pairs", 50, 0.99, 1.05));
     outsideprocessing.AddHistogram(TH1D("MKpiChi2BcgRandomTrackRotationClose", ";m_{K^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 50, 0.7, 1.1));
-    outsideprocessing.AddHistogram(TH1D("MpiKChi2BcgRandomTrackRotationClose", ";m_{#pi^{+}K^{-}} [GeV/c^{2}];Number of pairs", 50, 0.7, 1.1));
+    outsideprocessing.AddHistogram(TH1D("MpiKChi2BcgRandomTrackRotationClose", ";m_{K^{-}#pi^{+}} [GeV/c^{2}];Number of pairs", 50, 0.7, 1.1));
     //adding mass histograms grouped by category (background, random track rotation)
     getCategoryHistograms(outsideprocessing, pairTab, "BcgRandomTrackRotation");
 
     //mass histograms (background, mixed events)
     outsideprocessing.AddHistogram(TH1D("MKpiChi2BcgMixedEvent", ";m_{K^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 200, 0.5, 2.0));
-    outsideprocessing.AddHistogram(TH1D("MpiKChi2BcgMixedEvent", ";m_{#pi^{+}K^{-}} [GeV/c^{2}];Number of pairs", 200, 0.5, 2.0));
+    outsideprocessing.AddHistogram(TH1D("MpiKChi2BcgMixedEvent", ";m_{K^{-}#pi^{+}} [GeV/c^{2}];Number of pairs", 200, 0.5, 2.0));
     outsideprocessing.AddHistogram(TH1D("MppiChi2BcgMixedEvent", ";m_{p^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 500, 1.0, 2.5));
-    outsideprocessing.AddHistogram(TH1D("MpipChi2BcgMixedEvent", ";m_{#pi^{+}p^{-}} [GeV/c^{2}];Number of pairs", 500, 1.0, 2.5));
+    outsideprocessing.AddHistogram(TH1D("MpipChi2BcgMixedEvent", ";m_{p^{-}#pi^{+}} [GeV/c^{2}];Number of pairs", 500, 1.0, 2.5));
     outsideprocessing.AddHistogram(TH1D("MKKChi2BcgMixedEvent", ";m_{K^{+}K^{-}} [GeV/c^{2}];Number of pairs", 50, 0.99, 1.05));
     outsideprocessing.AddHistogram(TH1D("MpipiChi2BcgMixedEvent", ";m_{#pi^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 600, 0.2, 1.4));
     outsideprocessing.AddHistogram(TH1D("MppChi2BcgMixedEvent", ";m_{p^{+}p^{-}} [GeV/c^{2}];Number of pairs", 500, 1.5, 3.5));
     //closer histograms (background, mixed events)
     outsideprocessing.AddHistogram(TH1D("MKKChi2BcgMixedEventClose", ";m_{K^{+}K^{-}} [GeV/c^{2}];Number of pairs", 50, 0.99, 1.05));
     outsideprocessing.AddHistogram(TH1D("MKpiChi2BcgMixedEventClose", ";m_{K^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 50, 0.7, 1.1));
-    outsideprocessing.AddHistogram(TH1D("MpiKChi2BcgMixedEventClose", ";m_{#pi^{+}K^{-}} [GeV/c^{2}];Number of pairs", 50, 0.7, 1.1));
+    outsideprocessing.AddHistogram(TH1D("MpiKChi2BcgMixedEventClose", ";m_{K^{-}#pi^{+}} [GeV/c^{2}];Number of pairs", 50, 0.7, 1.1));
     //adding mass histograms grouped by category (background, mixed events)
     getCategoryHistograms(outsideprocessing, pairTab, "BcgMixedEvent");
 

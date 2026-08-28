@@ -91,24 +91,24 @@ int main(int argc, char** argv){
 
     //mass histograms (signal)
     outsideprocessing.AddHistogram(TH1D("MKpiChi2", ";m_{K^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 200, 0.5, 2.0));
-    outsideprocessing.AddHistogram(TH1D("MpiKChi2", ";m_{#pi^{+}K^{-}} [GeV/c^{2}];Number of pairs", 200, 0.5, 2.0));
+    outsideprocessing.AddHistogram(TH1D("MpiKChi2", ";m_{K^{-}#pi^{+}} [GeV/c^{2}];Number of pairs", 200, 0.5, 2.0));
     outsideprocessing.AddHistogram(TH1D("MppiChi2", ";m_{p^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 500, 1.0, 2.5));
-    outsideprocessing.AddHistogram(TH1D("MpipChi2", ";m_{#pi^{+}p^{-}} [GeV/c^{2}];Number of pairs", 500, 1.0, 2.5));
+    outsideprocessing.AddHistogram(TH1D("MpipChi2", ";m_{p^{-}#pi^{+}} [GeV/c^{2}];Number of pairs", 500, 1.0, 2.5));
     outsideprocessing.AddHistogram(TH1D("MKKChi2", ";m_{K^{+}K^{-}} [GeV/c^{2}];Number of pairs", 500, 0.9, 2.4));
     outsideprocessing.AddHistogram(TH1D("MpipiChi2", ";m_{#pi^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 600, 0.2, 1.4));
     outsideprocessing.AddHistogram(TH1D("MppChi2", ";m_{p^{+}p^{-}} [GeV/c^{2}];Number of pairs", 500, 1.5, 3.5));
     //mass histograms (signal) with identification of the mothers
     outsideprocessing.AddHistogram(TH2D("MKpiMothersChi2", ";m_{K^{+}#pi^{-}} [GeV/c^{2}];Mother symbol", 200, 0.5, 2.0, 1, 0, 1));
-    outsideprocessing.AddHistogram(TH2D("MpiKMothersChi2", ";m_{#pi^{+}K^{-}} [GeV/c^{2}];Mother symbol", 200, 0.5, 2.0, 1, 0, 1));
+    outsideprocessing.AddHistogram(TH2D("MpiKMothersChi2", ";m_{K^{-}#pi^{+}} [GeV/c^{2}];Mother symbol", 200, 0.5, 2.0, 1, 0, 1));
     outsideprocessing.AddHistogram(TH2D("MppiMothersChi2", ";m_{p^{+}#pi^{-}} [GeV/c^{2}];Mother symbol", 500, 1.0, 2.5, 1, 0, 1));
-    outsideprocessing.AddHistogram(TH2D("MpipMothersChi2", ";m_{#pi^{+}p^{-}} [GeV/c^{2}];Mother symbol", 500, 1.0, 2.5, 1, 0, 1));
+    outsideprocessing.AddHistogram(TH2D("MpipMothersChi2", ";m_{p^{-}#pi^{+}} [GeV/c^{2}];Mother symbol", 500, 1.0, 2.5, 1, 0, 1));
     outsideprocessing.AddHistogram(TH2D("MKKMothersChi2", ";m_{K^{+}K^{-}} [GeV/c^{2}];Mother symbol", 500, 0.9, 2.4, 1, 0, 1));
     outsideprocessing.AddHistogram(TH2D("MpipiMothersChi2", ";m_{#pi^{+}#pi^{-}} [GeV/c^{2}];Mother symbol", 600, 0.2, 1.4, 1, 0, 1));
     outsideprocessing.AddHistogram(TH2D("MppMothersChi2", ";m_{p^{+}p^{-}} [GeV/c^{2}];Mother symbol", 500, 1.5, 3.5, 1, 0, 1));
 
     //mass histograms (identified signal)
     outsideprocessing.AddHistogram(TH1D("MKpiChi2Identified", ";m_{K^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 200, 0.5, 2.0));
-    outsideprocessing.AddHistogram(TH1D("MpiKChi2Identified", ";m_{#pi^{+}K^{-}} [GeV/c^{2}];Number of pairs", 200, 0.5, 2.0));
+    outsideprocessing.AddHistogram(TH1D("MpiKChi2Identified", ";m_{K^{-}#pi^{+}} [GeV/c^{2}];Number of pairs", 200, 0.5, 2.0));
     outsideprocessing.AddHistogram(TH1D("MKKChi2Identified", ";m_{K^{+}K^{-}} [GeV/c^{2}];Number of pairs", 500, 0.9, 2.4));
     //adding mass histograms grouped by category (identified signal)
     getCategoryHistograms(outsideprocessing, shortenedPairTab, "Identified");
