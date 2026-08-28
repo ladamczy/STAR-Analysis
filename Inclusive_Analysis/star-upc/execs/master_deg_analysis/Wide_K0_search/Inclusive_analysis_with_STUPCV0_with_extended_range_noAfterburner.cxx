@@ -83,12 +83,12 @@ int main(int argc, char **argv){
 
     //histograms
     ProcessingOutsideLoop outsideprocessing;
-    outsideprocessing.AddHistogram(TH1D("MpipiNarrow", "K^{0}_{S} mass in narrow range;m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", kaonMassWindowNarrowBins, kaonMassWindowNarrowLow, kaonMassWindowNarrowHigh));
-    outsideprocessing.AddHistogram(TH1D("MpipiWide", "K^{0}_{S} mass in wide range;m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", kaonMassWindowWideBins, kaonMassWindowWideLow, kaonMassWindowWideHigh));
-    outsideprocessing.AddHistogram(TH1D("MpipiVeryWide", "Pion pair mass in a very wide range;m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 500, 0, 5));
-    outsideprocessing.AddHistogram(TH1D("MpipiNarrowWithPidEcut", "K^{0}_{S} mass in narrow range with dE/dx cuts;m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", kaonMassWindowNarrowBins, kaonMassWindowNarrowLow, kaonMassWindowNarrowHigh));
-    outsideprocessing.AddHistogram(TH1D("MpipiWideWithPidEcut", "K^{0}_{S} mass in a very wide range with dE/dx cuts;m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", kaonMassWindowWideBins, kaonMassWindowWideLow, kaonMassWindowWideHigh));
-    outsideprocessing.AddHistogram(TH1D("MpipiVeryWideWithPidEcut", "Pion pair mass in a very wide range with dE/dx cuts;m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 500, 0, 5));
+    outsideprocessing.AddHistogram(TH1D("MpipiNarrow", "K^{0}_{S} mass in narrow range;m_{#pi^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", kaonMassWindowNarrowBins, kaonMassWindowNarrowLow, kaonMassWindowNarrowHigh));
+    outsideprocessing.AddHistogram(TH1D("MpipiWide", "K^{0}_{S} mass in wide range;m_{#pi^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", kaonMassWindowWideBins, kaonMassWindowWideLow, kaonMassWindowWideHigh));
+    outsideprocessing.AddHistogram(TH1D("MpipiVeryWide", "Pion pair mass in a very wide range;m_{#pi^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 500, 0, 5));
+    outsideprocessing.AddHistogram(TH1D("MpipiNarrowWithPidEcut", "K^{0}_{S} mass in narrow range with dE/dx cuts;m_{#pi^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", kaonMassWindowNarrowBins, kaonMassWindowNarrowLow, kaonMassWindowNarrowHigh));
+    outsideprocessing.AddHistogram(TH1D("MpipiWideWithPidEcut", "K^{0}_{S} mass in a very wide range with dE/dx cuts;m_{#pi^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", kaonMassWindowWideBins, kaonMassWindowWideLow, kaonMassWindowWideHigh));
+    outsideprocessing.AddHistogram(TH1D("MpipiVeryWideWithPidEcut", "Pion pair mass in a very wide range with dE/dx cuts;m_{#pi^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 500, 0, 5));
     outsideprocessing.AddHistogram(TH1D("NotherTracks", "Number of tracks excluding K^{0}_{S} daughters", 20, 0, 20));
     outsideprocessing.AddHistogram(TH2D("VertexMultiplicity", "Number of good quality tracks attributed to a vertex;vertex ID;tracks number", 10, 0, 10, 15, 0, 15));
     outsideprocessing.AddHistogram(TH2D("VertexMultiplicityWithoutK0", "Number of good quality tracks attributed to a vertex except those making a K0;vertex ID;tracks number", 10, 0, 10, 15, 0, 15));
@@ -99,12 +99,12 @@ int main(int argc, char **argv){
     outsideprocessing.AddHistogram(TH2D("VertexIdvsPos", "Vertex ID vs vertex list position;position;ID", 10, 0, 10, 10, 0, 10));
     outsideprocessing.AddHistogram(TH2D("VertexPrimvsAll", "Number of primary vertices vs number of all vertices;all;primary", 10, 0, 10, 10, 0, 10));
     //labda
-    outsideprocessing.AddHistogram(TH1D("MppiNarrow", "#Lambda^{0} mass in narrow range;m_{p^{#pm}#pi^{#mp}} [GeV];Number of pairs", lambdaMassWindowNarrowBins, lambdaMassWindowNarrowLow, lambdaMassWindowNarrowHigh));
-    outsideprocessing.AddHistogram(TH1D("MppiWide", "#Lambda^{0} mass in wide range;m_{p^{#pm}#pi^{#mp}} [GeV];Number of pairs", lambdaMassWindowWideBins, lambdaMassWindowWideLow, lambdaMassWindowWideHigh));
-    outsideprocessing.AddHistogram(TH1D("MppiVeryWide", "Pion pair mass in a very wide range;m_{p^{#pm}#pi^{#mp}} [GeV];Number of pairs", 500, 0, 5));
-    outsideprocessing.AddHistogram(TH1D("MppiNarrowWithPidEcut", "#Lambda^{0} mass in narrow range with dE/dx cuts;m_{p^{#pm}#pi^{#mp}} [GeV];Number of pairs", lambdaMassWindowNarrowBins, lambdaMassWindowNarrowLow, lambdaMassWindowNarrowHigh));
-    outsideprocessing.AddHistogram(TH1D("MppiWideWithPidEcut", "#Lambda^{0} mass in wide range with dE/dx cuts;m_{p^{#pm}#pi^{#mp}} [GeV];Number of pairs", lambdaMassWindowWideBins, lambdaMassWindowWideLow, lambdaMassWindowWideHigh));
-    outsideprocessing.AddHistogram(TH1D("MppiVeryWideWithPidEcut", "Pion pair mass in a very wide range with dE/dx cuts;m_{p^{#pm}#pi^{#mp}} [GeV];Number of pairs", 500, 0, 5));
+    outsideprocessing.AddHistogram(TH1D("MppiNarrow", "#Lambda^{0} mass in narrow range;m_{p^{#pm}#pi^{#mp}} [GeV/c^{2}];Number of pairs", lambdaMassWindowNarrowBins, lambdaMassWindowNarrowLow, lambdaMassWindowNarrowHigh));
+    outsideprocessing.AddHistogram(TH1D("MppiWide", "#Lambda^{0} mass in wide range;m_{p^{#pm}#pi^{#mp}} [GeV/c^{2}];Number of pairs", lambdaMassWindowWideBins, lambdaMassWindowWideLow, lambdaMassWindowWideHigh));
+    outsideprocessing.AddHistogram(TH1D("MppiVeryWide", "Pion pair mass in a very wide range;m_{p^{#pm}#pi^{#mp}} [GeV/c^{2}];Number of pairs", 500, 0, 5));
+    outsideprocessing.AddHistogram(TH1D("MppiNarrowWithPidEcut", "#Lambda^{0} mass in narrow range with dE/dx cuts;m_{p^{#pm}#pi^{#mp}} [GeV/c^{2}];Number of pairs", lambdaMassWindowNarrowBins, lambdaMassWindowNarrowLow, lambdaMassWindowNarrowHigh));
+    outsideprocessing.AddHistogram(TH1D("MppiWideWithPidEcut", "#Lambda^{0} mass in wide range with dE/dx cuts;m_{p^{#pm}#pi^{#mp}} [GeV/c^{2}];Number of pairs", lambdaMassWindowWideBins, lambdaMassWindowWideLow, lambdaMassWindowWideHigh));
+    outsideprocessing.AddHistogram(TH1D("MppiVeryWideWithPidEcut", "Pion pair mass in a very wide range with dE/dx cuts;m_{p^{#pm}#pi^{#mp}} [GeV/c^{2}];Number of pairs", 500, 0, 5));
 
     outsideprocessing.AddHistogram(TH1D("etaK0", "K^{0}_{S} events density by #eta;#eta;", 60, -1.5, 1.5));
     outsideprocessing.AddHistogram(TH1D("etapiK0", "#pi from K^{0}_{S} decay density by #eta;#eta;", 60, -1.5, 1.5));
@@ -115,10 +115,10 @@ int main(int argc, char **argv){
     outsideprocessing.AddHistogram(TH1D("phiLambda", "#Lambda^{0} events density by #phi;#phi;", 63, -TMath::Pi(), TMath::Pi()));
     outsideprocessing.AddHistogram(TH1D("phipiLambda", "#pi from #Lambda^{0} decay density by #phi;#phi;", 63, -TMath::Pi(), TMath::Pi()));
 
-    outsideprocessing.AddHistogram(TH1D("MpipiWideMissing", "K^{0}_{S} mass in wide range which doesn't pass the criteria;m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", kaonMassWindowWideBins, kaonMassWindowWideLow, kaonMassWindowWideHigh));
-    outsideprocessing.AddHistogram(TH1D("MppiWideMissing", "#Lambda^{0} mass in wide range which doesn't pass the criteria;m_{p^{#pm}#pi^{#mp}} [GeV];Number of pairs", lambdaMassWindowWideBins, lambdaMassWindowWideLow, lambdaMassWindowWideHigh));
-    outsideprocessing.AddHistogram(TH1D("MpipiWideCheck", "K^{0}_{S} mass in wide range with additional cuts;m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", kaonMassWindowWideBins, kaonMassWindowWideLow, kaonMassWindowWideHigh));
-    outsideprocessing.AddHistogram(TH1D("MppiWideCheck", "#Lambda^{0} mass in wide range with additional cuts;m_{p^{#pm}#pi^{#mp}} [GeV];Number of pairs", lambdaMassWindowWideBins, lambdaMassWindowWideLow, lambdaMassWindowWideHigh));
+    outsideprocessing.AddHistogram(TH1D("MpipiWideMissing", "K^{0}_{S} mass in wide range which doesn't pass the criteria;m_{#pi^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", kaonMassWindowWideBins, kaonMassWindowWideLow, kaonMassWindowWideHigh));
+    outsideprocessing.AddHistogram(TH1D("MppiWideMissing", "#Lambda^{0} mass in wide range which doesn't pass the criteria;m_{p^{#pm}#pi^{#mp}} [GeV/c^{2}];Number of pairs", lambdaMassWindowWideBins, lambdaMassWindowWideLow, lambdaMassWindowWideHigh));
+    outsideprocessing.AddHistogram(TH1D("MpipiWideCheck", "K^{0}_{S} mass in wide range with additional cuts;m_{#pi^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", kaonMassWindowWideBins, kaonMassWindowWideLow, kaonMassWindowWideHigh));
+    outsideprocessing.AddHistogram(TH1D("MppiWideCheck", "#Lambda^{0} mass in wide range with additional cuts;m_{p^{#pm}#pi^{#mp}} [GeV/c^{2}];Number of pairs", lambdaMassWindowWideBins, lambdaMassWindowWideLow, lambdaMassWindowWideHigh));
 
     outsideprocessing.AddHistogram(TH1D("K0dcaDaughtersSignal", "K0dcaDaughtersSignal", 50, 0, 2.5));
     outsideprocessing.AddHistogram(TH1D("K0dcaDaughtersBackground", "K0dcaDaughtersBackground", 50, 0, 2.5));

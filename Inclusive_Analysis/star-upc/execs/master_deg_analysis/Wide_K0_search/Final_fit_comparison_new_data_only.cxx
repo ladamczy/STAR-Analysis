@@ -747,7 +747,7 @@ int main(){
     TH2D *Lambdapt2DHist2 = (TH2D *)anaoutputnewtracks2->Get("Lambdapt2DHist");
     TH2D Lambdapt2DHist = *Lambdapt2DHist1;
     Lambdapt2DHist.Add(Lambdapt2DHist2);
-    Lambdapt2DHist.SetTitle(";m_{p#pi} [GeV];p_{T} [GeV/c]");
+    Lambdapt2DHist.SetTitle(";m_{p#pi} [GeV/c^{2}];p_{T} [GeV/c]");
     c1 = new TCanvas("c1", "c1", 1600, 1000);
     c1->SetMargin(0.10, 0.13, 0.1, 0.05);
     Lambdapt2DHist.Draw("colz");
@@ -765,7 +765,7 @@ int main(){
     gStyle->SetOptFit(1);
     int n = 5;
     TH1D *Lambdapt1DHist = Lambdapt2DHist.ProjectionX("Lambdapt1DHist", n, n);
-    Lambdapt1DHist->SetTitle(";m_{p#pi} [GeV];number of #Lambda^{0}");
+    Lambdapt1DHist->SetTitle(";m_{p#pi} [GeV/c^{2}];number of #Lambda^{0}");
     c1 = new TCanvas("c1", "c1", 1600, 1200);
     c1->SetMargin(0.1, 0.05, 0.1, 0.05);
     //Lambda

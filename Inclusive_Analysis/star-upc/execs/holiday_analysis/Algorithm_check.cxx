@@ -105,11 +105,11 @@ int main(int argc, char** argv)
     const string& outputFolder = argv[2];
 
     //HISTOGRAMS
-    ROOT::TThreadedObject<TH1D> invmasshistbefore = ROOT::TThreadedObject<TH1D>("invmasshistbefore", "Inv. mass of pions before cut;m_{inv} [GeV];events", 100, 0.42, 0.56);
-    ROOT::TThreadedObject<TH1D> invmasshistafter = ROOT::TThreadedObject<TH1D>("invmasshistafter", "Inv. mass of pions after cut;m_{inv} [GeV];events", 100, 0.42, 0.56);
+    ROOT::TThreadedObject<TH1D> invmasshistbefore = ROOT::TThreadedObject<TH1D>("invmasshistbefore", "Inv. mass of pions before cut;m_{inv} [GeV/c^{2}];events", 100, 0.42, 0.56);
+    ROOT::TThreadedObject<TH1D> invmasshistafter = ROOT::TThreadedObject<TH1D>("invmasshistafter", "Inv. mass of pions after cut;m_{inv} [GeV/c^{2}];events", 100, 0.42, 0.56);
 
-    ROOT::TThreadedObject<TH1D> phianglehistbefore = ROOT::TThreadedObject<TH1D>("phianglehistbefore", "Azimuthal angle of K_{0}^{S} before cut;m_{inv} [GeV];events", 100, -3.14159, 3.14159);
-    ROOT::TThreadedObject<TH1D> phianglehistafter = ROOT::TThreadedObject<TH1D>("phianglehistafter", "Azimuthal angle of K_{0}^{S} after cut;m_{inv} [GeV];events", 100, -3.14159, 3.14159);
+    ROOT::TThreadedObject<TH1D> phianglehistbefore = ROOT::TThreadedObject<TH1D>("phianglehistbefore", "Azimuthal angle of K_{0}^{S} before cut;m_{inv} [GeV/c^{2}];events", 100, -3.14159, 3.14159);
+    ROOT::TThreadedObject<TH1D> phianglehistafter = ROOT::TThreadedObject<TH1D>("phianglehistafter", "Azimuthal angle of K_{0}^{S} after cut;m_{inv} [GeV/c^{2}];events", 100, -3.14159, 3.14159);
 
     ROOT::TThreadedObject<TH1D> pipairanglehist = ROOT::TThreadedObject<TH1D>("pipairanglehist", "Angle between pions in detector FoR;#phi angle [rad];events", 30, 0, 3.1416);
 

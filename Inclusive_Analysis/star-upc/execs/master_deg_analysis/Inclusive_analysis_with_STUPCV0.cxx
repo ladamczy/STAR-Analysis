@@ -65,7 +65,7 @@ int main(int argc, char **argv){
 
     //histograms
     ProcessingOutsideLoop outsideprocessing;
-    outsideprocessing.AddHistogram(TH1D("Mpipi", "K^{0}_{S} mass;m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 70, kaonMassWindowPresentationLow, kaonMassWindowPresentationHigh));
+    outsideprocessing.AddHistogram(TH1D("Mpipi", "K^{0}_{S} mass;m_{#pi^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 70, kaonMassWindowPresentationLow, kaonMassWindowPresentationHigh));
     outsideprocessing.AddHistogram(TH1D("DCApipiK0", "DCA between #pi^{#pm} from K0 K^{0}_{S};DCA_{#pi^{+}#pi^{-}-K^{0}_{S}};Number of pairs", 50, 0, 5));
     outsideprocessing.AddHistogram(TH1D("DCApipiPV", "DCA between #pi^{#pm} from vertex when K^{0}_{S} in narrow mass window;DCA_{#pi^{+}#pi^{-}-PV};Number of pairs", 50, 0, 5));
     outsideprocessing.AddHistogram(TH1D("DCAK0PV", "DCA between K^{0}_{S} and vertex;DCA_{#pi^{+}#pi^{-}-K^{0}_{S}};Number of pairs", 50, 0, 5));
@@ -74,9 +74,9 @@ int main(int argc, char **argv){
     outsideprocessing.AddHistogram(TH2D("Log2DProtons", "log#xi_{W} vs log#xi_{E};log#xi_{E};log#xi_{W}", 60, -5, 1, 60, -5, 1));
     outsideprocessing.AddHistogram(TH1D("LogEproton", "log#xi_{E};log#xi_{E};events", 60, -5, 1));
     outsideprocessing.AddHistogram(TH1D("LogWproton", "log#xi_{W};log#xi_{W};events", 60, -5, 1));
-    outsideprocessing.AddHistogram(TH2D("dcaDaughtersvsMass", ";m_{#pi^{+}#pi^{-}} [GeV];dcaDaughters", 70, kaonMassWindowPresentationLow, kaonMassWindowPresentationHigh, 30, 0, 3));
-    outsideprocessing.AddHistogram(TH2D("pointingAngleHypovsMass", ";m_{#pi^{+}#pi^{-}} [GeV];pointingAngleHypo", 70, kaonMassWindowPresentationLow, kaonMassWindowPresentationHigh, 20, -1., 1.));
-    outsideprocessing.AddHistogram(TH2D("DCABeamLinevsMass", ";m_{#pi^{+}#pi^{-}} [GeV];DCABeamLine", 70, kaonMassWindowPresentationLow, kaonMassWindowPresentationHigh, 30, 0, 3));
+    outsideprocessing.AddHistogram(TH2D("dcaDaughtersvsMass", ";m_{#pi^{+}#pi^{-}} [GeV/c^{2}];dcaDaughters", 70, kaonMassWindowPresentationLow, kaonMassWindowPresentationHigh, 30, 0, 3));
+    outsideprocessing.AddHistogram(TH2D("pointingAngleHypovsMass", ";m_{#pi^{+}#pi^{-}} [GeV/c^{2}];pointingAngleHypo", 70, kaonMassWindowPresentationLow, kaonMassWindowPresentationHigh, 20, -1., 1.));
+    outsideprocessing.AddHistogram(TH2D("DCABeamLinevsMass", ";m_{#pi^{+}#pi^{-}} [GeV/c^{2}];DCABeamLine", 70, kaonMassWindowPresentationLow, kaonMassWindowPresentationHigh, 30, 0, 3));
     outsideprocessing.AddHistogram(TH1D("XiEproton", "#xi_{E};#xi_{E};events", 84, -0.05, 1));
     outsideprocessing.AddHistogram(TH1D("XiWproton", "#xi_{W};#xi_{W};events", 84, -0.05, 1));
     outsideprocessing.AddHistogram(TH1D("XiEprotoncloser", "#xi_{E};#xi_{E};events", 400, -0.05, 0.15));
@@ -85,20 +85,20 @@ int main(int argc, char **argv){
     outsideprocessing.AddHistogram(TH1D("vertex_pair_DCABeamLine", "Vertex pair DCABeamLine();DCABeamLine;events", 60, 0, 3));
     outsideprocessing.AddHistogram(TH1D("K0decayLengthHypo", "decayLengthHypo() of K^{0}_{S} pair;length [cm];events", 120, 0, 6));
     outsideprocessing.AddHistogram(TH1D("vertexdecayLengthHypo", "decayLengthHypo() of vertex pair;length [cm];events", 120, 0, 6));
-    outsideprocessing.AddHistogram(TH2D("decayLengthHypovsMass", "decayLengthHypo();m_{#pi^{+}#pi^{-}} [GeV];decayLengthHypo() [cm]", 35, kaonMassWindowPresentationLow, kaonMassWindowPresentationHigh, 30, 0, 6));
+    outsideprocessing.AddHistogram(TH2D("decayLengthHypovsMass", "decayLengthHypo();m_{#pi^{+}#pi^{-}} [GeV/c^{2}];decayLengthHypo() [cm]", 35, kaonMassWindowPresentationLow, kaonMassWindowPresentationHigh, 30, 0, 6));
     outsideprocessing.AddHistogram(TH1D("decayvertexZdifference", "#DeltaZ of K^{0}_{S} and PV decay vertices;#DeltaZ [cm];events", 60, -15, 15));
     outsideprocessing.AddHistogram(TH2D("Xi2DProtons", "#xi_{W} vs #xi_{E};#xi_{E};#xi_{W}", 60, -0.01, 0.05, 60, -0.01, 0.05));
     outsideprocessing.AddHistogram(TH2D("sumTheta2DProtons", "Sum of #theta_{x} and #theta_{y} of protons;#Delta#theta_{x};#Delta#theta_{y}", 100, -1e-2, 1e-2, 100, -1e-2, 1e-2));
     outsideprocessing.AddHistogram(TH2D("sumTheta2DProtonsExact", "Sum of #theta_{x} and #theta_{y} of protons;#Delta#theta_{x};#Delta#theta_{y}", 100, -3e-3, 3e-3, 100, -2e-3, 2e-3));
     outsideprocessing.AddHistogram(TH2D("sump2DProtons", "Sum of p_{x} and p_{y} of protons;#Sigmap_{x};#Sigmap_{y}", 100, -2, 2, 100, -2, 2));
     outsideprocessing.AddHistogram(TH2D("sump2DProtonsExact", "Sum of p_{x} and p_{y} of protons;#Sigmap_{x};#Sigmap_{y}", 80, -0.6, 1., 50, -0.5, 0.5));
-    outsideprocessing.AddHistogram(TH2D("etavsK0Mass", "#eta in function of K^{0}_{S} candidate mass;m_{#pi^{+}#pi^{-}} [GeV];#eta", 70, kaonMassWindowPresentationLow, kaonMassWindowPresentationHigh, 60, -3, 3));
+    outsideprocessing.AddHistogram(TH2D("etavsK0Mass", "#eta in function of K^{0}_{S} candidate mass;m_{#pi^{+}#pi^{-}} [GeV/c^{2}];#eta", 70, kaonMassWindowPresentationLow, kaonMassWindowPresentationHigh, 60, -3, 3));
 
     outsideprocessing.AddHistogram(TH1D("XiEprotoncloserAfterElasticCut", "#xi_{E};#xi_{E};events", 400, -0.05, 0.15));
     outsideprocessing.AddHistogram(TH1D("XiWprotoncloserAfterElasticCut", "#xi_{W};#xi_{W};events", 400, -0.05, 0.15));
-    outsideprocessing.AddHistogram(TH1D("MpipiAfterElasticCut", "K^{0}_{S} mass;m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 70, kaonMassWindowPresentationLow, kaonMassWindowPresentationHigh));
+    outsideprocessing.AddHistogram(TH1D("MpipiAfterElasticCut", "K^{0}_{S} mass;m_{#pi^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 70, kaonMassWindowPresentationLow, kaonMassWindowPresentationHigh));
 
-    outsideprocessing.AddHistogram(TH2D("ArmPodPlot", "Armenteros-Podolanski Plot;#alpha;p_{T} [GeV]", 100, -1, 1, 50, 0, 1));
+    outsideprocessing.AddHistogram(TH2D("ArmPodPlot", "Armenteros-Podolanski Plot;#alpha;p_{T} [GeV/c]", 100, -1, 1, 50, 0, 1));
 
     // int triggers[] = { 570701, 570705, 570711, 590701, 590705, 590708 };
     // outsideprocessing.AddHistogram(TH1D("triggerHist", "Data triggers;Trigger ID;Number of events", 6, 0, 6));
@@ -227,7 +227,7 @@ int main(int argc, char **argv){
             }
 
             //0
-            // TH1D("Mpipibefore", "K^{0}_{S} mass;m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 100, kaonMassWindowWideLow, kaonMassWindowWideHigh));
+            // TH1D("Mpipibefore", "K^{0}_{S} mass;m_{#pi^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 100, kaonMassWindowWideLow, kaonMassWindowWideHigh));
             // TH1D("DCApipiK0", "DCA between #pi^{#pm} from K0 K^{0}_{S};DCA_{#pi^{+}#pi^{-}-K^{0}_{S}};Number of pairs", 50, 0, 5));
             // TH1D("DCApipiPV", "DCA between #pi^{#pm} from vertex K^{0}_{S} (PV) when in narrow mass window;DCA_{#pi^{+}#pi^{-}-PV};Number of pairs", 50, 0, 5));
             // TH1D("DCAK0PV", "DCA between K0 K^{0}_{S} and vertex K^{0}_{S};DCA_{#pi^{+}#pi^{-}-K^{0}_{S}};Number of pairs", 50, 0, 5));
@@ -237,10 +237,10 @@ int main(int argc, char **argv){
             // TH2D("Log2DProtons", "log#xi_{W} vs log#xi_{E};log#xi_{E};log#xi_{W}", 60, -5, 1, 60, -5, 1));
             // TH1D("LogEproton", "log#xi_{E};log#xi_{E};events", 60, -5, 1));
             // TH1D("LogWproton", "log#xi_{W};log#xi_{W};events", 60, -5, 1));
-            // TH2D("dcaDaughtersvsMass", ";m_{#pi^{+}#pi^{-}} [GeV];dcaDaughters", 100, kaonMassWindowWideLow, kaonMassWindowWideHigh, 20, 0, 10));
+            // TH2D("dcaDaughtersvsMass", ";m_{#pi^{+}#pi^{-}} [GeV/c^{2}];dcaDaughters", 100, kaonMassWindowWideLow, kaonMassWindowWideHigh, 20, 0, 10));
             //10
-            // TH2D("pointingAngleHypovsMass", ";m_{#pi^{+}#pi^{-}} [GeV];pointingAngleHypo", 100, kaonMassWindowWideLow, kaonMassWindowWideHigh, 20, -1, 1));
-            // TH2D("DCABeamLinevsMass", ";m_{#pi^{+}#pi^{-}} [GeV];DCABeamLine", 100, kaonMassWindowWideLow, kaonMassWindowWideHigh, 20, 0, 10));
+            // TH2D("pointingAngleHypovsMass", ";m_{#pi^{+}#pi^{-}} [GeV/c^{2}];pointingAngleHypo", 100, kaonMassWindowWideLow, kaonMassWindowWideHigh, 20, -1, 1));
+            // TH2D("DCABeamLinevsMass", ";m_{#pi^{+}#pi^{-}} [GeV/c^{2}];DCABeamLine", 100, kaonMassWindowWideLow, kaonMassWindowWideHigh, 20, 0, 10));
             // TH1D("XiEproton", "#xi_{E};#xi_{E};events", 84, -0.05, 1));
             // TH1D("XiWproton", "#xi_{W};#xi_{W};events", 84, -0.05, 1));
             // TH1D("XiEprotoncloser", "#xi_{E};#xi_{E};events", 40, -0.05, 0.15));
@@ -251,17 +251,17 @@ int main(int argc, char **argv){
             // TH1D("K0decayLengthHypo", "decayLengthHypo() of K^{0}_{S} pair;length [cm];events", 60, 0, 3));
             // TH1D("vertexdecayLengthHypo", "decayLengthHypo() of vertex pair;length [cm];events", 60, 0, 3));
             //20
-            // TH2D("decayLengthHypovsMass", "decayLengthHypo ();m_{#pi^{+}#pi^{-}} [GeV];decayLengthHypo() [cm]", 60, 0, 3, 70, kaonMassWindowPresentationLow, kaonMassWindowPresentationHigh));
+            // TH2D("decayLengthHypovsMass", "decayLengthHypo ();m_{#pi^{+}#pi^{-}} [GeV/c^{2}];decayLengthHypo() [cm]", 60, 0, 3, 70, kaonMassWindowPresentationLow, kaonMassWindowPresentationHigh));
             // TH1D("decayvertexZdifference", "#Delta Z of K^{0}_{S} and PV decay vertices;#Delta Z [cm];events", 200, -100, 100));
             // TH2D("Xi2DProtons", "#xi_{W} vs #xi_{E};#xi_{E};#xi_{W}", 400, -0.05, 0.15, 400, -0.05, 0.15));
             // TH2D("deltaTheta2DProtons", "Difference in #theta_{x} and #theta_{y} of protons;#Delta#theta_{x};#Delta#theta_{y}", 200, -0.2, 0.2, 200, -0.2, 0.2));
             // TH2D("sump2DProtons", "Sum of p_{x} and p_{y} of protons;#Sigmap_{x};#Sigmap_{y}", 100, -1, 1, 100, -1, 1));
             //25
             // TH2D("sump2DProtonsExact", "Sum of p_{x} and p_{y} of protons;#Sigmap_{x};#Sigmap_{y}", 80, -0.6, 1., 50, -0.5, 0.5));
-            // TH2D("etavsK0Mass", "#eta in function of K^{0}_{S} candidate mass;m_{#pi^{+}#pi^{-}} [GeV];#eta", 70, kaonMassWindowPresentationLow, kaonMassWindowPresentationHigh, 60, -3, 3));
+            // TH2D("etavsK0Mass", "#eta in function of K^{0}_{S} candidate mass;m_{#pi^{+}#pi^{-}} [GeV/c^{2}];#eta", 70, kaonMassWindowPresentationLow, kaonMassWindowPresentationHigh, 60, -3, 3));
             // TH1D("XiEprotoncloserAfterElasticCut", "#xi_{E};#xi_{E};events", 400, -0.05, 0.15));
             // TH1D("XiWprotoncloserAfterElasticCut", "#xi_{W};#xi_{W};events", 400, -0.05, 0.15));
-            // TH1D("MpipiAfterElasticCut", "K^{0}_{S} mass;m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 70, kaonMassWindowPresentationLow, kaonMassWindowPresentationHigh));
+            // TH1D("MpipiAfterElasticCut", "K^{0}_{S} mass;m_{#pi^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 70, kaonMassWindowPresentationLow, kaonMassWindowPresentationHigh));
 
 
             insideprocessing.Fill(0, K0_pair->m());

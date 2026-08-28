@@ -106,35 +106,35 @@ int main(int argc, char *argv[]){
     TH1D ParticlesDetected("ParticlesDetected", "ParticlesDetected", 20000, -10000, 10000);
     TH1D ParticlesReconstructedTwoDaughters("ParticlesReconstructedTwoDaughters", "ParticlesReconstructedTwoDaughters", 20000, -10000, 10000);
     TH1D ParticlesReconstructedMultipleDaughters("ParticlesReconstructedMultipleDaughters", "ParticlesReconstructedMultipleDaughters", 20000, -10000, 10000);
-    TH1D MpipiSum("MpipiSum", ";m_{#pi#pi}", 500, 0, 5);
-    TH1D MKKSum("MKKSum", ";m_{KK}", 500, 0, 5);
-    TH1D MKpiSum("MKpiSum", ";m_{K#pi}", 500, 0, 5);
-    TH1D MPIDSum("MPIDSum", ";m_{pair}", 500, 0, 5);
-    TH1D MKKBackgroundPositiveSum("MKKBackgroundPositiveSum", ";m_{KK}", 500, 0, 5);
-    TH1D MKKBackgroundNegativeSum("MKKBackgroundNegativeSum", ";m_{KK}", 500, 0, 5);
+    TH1D MpipiSum("MpipiSum", ";m_{#pi#pi} [GeV/c^{2}]", 500, 0, 5);
+    TH1D MKKSum("MKKSum", ";m_{KK} [GeV/c^{2}]", 500, 0, 5);
+    TH1D MKpiSum("MKpiSum", ";m_{K#pi} [GeV/c^{2}]", 500, 0, 5);
+    TH1D MPIDSum("MPIDSum", ";m_{pair} [GeV/c^{2}]", 500, 0, 5);
+    TH1D MKKBackgroundPositiveSum("MKKBackgroundPositiveSum", ";m_{KK} [GeV/c^{2}]", 500, 0, 5);
+    TH1D MKKBackgroundNegativeSum("MKKBackgroundNegativeSum", ";m_{KK} [GeV/c^{2}]", 500, 0, 5);
     TH1D t0Resonant("t0Resonant", ";t_{0} [ns]", 100, 0, 50);
     TH1D t0Nonresonant("t0Nonresonant", ";t_{0} [ns]", 100, 0, 50);
     TH1D electronMothers("electronMothers", "electronMothers", 20000, -10000, 10000);
     //Detector simulation
     //everything as pion pairs
-    TH1D MpipiNonresonant("MpipiNonresonant", ";m_{#pi#pi}", 500, 0, 5);
-    TH1D MpipiResonant("MpipiResonant", ";m_{#pi#pi}", 500, 0, 5);
+    TH1D MpipiNonresonant("MpipiNonresonant", ";m_{#pi#pi} [GeV/c^{2}]", 500, 0, 5);
+    TH1D MpipiResonant("MpipiResonant", ";m_{#pi#pi} [GeV/c^{2}]", 500, 0, 5);
     TH2D MpipiParticles("MpipiParticles", "", 1, 0, 1, 500, 0, 5);
     //everything as kaon pairs
-    TH1D MKKNonresonant("MKKNonresonant", ";m_{KK}", 500, 0, 5);
-    TH1D MKKResonant("MKKResonant", ";m_{KK}", 500, 0, 5);
+    TH1D MKKNonresonant("MKKNonresonant", ";m_{KK} [GeV/c^{2}]", 500, 0, 5);
+    TH1D MKKResonant("MKKResonant", ";m_{KK} [GeV/c^{2}]", 500, 0, 5);
     TH2D MKKParticles("MKKParticles", "", 1, 0, 1, 500, 0, 5);
     //everything as kaon-pion pairs
-    TH1D MKpiNonresonant("MKpiNonresonant", ";m_{K#pi}", 500, 0, 5);
-    TH1D MKpiResonant("MKpiResonant", ";m_{K#pi}", 500, 0, 5);
+    TH1D MKpiNonresonant("MKpiNonresonant", ";m_{K#pi} [GeV/c^{2}]", 500, 0, 5);
+    TH1D MKpiResonant("MKpiResonant", ";m_{K#pi} [GeV/c^{2}]", 500, 0, 5);
     TH2D MKpiParticles("MKpiParticles", "", 1, 0, 1, 500, 0, 5);
     //the rest
-    TH1D MPIDNonresonant("MPIDNonresonant", ";m_{pair}", 500, 0, 5);
-    TH1D MPIDResonant("MPIDResonant", ";m_{pair}", 500, 0, 5);
-    TH1D MKKBackgroundPositiveNonresonant("MKKBackgroundPositiveNonresonant", ";m_{KK}", 500, 0, 5);
-    TH1D MKKBackgroundPositiveResonant("MKKBackgroundPositiveResonant", ";m_{KK}", 500, 0, 5);
-    TH1D MKKBackgroundNegativeNonresonant("MKKBackgroundNegativeNonresonant", ";m_{KK}", 500, 0, 5);
-    TH1D MKKBackgroundNegativeResonant("MKKBackgroundNegativeResonant", ";m_{KK}", 500, 0, 5);
+    TH1D MPIDNonresonant("MPIDNonresonant", ";m_{pair} [GeV/c^{2}]", 500, 0, 5);
+    TH1D MPIDResonant("MPIDResonant", ";m_{pair} [GeV/c^{2}]", 500, 0, 5);
+    TH1D MKKBackgroundPositiveNonresonant("MKKBackgroundPositiveNonresonant", ";m_{KK} [GeV/c^{2}]", 500, 0, 5);
+    TH1D MKKBackgroundPositiveResonant("MKKBackgroundPositiveResonant", ";m_{KK} [GeV/c^{2}]", 500, 0, 5);
+    TH1D MKKBackgroundNegativeNonresonant("MKKBackgroundNegativeNonresonant", ";m_{KK} [GeV/c^{2}]", 500, 0, 5);
+    TH1D MKKBackgroundNegativeResonant("MKKBackgroundNegativeResonant", ";m_{KK} [GeV/c^{2}]", 500, 0, 5);
     //Useful IDs
     const int K0sPDGid = 310;
     const int K0sbarPDGid = -310;

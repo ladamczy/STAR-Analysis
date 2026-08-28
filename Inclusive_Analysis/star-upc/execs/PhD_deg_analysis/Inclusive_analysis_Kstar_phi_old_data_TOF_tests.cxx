@@ -89,12 +89,12 @@ int main(int argc, char** argv){
     temp.GetXaxis()->SetBinLabel(15, "p#pi+KK+K#pi");
     temp.GetXaxis()->SetBinLabel(16, "All");
     outsideprocessing.AddHistogram(temp);
-    outsideprocessing.AddHistogram(TH1D("MKKNarrowChoice", ";m_{K^{#pm}K^{#pm}} [GeV];Number of pairs", 100, 0.9, 1.7));
-    outsideprocessing.AddHistogram(TH1D("MKpiNarrowChoice", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 25, 0.8, 1.0));
-    outsideprocessing.AddHistogram(TH1D("MppiNarrowChoice", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 75, 0.9, 1.5));
-    outsideprocessing.AddHistogram(TH1D("MpipiChoice", ";m_{#pi^{#pm}#pi^{#mp}} [GeV];Number of pairs", 100, 0., 2.));
-    outsideprocessing.AddHistogram(TH1D("MpipiNoChoice", ";m_{#pi^{#pm}#pi^{#mp}} [GeV];Number of pairs", 100, 0., 2.));
-    outsideprocessing.AddHistogram(TH1D("M2TOFpipiKK", ";m_{TOF}^{2} [GeV^{2}];Number of pairs", 100, -0.25, 0.75));
+    outsideprocessing.AddHistogram(TH1D("MKKNarrowChoice", ";m_{K^{#pm}K^{#pm}} [GeV/c^{2}];Number of pairs", 100, 0.9, 1.7));
+    outsideprocessing.AddHistogram(TH1D("MKpiNarrowChoice", ";m_{K^{#pm}#pi^{#mp}} [GeV/c^{2}];Number of pairs", 25, 0.8, 1.0));
+    outsideprocessing.AddHistogram(TH1D("MppiNarrowChoice", ";m_{K^{#pm}#pi^{#mp}} [GeV/c^{2}];Number of pairs", 75, 0.9, 1.5));
+    outsideprocessing.AddHistogram(TH1D("MpipiChoice", ";m_{#pi^{#pm}#pi^{#mp}} [GeV/c^{2}];Number of pairs", 100, 0., 2.));
+    outsideprocessing.AddHistogram(TH1D("MpipiNoChoice", ";m_{#pi^{#pm}#pi^{#mp}} [GeV/c^{2}];Number of pairs", 100, 0., 2.));
+    outsideprocessing.AddHistogram(TH1D("M2TOFpipiKK", ";m_{TOF}^{2} [GeV^{2}/c^{4}];Number of pairs", 100, -0.25, 0.75));
     outsideprocessing.AddHistogram(TH2D("chi2pipiKK", ";n#sigma_{#pi};n#sigma_{K}", 50, 0, 10, 50, 0, 10));
 
     //processing

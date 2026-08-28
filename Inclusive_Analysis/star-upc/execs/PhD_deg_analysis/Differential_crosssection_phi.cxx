@@ -32,7 +32,7 @@ int main(int argc, char *argv[]){
     //phi
     TH1D newdataphipt;
     phi_differential_crossection_fit(newdataphipt, "Mphipt2DHist");
-    draw_and_save(newdataphipt, "Uncorrected #varphi(1020) yields vs. p_{T};p_{T} [GeV];n_{#varphi(1020)}", "Differential_crossection_phi_pt_new_data.pdf");
+    draw_and_save(newdataphipt, "Uncorrected #varphi(1020) yields vs. p_{T};p_{T} [GeV/c];n_{ #varphi(1020) }", "Differential_crossection_phi_pt_new_data.pdf");
     TH1D newdataphieta;
     phi_differential_crossection_fit(newdataphieta, "Mphieta2DHist");
     draw_and_save(newdataphieta, "Uncorrected #varphi(1020) yields vs.  #eta;#eta;n_{#varphi(1020)}", "Differential_crossection_phi_eta_new_data.pdf", 0.37, 0.2, 0.63, 0.3);

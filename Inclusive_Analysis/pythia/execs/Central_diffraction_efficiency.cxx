@@ -119,12 +119,12 @@ int main(int argc, char* argv[]){
     for(double pT = 0.0; pT<2.51; pT += 0.05){
         pT_efficiency_grid.push_back(pT);
     }
-    TEfficiency efficiencyK0S("efficiencyK0S", "K^{0}_{S} efficiency;eta;p_{T}", eta_efficiency_grid.size()-1, eta_efficiency_grid.data(), pT_efficiency_grid.size()-1, pT_efficiency_grid.data());
-    TEfficiency efficiencyLambda("efficiencyLambda", "#Lambda^{0} efficiency;eta;p_{T}", eta_efficiency_grid.size()-1, eta_efficiency_grid.data(), pT_efficiency_grid.size()-1, pT_efficiency_grid.data());
-    TEfficiency efficiencyLambdabar("efficiencyLambdabar", "#bar{#Lambda}^{0} efficiency;eta;p_{T}", eta_efficiency_grid.size()-1, eta_efficiency_grid.data(), pT_efficiency_grid.size()-1, pT_efficiency_grid.data());
-    TEfficiency efficiencyKstar("efficiencyKstar", "K^{*}(892) efficiency;eta;p_{T}", eta_efficiency_grid.size()-1, eta_efficiency_grid.data(), pT_efficiency_grid.size()-1, pT_efficiency_grid.data());
-    TEfficiency efficiencyKstarbar("efficiencyKstarbar", "#bar{K}^{*}(892) efficiency;eta;p_{T}", eta_efficiency_grid.size()-1, eta_efficiency_grid.data(), pT_efficiency_grid.size()-1, pT_efficiency_grid.data());
-    TEfficiency efficiencyphi("efficiencyphi", "#varphi(1020) efficiency;eta;p_{T}", eta_efficiency_grid.size()-1, eta_efficiency_grid.data(), pT_efficiency_grid.size()-1, pT_efficiency_grid.data());
+    TEfficiency efficiencyK0S("efficiencyK0S", "K^{0}_{S} efficiency;#eta;p_{T} [GeV/c]", eta_efficiency_grid.size()-1, eta_efficiency_grid.data(), pT_efficiency_grid.size()-1, pT_efficiency_grid.data());
+    TEfficiency efficiencyLambda("efficiencyLambda", "#Lambda^{0} efficiency;#eta;p_{T} [GeV/c]", eta_efficiency_grid.size()-1, eta_efficiency_grid.data(), pT_efficiency_grid.size()-1, pT_efficiency_grid.data());
+    TEfficiency efficiencyLambdabar("efficiencyLambdabar", "#bar{#Lambda}^{0} efficiency;#eta;p_{T} [GeV/c]", eta_efficiency_grid.size()-1, eta_efficiency_grid.data(), pT_efficiency_grid.size()-1, pT_efficiency_grid.data());
+    TEfficiency efficiencyKstar("efficiencyKstar", "K^{*}(892) efficiency;#eta;p_{T} [GeV/c]", eta_efficiency_grid.size()-1, eta_efficiency_grid.data(), pT_efficiency_grid.size()-1, pT_efficiency_grid.data());
+    TEfficiency efficiencyKstarbar("efficiencyKstarbar", "#bar{K}^{*}(892) efficiency;#eta;p_{T} [GeV/c]", eta_efficiency_grid.size()-1, eta_efficiency_grid.data(), pT_efficiency_grid.size()-1, pT_efficiency_grid.data());
+    TEfficiency efficiencyphi("efficiencyphi", "#varphi(1020) efficiency;#eta;p_{T} [GeV/c]", eta_efficiency_grid.size()-1, eta_efficiency_grid.data(), pT_efficiency_grid.size()-1, pT_efficiency_grid.data());
     //Useful IDs
     const int K0sPDGid = 310;
     const int K0sbarPDGid = -310;

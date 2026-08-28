@@ -33,20 +33,20 @@ int main(int argc, char *argv[]){
     //K0
     TH1D newdataK0pt;
     K0_differential_crossection_fit(newdataK0pt, "K0pt2DHist");
-    draw_and_save(newdataK0pt, "Uncorrected K^{ 0}_{ S} yields vs. p_{T};p_{T} [GeV];n_{K^{0}_{S}}", "Differential_crossection_K0_pt_new_data.pdf");
+    draw_and_save(newdataK0pt, "Uncorrected K^{ 0}_{ S} yields vs. p_{T};p_{T} [GeV/c];n_{ K^ {0}_{S} }", "Differential_crossection_K0_pt_new_data.pdf");
     TH1D newdataK0eta;
     K0_differential_crossection_fit(newdataK0eta, "K0eta2DHist");
     draw_and_save(newdataK0eta, "Uncorrected K^{ 0}_{ S} yields vs.  #eta;#eta;n_{K^{0}_{S}}", "Differential_crossection_K0_eta_new_data.pdf", 0.37, 0.2, 0.63, 0.3);
     //Lambda
     TH1D newdataLambdapt;
     Lambda_differential_crossection_fit(newdataLambdapt, "Lambdapt2DHist");
-    draw_and_save(newdataLambdapt, "Uncorrected #Lambda^{ 0} yields vs. p_{T};p_{T} [GeV];n_{#Lambda^{0}}", "Differential_crossection_Lambda_pt_new_data.pdf");
+    draw_and_save(newdataLambdapt, "Uncorrected #Lambda^{ 0} yields vs. p_{T};p_{T} [GeV/c];n_{ #Lambda^ {0} }", "Differential_crossection_Lambda_pt_new_data.pdf");
     TH1D newdataLambdaeta;
     Lambda_differential_crossection_fit(newdataLambdaeta, "Lambdaeta2DHist");
     draw_and_save(newdataLambdaeta, "Uncorrected #Lambda^{ 0} yields vs.  #eta;#eta;n_{#Lambda^{0}}", "Differential_crossection_Lambda_eta_new_data.pdf", 0.37, 0.2, 0.63, 0.3);
     TH1D newdataLambdaBarpt;
     Lambda_differential_crossection_fit(newdataLambdaBarpt, "LambdaBarpt2DHist");
-    draw_and_save(newdataLambdaBarpt, "Uncorrected #bar{#Lambda}^{ 0} yields vs. p_{T};p_{T} [GeV];n_{#bar{#Lambda}^{0}}", "Differential_crossection_LambdaBar_pt_new_data.pdf");
+    draw_and_save(newdataLambdaBarpt, "Uncorrected #bar{#Lambda}^{ 0} yields vs. p_{T};p_{T} [GeV/c];n_{ #bar{#Lambda}^ {0} }", "Differential_crossection_LambdaBar_pt_new_data.pdf");
     TH1D newdataLambdaBareta;
     Lambda_differential_crossection_fit(newdataLambdaBareta, "LambdaBareta2DHist");
     draw_and_save(newdataLambdaBareta, "Uncorrected #bar{#Lambda}^{ 0} yields vs.  #eta;#eta;n_{#bar{#Lambda}^{0}}", "Differential_crossection_LambdaBar_eta_new_data.pdf", 0.37, 0.2, 0.63, 0.3);

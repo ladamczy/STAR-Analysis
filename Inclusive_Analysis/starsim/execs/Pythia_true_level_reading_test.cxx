@@ -58,12 +58,12 @@ int main(int argc, char* argv[]){
     //mixing TOF between events proved to be a failure
     //mass histograms with TOF first and mixing event pairs after
     outsideprocessing.AddHistogram(TH1D("Name", "Name of simulated particles;id;Number of particles", 1, 0, 1));
-    outsideprocessing.AddHistogram(TH2D("etapTK0S", "K^{0}_{S} number;eta;p_{T}", 10, -1, 1, 10, 0, 2.5));
-    outsideprocessing.AddHistogram(TH2D("etapTLambda", "#Lambda^{0} number;eta;p_{T}", 10, -1, 1, 10, 0, 2.5));
-    outsideprocessing.AddHistogram(TH2D("etapTLambdabar", "#bar{#Lambda}^{0} number;eta;p_{T}", 10, -1, 1, 10, 0, 2.5));
-    outsideprocessing.AddHistogram(TH2D("etapTKstar", "K^{*}(892) number;eta;p_{T}", 10, -1, 1, 10, 0, 2.5));
-    outsideprocessing.AddHistogram(TH2D("etapTKstarbar", "#bar{K}^{*}(892) number;eta;p_{T}", 10, -1, 1, 10, 0, 2.5));
-    outsideprocessing.AddHistogram(TH2D("etapTphi", "#varphi(1020) number;eta;p_{T}", 10, -1, 1, 10, 0, 2.5));
+    outsideprocessing.AddHistogram(TH2D("etapTK0S", "K^{0}_{S} number;#eta;p_{T} [GeV/c]", 10, -1, 1, 10, 0, 2.5));
+    outsideprocessing.AddHistogram(TH2D("etapTLambda", "#Lambda^{0} number;#eta;p_{T} [GeV/c]", 10, -1, 1, 10, 0, 2.5));
+    outsideprocessing.AddHistogram(TH2D("etapTLambdabar", "#bar{#Lambda}^{0} number;#eta;p_{T} [GeV/c]", 10, -1, 1, 10, 0, 2.5));
+    outsideprocessing.AddHistogram(TH2D("etapTKstar", "K^{*}(892) number;#eta;p_{T} [GeV/c]", 10, -1, 1, 10, 0, 2.5));
+    outsideprocessing.AddHistogram(TH2D("etapTKstarbar", "#bar{K}^{*}(892) number;#eta;p_{T} [GeV/c]", 10, -1, 1, 10, 0, 2.5));
+    outsideprocessing.AddHistogram(TH2D("etapTphi", "#varphi(1020) number;#eta;p_{T} [GeV/c]", 10, -1, 1, 10, 0, 2.5));
 
     //processing
     //defining TreeProcessor

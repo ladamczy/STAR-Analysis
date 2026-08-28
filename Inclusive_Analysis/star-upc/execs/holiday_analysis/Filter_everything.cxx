@@ -177,24 +177,24 @@ int main(int argc, char** argv)
     //DCA from vertex
     ROOT::TThreadedObject<TH1D> DCAHist("DCAHist", ";R [cm];Number of tracks", 200, 0, 4);
     //pseudorapidity & momentum
-    ROOT::TThreadedObject<TH1D> ptHist("ptHist", ";p_{T} [GeV];Number of tracks", 200, 0, 2);
+    ROOT::TThreadedObject<TH1D> ptHist("ptHist", ";p_{T} [GeV/c];Number of tracks", 200, 0, 2);
     ROOT::TThreadedObject<TH1D> etaHist("etaHist", ";#eta;Number of tracks", 100, -2.5, 2.5);
     //particle identification
-    ROOT::TThreadedObject<TH2D> dEdxpqHist("dEdxpqHist", ";pq [GeV];dE/dx [GeV/cm]", 1000, -4, 4, 1000, 0, 4e-5);
+    ROOT::TThreadedObject<TH2D> dEdxpqHist("dEdxpqHist", ";pq [GeV/c];dE/dx [GeV/cm]", 1000, -4, 4, 1000, 0, 4e-5);
     //invariant mass calculation
     //mass histograms
-    ROOT::TThreadedObject<TH1D> MforThesisHist("MforThesisHist", ";m_{inv} [GeV];Number of pairs", 300, 0, 3);
-    ROOT::TThreadedObject<TH1D> MforMatchHist("MforMatchHist", ";m_{inv} [GeV];Number of pairs", 100, 0.42, 0.56);
-    ROOT::TThreadedObject<TH1D> MLambdaforMatchHist("MLambdaforMatchHist", ";m_{inv} [GeV];Number of pairs", 100, 1.06, 1.16);
-    ROOT::TThreadedObject<TH1D> MpipiforThesisHist("MpipiforThesisHist", ";m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 300, 0, 3);
-    ROOT::TThreadedObject<TH1D> MpipiforMatchHist("MpipiforMatchHist", ";m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 100, 0.42, 0.56);
-    ROOT::TThreadedObject<TH1D> MpipiLambdaforMatchHist("MpipiLambdaforMatchHist", ";m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 100, 1.06, 1.16);
-    ROOT::TThreadedObject<TH1D> MppiforThesisHist("MppiforThesisHist", ";m_{p^{#pm}#pi^{#mp}} [GeV];Number of pairs", 300, 0, 3);
-    ROOT::TThreadedObject<TH1D> MppiforMatchHist("MppiforMatchHist", ";m_{p^{#pm}#pi^{#mp}} [GeV];Number of pairs", 100, 0.42, 0.56);
-    ROOT::TThreadedObject<TH1D> MppiLambdaforMatchHist("MppiLambdaforMatchHist", ";m_{p^{#pm}#pi^{#mp}} [GeV];Number of pairs", 100, 1.06, 1.16);
-    ROOT::TThreadedObject<TH1D> MKKforThesisHist("MKKforThesisHist", ";m_{K^{#pm}K^{#mp}} [GeV];Number of pairs", 300, 0, 3);
-    ROOT::TThreadedObject<TH1D> MKKforMatchHist("MKKforMatchHist", ";m_{K^{#pm}K^{#mp}} [GeV];Number of pairs", 100, 0.42, 0.56);
-    ROOT::TThreadedObject<TH1D> MKKLambdaforMatchHist("MKKLambdaforMatchHist", ";m_{K^{#pm}K^{#mp}} [GeV];Number of pairs", 100, 1.06, 1.16);
+    ROOT::TThreadedObject<TH1D> MforThesisHist("MforThesisHist", ";m_{inv} [GeV/c^{2}];Number of pairs", 300, 0, 3);
+    ROOT::TThreadedObject<TH1D> MforMatchHist("MforMatchHist", ";m_{inv} [GeV/c^{2}];Number of pairs", 100, 0.42, 0.56);
+    ROOT::TThreadedObject<TH1D> MLambdaforMatchHist("MLambdaforMatchHist", ";m_{inv} [GeV/c^{2}];Number of pairs", 100, 1.06, 1.16);
+    ROOT::TThreadedObject<TH1D> MpipiforThesisHist("MpipiforThesisHist", ";m_{#pi^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 300, 0, 3);
+    ROOT::TThreadedObject<TH1D> MpipiforMatchHist("MpipiforMatchHist", ";m_{#pi^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 100, 0.42, 0.56);
+    ROOT::TThreadedObject<TH1D> MpipiLambdaforMatchHist("MpipiLambdaforMatchHist", ";m_{#pi^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 100, 1.06, 1.16);
+    ROOT::TThreadedObject<TH1D> MppiforThesisHist("MppiforThesisHist", ";m_{p^{#pm}#pi^{#mp}} [GeV/c^{2}];Number of pairs", 300, 0, 3);
+    ROOT::TThreadedObject<TH1D> MppiforMatchHist("MppiforMatchHist", ";m_{p^{#pm}#pi^{#mp}} [GeV/c^{2}];Number of pairs", 100, 0.42, 0.56);
+    ROOT::TThreadedObject<TH1D> MppiLambdaforMatchHist("MppiLambdaforMatchHist", ";m_{p^{#pm}#pi^{#mp}} [GeV/c^{2}];Number of pairs", 100, 1.06, 1.16);
+    ROOT::TThreadedObject<TH1D> MKKforThesisHist("MKKforThesisHist", ";m_{K^{#pm}K^{#mp}} [GeV/c^{2}];Number of pairs", 300, 0, 3);
+    ROOT::TThreadedObject<TH1D> MKKforMatchHist("MKKforMatchHist", ";m_{K^{#pm}K^{#mp}} [GeV/c^{2}];Number of pairs", 100, 0.42, 0.56);
+    ROOT::TThreadedObject<TH1D> MKKLambdaforMatchHist("MKKLambdaforMatchHist", ";m_{K^{#pm}K^{#mp}} [GeV/c^{2}];Number of pairs", 100, 1.06, 1.16);
 
     //analysis results
     //histogram for measuring event number
@@ -211,8 +211,8 @@ int main(int argc, char** argv)
     events->GetXaxis()->SetBinLabel(10, "#splitline{central tracks}{quality check}");
 
     //additional histograms
-    ROOT::TThreadedObject<TH1D> MppluspiminusforMatchHist("MppluspiminusforMatchHist", ";m_{p^{+}#pi^{-}} [GeV];Number of pairs", 100, 0.42, 0.56);
-    ROOT::TThreadedObject<TH1D> MpminuspiplusforMatchHist("MpminuspiplusforMatchHist", ";m_{p^{-}#pi^{+}} [GeV];Number of pairs", 100, 0.42, 0.56);
+    ROOT::TThreadedObject<TH1D> MppluspiminusforMatchHist("MppluspiminusforMatchHist", ";m_{p^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 100, 0.42, 0.56);
+    ROOT::TThreadedObject<TH1D> MpminuspiplusforMatchHist("MpminuspiplusforMatchHist", ";m_{p^{-}#pi^{+}} [GeV/c^{2}];Number of pairs", 100, 0.42, 0.56);
     ROOT::TThreadedObject<TH1D> phiForEtaHist("phiForEtaHist", ";#phi [rad];Number of tracks", 100, -3.14159, 3.14159);
     ROOT::TThreadedObject<TH1D> phiForKHist("phiForKHist", ";#phi [rad];Number of tracks", 100, -3.14159, 3.14159);
     ROOT::TThreadedObject<TH1D> etaForKHist("etaForKHist", ";#phi [rad];Number of tracks", 100, -2.5, 2.5);

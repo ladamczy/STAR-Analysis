@@ -153,12 +153,12 @@ int main(int argc, char** argv)
     trigEndingFidHist->GetXaxis()->SetBinLabel(5, "590705");
     trigEndingFidHist->GetXaxis()->SetBinLabel(6, "590708");
     //mass histograms
-    ROOT::TThreadedObject<TH1D> MforThesisFidHist("MforThesisFidHist", ";m_{inv} [GeV];", 300, 0, 3);
-    ROOT::TThreadedObject<TH1D> MbcgforThesisFidHist("MbcgforThesisFidHist", ";m_{inv} [GeV];", 300, 0, 3);
-    ROOT::TThreadedObject<TH1D> MforMatchFidHist("MforMatchFidHist", ";m_{inv} [GeV];", 100, 0.42, 0.56);
-    ROOT::TThreadedObject<TH1D> MbcgforMatchFidHist("MbcgforMatchFidHist", ";m_{inv} [GeV];", 100, 0.42, 0.56);
-    ROOT::TThreadedObject<TH1D> MLambdaforMatchFidHist("MLambdaforMatchFidHist", ";m_{inv} [GeV];", 100, 1.06, 1.16);
-    ROOT::TThreadedObject<TH1D> MLambdabcgforMatchFidHist("MLambdabcgforMatchFidHist", ";m_{inv} [GeV];", 100, 1.06, 1.16);
+    ROOT::TThreadedObject<TH1D> MforThesisFidHist("MforThesisFidHist", ";m_{inv} [GeV/c^{2}];", 300, 0, 3);
+    ROOT::TThreadedObject<TH1D> MbcgforThesisFidHist("MbcgforThesisFidHist", ";m_{inv} [GeV/c^{2}];", 300, 0, 3);
+    ROOT::TThreadedObject<TH1D> MforMatchFidHist("MforMatchFidHist", ";m_{inv} [GeV/c^{2}];", 100, 0.42, 0.56);
+    ROOT::TThreadedObject<TH1D> MbcgforMatchFidHist("MbcgforMatchFidHist", ";m_{inv} [GeV/c^{2}];", 100, 0.42, 0.56);
+    ROOT::TThreadedObject<TH1D> MLambdaforMatchFidHist("MLambdaforMatchFidHist", ";m_{inv} [GeV/c^{2}];", 100, 1.06, 1.16);
+    ROOT::TThreadedObject<TH1D> MLambdabcgforMatchFidHist("MLambdabcgforMatchFidHist", ";m_{inv} [GeV/c^{2}];", 100, 1.06, 1.16);
     //Energy before cuts
     ROOT::TThreadedObject<TH1D> EbeforeFidHist("EbeforeFidHist", ";E_{p} [GeV];tracks", 200, 100, 300);
     //Energy after fiducial cuts
@@ -173,15 +173,15 @@ int main(int argc, char** argv)
     ROOT::TThreadedObject<TH1D> verRfinHist("verRfinHist", ";Vertex radial position [cm];events", 100, 0, 0.4);
     ROOT::TThreadedObject<TH1D> verZfinHist("verZfinHist", ";Vertex z position [cm];events", 180, -90, 90);
     //more mass
-    ROOT::TThreadedObject<TH1D> MpipiforThesisHist("MpipiforThesisHist", ";m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 300, 0, 3);
-    ROOT::TThreadedObject<TH1D> MpipiforMatchHist("MpipiforMatchHist", ";m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 100, 0.42, 0.56);
-    ROOT::TThreadedObject<TH1D> MpipiLambdaforMatchHist("MpipiLambdaforMatchHist", ";m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 100, 1.06, 1.16);
-    ROOT::TThreadedObject<TH1D> MppiforThesisHist("MppiforThesisHist", ";m_{p^{#pm}#pi^{#mp}} [GeV];Number of pairs", 300, 0, 3);
-    ROOT::TThreadedObject<TH1D> MppiforMatchHist("MppiforMatchHist", ";m_{p^{#pm}#pi^{#mp}} [GeV];Number of pairs", 100, 0.42, 0.56);
-    ROOT::TThreadedObject<TH1D> MppiLambdaforMatchHist("MppiLambdaforMatchHist", ";m_{p^{#pm}#pi^{#mp}} [GeV];Number of pairs", 100, 1.06, 1.16);
-    ROOT::TThreadedObject<TH1D> MKKforThesisHist("MKKforThesisHist", ";m_{K^{#pm}K^{#mp}} [GeV];Number of pairs", 300, 0, 3);
-    ROOT::TThreadedObject<TH1D> MKKforMatchHist("MKKforMatchHist", ";m_{K^{#pm}K^{#mp}} [GeV];Number of pairs", 100, 0.42, 0.56);
-    ROOT::TThreadedObject<TH1D> MKKLambdaforMatchHist("MKKLambdaforMatchHist", ";m_{K^{#pm}K^{#mp}} [GeV];Number of pairs", 100, 1.06, 1.16);
+    ROOT::TThreadedObject<TH1D> MpipiforThesisHist("MpipiforThesisHist", ";m_{#pi^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 300, 0, 3);
+    ROOT::TThreadedObject<TH1D> MpipiforMatchHist("MpipiforMatchHist", ";m_{#pi^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 100, 0.42, 0.56);
+    ROOT::TThreadedObject<TH1D> MpipiLambdaforMatchHist("MpipiLambdaforMatchHist", ";m_{#pi^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 100, 1.06, 1.16);
+    ROOT::TThreadedObject<TH1D> MppiforThesisHist("MppiforThesisHist", ";m_{p^{#pm}#pi^{#mp}} [GeV/c^{2}];Number of pairs", 300, 0, 3);
+    ROOT::TThreadedObject<TH1D> MppiforMatchHist("MppiforMatchHist", ";m_{p^{#pm}#pi^{#mp}} [GeV/c^{2}];Number of pairs", 100, 0.42, 0.56);
+    ROOT::TThreadedObject<TH1D> MppiLambdaforMatchHist("MppiLambdaforMatchHist", ";m_{p^{#pm}#pi^{#mp}} [GeV/c^{2}];Number of pairs", 100, 1.06, 1.16);
+    ROOT::TThreadedObject<TH1D> MKKforThesisHist("MKKforThesisHist", ";m_{K^{#pm}K^{#mp}} [GeV/c^{2}];Number of pairs", 300, 0, 3);
+    ROOT::TThreadedObject<TH1D> MKKforMatchHist("MKKforMatchHist", ";m_{K^{#pm}K^{#mp}} [GeV/c^{2}];Number of pairs", 100, 0.42, 0.56);
+    ROOT::TThreadedObject<TH1D> MKKLambdaforMatchHist("MKKLambdaforMatchHist", ";m_{K^{#pm}K^{#mp}} [GeV/c^{2}];Number of pairs", 100, 1.06, 1.16);
 
     // Define the function that will process a subrange of the tree.
     // The function must receive only one parameter, a TTreeReader,

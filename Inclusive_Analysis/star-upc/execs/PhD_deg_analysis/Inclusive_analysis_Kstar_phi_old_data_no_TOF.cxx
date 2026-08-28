@@ -57,40 +57,40 @@ int main(int argc, char** argv){
     int n_etaBins = 10;
     double etaBins[] = { -1., -0.8, -0.6, -0.4, -0.2, 0., 0.2, 0.4, 0.6, 0.8, 1.0 };
     //phi, Kstar, Lambda, K0S
-    outsideprocessing.AddHistogram(TH1D("MKKWide", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 500, 0.0, 5.0));
-    outsideprocessing.AddHistogram(TH1D("MKKWidedEdx", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 500, 0.0, 5.0));
-    outsideprocessing.AddHistogram(TH1D("MKKNarrow", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 100, 0.9, 1.2));
-    outsideprocessing.AddHistogram(TH1D("MKKNarrowdEdx", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 100, 0.9, 1.2));
-    outsideprocessing.AddHistogram(TH1D("MKpiWide", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 500, 0.0, 5.0));
-    outsideprocessing.AddHistogram(TH1D("MKpiWidedEdx", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 500, 0.0, 5.0));
-    outsideprocessing.AddHistogram(TH1D("MKpiNarrow", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 100, 0.8, 1.0));
-    outsideprocessing.AddHistogram(TH1D("MKpiNarrowdEdx", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 100, 0.8, 1.0));
-    outsideprocessing.AddHistogram(TH1D("MppiWide", ";m_{p^{#pm}#pi^{#mp}} [GeV];Number of pairs", 500, 0.0, 5.0));
-    outsideprocessing.AddHistogram(TH1D("MppiWidedEdx", ";m_{p^{#pm}#pi^{#mp}} [GeV];Number of pairs", 500, 0.0, 5.0));
-    outsideprocessing.AddHistogram(TH1D("MppiNarrow", ";m_{p^{#pm}#pi^{#mp}} [GeV];Number of pairs", 100, 0.9, 1.3));
-    outsideprocessing.AddHistogram(TH1D("MppiNarrowdEdx", ";m_{p^{#pm}#pi^{#mp}} [GeV];Number of pairs", 100, 0.9, 1.3));
-    outsideprocessing.AddHistogram(TH1D("MpipiWide", ";m_{#pi^{#pm}#pi^{#mp}} [GeV];Number of pairs", 500, 0.0, 5.0));
-    outsideprocessing.AddHistogram(TH1D("MpipiWidedEdx", ";m_{#pi^{#pm}#pi^{#mp}} [GeV];Number of pairs", 500, 0.0, 5.0));
-    outsideprocessing.AddHistogram(TH1D("MpipiNarrow", ";m_{#pi^{#pm}#pi^{#mp}} [GeV];Number of pairs", 100, 0.4, 0.6));
-    outsideprocessing.AddHistogram(TH1D("MpipiNarrowdEdx", ";m_{#pi^{#pm}#pi^{#mp}} [GeV];Number of pairs", 100, 0.4, 0.6));
-    outsideprocessing.AddHistogram(TH1D("MKKWideNoVeto", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 500, 0.0, 5.0));
-    outsideprocessing.AddHistogram(TH1D("MKKWidedEdxNoVeto", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 500, 0.0, 5.0));
-    outsideprocessing.AddHistogram(TH1D("MKKNarrowNoVeto", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 100, 0.9, 1.2));
-    outsideprocessing.AddHistogram(TH1D("MKKNarrowdEdxNoVeto", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 100, 0.9, 1.2));
-    outsideprocessing.AddHistogram(TH1D("MKpiWideNoVeto", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 500, 0.0, 5.0));
-    outsideprocessing.AddHistogram(TH1D("MKpiWidedEdxNoVeto", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 500, 0.0, 5.0));
-    outsideprocessing.AddHistogram(TH1D("MKpiNarrowNoVeto", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 100, 0.8, 1.0));
-    outsideprocessing.AddHistogram(TH1D("MKpiNarrowdEdxNoVeto", ";m_{K^{#pm}#pi^{#mp}} [GeV];Number of pairs", 100, 0.8, 1.0));
+    outsideprocessing.AddHistogram(TH1D("MKKWide", ";m_{K^{+}K^{-}} [GeV/c^{2}];Number of pairs", 500, 0.0, 5.0));
+    outsideprocessing.AddHistogram(TH1D("MKKWidedEdx", ";m_{K^{+}K^{-}} [GeV/c^{2}];Number of pairs", 500, 0.0, 5.0));
+    outsideprocessing.AddHistogram(TH1D("MKKNarrow", ";m_{K^{+}K^{-}} [GeV/c^{2}];Number of pairs", 100, 0.9, 1.2));
+    outsideprocessing.AddHistogram(TH1D("MKKNarrowdEdx", ";m_{K^{+}K^{-}} [GeV/c^{2}];Number of pairs", 100, 0.9, 1.2));
+    outsideprocessing.AddHistogram(TH1D("MKpiWide", ";m_{K^{#pm}#pi^{#mp}} [GeV/c^{2}];Number of pairs", 500, 0.0, 5.0));
+    outsideprocessing.AddHistogram(TH1D("MKpiWidedEdx", ";m_{K^{#pm}#pi^{#mp}} [GeV/c^{2}];Number of pairs", 500, 0.0, 5.0));
+    outsideprocessing.AddHistogram(TH1D("MKpiNarrow", ";m_{K^{#pm}#pi^{#mp}} [GeV/c^{2}];Number of pairs", 100, 0.8, 1.0));
+    outsideprocessing.AddHistogram(TH1D("MKpiNarrowdEdx", ";m_{K^{#pm}#pi^{#mp}} [GeV/c^{2}];Number of pairs", 100, 0.8, 1.0));
+    outsideprocessing.AddHistogram(TH1D("MppiWide", ";m_{p^{#pm}#pi^{#mp}} [GeV/c^{2}];Number of pairs", 500, 0.0, 5.0));
+    outsideprocessing.AddHistogram(TH1D("MppiWidedEdx", ";m_{p^{#pm}#pi^{#mp}} [GeV/c^{2}];Number of pairs", 500, 0.0, 5.0));
+    outsideprocessing.AddHistogram(TH1D("MppiNarrow", ";m_{p^{#pm}#pi^{#mp}} [GeV/c^{2}];Number of pairs", 100, 0.9, 1.3));
+    outsideprocessing.AddHistogram(TH1D("MppiNarrowdEdx", ";m_{p^{#pm}#pi^{#mp}} [GeV/c^{2}];Number of pairs", 100, 0.9, 1.3));
+    outsideprocessing.AddHistogram(TH1D("MpipiWide", ";m_{#pi^{#pm}#pi^{#mp}} [GeV/c^{2}];Number of pairs", 500, 0.0, 5.0));
+    outsideprocessing.AddHistogram(TH1D("MpipiWidedEdx", ";m_{#pi^{#pm}#pi^{#mp}} [GeV/c^{2}];Number of pairs", 500, 0.0, 5.0));
+    outsideprocessing.AddHistogram(TH1D("MpipiNarrow", ";m_{#pi^{#pm}#pi^{#mp}} [GeV/c^{2}];Number of pairs", 100, 0.4, 0.6));
+    outsideprocessing.AddHistogram(TH1D("MpipiNarrowdEdx", ";m_{#pi^{#pm}#pi^{#mp}} [GeV/c^{2}];Number of pairs", 100, 0.4, 0.6));
+    outsideprocessing.AddHistogram(TH1D("MKKWideNoVeto", ";m_{K^{+}K^{-}} [GeV/c^{2}];Number of pairs", 500, 0.0, 5.0));
+    outsideprocessing.AddHistogram(TH1D("MKKWidedEdxNoVeto", ";m_{K^{+}K^{-}} [GeV/c^{2}];Number of pairs", 500, 0.0, 5.0));
+    outsideprocessing.AddHistogram(TH1D("MKKNarrowNoVeto", ";m_{K^{+}K^{-}} [GeV/c^{2}];Number of pairs", 100, 0.9, 1.2));
+    outsideprocessing.AddHistogram(TH1D("MKKNarrowdEdxNoVeto", ";m_{K^{+}K^{-}} [GeV/c^{2}];Number of pairs", 100, 0.9, 1.2));
+    outsideprocessing.AddHistogram(TH1D("MKpiWideNoVeto", ";m_{K^{#pm}#pi^{#mp}} [GeV/c^{2}];Number of pairs", 500, 0.0, 5.0));
+    outsideprocessing.AddHistogram(TH1D("MKpiWidedEdxNoVeto", ";m_{K^{#pm}#pi^{#mp}} [GeV/c^{2}];Number of pairs", 500, 0.0, 5.0));
+    outsideprocessing.AddHistogram(TH1D("MKpiNarrowNoVeto", ";m_{K^{#pm}#pi^{#mp}} [GeV/c^{2}];Number of pairs", 100, 0.8, 1.0));
+    outsideprocessing.AddHistogram(TH1D("MKpiNarrowdEdxNoVeto", ";m_{K^{#pm}#pi^{#mp}} [GeV/c^{2}];Number of pairs", 100, 0.8, 1.0));
 
     //background
-    outsideprocessing.AddHistogram(TH1D("MKKWideBackground", ";m_{K^{#pm}K^{#pm}} [GeV];Number of pairs", 500, 0.0, 5.0));
-    outsideprocessing.AddHistogram(TH1D("MKKWidedEdxBackground", ";m_{K^{#pm}K^{#pm}} [GeV];Number of pairs", 500, 0.0, 5.0));
-    outsideprocessing.AddHistogram(TH1D("MKKNarrowBackground", ";m_{K^{#pm}K^{#pm}} [GeV];Number of pairs", 100, 0.9, 1.2));
-    outsideprocessing.AddHistogram(TH1D("MKKNarrowdEdxBackground", ";m_{K^{#pm}K^{#pm}} [GeV];Number of pairs", 100, 0.9, 1.2));
-    outsideprocessing.AddHistogram(TH1D("MKpiWideBackground", ";m_{K^{#pm}#pi^{#pm}} [GeV];Number of pairs", 500, 0.0, 5.0));
-    outsideprocessing.AddHistogram(TH1D("MKpiWidedEdxBackground", ";m_{K^{#pm}#pi^{#pm}} [GeV];Number of pairs", 500, 0.0, 5.0));
-    outsideprocessing.AddHistogram(TH1D("MKpiNarrowBackground", ";m_{K^{#pm}#pi^{#pm}} [GeV];Number of pairs", 100, 0.8, 1.0));
-    outsideprocessing.AddHistogram(TH1D("MKpiNarrowdEdxBackground", ";m_{K^{#pm}#pi^{#pm}} [GeV];Number of pairs", 100, 0.8, 1.0));
+    outsideprocessing.AddHistogram(TH1D("MKKWideBackground", ";m_{K^{#pm}K^{#pm}} [GeV/c^{2}];Number of pairs", 500, 0.0, 5.0));
+    outsideprocessing.AddHistogram(TH1D("MKKWidedEdxBackground", ";m_{K^{#pm}K^{#pm}} [GeV/c^{2}];Number of pairs", 500, 0.0, 5.0));
+    outsideprocessing.AddHistogram(TH1D("MKKNarrowBackground", ";m_{K^{#pm}K^{#pm}} [GeV/c^{2}];Number of pairs", 100, 0.9, 1.2));
+    outsideprocessing.AddHistogram(TH1D("MKKNarrowdEdxBackground", ";m_{K^{#pm}K^{#pm}} [GeV/c^{2}];Number of pairs", 100, 0.9, 1.2));
+    outsideprocessing.AddHistogram(TH1D("MKpiWideBackground", ";m_{K^{#pm}#pi^{#pm}} [GeV/c^{2}];Number of pairs", 500, 0.0, 5.0));
+    outsideprocessing.AddHistogram(TH1D("MKpiWidedEdxBackground", ";m_{K^{#pm}#pi^{#pm}} [GeV/c^{2}];Number of pairs", 500, 0.0, 5.0));
+    outsideprocessing.AddHistogram(TH1D("MKpiNarrowBackground", ";m_{K^{#pm}#pi^{#pm}} [GeV/c^{2}];Number of pairs", 100, 0.8, 1.0));
+    outsideprocessing.AddHistogram(TH1D("MKpiNarrowdEdxBackground", ";m_{K^{#pm}#pi^{#pm}} [GeV/c^{2}];Number of pairs", 100, 0.8, 1.0));
     //phi(1020) histograms
     outsideprocessing.AddHistogram(TH2D("Mphipt2DHist", "Mphipt2DHist", 50, 0.9, 1.1, n_ptBins, ptBins));
     outsideprocessing.AddHistogram(TH2D("Mphieta2DHist", "Mphieta2DHist", 50, 0.9, 1.1, n_etaBins, etaBins));
@@ -101,7 +101,7 @@ int main(int argc, char** argv){
 
     outsideprocessing.AddHistogram(TH1D("MissingpTtests", "MissingpT", 100, 0., 1.));
     outsideprocessing.AddHistogram(TH1D("MissingpZ", "MissingpZ", 100, -5, 5.));
-    outsideprocessing.AddHistogram(TH1D("MKKExtraNarrowNoVeto", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 140, 0.98, 1.05));
+    outsideprocessing.AddHistogram(TH1D("MKKExtraNarrowNoVeto", ";m_{K^{+}K^{-}} [GeV/c^{2}];Number of pairs", 140, 0.98, 1.05));
     outsideprocessing.AddHistogram(TH2D("xi", ";#xi_{E};#xi_{W}", 150, -0.05, 0.25, 150, -0.05, 0.25));
 
     //processing

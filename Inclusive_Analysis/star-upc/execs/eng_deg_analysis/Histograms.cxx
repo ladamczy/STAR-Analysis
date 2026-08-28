@@ -167,13 +167,13 @@ int main(int argc, char** argv)
     ROOT::TThreadedObject<TH2D> pxpylackmoreprecHist("pxpylackmoreprecHist", "Sum of transverse momenta of all produced particles, by axis around (0,0), very precise", 600, -0.3, 0.3, 600, -0.3, 0.3);
 
     //histograms, with wide range, UPC
-    ROOT::TThreadedObject<TH1D> MHist("MHist", "m_{inv} of reconstructed kaon candidates", 250000, 0, 50);
-    ROOT::TThreadedObject<TH1D> MbcgHist("MbcgHist", "Background m_{inv} from pairs of particles", 250000, 0, 50);
+    ROOT::TThreadedObject<TH1D> MHist("MHist", "m_{inv} of reconstructed kaon candidates;m [GeV/c^{2}]", 250000, 0, 50);
+    ROOT::TThreadedObject<TH1D> MbcgHist("MbcgHist", "Background m_{inv} from pairs of particles;m [GeV/c^{2}]", 250000, 0, 50);
     ROOT::TThreadedObject<TH1D> MforThesisHist("MforThesisHist", "m_{inv} of reconstructed kaon candidates;m [GeV/c^{2}]", 3000, 0, 3);
     ROOT::TThreadedObject<TH1D> MbcgforThesisHist("MbcgforThesisHist", "Background m_{inv};m [GeV/c^{2}", 3000, 0, 3);
     ROOT::TThreadedObject<TH1D> MforMatchHist("MforMatchHist", "m_{inv} of reconstructed kaon candidates;m [GeV/c^{2}]", 300, 0.46, 0.52);
     ROOT::TThreadedObject<TH1D> MbcgforMatchHist("MbcgforMatchHist", "Background m_{inv};m [GeV/c^{2}", 300, 0.46, 0.52);
-    ROOT::TThreadedObject<TH1D> MrawHist("MrawHist", "m_{inv} of detected particles", 250000, 0, 2500);
+    ROOT::TThreadedObject<TH1D> MrawHist("MrawHist", "m_{inv} of detected particles;m [GeV/c^{2}]", 250000, 0, 2500);
     ROOT::TThreadedObject<TH1D> NparHist("NparHist", "Number of detected particles", 3, 0, 3);
     NparHist->GetXaxis()->SetBinLabel(1, "positive");
     NparHist->GetXaxis()->SetBinLabel(2, "all");
@@ -192,16 +192,16 @@ int main(int argc, char** argv)
     ROOT::TThreadedObject<TH1D> TOFtimeHist("TOFtimeHist", "Time given by TOF detector", 55000, 0, 55000);
     ROOT::TThreadedObject<TH1D> TOFpathHist("TOFpathHist", "Path length given by TOF detector", 4000, 200, 600);
     ROOT::TThreadedObject<TH1D> TOFvelHist("TOFvelHist", "Velocity given by TOF detector", 30000, 0, 3e8);
-    ROOT::TThreadedObject<TH2D> m2TOFpqHist("m2TOFpqHist", "m_{TOF}^{2} vs pq;pq;m^{2}", 1000, -2.5, 2.5, 1000, 0, 2500);
-    ROOT::TThreadedObject<TH2D> m2TOFpqprecHist("m2TOFpqprecHist", "m_{TOF}^{2} vs pq for small pq values;pq;m^{2}", 1000, -2.5, 2.5, 1000, 0, 4);
+    ROOT::TThreadedObject<TH2D> m2TOFpqHist("m2TOFpqHist", "m_{TOF}^{2} vs pq;pq [GeV/c];m^{2} [GeV^{2}/c^{4}]", 1000, -2.5, 2.5, 1000, 0, 2500);
+    ROOT::TThreadedObject<TH2D> m2TOFpqprecHist("m2TOFpqprecHist", "m_{TOF}^{2} vs pq for small pq values;pq [GeV/c];m^{2} [GeV^{2}/c^{4}]", 1000, -2.5, 2.5, 1000, 0, 4);
 
-    ROOT::TThreadedObject<TH2D> m2TOFpathHist("m2TOFpathHist", "m_{TOF}^{2} vs TOF path lenght;L;m^{2}", 1000, 200, 600, 1000, 0, 50);
-    ROOT::TThreadedObject<TH2D> m2TOFtimeHist("m2TOFtimeHist", "m_{TOF}^{2} vs TOF flight time;t;m^{2}", 550, 0, 55000, 1000, 0, 50);
+    ROOT::TThreadedObject<TH2D> m2TOFpathHist("m2TOFpathHist", "m_{TOF}^{2} vs TOF path lenght;L;m^{2} [GeV^{2}/c^{4}]", 1000, 200, 600, 1000, 0, 50);
+    ROOT::TThreadedObject<TH2D> m2TOFtimeHist("m2TOFtimeHist", "m_{TOF}^{2} vs TOF flight time;t;m^{2} [GeV^{2}/c^{4}]", 550, 0, 55000, 1000, 0, 50);
     ROOT::TThreadedObject<TH2D> TOFpathtimeHist("TOFpathtimeHist", "TOF path lenght vs TOF flight time;t;L", 550, 0, 55000, 1000, 200, 600);
     ROOT::TThreadedObject<TH2D> pTOFtimeHist("pTOFtimeHist", "momentum vs TOF flight time;t;p", 550, 0, 55000, 1000, 0, 1.5);
     ROOT::TThreadedObject<TH2D> pTOFpathHist("pTOFpathHist", "momentum vs TOF path lenght;L;p", 1000, 200, 600, 1000, 0, 1.5);
     
-    ROOT::TThreadedObject<TH2D> dEdxpqHist("dEdxpqHist", "dE/dx vs pq;pq;dE/dx", 1000, -10, 10, 1000, 0, 4e-5);
+    ROOT::TThreadedObject<TH2D> dEdxpqHist("dEdxpqHist", "dE/dx vs pq;pq [GeV/c];dE/dx [GeV/cm]", 1000, -10, 10, 1000, 0, 4e-5);
     ROOT::TThreadedObject<TH1I> NverHist("NverHist", "Number of vertices", 8, 0, 8);
     ROOT::TThreadedObject<TH1I> NprimverHist("NprimverHist", "Number of primary vertices", 8, 0, 8);
     ROOT::TThreadedObject<TH1D> NTOFHist("NTOFHist", "Number of detected particles with and without TOF tag", 2, 0, 2);

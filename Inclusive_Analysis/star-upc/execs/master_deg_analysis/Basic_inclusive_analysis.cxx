@@ -40,7 +40,7 @@ int main(int argc, char **argv){
 
     //histograms
     ProcessingOutsideLoop outsideprocessing;
-    outsideprocessing.AddHistogram(TH1D("MpipiforMatchHist", "K^{0}_{S} mass;m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 100, 0.42, 0.56));
+    outsideprocessing.AddHistogram(TH1D("MpipiforMatchHist", "K^{0}_{S} mass;m_{#pi^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 100, 0.42, 0.56));
     int triggers[] = { 570701, 570705, 570711, 590701, 590705, 590708 };
     outsideprocessing.AddHistogram(TH1D("triggerHist", "Data triggers;Trigger ID;Number of events", 6, 0, 6));
     for(int i = 0;i<6;i++){

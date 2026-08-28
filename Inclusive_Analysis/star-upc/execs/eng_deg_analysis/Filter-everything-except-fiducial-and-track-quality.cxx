@@ -180,7 +180,7 @@ int main(int argc, char** argv)
     ROOT::TThreadedObject<TH1D> DCARHist("DCARHist", ";R [cm];tracks", 160, 0, 3.2);
     ROOT::TThreadedObject<TH1D> DCAZHist("DCAZHist", ";z [cm];tracks", 160, -4, 4);
     //pt and eta
-    ROOT::TThreadedObject<TH1D> ptHist("ptHist", ";p_{T} [GeV];tracks", 100, 0, 1);
+    ROOT::TThreadedObject<TH1D> ptHist("ptHist", ";p_{T} [GeV/c];tracks", 100, 0, 1);
     ROOT::TThreadedObject<TH1D> etaHist("etaHist", ";#eta;tracks", 100, -2.5, 2.5);
     //trigger histograms
     ROOT::TThreadedObject<TH1D> trigBeginningHist("trigBeginningHist", ";;events", 6, 0, 6);
@@ -198,10 +198,10 @@ int main(int argc, char** argv)
     trigEndingHist->GetXaxis()->SetBinLabel(5, "590705");
     trigEndingHist->GetXaxis()->SetBinLabel(6, "590708");
     //mass histograms
-    ROOT::TThreadedObject<TH1D> MforThesisHist("MforThesisHist", ";m_{inv} [GeV];", 300, 0, 3);
-    ROOT::TThreadedObject<TH1D> MbcgforThesisHist("MbcgforThesisHist", ";m_{inv} [GeV];", 300, 0, 3);
-    ROOT::TThreadedObject<TH1D> MforMatchHist("MforMatchHist", ";m_{inv} [GeV];", 100, 0.42, 0.56);
-    ROOT::TThreadedObject<TH1D> MbcgforMatchHist("MbcgforMatchHist", ";m_{inv} [GeV];", 100, 0.42, 0.56);
+    ROOT::TThreadedObject<TH1D> MforThesisHist("MforThesisHist", ";m_{inv} [GeV/c^{2}];", 300, 0, 3);
+    ROOT::TThreadedObject<TH1D> MbcgforThesisHist("MbcgforThesisHist", ";m_{inv} [GeV/c^{2}];", 300, 0, 3);
+    ROOT::TThreadedObject<TH1D> MforMatchHist("MforMatchHist", ";m_{inv} [GeV/c^{2}];", 100, 0.42, 0.56);
+    ROOT::TThreadedObject<TH1D> MbcgforMatchHist("MbcgforMatchHist", ";m_{inv} [GeV/c^{2}];", 100, 0.42, 0.56);
     //DCAR, DCAZ and deltaDCAZ for pions that create K0
     ROOT::TThreadedObject<TH1D> pionDCARHist("pionDCARHist", ";R [cm];tracks", 160, 0, 1.5);
     ROOT::TThreadedObject<TH1D> pionDCAZHist("pionDCAZHist", ";z [cm];tracks", 160, -1, 1);

@@ -153,10 +153,10 @@ int main(int argc, char** argv)
     trigEndingFidHist->GetXaxis()->SetBinLabel(5, "590705");
     trigEndingFidHist->GetXaxis()->SetBinLabel(6, "590708");
     //mass histograms
-    ROOT::TThreadedObject<TH1D> MforThesisFidHist("MforThesisFidHist", ";m_{inv} [GeV];", 300, 0, 3);
-    ROOT::TThreadedObject<TH1D> MbcgforThesisFidHist("MbcgforThesisFidHist", ";m_{inv} [GeV];", 300, 0, 3);
-    ROOT::TThreadedObject<TH1D> MforMatchFidHist("MforMatchFidHist", ";m_{inv} [GeV];", 100, 0.42, 0.56);
-    ROOT::TThreadedObject<TH1D> MbcgforMatchFidHist("MbcgforMatchFidHist", ";m_{inv} [GeV];", 100, 0.42, 0.56);
+    ROOT::TThreadedObject<TH1D> MforThesisFidHist("MforThesisFidHist", ";m_{inv} [GeV/c^{2}];", 300, 0, 3);
+    ROOT::TThreadedObject<TH1D> MbcgforThesisFidHist("MbcgforThesisFidHist", ";m_{inv} [GeV/c^{2}];", 300, 0, 3);
+    ROOT::TThreadedObject<TH1D> MforMatchFidHist("MforMatchFidHist", ";m_{inv} [GeV/c^{2}];", 100, 0.42, 0.56);
+    ROOT::TThreadedObject<TH1D> MbcgforMatchFidHist("MbcgforMatchFidHist", ";m_{inv} [GeV/c^{2}];", 100, 0.42, 0.56);
     //Energy before cuts
     ROOT::TThreadedObject<TH1D> EbeforeFidHist("EbeforeFidHist", ";E_{p} [GeV];", 200, 100, 300);
     //Energy after fiducial cuts

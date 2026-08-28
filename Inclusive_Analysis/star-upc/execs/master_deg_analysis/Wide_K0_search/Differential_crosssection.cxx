@@ -32,7 +32,7 @@ int main(int argc, char *argv[]){
     //K0
     TH1D olddataK0pt, oldtracksK0pt, newdataK0pt;
     K0_differential_crossection_fit(olddataK0pt, oldtracksK0pt, newdataK0pt, "K0pt2DHist");
-    draw_and_save(olddataK0pt, oldtracksK0pt, newdataK0pt, "Differential crossection for K^{ 0}_{ S} with respect to p_{T};p_{T} [GeV];n_{K^{0}_{S}}", "Differential_crossection_K0_pt.pdf");
+    draw_and_save(olddataK0pt, oldtracksK0pt, newdataK0pt, "Differential crossection for K^{ 0}_{ S} with respect to p_{T};p_{T} [GeV/c];n_{ K^ {0}_{S} }", "Differential_crossection_K0_pt.pdf");
     TH1D olddataK0eta, oldtracksK0eta, newdataK0eta;
     K0_differential_crossection_fit(olddataK0eta, oldtracksK0eta, newdataK0eta, "K0eta2DHist");
     draw_and_save(olddataK0eta, oldtracksK0eta, newdataK0eta, "Differential crossection for K^{ 0}_{ S} with respect to #eta;#eta;n_{K^{0}_{S}}", "Differential_crossection_K0_eta.pdf");
@@ -45,7 +45,7 @@ int main(int argc, char *argv[]){
     //Lambda
     TH1D olddataLambdapt, oldtracksLambdapt, newdataLambdapt;
     Lambda_differential_crossection_fit(olddataLambdapt, oldtracksLambdapt, newdataLambdapt, "Lambdapt2DHist");
-    draw_and_save(olddataLambdapt, oldtracksLambdapt, newdataLambdapt, "Differential crossection for #Lambda^{ 0} with respect to p_{T};p_{T} [GeV];n_{#Lambda^{0}}", "Differential_crossection_Lambda_pt.pdf");
+    draw_and_save(olddataLambdapt, oldtracksLambdapt, newdataLambdapt, "Differential crossection for #Lambda^{ 0} with respect to p_{T};p_{T} [GeV/c];n_{ #Lambda^ {0} }", "Differential_crossection_Lambda_pt.pdf");
     TH1D olddataLambdaeta, oldtracksLambdaeta, newdataLambdaeta;
     Lambda_differential_crossection_fit(olddataLambdaeta, oldtracksLambdaeta, newdataLambdaeta, "Lambdaeta2DHist");
     draw_and_save(olddataLambdaeta, oldtracksLambdaeta, newdataLambdaeta, "Differential crossection for #Lambda^{ 0} with respect to #eta;#eta;n_{#Lambda^{0}}", "Differential_crossection_Lambda_eta.pdf");

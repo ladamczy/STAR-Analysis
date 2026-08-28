@@ -56,17 +56,17 @@ int main(int argc, char** argv){
     //histograms
     ProcessingOutsideLoop outsideprocessing;
     //other
-    outsideprocessing.AddHistogram(TH1D("MissingpT", ";p_{T} [GeV];events", 100, 0., 1.));
+    outsideprocessing.AddHistogram(TH1D("MissingpT", ";p_{T} [GeV/c];events", 100, 0., 1.));
     outsideprocessing.AddHistogram(TH1D("MissingpTWide", "MissingpT", 250, 0., 5.));
-    outsideprocessing.AddHistogram(TH1D("MKKExtraNarrowNoVeto", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 140, 0.98, 1.05));
-    outsideprocessing.AddHistogram(TH1D("MKKWideNoVeto", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 500, 0., 5.));
-    outsideprocessing.AddHistogram(TH1D("MpipiExtraNarrowNoVeto", ";m_{#pi^{+}#pi^{-}} [GeV];Number of pairs", 100, 0.3, 0.7));
-    outsideprocessing.AddHistogram(TH1D("MKKLikeInPaper", ";m_{K^{+}K^{-}} [GeV];Number of pairs", 30, 0.9, 2.4));
-    outsideprocessing.AddHistogram(TH1D("M2TOFLikeInPaper", ";m^{2}_{TOF} [GeV^{2}];Number of pairs", 200, -0.5, 1.5));
-    outsideprocessing.AddHistogram(TH1D("M2TOFpipiLikeInPaper", ";m^{2}_{TOF} [GeV^{2}];Number of pairs", 200, -0.5, 1.5));
-    outsideprocessing.AddHistogram(TH1D("M2TOFKKLikeInPaper", ";m^{2}_{TOF} [GeV^{2}];Number of pairs", 200, -0.5, 1.5));
-    outsideprocessing.AddHistogram(TH1D("M2TOFppLikeInPaper", ";m^{2}_{TOF} [GeV^{2}];Number of pairs", 200, -0.5, 1.5));
-    outsideprocessing.AddHistogram(TH1D("pT", ";p_{T} [GeV];tracks", 100, 0., 1.));
+    outsideprocessing.AddHistogram(TH1D("MKKExtraNarrowNoVeto", ";m_{K^{+}K^{-}} [GeV/c^{2}];Number of pairs", 140, 0.98, 1.05));
+    outsideprocessing.AddHistogram(TH1D("MKKWideNoVeto", ";m_{K^{+}K^{-}} [GeV/c^{2}];Number of pairs", 500, 0., 5.));
+    outsideprocessing.AddHistogram(TH1D("MpipiExtraNarrowNoVeto", ";m_{#pi^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 100, 0.3, 0.7));
+    outsideprocessing.AddHistogram(TH1D("MKKLikeInPaper", ";m_{K^{+}K^{-}} [GeV/c^{2}];Number of pairs", 30, 0.9, 2.4));
+    outsideprocessing.AddHistogram(TH1D("M2TOFLikeInPaper", ";m^{2}_{TOF} [GeV^{2}/c^{4}];Number of pairs", 200, -0.5, 1.5));
+    outsideprocessing.AddHistogram(TH1D("M2TOFpipiLikeInPaper", ";m^{2}_{TOF} [GeV^{2}/c^{4}];Number of pairs", 200, -0.5, 1.5));
+    outsideprocessing.AddHistogram(TH1D("M2TOFKKLikeInPaper", ";m^{2}_{TOF} [GeV^{2}/c^{4}];Number of pairs", 200, -0.5, 1.5));
+    outsideprocessing.AddHistogram(TH1D("M2TOFppLikeInPaper", ";m^{2}_{TOF} [GeV^{2}/c^{4}];Number of pairs", 200, -0.5, 1.5));
+    outsideprocessing.AddHistogram(TH1D("pT", ";p_{T} [GeV/c];tracks", 100, 0., 1.));
     outsideprocessing.AddHistogram(TH1D("eta", ";#eta;tracks", 220, -1.1, 1.1));
     outsideprocessing.AddHistogram(TH1D("vertices", ";vertices;events", 10, 0, 10));
     outsideprocessing.AddHistogram(TH2D("xi", ";#xi_{E};#xi_{W}", 150, -0.05, 0.25, 150, -0.05, 0.25));

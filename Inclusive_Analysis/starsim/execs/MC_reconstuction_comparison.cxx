@@ -174,17 +174,17 @@ int main(int argc, char* argv[]){
     //mixing TOF between events proved to be a failure
     //mass histograms with TOF first and mixing event pairs after
     // outsideprocessing.AddHistogram(TH1D("Name", "Name of simulated particles;id;Number of particles", 1, 0, 1));
-    // outsideprocessing.AddHistogram(TH2D("etapTK0S", "K^{0}_{S} number;eta;p_{T}", 10, -1, 1, 10, 0, 2.5));
-    // outsideprocessing.AddHistogram(TH2D("etapTLambda", "#Lambda^{0} number;eta;p_{T}", 10, -1, 1, 10, 0, 2.5));
-    // outsideprocessing.AddHistogram(TH2D("etapTLambdabar", "#bar{#Lambda}^{0} number;eta;p_{T}", 10, -1, 1, 10, 0, 2.5));
-    // outsideprocessing.AddHistogram(TH2D("etapTKstar", "K^{*}(892) number;eta;p_{T}", 10, -1, 1, 10, 0, 2.5));
-    // outsideprocessing.AddHistogram(TH2D("etapTKstarbar", "#bar{K}^{*}(892) number;eta;p_{T}", 10, -1, 1, 10, 0, 2.5));
-    // outsideprocessing.AddHistogram(TH2D("etapTphi", "#varphi(1020) number;eta;p_{T}", 10, -1, 1, 10, 0, 2.5));
+    // outsideprocessing.AddHistogram(TH2D("etapTK0S", "K^{0}_{S} number;#eta;p_{T} [GeV/c]", 10, -1, 1, 10, 0, 2.5));
+    // outsideprocessing.AddHistogram(TH2D("etapTLambda", "#Lambda^{0} number;#eta;p_{T} [GeV/c]", 10, -1, 1, 10, 0, 2.5));
+    // outsideprocessing.AddHistogram(TH2D("etapTLambdabar", "#bar{#Lambda}^{0} number;#eta;p_{T} [GeV/c]", 10, -1, 1, 10, 0, 2.5));
+    // outsideprocessing.AddHistogram(TH2D("etapTKstar", "K^{*}(892) number;#eta;p_{T} [GeV/c]", 10, -1, 1, 10, 0, 2.5));
+    // outsideprocessing.AddHistogram(TH2D("etapTKstarbar", "#bar{K}^{*}(892) number;#eta;p_{T} [GeV/c]", 10, -1, 1, 10, 0, 2.5));
+    // outsideprocessing.AddHistogram(TH2D("etapTphi", "#varphi(1020) number;#eta;p_{T} [GeV/c]", 10, -1, 1, 10, 0, 2.5));
 
     //histograms for efficiency
-    TH2D K0STotal("K0STotal", "#eta vs p_{T} of K^{0}_{S};#eta;p_{T}", 60, -3.0, 3.0, 40, 0, 2);
-    TH2D K0SAfterMCpionCuts("K0SAfterMCpionCuts", "#eta vs p_{T} of K^{0}_{S} after MC fiducial cuts;#eta;p_{T}", 60, -3.0, 3.0, 40, 0, 2);
-    TH2D K0SAfterTPCpionCuts("K0SAfterTPCpionCuts", "#eta vs p_{T} of K^{0}_{S} after MC cuts and TPC reconstruction;#eta;p_{T}", 60, -3.0, 3.0, 40, 0, 2);
+    TH2D K0STotal("K0STotal", "#eta vs p_{T} of K^{0}_{S};#eta;p_{T} [GeV/c]", 60, -3.0, 3.0, 40, 0, 2);
+    TH2D K0SAfterMCpionCuts("K0SAfterMCpionCuts", "#eta vs p_{T} of K^{0}_{S} after MC fiducial cuts;#eta;p_{T} [GeV/c]", 60, -3.0, 3.0, 40, 0, 2);
+    TH2D K0SAfterTPCpionCuts("K0SAfterTPCpionCuts", "#eta vs p_{T} of K^{0}_{S} after MC cuts and TPC reconstruction;#eta;p_{T} [GeV/c]", 60, -3.0, 3.0, 40, 0, 2);
 
     //rest of the histograms
     TH1D ToFhitTimeDifferenceExtremelyWide("ToFhitTimeDifferenceExtremelyWide", "Time difference between pair of ToF hits;#Delta t [ns];pairs", 100, -10, 10);
@@ -197,19 +197,19 @@ int main(int argc, char* argv[]){
     TH1D FlowOfEvents("FlowOfEvents", "Independent event checks (of MC particles);;events", 1, 0, 1);
     TH1D K0SIndex("K0SIndex", "Index of K^{0}_{S};index;particles", 30, 0, 30);
     TH1D K0Sdetectability("K0Sdetectability", "How many K^{0}_{S} are detectable", 1, 0, 1);
-    TH2D K0SdecayProductsKinematics("K0SdecayProductsKinematics", "#eta vs p_{T} of #pi^{#pm} from K^{0}_{S} decay;#eta;p_{T}", 60, -3.0, 3.0, 40, 0, 2);
+    TH2D K0SdecayProductsKinematics("K0SdecayProductsKinematics", "#eta vs p_{T} of #pi^{#pm} from K^{0}_{S} decay;#eta;p_{T} [GeV/c]", 60, -3.0, 3.0, 40, 0, 2);
     TH3D NumberOfPions("NumberOfPions", "Number of pions in event;positive;negative;neutral", 5, 0, 5, 5, 0, 5, 5, 0, 5);
     TH1D MCParticles("MCParticles", "MC number of particles;particles;events", 25, 0, 25);
     TH1D TPCParticles("TPCParticles", "TPC number of particles;particles;events", 25, 0, 25);
     TH1D DifferenceParticles("DifferenceParticles", "(MC - TPC) difference in number of particles;difference;events", 20, -10, 10);
     TH1D Distance("Distance", "Distance MC-TPC in #eta-#phi space;distance;track pairs", 120, 0, 6);
     TH1D DistanceCloser("DistanceCloser", "Distance MC-TPC in #eta-#phi space;distance;track pairs", 100, 0, 0.5);
-    TH1D MpipiTPC("MpipiTPC", "#pi^{+}#pi^{-} pair mass;m_{#pi^{+}#pi^{-}} [GeV];pairs", 40, 0.4, 0.6);
-    TH1D MpipiTPCExtremelyWide("MpipiTPCExtremelyWide", "#pi^{+}#pi^{-} pair mass;m_{#pi^{+}#pi^{-}} [GeV];pairs", 300, 0.0, 3.0);
-    TH1D MpipiMC("MpipiMC", "#pi^{+}#pi^{-} pair mass (only K^{0}_{S} decay products);m_{#pi^{+}#pi^{-}} [GeV];pairs", 40, 0.4, 0.6);
-    TH1D MpipiMCExtremelyWide("MpipiMCExtremelyWide", "#pi^{+}#pi^{-} pair mass (only K^{0}_{S} decay products);m_{#pi^{+}#pi^{-}} [GeV];pairs", 300, 0.0, 3.0);
-    TH2D MpipiMCExtremelyWideParticlesCreated("MpipiMCExtremelyWideParticlesCreated", "Particles created in vertex vs #pi^{+}#pi^{-} pair mass (only K^{0}_{S} decay products);m_{#pi^{+}#pi^{-}} [GeV];pairs", 300, 0.0, 3.0, 30, 2, 32);
-    TH1D MpipiMCExtremelyWideParticlesNames("MpipiMCExtremelyWideParticlesNames", "Particles created in vertex vs #pi^{+}#pi^{-} pair mass (only K^{0}_{S} decay products);m_{#pi^{+}#pi^{-}} [GeV];pairs", 1, 0, 1);
+    TH1D MpipiTPC("MpipiTPC", "#pi^{+}#pi^{-} pair mass;m_{#pi^{+}#pi^{-}} [GeV/c^{2}];pairs", 40, 0.4, 0.6);
+    TH1D MpipiTPCExtremelyWide("MpipiTPCExtremelyWide", "#pi^{+}#pi^{-} pair mass;m_{#pi^{+}#pi^{-}} [GeV/c^{2}];pairs", 300, 0.0, 3.0);
+    TH1D MpipiMC("MpipiMC", "#pi^{+}#pi^{-} pair mass (only K^{0}_{S} decay products);m_{#pi^{+}#pi^{-}} [GeV/c^{2}];pairs", 40, 0.4, 0.6);
+    TH1D MpipiMCExtremelyWide("MpipiMCExtremelyWide", "#pi^{+}#pi^{-} pair mass (only K^{0}_{S} decay products);m_{#pi^{+}#pi^{-}} [GeV/c^{2}];pairs", 300, 0.0, 3.0);
+    TH2D MpipiMCExtremelyWideParticlesCreated("MpipiMCExtremelyWideParticlesCreated", "Particles created in vertex vs #pi^{+}#pi^{-} pair mass (only K^{0}_{S} decay products);m_{#pi^{+}#pi^{-}} [GeV/c^{2}];pairs", 300, 0.0, 3.0, 30, 2, 32);
+    TH1D MpipiMCExtremelyWideParticlesNames("MpipiMCExtremelyWideParticlesNames", "Particles created in vertex vs #pi^{+}#pi^{-} pair mass (only K^{0}_{S} decay products);m_{#pi^{+}#pi^{-}} [GeV/c^{2}];pairs", 1, 0, 1);
     TH1D MpipiFlow("MpipiFlow", "#pi^{+}#pi^{-} pairs after MC cuts;;pairs", 1, 0, 1);
     TH2D MpipiPairs("MpipiPairs", "particle pairs;positive;negative", 1, 0, 1, 1, 0, 1);
     TH2D MpipiMothers("MpipiMothers", "particle number;positive;negative", 20, 0, 20, 20, 0, 20);
@@ -229,13 +229,13 @@ int main(int argc, char* argv[]){
     TH1D MpipiDeltaTOnlyTwoTracksDetected("MpipiDeltaTOnlyTwoTracksDetected", "Time between pion decay;#Delta t_{0} [ns];events", 100, -5, 5);
     TH1D MpipiDeltaTMoreThanTwoTracksDetected("MpipiDeltaTMoreThanTwoTracksDetected", "Time between pion decay;#Delta t_{0} [ns];events", 100, -5, 5);
 
-    TH1D MpipiAfterDeltaT("MpipiAfterDeltaT", "#pi^{+}#pi^{-} pair mass after #Delta t_{0} cut;m_{#pi^{+}#pi^{-}} [GeV];pairs", 40, 0.4, 0.6);
-    TH1D MpipiAfterDeltaTExtremelyWide("MpipiAfterDeltaTExtremelyWide", "#pi^{+}#pi^{-} pair mass after #Delta t_{0} cut;m_{#pi^{+}#pi^{-}} [GeV];pairs", 300, 0.0, 3.0);
-    TH2D MpipiAfterDeltaTMass("MpipiAfterDeltaTMass", "#pi^{+}#pi^{-} pair mass after #Delta t_{0} cut;m_{#pi^{+}#pi^{-}} [GeV];pairs", 40, 0.4, 0.6, 100, -5, 5);
+    TH1D MpipiAfterDeltaT("MpipiAfterDeltaT", "#pi^{+}#pi^{-} pair mass after #Delta t_{0} cut;m_{#pi^{+}#pi^{-}} [GeV/c^{2}];pairs", 40, 0.4, 0.6);
+    TH1D MpipiAfterDeltaTExtremelyWide("MpipiAfterDeltaTExtremelyWide", "#pi^{+}#pi^{-} pair mass after #Delta t_{0} cut;m_{#pi^{+}#pi^{-}} [GeV/c^{2}];pairs", 300, 0.0, 3.0);
+    TH2D MpipiAfterDeltaTMass("MpipiAfterDeltaTMass", "#pi^{+}#pi^{-} pair mass after #Delta t_{0} cut;m_{#pi^{+}#pi^{-}} [GeV/c^{2}];pairs", 40, 0.4, 0.6, 100, -5, 5);
 
-    TH1D MpipiAfterDeltaTNotPassed("MpipiAfterDeltaTNotPassed", "#pi^{+}#pi^{-} pair mass after failed #Delta t_{0} cut;m_{#pi^{+}#pi^{-}} [GeV];pairs", 40, 0.4, 0.6);
-    TH1D MpipiAfterDeltaTNotPassedExtremelyWide("MpipiAfterDeltaTNotPassedExtremelyWide", "#pi^{+}#pi^{-} pair mass after failed #Delta t_{0} cut;m_{#pi^{+}#pi^{-}} [GeV];pairs", 300, 0.0, 3.0);
-    TH2D MpipiAfterDeltaTNotPassedMass("MpipiAfterDeltaTNotPassedMass", "#pi^{+}#pi^{-} pair mass after failed #Delta t_{0} cut;m_{#pi^{+}#pi^{-}} [GeV];pairs", 40, 0.4, 0.6, 50, -5, 5);
+    TH1D MpipiAfterDeltaTNotPassed("MpipiAfterDeltaTNotPassed", "#pi^{+}#pi^{-} pair mass after failed #Delta t_{0} cut;m_{#pi^{+}#pi^{-}} [GeV/c^{2}];pairs", 40, 0.4, 0.6);
+    TH1D MpipiAfterDeltaTNotPassedExtremelyWide("MpipiAfterDeltaTNotPassedExtremelyWide", "#pi^{+}#pi^{-} pair mass after failed #Delta t_{0} cut;m_{#pi^{+}#pi^{-}} [GeV/c^{2}];pairs", 300, 0.0, 3.0);
+    TH2D MpipiAfterDeltaTNotPassedMass("MpipiAfterDeltaTNotPassedMass", "#pi^{+}#pi^{-} pair mass after failed #Delta t_{0} cut;m_{#pi^{+}#pi^{-}} [GeV/c^{2}];pairs", 40, 0.4, 0.6, 50, -5, 5);
     TH1D MpipiAfterDeltaTNotPassedLengthOfFlightPosX("MpipiAfterDeltaTNotPassedLengthOfFlightPosX", "Flight x dimension", 120, -6, 6);
     TH1D MpipiAfterDeltaTNotPassedLengthOfFlightPosY("MpipiAfterDeltaTNotPassedLengthOfFlightPosY", "Flight y dimension", 120, -6, 6);
     TH1D MpipiAfterDeltaTNotPassedLengthOfFlightPosZ("MpipiAfterDeltaTNotPassedLengthOfFlightPosZ", "Flight z dimension", 120, -6, 6);
@@ -246,8 +246,8 @@ int main(int argc, char* argv[]){
     TH1D MpipiAfterDeltaTNotPassedPionTOFLength("MpipiAfterDeltaTNotPassedPionTOFLength", "TOF path length of #pi^{#pm} from K^{0}_{S} decay", 40, 200, 400);
     TH1D MpipiAfterDeltaTPassedPionTOFTime("MpipiAfterDeltaTPassedPionTOFTime", "TOF time of #pi^{#pm} from K^{0}_{S} decay", 100, 0, 50);
     TH1D MpipiAfterDeltaTNotPassedPionTOFTime("MpipiAfterDeltaTNotPassedPionTOFTime", "TOF time of #pi^{#pm} from K^{0}_{S} decay", 100, 0, 50);
-    TH1D MpipiAfterDeltaTPassedPionMass("MpipiAfterDeltaTPassedPionMass", "#pi^{#pm} pair mass from K^{0}_{S} decay;m_{#pi^{#pm}} [GeV];pairs", 100, 0., 1.0);
-    TH1D MpipiAfterDeltaTNotPassedPionMass("MpipiAfterDeltaTNotPassedPionMass", "#pi^{#pm} pair mass from K^{0}_{S} decay;m_{#pi^{#pm}} [GeV];pairs", 100, 0., 1.0);
+    TH1D MpipiAfterDeltaTPassedPionMass("MpipiAfterDeltaTPassedPionMass", "#pi^{#pm} pair mass from K^{0}_{S} decay;m_{#pi^{#pm}} [GeV/c^{2}];pairs", 100, 0., 1.0);
+    TH1D MpipiAfterDeltaTNotPassedPionMass("MpipiAfterDeltaTNotPassedPionMass", "#pi^{#pm} pair mass from K^{0}_{S} decay;m_{#pi^{#pm}} [GeV/c^{2}];pairs", 100, 0., 1.0);
     TH1D MpipiAfterDeltaTPassedK0SDecayVertexBeamlineDistance("MpipiAfterDeltaTPassedK0SDecayVertexBeamlineDistance", "Distance from K^{0}_{S} decay vertex to the beamline;d [cm];events", 50, 0, 20);
     TH1D MpipiAfterDeltaTNotPassedK0SDecayVertexBeamlineDistance("MpipiAfterDeltaTNotPassedK0SDecayVertexBeamlineDistance", "Distance from K^{0}_{S} decay vertex to the beamline;d [cm];events", 50, 0, 20);
     TH1D MpipiAfterDeltaTPassedPionAngle("MpipiAfterDeltaTPassedPionAngle", "#pi^{#pm} pair angle from K^{0}_{S} decay;angle [rad];pairs", 63, 0., 2*TMath::Pi());
@@ -256,8 +256,8 @@ int main(int argc, char* argv[]){
     TH1D TOFLeadingEdgeAfterDeltaTNotPassed("TOFLeadingEdgeAfterDeltaTNotPassed", "TOF modules leading edge time;time [ns];number of modules", 100, 0, 20);
 
 
-    TH1D MpipiMCnotK0SMother("MpipiMCnotK0SMother", "#pi^{+}#pi^{-} pair mass (everything except K^{0}_{S} mother verification);m_{#pi^{+}#pi^{-}} [GeV];pairs", 40, 0.4, 0.6);
-    TH1D MpipiMCnotK0SMotherExtremelyWide("MpipiMCnotK0SMotherExtremelyWide", "#pi^{+}#pi^{-} pair mass (everything except K^{0}_{S} mother verification);m_{#pi^{+}#pi^{-}} [GeV];pairs", 300, 0.0, 3.0);
+    TH1D MpipiMCnotK0SMother("MpipiMCnotK0SMother", "#pi^{+}#pi^{-} pair mass (everything except K^{0}_{S} mother verification);m_{#pi^{+}#pi^{-}} [GeV/c^{2}];pairs", 40, 0.4, 0.6);
+    TH1D MpipiMCnotK0SMotherExtremelyWide("MpipiMCnotK0SMotherExtremelyWide", "#pi^{+}#pi^{-} pair mass (everything except K^{0}_{S} mother verification);m_{#pi^{+}#pi^{-}} [GeV/c^{2}];pairs", 300, 0.0, 3.0);
 
     TH1D DistanceAbnormal("DistanceAbnormal", "Distance MC-TPC in #eta-#phi space;distance;track pairs", 100, 0, 0.5);
     TH1D DistanceNormal("DistanceNormal", "Distance MC-TPC in #eta-#phi space;distance;track pairs", 100, 0, 0.5);

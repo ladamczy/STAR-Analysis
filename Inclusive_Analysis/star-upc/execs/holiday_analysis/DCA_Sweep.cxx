@@ -118,12 +118,12 @@ int main(int argc, char** argv)
     TFile* outputFileHist = TFile::Open(outfileName.c_str(), "recreate");
     TH1D* histtab1D[2];
     TH2D* histtab2D[4];
-    histtab1D[0] = new TH1D("kPrimaryTestAfter", "ratio of primary tracks after DCA test;m_{#pi^{+}#pi^{-}} [GeV];% of tracks with kPrimary", 100, 0.42, 0.56);
-    histtab1D[1] = new TH1D("kPrimaryTestAfterBackground", "ratio of primary tracks before DCA test;m_{#pi^{+}#pi^{-}} [GeV];% of tracks with kPrimary", 100, 0.42, 0.56);
-    histtab2D[0] = new TH2D("ZTrackDifference", "m_{inv} vs #Delta DCA_{Z};m_{#pi^{+}#pi^{-}} [GeV];#Delta DCA_{Z} [cm]", 100, 0.42, 0.56, 50, 0, 5);
-    histtab2D[1] = new TH2D("XVertexError", "m_{inv} vs Vertex position error (X axis);m_{#pi^{+}#pi^{-}} [GeV];#pos_{X} [cm]", 100, 0.42, 0.56, 50, 0, 0.05);
-    histtab2D[2] = new TH2D("YVertexError", "m_{inv} vs Vertex position error (Y axis);m_{#pi^{+}#pi^{-}} [GeV];#pos_{Y} [cm]", 100, 0.42, 0.56, 50, 0, 0.05);
-    histtab2D[3] = new TH2D("ZVertexError", "m_{inv} vs Vertex position error (Z axis);m_{#pi^{+}#pi^{-}} [GeV];#pos_{Z} [cm]", 100, 0.42, 0.56, 100, 0, 1);
+    histtab1D[0] = new TH1D("kPrimaryTestAfter", "ratio of primary tracks after DCA test;m_{#pi^{+}#pi^{-}} [GeV/c^{2}];% of tracks with kPrimary", 100, 0.42, 0.56);
+    histtab1D[1] = new TH1D("kPrimaryTestAfterBackground", "ratio of primary tracks before DCA test;m_{#pi^{+}#pi^{-}} [GeV/c^{2}];% of tracks with kPrimary", 100, 0.42, 0.56);
+    histtab2D[0] = new TH2D("ZTrackDifference", "m_{inv} vs #Delta DCA_{Z};m_{#pi^{+}#pi^{-}} [GeV/c^{2}];#Delta DCA_{Z} [cm]", 100, 0.42, 0.56, 50, 0, 5);
+    histtab2D[1] = new TH2D("XVertexError", "m_{inv} vs Vertex position error (X axis);m_{#pi^{+}#pi^{-}} [GeV/c^{2}];#pos_{X} [cm]", 100, 0.42, 0.56, 50, 0, 0.05);
+    histtab2D[2] = new TH2D("YVertexError", "m_{inv} vs Vertex position error (Y axis);m_{#pi^{+}#pi^{-}} [GeV/c^{2}];#pos_{Y} [cm]", 100, 0.42, 0.56, 50, 0, 0.05);
+    histtab2D[3] = new TH2D("ZVertexError", "m_{inv} vs Vertex position error (Z axis);m_{#pi^{+}#pi^{-}} [GeV/c^{2}];#pos_{Z} [cm]", 100, 0.42, 0.56, 100, 0, 1);
 
     VertexCheck(upcChain, histtab1D, 2, histtab2D, 4, 0., nthreads);
     
@@ -149,12 +149,12 @@ int main(int argc, char** argv)
     outputFileHist = TFile::Open(outfileName.c_str(), "recreate");
     // TH1D* histtab1D[2];
     // TH2D* histtab2D[4];
-    histtab1D[0] = new TH1D("kPrimaryTestAfter", "ratio of primary tracks after DCA test;m_{#pi^{+}#pi^{-}} [GeV];% of tracks with kPrimary", 100, 0.42, 0.56);
-    histtab1D[1] = new TH1D("kPrimaryTestAfterBackground", "ratio of primary tracks before DCA test;m_{#pi^{+}#pi^{-}} [GeV];% of tracks with kPrimary", 100, 0.42, 0.56);
-    histtab2D[0] = new TH2D("ZTrackDifference", "m_{inv} vs #Delta DCA_{Z};m_{#pi^{+}#pi^{-}} [GeV];#Delta DCA_{Z} [cm]", 100, 0.42, 0.56, 50, 0, 5);
-    histtab2D[1] = new TH2D("XVertexError", "m_{inv} vs Vertex position error (X axis);m_{#pi^{+}#pi^{-}} [GeV];#pos_{X} [cm]", 100, 0.42, 0.56, 50, 0, 0.05);
-    histtab2D[2] = new TH2D("YVertexError", "m_{inv} vs Vertex position error (Y axis);m_{#pi^{+}#pi^{-}} [GeV];#pos_{Y} [cm]", 100, 0.42, 0.56, 50, 0, 0.05);
-    histtab2D[3] = new TH2D("ZVertexError", "m_{inv} vs Vertex position error (Z axis);m_{#pi^{+}#pi^{-}} [GeV];#pos_{Z} [cm]", 100, 0.42, 0.56, 100, 0, 1);
+    histtab1D[0] = new TH1D("kPrimaryTestAfter", "ratio of primary tracks after DCA test;m_{#pi^{+}#pi^{-}} [GeV/c^{2}];% of tracks with kPrimary", 100, 0.42, 0.56);
+    histtab1D[1] = new TH1D("kPrimaryTestAfterBackground", "ratio of primary tracks before DCA test;m_{#pi^{+}#pi^{-}} [GeV/c^{2}];% of tracks with kPrimary", 100, 0.42, 0.56);
+    histtab2D[0] = new TH2D("ZTrackDifference", "m_{inv} vs #Delta DCA_{Z};m_{#pi^{+}#pi^{-}} [GeV/c^{2}];#Delta DCA_{Z} [cm]", 100, 0.42, 0.56, 50, 0, 5);
+    histtab2D[1] = new TH2D("XVertexError", "m_{inv} vs Vertex position error (X axis);m_{#pi^{+}#pi^{-}} [GeV/c^{2}];#pos_{X} [cm]", 100, 0.42, 0.56, 50, 0, 0.05);
+    histtab2D[2] = new TH2D("YVertexError", "m_{inv} vs Vertex position error (Y axis);m_{#pi^{+}#pi^{-}} [GeV/c^{2}];#pos_{Y} [cm]", 100, 0.42, 0.56, 50, 0, 0.05);
+    histtab2D[3] = new TH2D("ZVertexError", "m_{inv} vs Vertex position error (Z axis);m_{#pi^{+}#pi^{-}} [GeV/c^{2}];#pos_{Z} [cm]", 100, 0.42, 0.56, 100, 0, 1);
 
     VertexCheck(upcChain, histtab1D, 2, histtab2D, 4, -1., nthreads);
     
@@ -410,12 +410,12 @@ void DCASweep(TChain* inputChain, TH2D* outputHist, double testedDCA, int nthrea
     outputHist->Add(TempHistFinal.get());
 }//DCASweep
 
-// histtab1D[0] = new TH1D("kPrimaryTestAfter", "ratio of primary tracks after DCA test;m_{#pi^{+}#pi^{-}} [GeV];% of tracks with kPrimary", 100, 0.42, 0.56);
-// histtab1D[1] = new TH1D("kPrimaryTestAfterBackground", "ratio of primary tracks before DCA test;m_{#pi^{+}#pi^{-}} [GeV];% of tracks with kPrimary", 100, 0.42, 0.56);
-// histtab2D[0] = new TH2D("ZTrackDifference", "m_{inv} vs #Delta DCA_{Z};m_{#pi^{+}#pi^{-}} [GeV];#Delta DCA_{Z} [cm]", 100, 0.42, 0.56, 100, 0, 10);
-// histtab2D[1] = new TH2D("XVertexError", "m_{inv} vs Vertex position error (X axis);m_{#pi^{+}#pi^{-}} [GeV];#pos_{X} [cm]", 100, 0.42, 0.56, 200, -10, 10);
-// histtab2D[2] = new TH2D("YVertexError", "m_{inv} vs Vertex position error (Y axis);m_{#pi^{+}#pi^{-}} [GeV];#pos_{Y} [cm]", 100, 0.42, 0.56, 200, -10, 10);
-// histtab2D[3] = new TH2D("ZVertexError", "m_{inv} vs Vertex position error (Z axis);m_{#pi^{+}#pi^{-}} [GeV];#pos_{Z} [cm]", 100, 0.42, 0.56, 200, -10, 10);
+// histtab1D[0] = new TH1D("kPrimaryTestAfter", "ratio of primary tracks after DCA test;m_{#pi^{+}#pi^{-}} [GeV/c^{2}];% of tracks with kPrimary", 100, 0.42, 0.56);
+// histtab1D[1] = new TH1D("kPrimaryTestAfterBackground", "ratio of primary tracks before DCA test;m_{#pi^{+}#pi^{-}} [GeV/c^{2}];% of tracks with kPrimary", 100, 0.42, 0.56);
+// histtab2D[0] = new TH2D("ZTrackDifference", "m_{inv} vs #Delta DCA_{Z};m_{#pi^{+}#pi^{-}} [GeV/c^{2}];#Delta DCA_{Z} [cm]", 100, 0.42, 0.56, 100, 0, 10);
+// histtab2D[1] = new TH2D("XVertexError", "m_{inv} vs Vertex position error (X axis);m_{#pi^{+}#pi^{-}} [GeV/c^{2}];#pos_{X} [cm]", 100, 0.42, 0.56, 200, -10, 10);
+// histtab2D[2] = new TH2D("YVertexError", "m_{inv} vs Vertex position error (Y axis);m_{#pi^{+}#pi^{-}} [GeV/c^{2}];#pos_{Y} [cm]", 100, 0.42, 0.56, 200, -10, 10);
+// histtab2D[3] = new TH2D("ZVertexError", "m_{inv} vs Vertex position error (Z axis);m_{#pi^{+}#pi^{-}} [GeV/c^{2}];#pos_{Z} [cm]", 100, 0.42, 0.56, 200, -10, 10);
 
 void VertexCheck(TChain* inputChain, TH1D* outputHistTab1D[], int nhists1D, TH2D* outputHistTab2D[], int nhists2D, double testedDCA, int nthreads){
 
