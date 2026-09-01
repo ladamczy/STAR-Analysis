@@ -56,7 +56,7 @@ int main(int argc, char** argv){
     if(argc>4){
         printf("Previous events to combine for mixed background: %d\n", atoi(argv[4]));
     } else{
-        printf("Previous events to combine for mixed background: 1\n");
+        printf("Previous events to combine for mixed background: 1000\n");
     }
 
 
@@ -178,7 +178,13 @@ int main(int argc, char** argv){
     outsideprocessing.AddHistogram(TH1D("MKKSuspiciousPeakTestedAsPionPairNeighbourhood", ";m_{#pi^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 400, 0.25, 0.65));
     outsideprocessing.AddHistogram(TH1D("MKKSuspiciousPeakTestedWithStrictChi2LessThan3", ";m_{K^{+}K^{-}} [GeV/c^{2}];Number of pairs", 500, 0.9, 2.4));
     outsideprocessing.AddHistogram(TH1D("MKKSuspiciousPeakTestedWithStrictChi2LessThan1", ";m_{K^{+}K^{-}} [GeV/c^{2}];Number of pairs", 500, 0.9, 2.4));
+
+    //other *other* histograms
     outsideprocessing.AddHistogram(TH2D("dEdxTPCEnergyLoss", "dE/dx TPC Energy loss distribution;pq [GeV/c];dE/dx [keV/cm]", 300, -3, 3, 100, 0, 40));
+    outsideprocessing.AddHistogram(TH1D("PrimaryVertexPositionDifferenceX", ";#Delta x [cm];Number of pairs", 160, -0.8, 0.8));
+    outsideprocessing.AddHistogram(TH1D("PrimaryVertexPositionDifferenceY", ";#Delta y [cm];Number of pairs", 160, -0.8, 0.8));
+    outsideprocessing.AddHistogram(TH1D("PrimaryVertexPositionDifferenceZ", ";#Delta z [cm];Number of pairs", 400, -200., 200));
+    outsideprocessing.AddHistogram(TH1D("PrimaryVertexPositionDifferenceTotal", ";#Delta R [cm];Number of pairs", 400, 0., 400));
 
     for(size_t i = 0; i<outsideprocessing.GetNumberOfHistograms(); i++){
         if(&outsideprocessing.GetPointer1D(i)!=nullptr){
@@ -248,9 +254,11 @@ int main(int argc, char** argv){
         std::deque<std::vector<StUPCTrack*>> queue_of_previous_vector_Tracks_KK_negative;
         std::deque<std::vector<StUPCTrack*>> queue_of_previous_vector_Tracks_pipi_negative;
         std::deque<std::vector<StUPCTrack*>> queue_of_previous_vector_Tracks_pp_negative;
+        //positions of primary vertex from previous events
+        std::deque<TVector3> queue_of_previous_PV_positions;
 
         //parameters
-        int total_events_in_queue = 1;
+        int total_events_in_queue = 1000;
         if(argc>4){
             total_events_in_queue = atoi(argv[4]);
         }
@@ -930,7 +938,7 @@ int main(int argc, char** argv){
             //as in, positive track matching to two negatives gets counted twice
 
             //picking pairs good for comparing with previous ones (and saving as ones)
-            //we load the queue with the copy of the current event one
+            //we load the queue with the copy of the current event
             queue_of_previous_vector_Tracks_Kpi_positive.emplace_back();
             queue_of_previous_vector_Tracks_piK_positive.emplace_back();
             queue_of_previous_vector_Tracks_ppi_positive.emplace_back();
@@ -1122,11 +1130,27 @@ int main(int argc, char** argv){
                     }
                 }
             }
+            //noting current position of primary vertex
+            queue_of_previous_PV_positions.emplace_back();
+            queue_of_previous_PV_positions.back().SetXYZ(tempUPCpointer->getVertex(0)->getPosX(), tempUPCpointer->getVertex(0)->getPosY(), tempUPCpointer->getVertex(0)->getPosZ());
+
             //useful variables
             double pt, eta, phi;
-            //matching this event (on the back, "last" one) with previous ones (0 to n-1)
-            //this positive, past negative
+            //matching this event (on the back, "last" one, n-1) with previous ones (0 to n-2)
             for(size_t evt = 0; evt<min(total_events_in_queue, (int)queue_of_previous_vector_Tracks_Kpi_positive.size())-1; evt++){
+                //checking the difference in vertex position
+                TVector3 difference = queue_of_previous_PV_positions.back()-queue_of_previous_PV_positions[evt];
+                insideprocessing.Fill("PrimaryVertexPositionDifferenceX", difference.X());
+                insideprocessing.Fill("PrimaryVertexPositionDifferenceY", difference.Y());
+                insideprocessing.Fill("PrimaryVertexPositionDifferenceZ", difference.Z());
+                insideprocessing.Fill("PrimaryVertexPositionDifferenceTotal", difference.Mag());
+                //if the difference is bigger than (~3sigma of TPC resolution(3cm)) value of 10cm, we skip this event
+                if(fabs(difference.Z())>10){
+                    continue;
+                }
+
+                //############################################################################
+                //this positive, past negative
                 //Kpi
                 for(long unsigned int i = 0; i<queue_of_previous_vector_Tracks_Kpi_positive.back().size(); i++){
                     for(long unsigned int j = 0; j<queue_of_previous_vector_Tracks_Kpi_negative[evt].size(); j++){
@@ -1221,9 +1245,9 @@ int main(int argc, char** argv){
                         insideprocessing.Fill("MppChi2BcgMixedEventpT", mass, pT);
                     }
                 }
-            }
-            //this negative, past positive
-            for(size_t evt = 0; evt<min(total_events_in_queue, (int)queue_of_previous_vector_Tracks_Kpi_positive.size())-1; evt++){
+
+                //############################################################################
+                //this negative, past positive
                 //Kpi
                 for(long unsigned int i = 0; i<queue_of_previous_vector_Tracks_Kpi_positive[evt].size(); i++){
                     for(long unsigned int j = 0; j<queue_of_previous_vector_Tracks_Kpi_negative.back().size(); j++){
@@ -1321,7 +1345,7 @@ int main(int argc, char** argv){
             }
 
             //if the recall limit has been reached, we pop the oldest one
-            //(to check if its happening, we take a random one, as all of them have the same length)
+            //(to check if its happening, we check the size of a random pair queue, as all of them have the same length)
             if(queue_of_previous_vector_Tracks_Kpi_positive.size()>total_events_in_queue){
                 //Kpi
                 for(size_t i = 0; i<queue_of_previous_vector_Tracks_Kpi_positive.front().size(); i++){
@@ -1386,6 +1410,8 @@ int main(int argc, char** argv){
                     delete queue_of_previous_vector_Tracks_pp_negative.front()[i];
                 }
                 queue_of_previous_vector_Tracks_pp_negative.pop_front();
+                //primary vertex position
+                queue_of_previous_PV_positions.pop_front();
             }
 
             //lambda finish
