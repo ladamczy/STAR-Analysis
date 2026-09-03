@@ -172,6 +172,21 @@ int main(int argc, char** argv){
     //adding mass histograms grouped by category (background, mixed events)
     getCategoryHistograms(outsideprocessing, pairTab, "BcgMixedEvent");
 
+    //mass histograms (background, mixed events same sign)
+    outsideprocessing.AddHistogram(TH1D("MKpiChi2BcgMixedEventSameSign", ";m_{K^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 200, 0.5, 2.0));
+    outsideprocessing.AddHistogram(TH1D("MpiKChi2BcgMixedEventSameSign", ";m_{K^{-}#pi^{+}} [GeV/c^{2}];Number of pairs", 200, 0.5, 2.0));
+    outsideprocessing.AddHistogram(TH1D("MppiChi2BcgMixedEventSameSign", ";m_{p^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 500, 1.0, 2.5));
+    outsideprocessing.AddHistogram(TH1D("MpipChi2BcgMixedEventSameSign", ";m_{p^{-}#pi^{+}} [GeV/c^{2}];Number of pairs", 500, 1.0, 2.5));
+    outsideprocessing.AddHistogram(TH1D("MKKChi2BcgMixedEventSameSign", ";m_{K^{+}K^{-}} [GeV/c^{2}];Number of pairs", 50, 0.99, 1.05));
+    outsideprocessing.AddHistogram(TH1D("MpipiChi2BcgMixedEventSameSign", ";m_{#pi^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 600, 0.2, 1.4));
+    outsideprocessing.AddHistogram(TH1D("MppChi2BcgMixedEventSameSign", ";m_{p^{+}p^{-}} [GeV/c^{2}];Number of pairs", 500, 1.5, 3.5));
+    //closer histograms (background, mixed events)
+    outsideprocessing.AddHistogram(TH1D("MKKChi2BcgMixedEventSameSignClose", ";m_{K^{+}K^{-}} [GeV/c^{2}];Number of pairs", 50, 0.99, 1.05));
+    outsideprocessing.AddHistogram(TH1D("MKpiChi2BcgMixedEventSameSignClose", ";m_{K^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 50, 0.7, 1.1));
+    outsideprocessing.AddHistogram(TH1D("MpiKChi2BcgMixedEventSameSignClose", ";m_{K^{-}#pi^{+}} [GeV/c^{2}];Number of pairs", 50, 0.7, 1.1));
+    //adding mass histograms grouped by category (background, mixed events same sign)
+    getCategoryHistograms(outsideprocessing, pairTab, "BcgMixedEventSameSign");
+
 
     //other mass histograms
     outsideprocessing.AddHistogram(TH1D("MKKSuspiciousPeakTestedAsPionPair", ";m_{#pi^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 400, 0.25, 0.65));
@@ -932,7 +947,7 @@ int main(int argc, char** argv){
                 }
             }
 
-            //########## BACKGROUND EXTRACTION (MIXED EVENT) ###############
+            //########## BACKGROUND EXTRACTION (MIXED EVENT TECHNIQUES) ###############
 
             //TODO: have a mechanism to remove possible duplicates
             //as in, positive track matching to two negatives gets counted twice
@@ -1149,6 +1164,7 @@ int main(int argc, char** argv){
                     continue;
                 }
 
+                //MIXED-EVENT DIFFERENT-SIGN
                 //############################################################################
                 //this positive, past negative
                 //Kpi
@@ -1246,6 +1262,7 @@ int main(int argc, char** argv){
                     }
                 }
 
+                //MIXED-EVENT DIFFERENT-SIGN
                 //############################################################################
                 //this negative, past positive
                 //Kpi
@@ -1340,6 +1357,172 @@ int main(int argc, char** argv){
                         insideprocessing.Fill("MppChi2BcgMixedEvent", mass);
                         insideprocessing.Fill("MppChi2BcgMixedEventeta", mass, eta);
                         insideprocessing.Fill("MppChi2BcgMixedEventpT", mass, pT);
+                    }
+                }
+
+                //MIXED-EVENT SAME-SIGN
+                //THERE ARE NO POSITIVE AND NEGATIVE TRACKS IN ONE 
+                //IT IS JUST A REUSED NAME
+                //############################################################################
+                //both positive
+                //Kpi/piK
+                for(long unsigned int i = 0; i<queue_of_previous_vector_Tracks_Kpi_positive[evt].size(); i++){
+                    for(long unsigned int j = 0; j<queue_of_previous_vector_Tracks_piK_positive.back().size(); j++){
+                        queue_of_previous_vector_Tracks_Kpi_positive[evt][i]->getLorentzVector(positive_track, particleMass[Kaon]);
+                        queue_of_previous_vector_Tracks_piK_positive.back()[j]->getLorentzVector(negative_track, particleMass[Pion]);
+                        mass = (positive_track+negative_track).M();
+                        eta = (positive_track+negative_track).Eta();
+                        pT = (positive_track+negative_track).Pt();
+                        //Kpi
+                        insideprocessing.Fill("MKpiChi2BcgMixedEventSameSign", mass);
+                        insideprocessing.Fill("MKpiChi2BcgMixedEventSameSignClose", mass);
+                        insideprocessing.Fill("MKpiChi2BcgMixedEventSameSigneta", mass, eta);
+                        insideprocessing.Fill("MKpiChi2BcgMixedEventSameSignpT", mass, pT);
+                        //piK
+                        insideprocessing.Fill("MpiKChi2BcgMixedEventSameSign", mass);
+                        insideprocessing.Fill("MpiKChi2BcgMixedEventSameSignClose", mass);
+                        insideprocessing.Fill("MpiKChi2BcgMixedEventSameSigneta", mass, eta);
+                        insideprocessing.Fill("MpiKChi2BcgMixedEventSameSignpT", mass, pT);
+                    }
+                }
+                //ppi/pip
+                for(long unsigned int i = 0; i<queue_of_previous_vector_Tracks_ppi_positive[evt].size(); i++){
+                    for(long unsigned int j = 0; j<queue_of_previous_vector_Tracks_pip_positive.back().size(); j++){
+                        queue_of_previous_vector_Tracks_ppi_positive[evt][i]->getLorentzVector(positive_track, particleMass[Proton]);
+                        queue_of_previous_vector_Tracks_pip_positive.back()[j]->getLorentzVector(negative_track, particleMass[Pion]);
+                        mass = (positive_track+negative_track).M();
+                        eta = (positive_track+negative_track).Eta();
+                        pT = (positive_track+negative_track).Pt();
+                        //ppi
+                        insideprocessing.Fill("MppiChi2BcgMixedEventSameSign", mass);
+                        insideprocessing.Fill("MppiChi2BcgMixedEventSameSigneta", mass, eta);
+                        insideprocessing.Fill("MppiChi2BcgMixedEventSameSignpT", mass, pT);
+                        //pip
+                        insideprocessing.Fill("MpipChi2BcgMixedEventSameSign", mass);
+                        insideprocessing.Fill("MpipChi2BcgMixedEventSameSigneta", mass, eta);
+                        insideprocessing.Fill("MpipChi2BcgMixedEventSameSignpT", mass, pT);
+                    }
+                }
+                //KK
+                for(long unsigned int i = 0; i<queue_of_previous_vector_Tracks_KK_positive[evt].size(); i++){
+                    for(long unsigned int j = 0; j<queue_of_previous_vector_Tracks_KK_positive.back().size(); j++){
+                        queue_of_previous_vector_Tracks_KK_positive[evt][i]->getLorentzVector(positive_track, particleMass[Kaon]);
+                        queue_of_previous_vector_Tracks_KK_positive.back()[j]->getLorentzVector(negative_track, particleMass[Kaon]);
+                        mass = (positive_track+negative_track).M();
+                        eta = (positive_track+negative_track).Eta();
+                        pT = (positive_track+negative_track).Pt();
+                        insideprocessing.Fill("MKKChi2BcgMixedEventSameSign", mass);
+                        insideprocessing.Fill("MKKChi2BcgMixedEventSameSignClose", mass);
+                        insideprocessing.Fill("MKKChi2BcgMixedEventSameSigneta", mass, eta);
+                        insideprocessing.Fill("MKKChi2BcgMixedEventSameSignpT", mass, pT);
+                    }
+                }
+                //pipi
+                for(long unsigned int i = 0; i<queue_of_previous_vector_Tracks_pipi_positive[evt].size(); i++){
+                    for(long unsigned int j = 0; j<queue_of_previous_vector_Tracks_pipi_positive.back().size(); j++){
+                        queue_of_previous_vector_Tracks_pipi_positive[evt][i]->getLorentzVector(positive_track, particleMass[Pion]);
+                        queue_of_previous_vector_Tracks_pipi_positive.back()[j]->getLorentzVector(negative_track, particleMass[Pion]);
+                        mass = (positive_track+negative_track).M();
+                        eta = (positive_track+negative_track).Eta();
+                        pT = (positive_track+negative_track).Pt();
+                        insideprocessing.Fill("MpipiChi2BcgMixedEventSameSign", mass);
+                        insideprocessing.Fill("MpipiChi2BcgMixedEventSameSigneta", mass, eta);
+                        insideprocessing.Fill("MpipiChi2BcgMixedEventSameSignpT", mass, pT);
+                    }
+                }
+                //pp
+                for(long unsigned int i = 0; i<queue_of_previous_vector_Tracks_pp_positive[evt].size(); i++){
+                    for(long unsigned int j = 0; j<queue_of_previous_vector_Tracks_pp_positive.back().size(); j++){
+                        queue_of_previous_vector_Tracks_pp_positive[evt][i]->getLorentzVector(positive_track, particleMass[Proton]);
+                        queue_of_previous_vector_Tracks_pp_positive.back()[j]->getLorentzVector(negative_track, particleMass[Proton]);
+                        mass = (positive_track+negative_track).M();
+                        eta = (positive_track+negative_track).Eta();
+                        pT = (positive_track+negative_track).Pt();
+                        insideprocessing.Fill("MppChi2BcgMixedEventSameSign", mass);
+                        insideprocessing.Fill("MppChi2BcgMixedEventSameSigneta", mass, eta);
+                        insideprocessing.Fill("MppChi2BcgMixedEventSameSignpT", mass, pT);
+                    }
+                }
+
+                //MIXED-EVENT SAME-SIGN
+                //############################################################################
+                //both negative
+                //Kpi/piK
+                for(long unsigned int i = 0; i<queue_of_previous_vector_Tracks_Kpi_negative[evt].size(); i++){
+                    for(long unsigned int j = 0; j<queue_of_previous_vector_Tracks_piK_negative.back().size(); j++){
+                        queue_of_previous_vector_Tracks_Kpi_negative[evt][i]->getLorentzVector(positive_track, particleMass[Kaon]);
+                        queue_of_previous_vector_Tracks_piK_negative.back()[j]->getLorentzVector(negative_track, particleMass[Pion]);
+                        mass = (positive_track+negative_track).M();
+                        eta = (positive_track+negative_track).Eta();
+                        pT = (positive_track+negative_track).Pt();
+                        //Kpi
+                        insideprocessing.Fill("MKpiChi2BcgMixedEventSameSign", mass);
+                        insideprocessing.Fill("MKpiChi2BcgMixedEventSameSignClose", mass);
+                        insideprocessing.Fill("MKpiChi2BcgMixedEventSameSigneta", mass, eta);
+                        insideprocessing.Fill("MKpiChi2BcgMixedEventSameSignpT", mass, pT);
+                        //piK
+                        insideprocessing.Fill("MpiKChi2BcgMixedEventSameSign", mass);
+                        insideprocessing.Fill("MpiKChi2BcgMixedEventSameSignClose", mass);
+                        insideprocessing.Fill("MpiKChi2BcgMixedEventSameSigneta", mass, eta);
+                        insideprocessing.Fill("MpiKChi2BcgMixedEventSameSignpT", mass, pT);
+                    }
+                }
+                //ppi/pip
+                for(long unsigned int i = 0; i<queue_of_previous_vector_Tracks_ppi_negative[evt].size(); i++){
+                    for(long unsigned int j = 0; j<queue_of_previous_vector_Tracks_pip_negative.back().size(); j++){
+                        queue_of_previous_vector_Tracks_ppi_negative[evt][i]->getLorentzVector(positive_track, particleMass[Proton]);
+                        queue_of_previous_vector_Tracks_pip_negative.back()[j]->getLorentzVector(negative_track, particleMass[Pion]);
+                        mass = (positive_track+negative_track).M();
+                        eta = (positive_track+negative_track).Eta();
+                        pT = (positive_track+negative_track).Pt();
+                        //ppi
+                        insideprocessing.Fill("MppiChi2BcgMixedEventSameSign", mass);
+                        insideprocessing.Fill("MppiChi2BcgMixedEventSameSigneta", mass, eta);
+                        insideprocessing.Fill("MppiChi2BcgMixedEventSameSignpT", mass, pT);
+                        //pip
+                        insideprocessing.Fill("MpipChi2BcgMixedEventSameSign", mass);
+                        insideprocessing.Fill("MpipChi2BcgMixedEventSameSigneta", mass, eta);
+                        insideprocessing.Fill("MpipChi2BcgMixedEventSameSignpT", mass, pT);
+                    }
+                }
+                //KK
+                for(long unsigned int i = 0; i<queue_of_previous_vector_Tracks_KK_negative[evt].size(); i++){
+                    for(long unsigned int j = 0; j<queue_of_previous_vector_Tracks_KK_negative.back().size(); j++){
+                        queue_of_previous_vector_Tracks_KK_negative[evt][i]->getLorentzVector(positive_track, particleMass[Kaon]);
+                        queue_of_previous_vector_Tracks_KK_negative.back()[j]->getLorentzVector(negative_track, particleMass[Kaon]);
+                        mass = (positive_track+negative_track).M();
+                        eta = (positive_track+negative_track).Eta();
+                        pT = (positive_track+negative_track).Pt();
+                        insideprocessing.Fill("MKKChi2BcgMixedEventSameSign", mass);
+                        insideprocessing.Fill("MKKChi2BcgMixedEventSameSignClose", mass);
+                        insideprocessing.Fill("MKKChi2BcgMixedEventSameSigneta", mass, eta);
+                        insideprocessing.Fill("MKKChi2BcgMixedEventSameSignpT", mass, pT);
+                    }
+                }
+                //pipi
+                for(long unsigned int i = 0; i<queue_of_previous_vector_Tracks_pipi_negative[evt].size(); i++){
+                    for(long unsigned int j = 0; j<queue_of_previous_vector_Tracks_pipi_negative.back().size(); j++){
+                        queue_of_previous_vector_Tracks_pipi_negative[evt][i]->getLorentzVector(positive_track, particleMass[Pion]);
+                        queue_of_previous_vector_Tracks_pipi_negative.back()[j]->getLorentzVector(negative_track, particleMass[Pion]);
+                        mass = (positive_track+negative_track).M();
+                        eta = (positive_track+negative_track).Eta();
+                        pT = (positive_track+negative_track).Pt();
+                        insideprocessing.Fill("MpipiChi2BcgMixedEventSameSign", mass);
+                        insideprocessing.Fill("MpipiChi2BcgMixedEventSameSigneta", mass, eta);
+                        insideprocessing.Fill("MpipiChi2BcgMixedEventSameSignpT", mass, pT);
+                    }
+                }
+                //pp
+                for(long unsigned int i = 0; i<queue_of_previous_vector_Tracks_pp_negative[evt].size(); i++){
+                    for(long unsigned int j = 0; j<queue_of_previous_vector_Tracks_pp_negative.back().size(); j++){
+                        queue_of_previous_vector_Tracks_pp_negative[evt][i]->getLorentzVector(positive_track, particleMass[Proton]);
+                        queue_of_previous_vector_Tracks_pp_negative.back()[j]->getLorentzVector(negative_track, particleMass[Proton]);
+                        mass = (positive_track+negative_track).M();
+                        eta = (positive_track+negative_track).Eta();
+                        pT = (positive_track+negative_track).Pt();
+                        insideprocessing.Fill("MppChi2BcgMixedEventSameSign", mass);
+                        insideprocessing.Fill("MppChi2BcgMixedEventSameSigneta", mass, eta);
+                        insideprocessing.Fill("MppChi2BcgMixedEventSameSignpT", mass, pT);
                     }
                 }
             }

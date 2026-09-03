@@ -45,6 +45,7 @@ int main(int argc, char* argv[]){
     printf("2 - track rotation\n");
     printf("3 - random track rotation\n");
     printf("4 - mixed-event\n");
+    printf("5 - mixed-event same-sign\n");
     std::string BcgType;
     std::string BcgTypeTitle;
     if(argc<4){
@@ -67,6 +68,10 @@ int main(int argc, char* argv[]){
     case 4:
         BcgType = "MixedEvent";
         BcgTypeTitle = "mixed-event";
+        break;
+    case 5:
+        BcgType = "MixedEventSameSign";
+        BcgTypeTitle = "mixed-event same-sign";
         break;
     default:
         printf("Background not chosen\n");
