@@ -28,6 +28,7 @@ std::string rountToNSignificantFigures(double input, int n = 2);
 int GetFirstNonzeroBinNumber(TH1* input);
 TFitResult fit_and_draw_and_save(TH1D* data, TF1* signal, TF1* background, std::string folderWithDiagonal, std::string name, std::string title, std::string options, TH1D* only_mixed_background = nullptr);
 void custom_draw_and_save(TH1D* data, double expected_value, std::string folderWithDiagonal, std::string name, std::string title, std::string options);
+std::string remove_bad_characters(std::string input);
 
 int main(int argc, char* argv[]){
     //something used so that the histograms would draw
@@ -80,6 +81,7 @@ int main(int argc, char* argv[]){
         width_vector,
         resolution_vector,
         background_normalisation_vector;
+    std::vector<TH2D*> background_additional_parameters_vector;
     std::string tempSignalName = "M$Chi2";
     std::string tempBackgroundName = "M$Chi2BcgMixedEvent";
     std::string tempHistName;
@@ -103,6 +105,9 @@ int main(int argc, char* argv[]){
             tempHistName = tempBackgroundName;
             tempHistName.replace(find(tempHistName.begin(), tempHistName.end(), '$')-tempHistName.begin(), 1, pair);
             background_vector.push_back((TH2D*)input->Get((tempHistName+category).c_str()));
+            //creating histograms for additional background parameters
+            //additional "  _{}" after ": " is because there were problems with lower index (and a space immediately after)
+            background_additional_parameters_vector.push_back(new TH2D((tempHistName+"_"+category+"_").c_str(), (histogram_title+"-dependent background extra parameter:   _{};;"+axis_title).c_str(), 1, 0, 1, signal_vector.back()->GetNbinsY(), signal_vector.back()->GetYaxis()->GetXmin(), signal_vector.back()->GetYaxis()->GetXmax()));
         }
     }
 
@@ -211,20 +216,50 @@ int main(int argc, char* argv[]){
                 //background normalisation
                 background_normalisation_vector[i*allCategories.size()+j]->SetBinContent(k+1, fabs(tempResult.Parameter(6)));
                 background_normalisation_vector[i*allCategories.size()+j]->SetBinError(k+1, tempResult.Error(6));
+                //background additional parameters
+                //index 0 to 5 for signal, 6 for bcg normalisation
+                //additional parameters start with index 7
+                for(size_t par = 7; par<tempResult.NTotalParameters(); par++){
+                    // it does not work; possibly because function fitted is going out of scope
+                    // std::string parameter_name = tempResult.ParName(par);
+                    // use this instead
+                    std::string parameter_name = fit_func_bcg.GetParName(par-6); //we start from index 1, because 0 is mixed bcg normalzation
+                    double bin_center = background_additional_parameters_vector[i*allCategories.size()+j]->GetYaxis()->GetBinCenter(k+1);
+                    background_additional_parameters_vector[i*allCategories.size()+j]->Fill(parameter_name.c_str(), bin_center, tempResult.Parameter(par));
+                    int parameter_bin_number = background_additional_parameters_vector[i*allCategories.size()+j]->GetXaxis()->FindFixBin(parameter_name.c_str());
+                    background_additional_parameters_vector[i*allCategories.size()+j]->SetBinError(parameter_bin_number, k+1, tempResult.Error(par));
+                }
             }
         }
     }
 
-    //drawing results - chi2, number of detected decays and width of resonances
+    //drawing results - chi2, number of detected decays and width of resonances and more
     for(size_t i = 0; i<pairTab.size(); i++){
         for(size_t j = 0; j<allCategories.size(); j++){
             std::string folderToSave = folderWithDiagonal+pairTab[i]+"/"+allCategories[j]+"/";
+            //always present
             custom_draw_and_save(Chi2withbcg_vector[i*allCategories.size()+j], 1., folderToSave, "", "", "hist min0");
             custom_draw_and_save(result_vector[i*allCategories.size()+j], 0., folderToSave, "", "", "e1 min0");
             custom_draw_and_save(mass_vector[i*allCategories.size()+j], fitMaximum, folderToSave, "", "", "e1");
             custom_draw_and_save(width_vector[i*allCategories.size()+j], fitWidth, folderToSave, "", "", "e1 min0");
             custom_draw_and_save(resolution_vector[i*allCategories.size()+j], 0., folderToSave, "", "", "e1 min0");
             custom_draw_and_save(background_normalisation_vector[i*allCategories.size()+j], 0., folderToSave, "", "", "e1 min0");
+            //custom parameters (including those from linear background)
+            TH2D* hist_pointer = background_additional_parameters_vector[i*allCategories.size()+j];
+            hist_pointer->LabelsDeflate("X");
+            for(size_t bin_number = 0; bin_number<hist_pointer->GetXaxis()->GetNbins(); bin_number++){
+                //name
+                std::string temp_name = hist_pointer->GetName();
+                temp_name += remove_bad_characters(hist_pointer->GetXaxis()->GetBinLabel(bin_number+1));
+                //title
+                std::string temp_title = hist_pointer->GetTitle();
+                temp_title += hist_pointer->GetXaxis()->GetBinLabel(bin_number+1);
+                temp_title += ";";
+                temp_title += hist_pointer->GetYaxis()->GetTitle();
+                temp_title += ";Value";
+                //drawing
+                custom_draw_and_save(hist_pointer->ProjectionY("_parameter", bin_number+1, bin_number+1), 0., folderToSave, temp_name, temp_title, "e1 text0");
+            }
         }
     }
 
@@ -396,6 +431,8 @@ void custom_draw_and_save(TH1D* data, double expected_value, std::string folderW
     }
     //normal proceeding
     TStyle tempStyle = MyStyles::Hist2DNormalSize(true);
+    //setting to align middle of text over middle of bin in "text0 e1" histograms
+    tempStyle.SetTextAlign(kHAlignCenter+kVAlignBottom);
     tempStyle.cd();
     gROOT->ForceStyle();
     TCanvas* resultCanvas = MyStyles::DefaultCanvas("resultCanvas");
@@ -427,4 +464,20 @@ void custom_draw_and_save(TH1D* data, double expected_value, std::string folderW
     resultCanvas->SaveAs((folderWithDiagonal+std::string(data->GetName())+".pdf").c_str());
     resultCanvas->Clear();
     delete resultCanvas;
+}
+
+std::string remove_bad_characters(std::string input){
+    //removes {,},#,^
+    for(std::string substring : { "{", "}", "#", "^" }){
+        while(input.find(substring)!=std::string::npos){
+            input.replace(input.find(substring), substring.size(), "");
+        }
+    }
+    //replaces * with "star"
+    for(std::string substring : { "A" }){
+        while(input.find(substring)!=std::string::npos){
+            input.replace(input.find(substring), substring.size(), "star");
+        }
+    }
+    return input;
 }
