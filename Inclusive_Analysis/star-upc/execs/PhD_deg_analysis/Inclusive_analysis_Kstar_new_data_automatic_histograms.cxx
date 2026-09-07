@@ -475,7 +475,7 @@ std::string remove_bad_characters(std::string input){
         }
     }
     //replaces * with "star"
-    for(std::string substring : { "A" }){
+    for(std::string substring : { "*" }){
         while(input.find(substring)!=std::string::npos){
             input.replace(input.find(substring), substring.size(), "star");
         }
