@@ -94,7 +94,7 @@ int main(int argc, char** argv){
     outsideprocessing.AddHistogram(TH1D("MpiKChi2", ";m_{K^{-}#pi^{+}} [GeV/c^{2}];Number of pairs", 200, 0.5, 2.0));
     outsideprocessing.AddHistogram(TH1D("MppiChi2", ";m_{p^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 500, 1.0, 2.5));
     outsideprocessing.AddHistogram(TH1D("MpipChi2", ";m_{p^{-}#pi^{+}} [GeV/c^{2}];Number of pairs", 500, 1.0, 2.5));
-    outsideprocessing.AddHistogram(TH1D("MKKChi2", ";m_{K^{+}K^{-}} [GeV/c^{2}];Number of pairs", 500, 0.9, 2.4));
+    outsideprocessing.AddHistogram(TH1D("MKKChi2", ";m_{K^{+}K^{-}} [GeV/c^{2}];Number of pairs", 50, 0.99, 1.05));
     outsideprocessing.AddHistogram(TH1D("MpipiChi2", ";m_{#pi^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 600, 0.2, 1.4));
     outsideprocessing.AddHistogram(TH1D("MppChi2", ";m_{p^{+}p^{-}} [GeV/c^{2}];Number of pairs", 500, 1.5, 3.5));
     //mass histograms (signal) with identification of the mothers
@@ -102,20 +102,31 @@ int main(int argc, char** argv){
     outsideprocessing.AddHistogram(TH2D("MpiKMothersChi2", ";m_{K^{-}#pi^{+}} [GeV/c^{2}];Mother symbol", 200, 0.5, 2.0, 1, 0, 1));
     outsideprocessing.AddHistogram(TH2D("MppiMothersChi2", ";m_{p^{+}#pi^{-}} [GeV/c^{2}];Mother symbol", 500, 1.0, 2.5, 1, 0, 1));
     outsideprocessing.AddHistogram(TH2D("MpipMothersChi2", ";m_{p^{-}#pi^{+}} [GeV/c^{2}];Mother symbol", 500, 1.0, 2.5, 1, 0, 1));
-    outsideprocessing.AddHistogram(TH2D("MKKMothersChi2", ";m_{K^{+}K^{-}} [GeV/c^{2}];Mother symbol", 500, 0.9, 2.4, 1, 0, 1));
+    outsideprocessing.AddHistogram(TH2D("MKKMothersChi2", ";m_{K^{+}K^{-}} [GeV/c^{2}];Mother symbol", 50, 0.99, 1.05, 1, 0, 1));
     outsideprocessing.AddHistogram(TH2D("MpipiMothersChi2", ";m_{#pi^{+}#pi^{-}} [GeV/c^{2}];Mother symbol", 600, 0.2, 1.4, 1, 0, 1));
     outsideprocessing.AddHistogram(TH2D("MppMothersChi2", ";m_{p^{+}p^{-}} [GeV/c^{2}];Mother symbol", 500, 1.5, 3.5, 1, 0, 1));
 
     //mass histograms (identified signal)
     outsideprocessing.AddHistogram(TH1D("MKpiChi2Identified", ";m_{K^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 200, 0.5, 2.0));
     outsideprocessing.AddHistogram(TH1D("MpiKChi2Identified", ";m_{K^{-}#pi^{+}} [GeV/c^{2}];Number of pairs", 200, 0.5, 2.0));
-    outsideprocessing.AddHistogram(TH1D("MKKChi2Identified", ";m_{K^{+}K^{-}} [GeV/c^{2}];Number of pairs", 500, 0.9, 2.4));
+    outsideprocessing.AddHistogram(TH1D("MKKChi2Identified", ";m_{K^{+}K^{-}} [GeV/c^{2}];Number of pairs", 50, 0.99, 1.05));
     //adding mass histograms grouped by category (identified signal)
     getCategoryHistograms(outsideprocessing, shortenedPairTab, "Identified");
     //deltaT (identified signal)
     outsideprocessing.AddHistogram(TH1D("deltaT0Kpi", ";#Delta t_{K^{+}#pi^{-}} [ns];Number of pairs", 200, -10, 10));
-    outsideprocessing.AddHistogram(TH1D("deltaT0piK", ";#Delta t_{#pi^{+}K^{-}} [ns];Number of pairs", 200, -10, 10));
+    outsideprocessing.AddHistogram(TH1D("deltaT0piK", ";#Delta t_{K^{-}#pi^{+}} [ns];Number of pairs", 200, -10, 10));
     outsideprocessing.AddHistogram(TH1D("deltaT0KK", ";#Delta t_{K^{+}K^{-}} [ns];Number of pairs", 200, -10, 10));
+
+    //mass histograms (simulated background)
+    outsideprocessing.AddHistogram(TH1D("MKpiChi2BcgSimulated", ";m_{K^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 200, 0.5, 2.0));
+    outsideprocessing.AddHistogram(TH1D("MpiKChi2BcgSimulated", ";m_{K^{-}#pi^{+}} [GeV/c^{2}];Number of pairs", 200, 0.5, 2.0));
+    outsideprocessing.AddHistogram(TH1D("MppiChi2BcgSimulated", ";m_{p^{+}#pi^{-}} [/c^{2}];Number of pairs", 500, 1.0, 2.5));
+    outsideprocessing.AddHistogram(TH1D("MpipChi2BcgSimulated", ";m_{p^{-}#pi^{+}} [/c^{2}];Number of pairs", 500, 1.0, 2.5));
+    outsideprocessing.AddHistogram(TH1D("MKKChi2BcgSimulated", ";m_{K^{+}K^{-}} [/c^{2}];Number of pairs", 50, 0.99, 1.05));
+    outsideprocessing.AddHistogram(TH1D("MpipiChi2BcgSimulated", ";m_{#pi^{+}#pi^{-}} [/c^{2}];Number of pairs", 600, 0.2, 1.4));
+    outsideprocessing.AddHistogram(TH1D("MppChi2BcgSimulated", ";m_{p^{+}p^{-}} [/c^{2}];Number of pairs", 500, 1.5, 3.5));
+    //adding mass histograms grouped by category (background, simulated)
+    getCategoryHistograms(outsideprocessing, shortenedPairTab, "BcgSimulated");
 
     //other histograms
     outsideprocessing.AddHistogram(TH1D("MKKSuspiciousPeakTestedAsPionPair", ";m_{#pi^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 400, 0.25, 0.65));
@@ -276,7 +287,7 @@ int main(int argc, char** argv){
 
             //########## SIGNAL EXTRACTION ###############
 
-            //loop through identified particles (signal)
+            //loop through identified particles (signal + simulated background)
             for(long unsigned int i = 0; i<vector_Track_positive.size(); i++){
                 for(long unsigned int j = 0; j<vector_Track_negative.size(); j++){
                     isdEdxOk = (vector_Track_positive[i]->getNhitsDEdx()>=15)&&(vector_Track_negative[j]->getNhitsDEdx()>=15);
@@ -321,6 +332,11 @@ int main(int argc, char** argv){
                                 insideprocessing.Fill("deltaT0Kpi", DeltaT0(vector_Track_positive[i], vector_Track_negative[j], particleMass[Kaon], particleMass[Pion]));
                             }
                         }
+                        if(motherName!="K*0"){
+                            insideprocessing.Fill("MKpiChi2BcgSimulated", mass);
+                            insideprocessing.Fill("MKpiChi2BcgSimulatedeta", mass, eta);
+                            insideprocessing.Fill("MKpiChi2BcgSimulatedpT", mass, pT);
+                        }
                         insideprocessing.Fill("MKpiMothersChi2", mass, motherName.c_str(), 1.0);
                     }
                     if(chi2Map["pi_K"]<9){
@@ -339,6 +355,11 @@ int main(int argc, char** argv){
                                 insideprocessing.Fill("MpiKChi2IdentifiedpT", mass, pT);
                                 insideprocessing.Fill("deltaT0piK", DeltaT0(vector_Track_positive[i], vector_Track_negative[j], particleMass[Pion], particleMass[Kaon]));
                             }
+                        }
+                        if(motherName!="K*0_bar"){
+                            insideprocessing.Fill("MpiKChi2BcgSimulated", mass);
+                            insideprocessing.Fill("MpiKChi2BcgSimulatedeta", mass, eta);
+                            insideprocessing.Fill("MpiKChi2BcgSimulatedpT", mass, pT);
                         }
                         insideprocessing.Fill("MpiKMothersChi2", mass, motherName.c_str(), 1.0);
                     }
@@ -384,6 +405,11 @@ int main(int argc, char** argv){
                                 insideprocessing.Fill("MKKChi2IdentifiedpT", mass, pT);
                                 insideprocessing.Fill("deltaT0KK", DeltaT0(vector_Track_positive[i], vector_Track_negative[j], particleMass[Kaon], particleMass[Kaon]));
                             }
+                        }
+                        if(motherName!="phi"){
+                            insideprocessing.Fill("MKKChi2BcgSimulated", mass);
+                            insideprocessing.Fill("MKKChi2BcgSimulatedeta", mass, eta);
+                            insideprocessing.Fill("MKKChi2BcgSimulatedpT", mass, pT);
                         }
                         insideprocessing.Fill("MKKMothersChi2", mass, motherName.c_str(), 1.0);
                     }
@@ -509,7 +535,7 @@ double getChi2(StUPCTrack* positive, StUPCTrack* negative, int positiveId, int n
     if(fabs(deltaTfixed-1.)<fabs(deltaTfixed)){
         //if its closer to +1ns peak than 0ns peak, we subtract that one nanosecond
         deltaTfixed += -1.;
-    } else     if(fabs(deltaTfixed+1.)<fabs(deltaTfixed)){
+    } else if(fabs(deltaTfixed+1.)<fabs(deltaTfixed)){
         //if its closer to -1ns peak than 0ns peak, we add that one nanosecond
         deltaTfixed += 1.;
     }
