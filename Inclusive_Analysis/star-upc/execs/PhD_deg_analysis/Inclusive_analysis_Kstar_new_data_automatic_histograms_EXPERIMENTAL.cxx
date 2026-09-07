@@ -173,6 +173,7 @@ int main(int argc, char* argv[]){
 
                 //setting initial fitting values
                 double initial_bcg_scale = sig_slice->GetBinContent(sig_slice->FindBin(fitMaximum+fitWidth))/bcg_slice->GetBinContent(bcg_slice->FindBin(fitMaximum+fitWidth));
+                fit_func_bcg.SetParameters(initial_bcg_scale, 0., 0.);
                 fit_func_bcg.SetParLimits(0, 0., 10.);
                 double initial_sig_height = (sig_slice->GetBinContent(sig_slice->FindBin(fitMaximum))-sig_slice->GetBinContent(sig_slice->FindBin(fitMaximum+fitWidth)))*TMath::PiOver2()*fitWidth;
                 fit_func_sig.SetParameters(initial_sig_height, fitMaximum, fitWidth);
