@@ -31,15 +31,11 @@ enum{
 };
 enum SIDE{ E = 0, East = 0, W = 1, West = 1, nSides };
 enum PARTICLES{ Pion = 0, Kaon = 1, Proton = 2, nParticles };
-enum EXTENDED_PARTICLES{ ExtElectron = 0, ExtPion = 1, ExtKaon = 2, ExtProton = 3, nParticlesExtended };
 const double particleMass[nParticles] = { 0.13957, 0.493677, 0.93827 }; // pion, kaon, proton in GeV /c^2 
-const double particleMassExtended[nParticlesExtended] = { 0.000510999, 0.13957, 0.493677, 0.93827 }; // electron, pion, kaon, proton in GeV /c^2 
 enum BRANCH_ID{ EU, ED, WU, WD, nBranches };
 enum RP_ID{ E1U, E1D, E2U, E2D, W1U, W1D, W2U, W2D, nRomanPots };
 enum SUSPECTED_PARTICLES{ K0S, Lambda, Kstar, Phi };
-string particleNicks[nParticlesExtended] = { "e", "pi", "K", "p" };
-
-double getChi2(StUPCTrack* positive, StUPCTrack* negative, int positiveId, int negativeId, double sigmaT);
+string particleNicks[EXTENDED_PARTICLES::nParticlesExtended] = { "e", "pi", "K", "p" };
 
 int main(int argc, char** argv){
 
@@ -1623,11 +1619,4 @@ int main(int argc, char** argv){
     outputFileHist->Close();
 
     return 0;
-}
-
-double getChi2(StUPCTrack* positive, StUPCTrack* negative, int positiveId, int negativeId, double sigmaT){
-    double sigma1 = pow(positive->getNSigmasTPC(static_cast<StUPCTrack::Part>(positiveId)), 2);
-    double sigma2 = pow(negative->getNSigmasTPC(static_cast<StUPCTrack::Part>(negativeId)), 2);
-    double sigma3 = pow(DeltaT0(positive, negative, particleMassExtended[positiveId], particleMassExtended[negativeId])/sigmaT, 2);
-    return sigma1+sigma2+sigma3;
 }

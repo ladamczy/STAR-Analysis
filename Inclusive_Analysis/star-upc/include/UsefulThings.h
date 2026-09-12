@@ -42,6 +42,8 @@ const int triggerID[] = { 570209, 570219, 570229, 570701, 570702, 570703, 570704
 const int CEPtriggers[] = { 570701, 570705, 570711, 590701, 590705, 590708};
 const int CEPCutDowntriggers[] = { 570701, 570705, 570711 };
 const double beamMomentum = 254.867;
+enum EXTENDED_PARTICLES{ ExtElectron = 0, ExtPion = 1, ExtKaon = 2, ExtProton = 3, nParticlesExtended };
+const double particleMassExtended[nParticlesExtended] = { 0.000510999, 0.13957, 0.493677, 0.93827 }; // electron, pion, kaon, proton in GeV /c^2 
 
 bool CheckTriggers(StUPCEvent* localupcEvt){
     bool CPTtrigger = false;
@@ -167,6 +169,70 @@ double M2TOF(StUPCTrack* track1, StUPCTrack* track2){
     double C = pow(deltaT, 4)-2*pow(deltaT, 2)*(L1*L1+L2*L2)+pow(L1*L1-L2*L2, 2);
     double m2TOF = (-B+sqrt(B*B-4*A*C))/2/A;
     return m2TOF;
+}
+
+double getChi2(StUPCTrack* positive, StUPCTrack* negative, int positiveId, int negativeId, double sigmaT){
+    double sigma1 = pow(positive->getNSigmasTPC(static_cast<StUPCTrack::Part>(positiveId)), 2);
+    double sigma2 = pow(negative->getNSigmasTPC(static_cast<StUPCTrack::Part>(negativeId)), 2);
+    double sigma3 = pow(DeltaT0(positive, negative, particleMassExtended[positiveId], particleMassExtended[negativeId])/sigmaT, 2);
+    return sigma1+sigma2+sigma3;
+}
+
+double getChi2StarsimCorrected(StUPCTrack* positive, StUPCTrack* negative, int positiveId, int negativeId, double sigmaT){
+    //data taken from MC_signal_id_efficiency performed on a huge general sample
+
+    //nsigma fix
+    double positiveParticleOffset, negativeParticleOffset;
+    switch(positiveId){
+    case ExtElectron:
+        positiveParticleOffset = -0.3756;
+        break;
+    case ExtPion:
+        positiveParticleOffset = 1.217;
+        break;
+    case ExtKaon:
+        positiveParticleOffset = 1.258;
+        break;
+    case ExtProton:
+        positiveParticleOffset = 1.400;
+        break;
+    default:
+        positiveParticleOffset = 0;
+        break;
+    }
+    switch(negativeId){
+    case ExtElectron:
+        negativeParticleOffset = -0.307;
+        break;
+    case ExtPion:
+        negativeParticleOffset = 1.263;
+        break;
+    case ExtKaon:
+        negativeParticleOffset = 1.277;
+        break;
+    case ExtProton:
+        negativeParticleOffset = 1.366;
+        break;
+    default:
+        negativeParticleOffset = 0;
+        break;
+    }
+    double sigma1 = pow(positive->getNSigmasTPC(static_cast<StUPCTrack::Part>(positiveId))-positiveParticleOffset, 2);
+    double sigma2 = pow(negative->getNSigmasTPC(static_cast<StUPCTrack::Part>(negativeId))-negativeParticleOffset, 2);
+
+    //deltaT fix (two additional peaks at +-1 ns)
+    double deltaTfixed = DeltaT0(positive, negative, particleMassExtended[positiveId], particleMassExtended[negativeId]);
+    if(fabs(deltaTfixed-1.)<fabs(deltaTfixed)){
+        //if its closer to +1ns peak than 0ns peak, we subtract that one nanosecond
+        deltaTfixed += -1.;
+    } else if(fabs(deltaTfixed+1.)<fabs(deltaTfixed)){
+        //if its closer to -1ns peak than 0ns peak, we add that one nanosecond
+        deltaTfixed += 1.;
+    }
+    double sigma3 = pow(deltaTfixed/sigmaT, 2);
+
+    //total return
+    return sigma1+sigma2+sigma3;
 }
 
 void getCategoryHistograms(ProcessingOutsideLoop& out, vector<string> pairs, std::string nameAfterChi2 = ""){

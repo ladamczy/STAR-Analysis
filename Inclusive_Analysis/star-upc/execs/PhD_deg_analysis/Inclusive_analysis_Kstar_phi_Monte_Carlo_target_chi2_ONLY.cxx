@@ -31,16 +31,13 @@ enum{
 };
 enum SIDE{ E = 0, East = 0, W = 1, West = 1, nSides };
 enum PARTICLES{ Pion = 0, Kaon = 1, Proton = 2, nParticles };
-enum EXTENDED_PARTICLES{ ExtElectron = 0, ExtPion = 1, ExtKaon = 2, ExtProton = 3, nParticlesExtended };
 const double particleMass[nParticles] = { 0.13957, 0.493677, 0.93827 }; // pion, kaon, proton in GeV /c^2 
-const double particleMassExtended[nParticlesExtended] = { 0.000510999, 0.13957, 0.493677, 0.93827 }; // electron, pion, kaon, proton in GeV /c^2 
 enum BRANCH_ID{ EU, ED, WU, WD, nBranches };
 enum RP_ID{ E1U, E1D, E2U, E2D, W1U, W1D, W2U, W2D, nRomanPots };
 enum SUSPECTED_PARTICLES{ K0S, Lambda, Kstar, Phi };
-string particleNicks[nParticlesExtended] = { "e", "pi", "K", "p" };
+string particleNicks[EXTENDED_PARTICLES::nParticlesExtended] = { "e", "pi", "K", "p" };
 
 TParticle* getMother(StUPCEvent* inputUPCpointer, TParticle* particle1, TParticle* particle2);
-double getChi2(StUPCTrack* positive, StUPCTrack* negative, int positiveId, int negativeId, double sigmaT);
 
 int main(int argc, char** argv){
 
@@ -309,7 +306,7 @@ int main(int argc, char** argv){
                     for(size_t pos = 0; pos<nParticlesExtended; pos++){
                         for(size_t neg = 0; neg<nParticlesExtended; neg++){
                             tempPairName = particleNicks[pos]+"_"+particleNicks[neg];
-                            chi2Map[tempPairName] = getChi2(vector_Track_positive[i], vector_Track_negative[j], pos, neg, sigmaMap[tempPairName]);
+                            chi2Map[tempPairName] = getChi2StarsimCorrected(vector_Track_positive[i], vector_Track_negative[j], pos, neg, sigmaMap[tempPairName]);
                         }
                     }
 
@@ -489,61 +486,4 @@ TParticle* getMother(StUPCEvent* inputUPCpointer, TParticle* particle1, TParticl
         }
     }
     return nullptr;
-}
-
-double getChi2(StUPCTrack* positive, StUPCTrack* negative, int positiveId, int negativeId, double sigmaT){
-    // TODO: undo this when simulation will be fixed
-    //data taken from MC_signal_id_efficiency performed on a huge general sample
-    double positiveParticleOffset, negativeParticleOffset;
-    switch(positiveId){
-    case ExtElectron:
-        positiveParticleOffset = -0.3756;
-        break;
-    case ExtPion:
-        positiveParticleOffset = 1.217;
-        break;
-    case ExtKaon:
-        positiveParticleOffset = 1.258;
-        break;
-    case ExtProton:
-        positiveParticleOffset = 1.400;
-        break;
-    default:
-        positiveParticleOffset = 0;
-        break;
-    }
-    switch(negativeId){
-    case ExtElectron:
-        negativeParticleOffset = -0.307;
-        break;
-    case ExtPion:
-        negativeParticleOffset = 1.263;
-        break;
-    case ExtKaon:
-        negativeParticleOffset = 1.277;
-        break;
-    case ExtProton:
-        negativeParticleOffset = 1.366;
-        break;
-    default:
-        negativeParticleOffset = 0;
-        break;
-    }
-    double sigma1 = pow(positive->getNSigmasTPC(static_cast<StUPCTrack::Part>(positiveId))-positiveParticleOffset, 2);
-    double sigma2 = pow(negative->getNSigmasTPC(static_cast<StUPCTrack::Part>(negativeId))-negativeParticleOffset, 2);
-    double deltaTfixed = DeltaT0(positive, negative, particleMassExtended[positiveId], particleMassExtended[negativeId]);
-    if(fabs(deltaTfixed-1.)<fabs(deltaTfixed)){
-        //if its closer to +1ns peak than 0ns peak, we subtract that one nanosecond
-        deltaTfixed += -1.;
-    } else if(fabs(deltaTfixed+1.)<fabs(deltaTfixed)){
-        //if its closer to -1ns peak than 0ns peak, we add that one nanosecond
-        deltaTfixed += 1.;
-    }
-    double sigma3 = pow(deltaTfixed/sigmaT, 2);
-
-    //the original way
-    // double sigma1 = pow(positive->getNSigmasTPC(static_cast<StUPCTrack::Part>(positiveId)), 2);
-    // double sigma2 = pow(negative->getNSigmasTPC(static_cast<StUPCTrack::Part>(negativeId)), 2);
-    // double sigma3 = pow(DeltaT0(positive, negative, particleMassExtended[positiveId], particleMassExtended[negativeId])/sigmaT, 2);
-    return sigma1+sigma2+sigma3;
 }
