@@ -437,13 +437,7 @@ int main(int argc, char* argv[]){
                 continue;
             }
             //the rest of deltaT0 calculations
-            double deltaT = DeltaT0(positiveTrack, negativeTrack, massmap[PDGpositive], massmap[PDGnegative]);
-            //fixing the +-1ns peaks
-            if(fabs(deltaT-1)<fabs(deltaT)){
-                deltaT -= 1;
-            } else if(fabs(deltaT+1)<fabs(deltaT)){
-                deltaT += 1;
-            }
+            double deltaT = DeltaT0StarsimCorrected(positiveTrack, negativeTrack, massmap[PDGpositive], massmap[PDGnegative]);
             double sigmaT = sigmaTmap[PDGmain];
             double sigmaParticle1, sigmaParticle2;
             switch(PDGpositive){
@@ -478,6 +472,10 @@ int main(int argc, char* argv[]){
             //chi2 histogram
             double Chi2 = pow(deltaT/sigmaT, 2)+pow(sigmaParticle1, 2)+pow(sigmaParticle2, 2);
             Chi2Signal.Fill(Chi2);
+
+            //TODO:
+            // - make mass histogram reconstructed from MC tracks vs from TPC tracks
+            // - fit to it B-W and B-W*Gauss
         }
 
 
@@ -533,13 +531,7 @@ int main(int argc, char* argv[]){
                     positiveTrack = tempTrack2;
                     negativeTrack = tempTrack1;
                 }
-                double deltaT = DeltaT0(positiveTrack, negativeTrack, massmap[PDGpositive], massmap[PDGnegative]);
-                //fixing the +-1ns peaks
-                if(fabs(deltaT-1)<fabs(deltaT)){
-                    deltaT -= 1;
-                } else if(fabs(deltaT+1)<fabs(deltaT)){
-                    deltaT += 1;
-                }
+                double deltaT = DeltaT0StarsimCorrected(positiveTrack, negativeTrack, massmap[PDGpositive], massmap[PDGnegative]);
                 double sigmaT = sigmaTmap[PDGmain];
                 double sigmaParticle1, sigmaParticle2;
                 switch(PDGpositive){

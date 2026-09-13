@@ -155,6 +155,20 @@ double DeltaT0(StUPCTrack* track1, StUPCTrack* track2, double mass1, double mass
     return t0(track1, mass1)-t0(track2, mass2);
 }
 
+double DeltaT0StarsimCorrected(StUPCTrack* track1, StUPCTrack* track2, double mass1, double mass2){
+    //deltaT fix (two additional peaks at +-1 ns, we just take the closer one)
+    double deltaTfixed = DeltaT0(track1, track2, mass1, mass2);
+    if(fabs(deltaTfixed-1.)<fabs(deltaTfixed)){
+        //if its closer to +1ns peak than 0ns peak, we subtract that one nanosecond
+        deltaTfixed += -1.;
+    } else if(fabs(deltaTfixed+1.)<fabs(deltaTfixed)){
+        //if its closer to -1ns peak than 0ns peak, we add that one nanosecond
+        deltaTfixed += 1.;
+    }
+
+    return deltaTfixed;
+}
+
 double M2TOF(StUPCTrack* track1, StUPCTrack* track2){
     double deltaT = (track1->getTofTime()-track2->getTofTime())*100.0*0.299792458;
     double L1 = track1->getTofPathLength();
@@ -221,14 +235,7 @@ double getChi2StarsimCorrected(StUPCTrack* positive, StUPCTrack* negative, int p
     double sigma2 = pow(negative->getNSigmasTPC(static_cast<StUPCTrack::Part>(negativeId))-negativeParticleOffset, 2);
 
     //deltaT fix (two additional peaks at +-1 ns)
-    double deltaTfixed = DeltaT0(positive, negative, particleMassExtended[positiveId], particleMassExtended[negativeId]);
-    if(fabs(deltaTfixed-1.)<fabs(deltaTfixed)){
-        //if its closer to +1ns peak than 0ns peak, we subtract that one nanosecond
-        deltaTfixed += -1.;
-    } else if(fabs(deltaTfixed+1.)<fabs(deltaTfixed)){
-        //if its closer to -1ns peak than 0ns peak, we add that one nanosecond
-        deltaTfixed += 1.;
-    }
+    double deltaTfixed = DeltaT0StarsimCorrected(positive, negative, particleMassExtended[positiveId], particleMassExtended[negativeId]);
     double sigma3 = pow(deltaTfixed/sigmaT, 2);
 
     //total return
