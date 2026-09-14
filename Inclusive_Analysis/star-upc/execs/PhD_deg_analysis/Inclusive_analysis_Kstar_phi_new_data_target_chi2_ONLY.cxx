@@ -192,10 +192,24 @@ int main(int argc, char** argv){
 
     //other *other* histograms
     outsideprocessing.AddHistogram(TH2D("dEdxTPCEnergyLoss", "dE/dx TPC Energy loss distribution;pq [GeV/c];dE/dx [keV/cm]", 300, -3, 3, 100, 0, 40));
-    outsideprocessing.AddHistogram(TH1D("PrimaryVertexPositionDifferenceX", ";#Delta x [cm];Number of pairs", 160, -0.8, 0.8));
-    outsideprocessing.AddHistogram(TH1D("PrimaryVertexPositionDifferenceY", ";#Delta y [cm];Number of pairs", 160, -0.8, 0.8));
-    outsideprocessing.AddHistogram(TH1D("PrimaryVertexPositionDifferenceZ", ";#Delta z [cm];Number of pairs", 400, -200., 200));
-    outsideprocessing.AddHistogram(TH1D("PrimaryVertexPositionDifferenceTotal", ";#Delta R [cm];Number of pairs", 400, 0., 400));
+    outsideprocessing.AddHistogram(TH1D("PrimaryVertexPositionX", ";x [cm];Number of events", 160, -0.8, 0.8));
+    outsideprocessing.AddHistogram(TH1D("PrimaryVertexPositionY", ";y [cm];Number of events", 160, -0.8, 0.8));
+    outsideprocessing.AddHistogram(TH1D("PrimaryVertexPositionZ", ";z [cm];Number of events", 400, -200., 200));
+    outsideprocessing.AddHistogram(TH1D("PrimaryVertexPositionTotal", ";R [cm];Number of events", 400, 0., 400));
+    outsideprocessing.AddHistogram(TH1D("MxTotal", ";M_{X} [GeV/c^{2}];Number of events", 400, 0., 20.));
+    outsideprocessing.AddHistogram(TH1D("XiWTotal", ";#xi_{W};Number of events", 400, -0.05, 0.35));
+    outsideprocessing.AddHistogram(TH1D("XiETotal", ";#xi_{E};Number of events", 400, -0.05, 0.35));
+    outsideprocessing.AddHistogram(TH2D("XiBothTotal", ";#xi_{W};#xi_{E}", 400, -0.05, 0.35, 400, -0.05, 0.35));
+    //histograms for eventual cutting of mixed events
+    outsideprocessing.AddHistogram(TH1D("PrimaryVertexPositionDifferenceX", ";#Delta x [cm];Number of event pairs", 160, -0.8, 0.8));
+    outsideprocessing.AddHistogram(TH1D("PrimaryVertexPositionDifferenceY", ";#Delta y [cm];Number of event pairs", 160, -0.8, 0.8));
+    outsideprocessing.AddHistogram(TH1D("PrimaryVertexPositionDifferenceZ", ";#Delta z [cm];Number of event pairs", 400, -200., 200));
+    outsideprocessing.AddHistogram(TH1D("PrimaryVertexPositionDifferenceTotal", ";#Delta R [cm];Number of event pairs", 400, 0., 400));
+    outsideprocessing.AddHistogram(TH1D("MxDifference", ";#Delta M_{X} [GeV/c^{2}];Number of event pairs", 400, -10., 10));
+    outsideprocessing.AddHistogram(TH1D("MxDifferenceClose", ";#Delta M_{X} [GeV/c^{2}];Number of event pairs", 400, -0.2, 0.2));
+    outsideprocessing.AddHistogram(TH1D("XiWDifference", ";#Delta #xi_{W};Number of event pairs", 400, -0.1, 0.1));
+    outsideprocessing.AddHistogram(TH1D("XiEDifference", ";#Delta #xi_{E};Number of event pairs", 400, -0.1, 0.1));
+    outsideprocessing.AddHistogram(TH2D("XiBothDifference", ";#Delta #xi_{W};#Delta #xi_{E}", 400, -0.1, 0.1, 400, -0.1, 0.1));
 
     for(size_t i = 0; i<outsideprocessing.GetNumberOfHistograms(); i++){
         if(&outsideprocessing.GetPointer1D(i)!=nullptr){
@@ -221,10 +235,10 @@ int main(int argc, char** argv){
     auto myFunction = [&](TTreeReader& myReader){
         //getting values from TChain, in-loop histogram initialization
         TTreeReaderValue<StUPCEvent> StUPCEventInstance(myReader, "mUPCEvent");
-        // TTreeReaderValue<StRPEvent> StRPEventInstance(myReader, "mRPEvent");
+        TTreeReaderValue<StRPEvent> StRPEventInstance(myReader, "mRPEvent");
         ProcessingInsideLoop insideprocessing;
         StUPCEvent* tempUPCpointer;
-        // StRPEvent* tempRPpointer;
+        StRPEvent* tempRPpointer;
         insideprocessing.GetLocalHistograms(&outsideprocessing);
 
         //filling pairInfo histograms in correct order of bins
@@ -267,6 +281,11 @@ int main(int argc, char** argv){
         std::deque<std::vector<StUPCTrack*>> queue_of_previous_vector_Tracks_pp_negative;
         //positions of primary vertex from previous events
         std::deque<TVector3> queue_of_previous_PV_positions;
+        //total central mass
+        std::deque<double> queue_of_previous_Mx;
+        //xi of protons
+        std::deque<double> queue_of_previous_Xi_W;
+        std::deque<double> queue_of_previous_Xi_E;
 
         //parameters
         int total_events_in_queue = 1000;
@@ -280,7 +299,7 @@ int main(int argc, char** argv){
         while(myReader.Next()){
             //in a TTree, it *would* be constant, in TChain however not necessarily
             tempUPCpointer = StUPCEventInstance.Get();
-            // tempRPpointer = StRPEventInstance.Get();
+            tempRPpointer = StRPEventInstance.Get();
 
             //cleaning the loop
             vector_Track_positive.clear();
@@ -359,6 +378,26 @@ int main(int argc, char** argv){
             for(auto const& imap:sigmaMap){
                 chi2Map.insert({ imap.first, 0. });
             }
+
+            //filling other one-in-an-event histograms
+            TVector3 PV_position(tempUPCpointer->getVertex(0)->getPosX(), tempUPCpointer->getVertex(0)->getPosY(), tempUPCpointer->getVertex(0)->getPosZ());
+            insideprocessing.Fill("PrimaryVertexPositionX", PV_position.X());
+            insideprocessing.Fill("PrimaryVertexPositionY", PV_position.Y());
+            insideprocessing.Fill("PrimaryVertexPositionZ", PV_position.Z());
+            insideprocessing.Fill("PrimaryVertexPositionTotal", PV_position.Mag());
+            double Mx = tempRPpointer->getTrack(0)->xi(beamMomentum)*tempRPpointer->getTrack(1)->xi(beamMomentum)*510.;
+            insideprocessing.Fill("MxTotal", Mx);
+            double Xi_W, Xi_E;
+            if(tempRPpointer->getTrack(0)->branch()==WU||tempRPpointer->getTrack(0)->branch()==WD){
+                Xi_W = tempRPpointer->getTrack(0)->xi(beamMomentum);
+                Xi_E = tempRPpointer->getTrack(1)->xi(beamMomentum);
+            } else{
+                Xi_W = tempRPpointer->getTrack(1)->xi(beamMomentum);
+                Xi_E = tempRPpointer->getTrack(0)->xi(beamMomentum);
+            }
+            insideprocessing.Fill("XiWTotal", Xi_W);
+            insideprocessing.Fill("XiETotal", Xi_E);
+            insideprocessing.Fill("XiBothTotal", Xi_W, Xi_E);
 
             //########## SIGNAL EXTRACTION ###############
 
@@ -1141,9 +1180,17 @@ int main(int argc, char** argv){
                     }
                 }
             }
-            //noting current position of primary vertex
+            //noting current position of primary vertex and other values
             queue_of_previous_PV_positions.emplace_back();
             queue_of_previous_PV_positions.back().SetXYZ(tempUPCpointer->getVertex(0)->getPosX(), tempUPCpointer->getVertex(0)->getPosY(), tempUPCpointer->getVertex(0)->getPosZ());
+            queue_of_previous_Mx.emplace_back(tempRPpointer->getTrack(0)->xi(beamMomentum)* tempRPpointer->getTrack(1)->xi(beamMomentum)*510.);
+            if(tempRPpointer->getTrack(0)->branch()==WU||tempRPpointer->getTrack(0)->branch()==WD){
+                queue_of_previous_Xi_W.emplace_back(tempRPpointer->getTrack(0)->xi(beamMomentum));
+                queue_of_previous_Xi_E.emplace_back(tempRPpointer->getTrack(1)->xi(beamMomentum));
+            } else{
+                queue_of_previous_Xi_W.emplace_back(tempRPpointer->getTrack(1)->xi(beamMomentum));
+                queue_of_previous_Xi_E.emplace_back(tempRPpointer->getTrack(0)->xi(beamMomentum));
+            }
 
             //useful variables
             double pt, eta, phi;
@@ -1159,6 +1206,20 @@ int main(int argc, char** argv){
                 if(fabs(difference.Z())>10){
                     continue;
                 }
+                //check difference in Mx and xi
+                double Mx_difference = queue_of_previous_Mx.back()-queue_of_previous_Mx[evt];
+                insideprocessing.Fill("MxDifference", Mx_difference);
+                insideprocessing.Fill("MxDifferenceClose", Mx_difference);
+                double Xi_W_difference = queue_of_previous_Xi_W.back()-queue_of_previous_Xi_W[evt];
+                double Xi_E_difference = queue_of_previous_Xi_E.back()-queue_of_previous_Xi_E[evt];
+                insideprocessing.Fill("XiWDifference", Xi_W_difference);
+                insideprocessing.Fill("XiEDifference", Xi_E_difference);
+                insideprocessing.Fill("XiBothDifference", Xi_W_difference, Xi_E_difference);
+                //if the difference is bigger than 1 GeV (arbitrarily chosen), we skip this event
+                if(fabs(Mx_difference)>1.){
+                    continue;
+                }
+
 
                 //MIXED-EVENT DIFFERENT-SIGN
                 //############################################################################
