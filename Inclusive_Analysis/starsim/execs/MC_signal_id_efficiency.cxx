@@ -81,6 +81,13 @@ int main(int argc, char* argv[]){
                                     {KminusPDGid, 0.493677},
                                     {pplusPDGid, 0.938272},
                                     {pminusPDGid, 0.938272} };
+    //widths
+    std::map<int, double> widthmap = { { K0SPDGid, 7.36e-21 },
+                                    { LambdaPDGid, 2.5e-21 },
+                                    { LambdabarPDGid, 2.5e-21 },
+                                    { KstarPDGid, 0.0514 },
+                                    { KstarbarPDGid, 0.0514 },
+                                    { phiPDGid, 0.004249 } };
     //histogram names
     std::map<int, std::string> namemap = { {K0SPDGid, "K^{0}_{S}"},
                                     {LambdaPDGid, "#Lambda^0"},
@@ -177,6 +184,7 @@ int main(int argc, char* argv[]){
     //histograms
     TH1D FlowChart("FlowChart", ("Number of "+namemap[PDGmain]+" passing criteria;;particles").c_str(), 1, 0, 1);
     TH1D Chi2Signal("Chi2Signal", "#chi^{2} characteristic of the signal;#chi^{2};pairs of tracks", 100, 0, 100);
+    TH1D Chi2SignalFixed("Chi2SignalFixed", "#chi^{2} characteristic of the signal (with Starsim fixes);#chi^{2};pairs of tracks", 100, 0, 100);
     TH1D Chi2All("Chi2All", "#chi^{2} characteristic of the signal+background;#chi^{2};pairs of tracks", 100, 0, 100);
     std::vector<TH1D*> histogramsNSigma;
     std::vector<TH1D*> histogramsdEdx;
@@ -295,6 +303,9 @@ int main(int argc, char* argv[]){
     TH2D dEdxTPCEnergyLoss("dEdxTPCEnergyLoss", "dE/dx TPC Energy loss distribution;pq [GeV/c];dE/dx [keV/cm]", 300, -3, 3, 100, 0, 40);
     TH1D UnidentifiedPositive("UnidentifiedPositive", "Names of unidentified particles;;counts", 1, 0, 1);
     TH1D UnidentifiedNegative("UnidentifiedNegative", "Names of unidentified particles;;counts", 1, 0, 1);
+    //mass histograms
+    TH1D MCmass("MCmass", ("Mass of "+namemap[PDGmain]+" reconstructed from true level;m [GeV/c^{2}];pairs").c_str(), 100, massmap[PDGmain]-5*widthmap[PDGmain], massmap[PDGmain]+5*widthmap[PDGmain]);
+    TH1D TPCmass("TPCmass", ("Mass of "+namemap[PDGmain]+" reconstructed from TPC data;m [GeV/c^{2}];pairs").c_str(), 100, massmap[PDGmain]-5*widthmap[PDGmain], massmap[PDGmain]+5*widthmap[PDGmain]);
 
     //setting up TTreeReader without multithread processing
     TTreeReader myReader(eventFiles);
@@ -440,41 +451,63 @@ int main(int argc, char* argv[]){
             double deltaT = DeltaT0StarsimCorrected(positiveTrack, negativeTrack, massmap[PDGpositive], massmap[PDGnegative]);
             double sigmaT = sigmaTmap[PDGmain];
             double sigmaParticle1, sigmaParticle2;
+            EXTENDED_PARTICLES idPositive, idNegative;
             switch(PDGpositive){
             case piplusPDGid:
                 sigmaParticle1 = positiveTrack->getNSigmasTPCPion();
+                idPositive = EXTENDED_PARTICLES::ExtPion;
                 break;
             case KplusPDGid:
                 sigmaParticle1 = positiveTrack->getNSigmasTPCKaon();
+                idPositive = EXTENDED_PARTICLES::ExtKaon;
                 break;
             case pplusPDGid:
                 sigmaParticle1 = positiveTrack->getNSigmasTPCProton();
+                idPositive = EXTENDED_PARTICLES::ExtProton;
                 break;
             default:
                 sigmaParticle1 = 0;
+                idPositive = EXTENDED_PARTICLES::ExtElectron;
                 break;
             }
             switch(PDGnegative){
             case piminusPDGid:
                 sigmaParticle2 = negativeTrack->getNSigmasTPCPion();
+                idNegative = EXTENDED_PARTICLES::ExtPion;
                 break;
             case KminusPDGid:
                 sigmaParticle2 = negativeTrack->getNSigmasTPCKaon();
+                idNegative = EXTENDED_PARTICLES::ExtKaon;
                 break;
             case pminusPDGid:
                 sigmaParticle2 = negativeTrack->getNSigmasTPCProton();
+                idNegative = EXTENDED_PARTICLES::ExtProton;
                 break;
             default:
                 sigmaParticle2 = 0;
+                idNegative = EXTENDED_PARTICLES::ExtElectron;
                 break;
             }
 
-            //chi2 histogram
+            //chi2 histogram (without fixed nsigma)
             double Chi2 = pow(deltaT/sigmaT, 2)+pow(sigmaParticle1, 2)+pow(sigmaParticle2, 2);
             Chi2Signal.Fill(Chi2);
 
+            //chi2 test (as with real particle)
+            double Chi2Corrected = getChi2StarsimCorrected(positiveTrack, negativeTrack, idPositive, idNegative, sigmaT);
+            if(Chi2Corrected<9){
+                Chi2SignalFixed.Fill(Chi2Corrected);
+                TLorentzVector positiveTrackFourvector, negativeTrackFourvector;
+                //true level mass
+                positiveTrackFourvector.SetXYZM(positiveMCParticle->Px(), positiveMCParticle->Py(), positiveMCParticle->Pz(), massmap[PDGpositive]);
+                negativeTrackFourvector.SetXYZM(negativeMCParticle->Px(), negativeMCParticle->Py(), negativeMCParticle->Pz(), massmap[PDGnegative]);
+                MCmass.Fill((positiveTrackFourvector+negativeTrackFourvector).M());
+                //TPC reconstructed mass
+                positiveTrack->getLorentzVector(positiveTrackFourvector, massmap[PDGpositive]);
+                negativeTrack->getLorentzVector(negativeTrackFourvector, massmap[PDGnegative]);
+                TPCmass.Fill((positiveTrackFourvector+negativeTrackFourvector).M());
+            }
             //TODO:
-            // - make mass histogram reconstructed from MC tracks vs from TPC tracks
             // - fit to it B-W and B-W*Gauss
         }
 
@@ -562,7 +595,7 @@ int main(int argc, char* argv[]){
                     sigmaParticle2 = 0;
                     break;
                 }
-                //chi2 histogram
+                //chi2 histogram (without fixed nsigma)
                 double Chi2 = pow(deltaT/sigmaT, 2)+pow(sigmaParticle1, 2)+pow(sigmaParticle2, 2);
                 Chi2All.Fill(Chi2);
             }
@@ -739,6 +772,7 @@ int main(int argc, char* argv[]){
     FlowChart.GetXaxis()->SetLabelSize(0.08);
     FlowChart.Write();
     Chi2Signal.Write();
+    Chi2SignalFixed.Write();
     Chi2All.Write();
     for(size_t i = 0; i<histogramsNSigma.size(); i++){
         histogramsNSigma[i]->Write();
@@ -753,6 +787,8 @@ int main(int argc, char* argv[]){
         histogramsdEdx[i]->Write();
     }
     dEdxTPCEnergyLoss.Write();
+    MCmass.Write();
+    TPCmass.Write();
 
     outputFileHist->Close();
 
