@@ -249,9 +249,12 @@ int main(int argc, char* argv[]){
             TH2D* hist_pointer = background_additional_parameters_vector[i*allCategories.size()+j];
             hist_pointer->LabelsDeflate("X");
             for(size_t bin_number = 0; bin_number<hist_pointer->GetXaxis()->GetNbins(); bin_number++){
-                //name
+                //name (if there is nothing added, there is no additional parameters and no histogram should be made)
                 std::string temp_name = hist_pointer->GetName();
                 temp_name += remove_bad_characters(hist_pointer->GetXaxis()->GetBinLabel(bin_number+1));
+                if(std::string(hist_pointer->GetXaxis()->GetBinLabel(bin_number+1)).length()==0){
+                    continue;
+                }
                 //title
                 std::string temp_title = hist_pointer->GetTitle();
                 temp_title += hist_pointer->GetXaxis()->GetBinLabel(bin_number+1);
