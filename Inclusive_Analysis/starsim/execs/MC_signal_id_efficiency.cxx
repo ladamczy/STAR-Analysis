@@ -9,6 +9,9 @@
 #include <TParticlePDG.h>
 #include <TLine.h>
 #include <TEfficiency.h>
+#include <TF1.h>
+#include <TStyle.h>
+#include <TF1Convolution.h>
 
 //STAR headers
 #include <StarGenEvent.h>
@@ -37,13 +40,11 @@ int main(int argc, char* argv[]){
     //argv[1] - input file
     //argv[2] - output folder/file
     //argv[3] - PDG id/codename of particle tested
-    //argv[4] - event to print
-    if(argc>5||argc<4){
+    if(argc!=4){
         printf("Invalid number of arguments. Proper argument usage:\n");
         printf("argv[1] - input file\n");
         printf("argv[2] - output folder/file\n");
         printf("argv[3] - PDG id/codename of particle tested\n");
-        printf("argv[4] - event to print (optional)\n");
         printf("\n");
         printf("Particle\tPDG code\tcodename\n");
         printf("K0S\t\t310\t\tK0S\n");
@@ -109,11 +110,7 @@ int main(int argc, char* argv[]){
                                 {KstarbarPDGid, 0.12956977399721734},
                                 {phiPDGid, 0.13707309430776241} };
 
-    int PDGmain, eventToPrint = -1;
-    int PDGpositive, PDGnegative;
-    if(argc==5){
-        eventToPrint = atoi(argv[4]);
-    }
+    int PDGmain, PDGpositive, PDGnegative;
     //atoi(not number) returns 0
     //so there is a nice check if argv[3] is a PDG id or a codename
     PDGmain = atoi(argv[3]);
@@ -304,8 +301,10 @@ int main(int argc, char* argv[]){
     TH1D UnidentifiedPositive("UnidentifiedPositive", "Names of unidentified particles;;counts", 1, 0, 1);
     TH1D UnidentifiedNegative("UnidentifiedNegative", "Names of unidentified particles;;counts", 1, 0, 1);
     //mass histograms
-    TH1D MCmass("MCmass", ("Mass of "+namemap[PDGmain]+" reconstructed from true level;m [GeV/c^{2}];pairs").c_str(), 100, massmap[PDGmain]-5*widthmap[PDGmain], massmap[PDGmain]+5*widthmap[PDGmain]);
-    TH1D TPCmass("TPCmass", ("Mass of "+namemap[PDGmain]+" reconstructed from TPC data;m [GeV/c^{2}];pairs").c_str(), 100, massmap[PDGmain]-5*widthmap[PDGmain], massmap[PDGmain]+5*widthmap[PDGmain]);
+    TH1D MCmassBWfit("MCmassBWfit", ("Mass of "+namemap[PDGmain]+" reconstructed from true level (with B-W fit);m [GeV/c^{2}];pairs").c_str(), 100, massmap[PDGmain]-5*widthmap[PDGmain], massmap[PDGmain]+5*widthmap[PDGmain]);
+    TH1D TPCmassBWfit("TPCmassBWfit", ("Mass of "+namemap[PDGmain]+" reconstructed from TPC data (with B-W fit);m [GeV/c^{2}];pairs").c_str(), 100, massmap[PDGmain]-5*widthmap[PDGmain], massmap[PDGmain]+5*widthmap[PDGmain]);
+    TH1D MCmassConvolutionfit("MCmassConvolutionfit", ("Mass of "+namemap[PDGmain]+" reconstructed from true level (with B-W*Gauss fit);m [GeV/c^{2}];pairs").c_str(), 100, massmap[PDGmain]-5*widthmap[PDGmain], massmap[PDGmain]+5*widthmap[PDGmain]);
+    TH1D TPCmassConvolutionfit("TPCmassConvolutionfit", ("Mass of "+namemap[PDGmain]+" reconstructed from TPC data (with B-W*Gauss fit);m [GeV/c^{2}];pairs").c_str(), 100, massmap[PDGmain]-5*widthmap[PDGmain], massmap[PDGmain]+5*widthmap[PDGmain]);
 
     //setting up TTreeReader without multithread processing
     TTreeReader myReader(eventFiles);
@@ -501,14 +500,14 @@ int main(int argc, char* argv[]){
                 //true level mass
                 positiveTrackFourvector.SetXYZM(positiveMCParticle->Px(), positiveMCParticle->Py(), positiveMCParticle->Pz(), massmap[PDGpositive]);
                 negativeTrackFourvector.SetXYZM(negativeMCParticle->Px(), negativeMCParticle->Py(), negativeMCParticle->Pz(), massmap[PDGnegative]);
-                MCmass.Fill((positiveTrackFourvector+negativeTrackFourvector).M());
+                MCmassBWfit.Fill((positiveTrackFourvector+negativeTrackFourvector).M());
+                MCmassConvolutionfit.Fill((positiveTrackFourvector+negativeTrackFourvector).M());
                 //TPC reconstructed mass
                 positiveTrack->getLorentzVector(positiveTrackFourvector, massmap[PDGpositive]);
                 negativeTrack->getLorentzVector(negativeTrackFourvector, massmap[PDGnegative]);
-                TPCmass.Fill((positiveTrackFourvector+negativeTrackFourvector).M());
+                TPCmassBWfit.Fill((positiveTrackFourvector+negativeTrackFourvector).M());
+                TPCmassConvolutionfit.Fill((positiveTrackFourvector+negativeTrackFourvector).M());
             }
-            //TODO:
-            // - fit to it B-W and B-W*Gauss
         }
 
 
@@ -661,99 +660,38 @@ int main(int argc, char* argv[]){
             tempTrack->getMomentum(momentum);
             dEdxTPCEnergyLoss.Fill(tempTrack->getCharge()* momentum.Mag(), tempTrack->getDEdxSignal()*1e6);
         }
-
-
-
-
-
-
-        //special part where one event is drawn
-        // if(tempCounter==eventToPrint){
-        //     //statistics
-        //     printf("Number of MC particles (excluding protons) before filter: %d\n", tempUPCpointer->getNumberOfMCParticles()-2);
-        //     printf("Number of MC particles (excluding protons) after filter: %d\n", positiveMC.size()+negativeMC.size());
-        //     printf("Number of tracks (excluding protons) before filter: %d\n", tempUPCpointer->getNumberOfTracks());
-        //     printf("Number of tracks (excluding protons) after filter: %d\n", positiveTrack.size()+negativeTrack.size());
-        //     for(size_t MCindex = 0; MCindex<tempUPCpointer->getNumberOfMCParticles(); MCindex++){
-        //         //we only know IdTruth because there is great care taken not to change the order of particles
-        //         //it is NOT written into upcDst file!!!
-        //         PrintBigger(tempUPCpointer->getMCParticle(MCindex), "\tIdTruth:\t"+to_string(MCindex+1));
-        //     }
-
-
-        //     //drawing
-        //     TCanvas c1("c1", "c1", 1200, 800);
-
-        //     //MC particles graph
-        //     TGraph ParticlesMC(0);
-        //     ParticlesMC.SetNameTitle("MC", "MC;#eta;#phi");
-        //     ParticlesMC.SetMarkerStyle(20);
-        //     ParticlesMC.SetMarkerSize(2);
-        //     ParticlesMC.SetMarkerColor(4);
-        //     printf("MC positive:\n");
-        //     for(size_t particle_index = 0; particle_index<positiveMC.size(); particle_index++){
-        //         TParticle* temp = positiveMC[particle_index];
-        //         TVector3 tempVec(temp->Px(), temp->Py(), temp->Pz());
-        //         ParticlesMC.AddPoint(tempVec.Eta(), tempVec.Phi());
-        //         printf("Eta:\t%f,\tPhi:\t%f\n", tempVec.Eta(), tempVec.Phi());
-        //     }
-        //     printf("MC negative:\n");
-        //     for(size_t particle_index = 0; particle_index<negativeMC.size(); particle_index++){
-        //         TParticle* temp = negativeMC[particle_index];
-        //         TVector3 tempVec(temp->Px(), temp->Py(), temp->Pz());
-        //         ParticlesMC.AddPoint(tempVec.Eta(), tempVec.Phi());
-        //         printf("Eta:\t%f,\tPhi:\t%f\n", tempVec.Eta(), tempVec.Phi());
-        //     }
-
-        //     //TPC particles graph
-        //     TGraph ParticlesTPC(0);
-        //     ParticlesTPC.SetNameTitle("TPC", "TPC;#eta;#phi");
-        //     ParticlesTPC.SetMarkerStyle(21);
-        //     ParticlesTPC.SetMarkerSize(1.5);
-        //     ParticlesTPC.SetMarkerColor(2);
-        //     printf("Track positive:\n");
-        //     for(int particle_index = 0; particle_index<positiveTrack.size(); particle_index++){
-        //         StUPCTrack* tempTrack = positiveTrack[particle_index];
-        //         TVector3 tempVec;
-        //         tempTrack->getMomentum(tempVec);
-        //         ParticlesTPC.AddPoint(tempVec.Eta(), tempVec.Phi());
-        //         printf("Eta:\t%f,\tPhi:\t%f\n", tempVec.Eta(), tempVec.Phi());
-        //     }
-        //     printf("Track negative:\n");
-        //     for(int particle_index = 0; particle_index<negativeTrack.size(); particle_index++){
-        //         StUPCTrack* tempTrack = negativeTrack[particle_index];
-        //         TVector3 tempVec;
-        //         tempTrack->getMomentum(tempVec);
-        //         ParticlesTPC.AddPoint(tempVec.Eta(), tempVec.Phi());
-        //         printf("Eta:\t%f,\tPhi:\t%f\n", tempVec.Eta(), tempVec.Phi());
-        //     }
-
-        //     //drawing and saving canvas (with protection against empty graphs)
-        //     bool drawnMC = false;
-        //     if(ParticlesMC.GetN()){
-        //         ParticlesMC.Draw("ap");
-        //         ParticlesMC.GetXaxis()->SetLimits(-1.0, 1.0);
-        //         ParticlesMC.GetHistogram()->SetMinimum(-TMath::Pi());
-        //         ParticlesMC.GetHistogram()->SetMaximum(TMath::Pi());
-        //         drawnMC = true;
-        //     }
-        //     if(ParticlesTPC.GetN()){
-        //         if(drawnMC){
-        //             ParticlesTPC.Draw("same p");
-        //         } else{
-        //             ParticlesTPC.Draw("ap");
-        //             ParticlesTPC.GetXaxis()->SetLimits(-1.0, 1.0);
-        //             ParticlesTPC.GetHistogram()->SetMinimum(-TMath::Pi());
-        //             ParticlesTPC.GetHistogram()->SetMaximum(TMath::Pi());
-        //         }
-        //     }
-        //     c1.BuildLegend();
-        //     c1.SetTitle("Matching test");
-        //     c1.SaveAs("Matching.png");
-        // }
-
     }
     //event loop finish
+
+    //fitting B-W and B-W*Gauss to mass histograms
+    //preparation
+    double min_fit = massmap[PDGmain]-3*widthmap[PDGmain];
+    double max_fit = massmap[PDGmain]+3*widthmap[PDGmain];
+    gStyle->SetOptFit(1);
+    TF1 MassBWFit("MassBWFit", [](double* x, double* p){return p[0]*TMath::BreitWigner(x[0], p[1], p[2]);}, min_fit, max_fit, 3, 1);
+    MassBWFit.SetParameters(1., massmap[PDGmain], widthmap[PDGmain]);
+    MassBWFit.SetParNames("N", "m_{0}", "#Gamma_{0}");
+    MassBWFit.SetNpx(1000);
+    TF1Convolution conv_sig("breitwigner", "gausn", min_fit-5., max_fit+5.); //extra range for all your convolution needs
+    conv_sig.SetNofPointsFFT(10000);
+    TF1 MassConvolutionFit("MassConvolutionFit", conv_sig, min_fit, max_fit, 6);
+    MassConvolutionFit.SetNpx(1000);
+    MassConvolutionFit.SetParameter(0, 1.);                   //N_sig
+    MassConvolutionFit.SetParameter(1, massmap[PDGmain]);     //m0
+    MassConvolutionFit.SetParameter(2, widthmap[PDGmain]);    //gamma0
+    MassConvolutionFit.FixParameter(3, 1.);                   //N_Gauss  (fixed to 1)
+    MassConvolutionFit.FixParameter(4, 0.);                   //mu_Gauss (fixed to 0)
+    MassConvolutionFit.SetParameter(5, 0.0013);               //sigma_Gauss
+    MassConvolutionFit.SetParNames("N_{sig}", "m_{0}", "#Gamma_{BW}", "N_{Gauss}", "#mu_{Gauss}", "#sigma_{Gauss}");
+    //fitting
+    MCmassBWfit.Fit(&MassBWFit, "RS+");
+    gPad->Update();
+    TPCmassBWfit.Fit(&MassBWFit, "RS+");
+    gPad->Update();
+    MCmassConvolutionfit.Fit(&MassConvolutionFit, "RS+");
+    gPad->Update();
+    TPCmassConvolutionfit.Fit(&MassConvolutionFit, "RS+");
+    gPad->Update();
 
     //setting up a tree & output file
     string path = string(argv[0]);
@@ -787,8 +725,10 @@ int main(int argc, char* argv[]){
         histogramsdEdx[i]->Write();
     }
     dEdxTPCEnergyLoss.Write();
-    MCmass.Write();
-    TPCmass.Write();
+    MCmassBWfit.Write();
+    TPCmassBWfit.Write();
+    MCmassConvolutionfit.Write();
+    TPCmassConvolutionfit.Write();
 
     outputFileHist->Close();
 
