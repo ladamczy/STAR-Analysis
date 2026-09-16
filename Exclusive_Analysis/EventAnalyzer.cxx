@@ -113,9 +113,11 @@ int main(int argc, char** argv)
         vector<TH1D*> HistSumProtonMomentaXBefore, HistSumProtonMomentaYBefore;
         vector<TH1D*> HistZDiffBefore, HistZMeanBefore, HistCosThetaStarBefore;
         vector<TH2D*> HistInvMassPiPi2D;
+        vector<TH2D*> HistArmenterosBefore;
+        vector<TH2D*> HistArmenterosCore;
+        vector<TH2D*> HistArmenterosFringe;
 
         for (int i = 2; i < 6; i++) {
-            HistInvMassPiPi2D.push_back(         new TH2D(MakeHistName(Form("histInvMassPiPi2D%d",i),sf).c_str(),"",30,0.44,0.56,30,0.44,0.56));
             HistPtMissBefore.push_back(          new TH1D(MakeHistName(Form("histPtMissBefore%d",i),sf).c_str(),"",20,0,1));
             HistNTOFClusterBefore.push_back(     new TH1D(MakeHistName(Form("histNTOFClusterBefore%d",i),sf).c_str(),"",40,-0.5,40.5));
             HistDCABeamlineBefore.push_back(     new TH1D(MakeHistName(Form("histDCABeamlineBefore%d",i),sf).c_str(),"",25,0,5.0));
@@ -133,6 +135,11 @@ int main(int argc, char** argv)
             HistZDiffBefore.push_back(           new TH1D(MakeHistName(Form("histZDiffBefore%d",i),sf).c_str(),"",101,-200,200));
             HistZMeanBefore.push_back(           new TH1D(MakeHistName(Form("histZMeanBefore%d",i),sf).c_str(),"",51,-200,200));
             HistCosThetaStarBefore.push_back(    new TH1D(MakeHistName(Form("histCosThetaStarBefore%d",i),sf).c_str(),"",50,-1.0,1.0));
+            HistInvMassPiPi2D.push_back(         new TH2D(MakeHistName(Form("histInvMassPiPi2D%d",i),sf).c_str(),"",30,0.44,0.56,30,0.44,0.56));
+            HistArmenterosBefore.push_back(      new TH2D(MakeHistName(Form("histArmenterosBefore%d",i),sf).c_str(),";#alpha;p_{T}^{AP} [GeV/c]",100,-1.0,1.0,100,0.0,0.3)); 
+            HistArmenterosCore.push_back(        new TH2D(MakeHistName(Form("histArmenterosCore%d",i),sf).c_str(),";#alpha;p_{T}^{AP} [GeV/c]",100,-1.0,1.0,100,0.0,0.3)); 
+            HistArmenterosFringe.push_back(      new TH2D(MakeHistName(Form("histArmenterosFringe%d",i),sf).c_str(),";#alpha;p_{T}^{AP} [GeV/c]",100,-1.0,1.0,100,0.0,0.3));
+           
         }
 
         // N-1 histograms
@@ -483,7 +490,40 @@ int main(int argc, char** argv)
             if (N1_mass) { 
                 HistInvMassPiPiN1[iH]->Fill(leadingKaonMass); 
                 HistInvMassPiPiN1[iH]->Fill(subleadingKaonMass); 
-                HistInvMassPiPi2DN1[iH]->Fill(leadingKaonMass, subleadingKaonMass); // ADD THIS EXACTLY HERE
+                HistInvMassPiPi2DN1[iH]->Fill(leadingKaonMass, subleadingKaonMass); 
+                
+                // --- ARMENTEROS-PODOLANSKY CALCULATION  ---
+                // Extract momentum vectors for the leading kaon daughters
+                TVector3 pPlusL;
+                pPlusL.SetPtEtaPhi(vPosNegPionLeadingKaon[0]->getPt(), 
+                                vPosNegPionLeadingKaon[0]->getEta(), 
+                                vPosNegPionLeadingKaon[0]->getPhi());
+
+                TVector3 pMinusL;
+                pMinusL.SetPtEtaPhi(vPosNegPionLeadingKaon[1]->getPt(), 
+                                    vPosNegPionLeadingKaon[1]->getEta(), 
+                                    vPosNegPionLeadingKaon[1]->getPhi());
+
+                // Reconstruct approximate flight path
+                TVector3 pK0sL = pPlusL + pMinusL; 
+                TVector3 uK0sL = pK0sL.Unit();
+                
+                // Calculate alpha and transverse momentum relative to flight path
+                double alphaL = (pPlusL.Dot(uK0sL) - pMinusL.Dot(uK0sL)) / (pPlusL.Dot(uK0sL) + pMinusL.Dot(uK0sL));
+                double pT_APL = pPlusL.Cross(uK0sL).Mag();
+                
+                HistArmenterosBefore[iH]->Fill(alphaL, pT_APL);
+                // the conditional logic for the new mass windows here:
+                bool isCore = (leadingKaonMass >= 0.48 && leadingKaonMass <= 0.52);
+                bool isFringe = ((leadingKaonMass >= 0.47 && leadingKaonMass < 0.48) || 
+                                 (leadingKaonMass > 0.52 && leadingKaonMass <= 0.53));
+
+                if (isCore) {
+                    HistArmenterosCore[iH]->Fill(alphaL, pT_APL);
+                } else if (isFringe) {
+                    HistArmenterosFringe[iH]->Fill(alphaL, pT_APL);
+                }
+                // --------------------------------------------------
             }
             
             bool N1_ptmiss = true; CheckN1(vCuts, isPtMissingSmall, N1_ptmiss);
@@ -687,7 +727,7 @@ int main(int argc, char** argv)
             HistPtPionWithTof[i]->Write();   HistPtPionWithoutTof[i]->Write();
             HistEtaPionWithTof[i]->Write();  HistEtaPionWithoutTof[i]->Write();
             HistNfitPionWithTof[i]->Write(); HistNfitPionWithoutTof[i]->Write();
-            HistInvMassPiPi2DN1[i]->Write();
+            
             HistInvMassPiPiN1[i]->Write();
             HistPtMissN1[i]->Write();        HistNTOFClusterN1[i]->Write();
             HistDCABeamlineN1[i]->Write();   HistDCADaughtersN1[i]->Write();
@@ -708,6 +748,11 @@ int main(int argc, char** argv)
             HistSumProtonMomentaXBefore[i]->Write(); HistSumProtonMomentaYBefore[i]->Write();
             HistZDiffBefore[i]->Write();        HistZMeanBefore[i]->Write();
             HistCosThetaStarBefore[i]->Write();
+
+            HistInvMassPiPi2DN1[i]->Write();
+            HistArmenterosBefore[i]->Write();
+            HistArmenterosCore[i]->Write();
+            HistArmenterosFringe[i]->Write();
 
             for (int j = 0; j < 11; j++) {
                 HistPtMissCF[i][j]->Write();
