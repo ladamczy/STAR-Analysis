@@ -1,6 +1,13 @@
 #include "ExclusiveCode.h"
 #include "SystematicCuts.h"
+#include <deque>
 using namespace std;
+
+// Struct to store tracks for event mixing
+struct MixedPionCandidate {
+    TVector3 momentum;
+    short charge;
+};
 
 // Helper: append systematic suffix to histogram base name
 string MakeHistName(const char* base, const string& suffix) {
@@ -116,6 +123,10 @@ int main(int argc, char** argv)
         vector<TH2D*> HistArmenterosBefore;
         vector<TH2D*> HistArmenterosCore;
         vector<TH2D*> HistArmenterosFringe;
+        vector<TH1D*> HistMassMixed;
+        vector<TH2D*> HistArmenterosMixed;
+        vector<TH1D*> HistMassRaw;
+        vector<TH1D*> HistMassLS;
 
         for (int i = 2; i < 6; i++) {
             HistPtMissBefore.push_back(          new TH1D(MakeHistName(Form("histPtMissBefore%d",i),sf).c_str(),"",20,0,1));
@@ -139,7 +150,10 @@ int main(int argc, char** argv)
             HistArmenterosBefore.push_back(      new TH2D(MakeHistName(Form("histArmenterosBefore%d",i),sf).c_str(),";#alpha;p_{T}^{AP} [GeV/c]",100,-1.0,1.0,100,0.0,0.3)); 
             HistArmenterosCore.push_back(        new TH2D(MakeHistName(Form("histArmenterosCore%d",i),sf).c_str(),";#alpha;p_{T}^{AP} [GeV/c]",100,-1.0,1.0,100,0.0,0.3)); 
             HistArmenterosFringe.push_back(      new TH2D(MakeHistName(Form("histArmenterosFringe%d",i),sf).c_str(),";#alpha;p_{T}^{AP} [GeV/c]",100,-1.0,1.0,100,0.0,0.3));
-           
+            HistMassMixed.push_back(             new TH1D(MakeHistName(Form("histMassMixed%d",i),sf).c_str(), ";m_{#pi#pi} [GeV];events", 50, 0.3, 0.7));
+            HistArmenterosMixed.push_back(       new TH2D(MakeHistName(Form("histArmenterosMixed%d",i),sf).c_str(),";#alpha;p_{T}^{AP} [GeV/c]",100,-1.0,1.0,100,0.0,0.3));
+            HistMassRaw.push_back(           new TH1D(MakeHistName(Form("histMassRaw%d",i),sf).c_str(),";m_{#pi#pi} [GeV/c^{2}];events",50,0.3,0.7));
+            HistMassLS.push_back(                new TH1D(MakeHistName(Form("histMassLS%d",i),sf).c_str(),";m_{LS} [GeV/c^{2}];events",50,0.3,0.7));
         }
 
         // N-1 histograms
@@ -234,6 +248,20 @@ int main(int argc, char** argv)
         long long cZdiff         = 0;  // SC8.2: zdiff
         long long cCosThetaStar  = 0;  // SC9: cos(theta*) — FINAL EXCLUSIVE SAMPLE
 
+        long long cPoolInsertions = 0; // Tracks how many events went into the mixing pool
+        long long cMixedPairs     = 0; // Tracks how many mixed background pairs were created
+        long long cLikeSignPairs  = 0;
+        // =========================================================
+        // EVENT MIXING POOL SETUP
+        // 16 bins for Z_vtx (-80 to 80 cm, 10 cm/bin)
+        // 4 bins for N_TOF (2, 3, 4, 5)
+        // =========================================================
+        const int nZBins = 16;
+        const int nTofBins = 4;
+        const unsigned int maxPoolDepth = 5;
+        // pool[zBin][tofBin] -> list of past events (each event is a vector of MixedPionCandidate)
+        deque<vector<MixedPionCandidate>> mixingPool[nZBins][nTofBins];
+
         // =========================================================
         // EVENT LOOP
         // =========================================================
@@ -295,7 +323,7 @@ int main(int argc, char** argv)
             StUPCV0 subLeadingKaon(vPosNegPionSubLeadingKaon[0], vPosNegPionSubLeadingKaon[1],
                                    ExclusiveK0K0::MASS_PION, ExclusiveK0K0::MASS_PION,
                                    1, 1, tryVec, beamPar, upcEvt->getMagneticField(), true);
-
+            
             vector<bool*> vCuts;
 
             // SC4 ---------------------------------------------------------
@@ -485,12 +513,79 @@ int main(int argc, char** argv)
             bool passedSC8 = passedSC7 && isZmeanSmall && isZdiffSmall;
             if (passedSC8 && areCosThetaStarSmall) cCosThetaStar++;
 
+            // =========================================================
+            // LIKE-SIGN (LS) BACKGROUND RECONSTRUCTION
+            // =========================================================
+            // 1. Ensure the event passed the global cluster and anti-elastic cuts first
+            if (isNumberOfTofClusterSmall && antiElastic) {
+                StUPCV0 fakeKaonPlus(vPosNegPionLeadingKaon[0], vPosNegPionSubLeadingKaon[0], ExclusiveK0K0::MASS_PION, ExclusiveK0K0::MASS_PION, 1, 1, tryVec, beamPar, upcEvt->getMagneticField(), true);
+                StUPCV0 fakeKaonMinus(vPosNegPionLeadingKaon[1], vPosNegPionSubLeadingKaon[1], ExclusiveK0K0::MASS_PION, ExclusiveK0K0::MASS_PION, 1, 1, tryVec, beamPar, upcEvt->getMagneticField(), true);
+
+                double dcaBeamLeadingCutLS = (tracksWithTofHit.size() >= 3) ? config.dcaBeamline4 : config.dcaBeamline23;
+                double dcaDauLeadingCutLS  = (tracksWithTofHit.size() >= 3) ? config.dcaDaughters4 : config.dcaDaughters23;
+                double dcaBeamSubLeadingCutLS = (tracksWithTofHit.size() >= 4) ? config.dcaBeamline4 : config.dcaBeamline23;
+                double dcaDauSubLeadingCutLS  = (tracksWithTofHit.size() >= 4) ? config.dcaDaughters4 : config.dcaDaughters23;
+                double paCutLS = (tracksWithTofHit.size() <= 3) ? config.cosPA23 : config.cosPA;
+
+                // 2. Evaluate DCA and Pointing Angle for LS pairs
+                bool lsDcaPass = (fakeKaonPlus.dcaDaughters() <= dcaDauLeadingCutLS && fakeKaonMinus.dcaDaughters() <= dcaDauSubLeadingCutLS &&
+                                  fakeKaonPlus.DCABeamLine() <= dcaBeamLeadingCutLS && fakeKaonMinus.DCABeamLine() <= dcaBeamSubLeadingCutLS);
+
+                bool lsPaPass = false;
+                if (tracksWithTofHit.size() >= 4) {
+                    lsPaPass = (fakeKaonPlus.decayLengthHypo() <= config.decayLength || fakeKaonPlus.pointingAngleHypo() >= config.cosPA) &&
+                               (fakeKaonMinus.decayLengthHypo() <= config.decayLength || fakeKaonMinus.pointingAngleHypo() >= config.cosPA);
+                } else if (tracksWithTofHit.size() == 3) {
+                    lsPaPass = (fakeKaonPlus.decayLengthHypo() <= config.decayLength || fakeKaonPlus.pointingAngleHypo() >= config.cosPA) &&
+                               fakeKaonMinus.pointingAngleHypo() >= config.cosPA23;
+                } else if (tracksWithTofHit.size() == 2) {
+                    lsPaPass = (fakeKaonPlus.pointingAngleHypo() >= config.cosPA23 && fakeKaonMinus.pointingAngleHypo() >= config.cosPA23);
+                }
+
+                if (lsDcaPass && lsPaPass) {
+                    // 3. Evaluate strict exclusivity cuts for the fake pairs
+                    double pTmiss_LS;
+                    CheckPtMiss(fakeKaonPlus, fakeKaonMinus, protonE, protonW, pTmiss_LS);
+                    
+                    double zdiff_LS = fakeKaonPlus.decayVertex().Z() - fakeKaonMinus.decayVertex().Z();
+                    double zmean_LS = (fakeKaonPlus.decayVertex().Z() + fakeKaonMinus.decayVertex().Z()) / 2.0;
+                    
+                    bool isZmeanSmall_LS = (abs(zmean_LS) <= config.zmeanMax);
+                    bool isZdiffSmall_LS = (abs(zdiff_LS) <= config.zdiffMax);
+                    bool areCosThetaStarSmall_LS = (abs(fakeKaonPlus.cosThetaStar()) <= config.cosThetaStarMax &&
+                                                    abs(fakeKaonMinus.cosThetaStar()) <= config.cosThetaStarMax);
+
+                    // 4. Evaluate Kinematic correlations for LS
+                    TLorentzVector K0K0_LS = fakeKaonPlus.lorentzVector() + fakeKaonMinus.lorentzVector();
+                    double massK0K0_LS = K0K0_LS.M();
+                    double ksiCorrelation_LS = massK0K0_LS/510.0 - sqrt(ksiENew*ksiWNew);
+                    double etaCorrelation_LS = K0K0_LS.Rapidity() - 0.5*log(ksiENew/ksiWNew);
+                    double corrE_LS = massK0K0_LS/510.0 * exp(-K0K0_LS.Rapidity()) - ksiE;
+                    double corrW_LS = massK0K0_LS/510.0 * exp(+K0K0_LS.Rapidity()) - ksiW;
+
+                    bool isKsiCorrSmall_LS = (abs(ksiCorrelation_LS) < config.ksiCorrMax);
+                    bool isEtaCorrSmall_LS = (abs(etaCorrelation_LS) < config.etaCorrMax);
+                    bool areSeparateCorr_LS = (abs(corrE_LS) < config.separateCorrMax && abs(corrW_LS) < config.separateCorrMax);
+
+                    // 5. Fill only if ALL cuts are passed
+                    if ((pTmiss_LS <= config.ptMissMax) && isZmeanSmall_LS && isZdiffSmall_LS && 
+                        areCosThetaStarSmall_LS && isKsiCorrSmall_LS && isEtaCorrSmall_LS && areSeparateCorr_LS) {
+                        
+                        HistMassLS[iH]->Fill(fakeKaonPlus.m());
+                        HistMassLS[iH]->Fill(fakeKaonMinus.m());
+                    }
+                }
+            }
+            // =========================================================
+
             // ---- N-1 histograms ----------------------------------------
             bool N1_mass = true; CheckN1(vCuts, areKaonsInNarrowMassWindow, N1_mass);
             if (N1_mass) { 
                 HistInvMassPiPiN1[iH]->Fill(leadingKaonMass); 
                 HistInvMassPiPiN1[iH]->Fill(subleadingKaonMass); 
                 HistInvMassPiPi2DN1[iH]->Fill(leadingKaonMass, subleadingKaonMass); 
+
+                HistMassRaw[iH]->Fill(leadingKaonMass);
                 
                 // --- ARMENTEROS-PODOLANSKY CALCULATION  ---
                 // Extract momentum vectors for the leading kaon daughters
@@ -524,6 +619,54 @@ int main(int argc, char** argv)
                     HistArmenterosFringe[iH]->Fill(alphaL, pT_APL);
                 }
                 // --------------------------------------------------
+                // --- ARMENTEROS-PODOLANSKY EVENT MIXING ---
+                double vz = upcEvt->getVertex(0)->getPosZ();
+                int zBin = (int)((vz + 80.0) / 10.0);
+                int tofBin = tracksWithTofHit.size() - 2; // 2->0, 3->1, 4->2, 5->3
+
+                if (zBin >= 0 && zBin < nZBins && tofBin >= 0 && tofBin < nTofBins) {
+                    // 1. Mix current pi+ with stored pi- from previous events in this pool bin
+                    for (const auto& pastEventTracks : mixingPool[zBin][tofBin]) {
+                        for (const auto& pastTrk : pastEventTracks) {
+                            if (pastTrk.charge < 0) {
+                                TVector3 pPlusMix = pPlusL;
+                                TVector3 pMinusMix = pastTrk.momentum;
+                                TVector3 pK0sMix = pPlusMix + pMinusMix;
+                                TVector3 uK0sMix = pK0sMix.Unit();
+
+                                double alphaMix = (pPlusMix.Dot(uK0sMix) - pMinusMix.Dot(uK0sMix)) / 
+                                                  (pPlusMix.Dot(uK0sMix) + pMinusMix.Dot(uK0sMix));
+                                double pT_APMix = pPlusMix.Cross(uK0sMix).Mag();
+
+                                HistArmenterosMixed[iH]->Fill(alphaMix, pT_APMix);
+
+                                // Add mass calculation here:
+                                TLorentzVector lvPlusMix, lvMinusMix;
+                                lvPlusMix.SetVectM(pPlusMix, ExclusiveK0K0::MASS_PION);
+                                lvMinusMix.SetVectM(pMinusMix, ExclusiveK0K0::MASS_PION);
+                                double massMix = (lvPlusMix + lvMinusMix).M();
+                                
+                                HistMassMixed[iH]->Fill(massMix);
+                                cMixedPairs++; // Increment mixed pair counter
+                            }
+                        }
+                    }
+
+                    // 2. Add current event's leading kaon pion candidates to the pool
+                    vector<MixedPionCandidate> currentEventPions;
+                    MixedPionCandidate posPion = { pPlusL, +1 };
+                    MixedPionCandidate negPion = { pMinusL, -1 };
+                    currentEventPions.push_back(posPion);
+                    currentEventPions.push_back(negPion);
+
+                    mixingPool[zBin][tofBin].push_back(currentEventPions);
+                    cPoolInsertions++; // Increment pool insertion counter
+
+                    if (mixingPool[zBin][tofBin].size() > maxPoolDepth) {
+                        mixingPool[zBin][tofBin].pop_front();
+                    }
+                }
+                // ------------------------------------------
             }
             
             bool N1_ptmiss = true; CheckN1(vCuts, isPtMissingSmall, N1_ptmiss);
@@ -716,7 +859,16 @@ int main(int argc, char** argv)
         cout << "╠══════════════════════════════════════════════════════════════════════════╣" << endl;
         cout << Form("║  %-42s  %10lld                       ║", ">>> FINAL EXCLUSIVE SAMPLE <<<",              cCosThetaStar)                                                      << endl;
         cout << "╚══════════════════════════════════════════════════════════════════════════╝" << endl;
+        
+        
         cout << "\n";
+        cout << "╠══════════════════════════════════════════════════════════════════════════╣" << endl;
+        cout << "║  -- -- Background Diagnostics -- --                                          ║" << endl;
+        cout << Form("║  %-42s  %10lld                       ║", "Events added to mixing pool",                 cPoolInsertions) << endl;
+        cout << Form("║  %-42s  %10lld                       ║", "Mixed combinatorial pairs generated",         cMixedPairs) << endl;
+        cout << Form("║  %-42s  %10lld                       ║", "Like-Sign pairs generated",                   cLikeSignPairs) << endl;
+        cout << "╚══════════════════════════════════════════════════════════════════════════╝" << endl;
+        
         cout << " ✍ Writing histograms for: " << config.name << endl;
 
         HistNumWithTofTrakcs->Write();
@@ -754,6 +906,10 @@ int main(int argc, char** argv)
             HistArmenterosCore[i]->Write();
             HistArmenterosFringe[i]->Write();
 
+            HistArmenterosMixed[i]->Write();
+            HistMassMixed[i]->Write();
+            HistMassRaw[i]->Write();
+            HistMassLS[i]->Write();
             for (int j = 0; j < 11; j++) {
                 HistPtMissCF[i][j]->Write();
                 HistInvMassPiPiCF[i][j]->Write();
