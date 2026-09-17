@@ -65,16 +65,16 @@ int main(int argc, char* argv[]){
         folderWithDiagonal += "/";
     }
 
-    //filling vectors of background and signal
-    //and Chi2 with and without the background
-    std::vector<TH2D*> background_vector, signal_vector;
-    std::vector<TH1D*> Chi2withbcg_vector,
+    //filling vectors of background and signal and Chi2 with and without the background
+    //this scary nested map exists so I can do map[pair][category] = histogram
+    std::map<std::string, std::map<std::string, TH2D*>> background_vector, signal_vector;
+    std::map<std::string, std::map<std::string, TH1D*>> Chi2withbcg_vector,
         result_vector,
         mass_vector,
         width_vector,
         resolution_vector,
         background_normalisation_vector;
-    std::vector<TH2D*> background_additional_parameters_vector;
+    std::map<std::string, std::map<std::string, TH2D*>> background_additional_parameters_vector;
     std::string tempSignalName = "M$Chi2";
     std::string tempBackgroundName = "M$Chi2BcgMixedEvent";
     std::string tempHistName;
@@ -83,24 +83,24 @@ int main(int argc, char* argv[]){
             //signal
             tempHistName = tempSignalName;
             tempHistName.replace(find(tempHistName.begin(), tempHistName.end(), '$')-tempHistName.begin(), 1, pair);
-            signal_vector.push_back((TH2D*)input->Get((tempHistName+category).c_str()));
+            signal_vector[pair][category] = (TH2D*)input->Get((tempHistName+category).c_str());
             //getting the common part of the title
-            std::string histogram_title = signal_vector.back()->GetTitle();
-            std::string axis_title = signal_vector.back()->GetYaxis()->GetTitle();
+            std::string histogram_title = signal_vector[pair][category]->GetTitle();
+            std::string axis_title = signal_vector[pair][category]->GetYaxis()->GetTitle();
             //creating histograms
-            Chi2withbcg_vector.push_back(new TH1D((tempHistName+"_"+category+"_Chi2").c_str(), (histogram_title+"-dependent Chi2/NDF;"+axis_title+";#chi^{2}/NDF").c_str(), signal_vector.back()->GetNbinsY(), signal_vector.back()->GetYaxis()->GetXmin(), signal_vector.back()->GetYaxis()->GetXmax()));
-            result_vector.push_back(new TH1D((tempHistName+"_"+category+"_Result").c_str(), (histogram_title+"-dependent yield;"+axis_title+";Number of pairs").c_str(), signal_vector.back()->GetNbinsY(), signal_vector.back()->GetYaxis()->GetXmin(), signal_vector.back()->GetYaxis()->GetXmax()));
-            mass_vector.push_back(new TH1D((tempHistName+"_"+category+"_Mass").c_str(), (histogram_title+"-dependent mass;"+axis_title+";m_{0} [GeV/c^{2}]").c_str(), signal_vector.back()->GetNbinsY(), signal_vector.back()->GetYaxis()->GetXmin(), signal_vector.back()->GetYaxis()->GetXmax()));
-            width_vector.push_back(new TH1D((tempHistName+"_"+category+"_Width").c_str(), (histogram_title+"-dependent B-W width;"+axis_title+";#Gamma_{0} [GeV/c^{2}]").c_str(), signal_vector.back()->GetNbinsY(), signal_vector.back()->GetYaxis()->GetXmin(), signal_vector.back()->GetYaxis()->GetXmax()));
-            resolution_vector.push_back(new TH1D((tempHistName+"_"+category+"_Resolution").c_str(), (histogram_title+"-dependent Gaussian width;"+axis_title+";#sigma [GeV/c^{2}]").c_str(), signal_vector.back()->GetNbinsY(), signal_vector.back()->GetYaxis()->GetXmin(), signal_vector.back()->GetYaxis()->GetXmax()));
-            background_normalisation_vector.push_back(new TH1D((tempHistName+"_"+category+"_Bcgnorm").c_str(), (histogram_title+"-dependent background normalization;"+axis_title+";Bcg normalization").c_str(), signal_vector.back()->GetNbinsY(), signal_vector.back()->GetYaxis()->GetXmin(), signal_vector.back()->GetYaxis()->GetXmax()));
+            Chi2withbcg_vector[pair][category] = new TH1D((tempHistName+"_"+category+"_Chi2").c_str(), (histogram_title+"-dependent #chi2/NDF;"+axis_title+";#chi^{2}/NDF").c_str(), signal_vector[pair][category]->GetNbinsY(), signal_vector[pair][category]->GetYaxis()->GetXmin(), signal_vector[pair][category]->GetYaxis()->GetXmax());
+            result_vector[pair][category] = new TH1D((tempHistName+"_"+category+"_Result").c_str(), (histogram_title+"-dependent yield;"+axis_title+";Number of pairs").c_str(), signal_vector[pair][category]->GetNbinsY(), signal_vector[pair][category]->GetYaxis()->GetXmin(), signal_vector[pair][category]->GetYaxis()->GetXmax());
+            mass_vector[pair][category] = new TH1D((tempHistName+"_"+category+"_Mass").c_str(), (histogram_title+"-dependent mass;"+axis_title+";m_{0} [GeV/c^{2}]").c_str(), signal_vector[pair][category]->GetNbinsY(), signal_vector[pair][category]->GetYaxis()->GetXmin(), signal_vector[pair][category]->GetYaxis()->GetXmax());
+            width_vector[pair][category] = new TH1D((tempHistName+"_"+category+"_Width").c_str(), (histogram_title+"-dependent B-W width;"+axis_title+";#Gamma_{0} [GeV/c^{2}]").c_str(), signal_vector[pair][category]->GetNbinsY(), signal_vector[pair][category]->GetYaxis()->GetXmin(), signal_vector[pair][category]->GetYaxis()->GetXmax());
+            resolution_vector[pair][category] = new TH1D((tempHistName+"_"+category+"_Resolution").c_str(), (histogram_title+"-dependent Gaussian width;"+axis_title+";#sigma [GeV/c^{2}]").c_str(), signal_vector[pair][category]->GetNbinsY(), signal_vector[pair][category]->GetYaxis()->GetXmin(), signal_vector[pair][category]->GetYaxis()->GetXmax());
+            background_normalisation_vector[pair][category] = new TH1D((tempHistName+"_"+category+"_Bcgnorm").c_str(), (histogram_title+"-dependent background normalization;"+axis_title+";Bcg normalization").c_str(), signal_vector[pair][category]->GetNbinsY(), signal_vector[pair][category]->GetYaxis()->GetXmin(), signal_vector[pair][category]->GetYaxis()->GetXmax());
             //background
             tempHistName = tempBackgroundName;
             tempHistName.replace(find(tempHistName.begin(), tempHistName.end(), '$')-tempHistName.begin(), 1, pair);
-            background_vector.push_back((TH2D*)input->Get((tempHistName+category).c_str()));
+            background_vector[pair][category] = ((TH2D*)input->Get((tempHistName+category).c_str()));
             //creating histograms for additional background parameters
             //additional "  _{}" after ": " is because there were problems with lower index (and a space immediately after)
-            background_additional_parameters_vector.push_back(new TH2D((tempHistName+"_"+category+"_").c_str(), (histogram_title+"-dependent background extra parameter:   _{};;"+axis_title).c_str(), 1, 0, 1, signal_vector.back()->GetNbinsY(), signal_vector.back()->GetYaxis()->GetXmin(), signal_vector.back()->GetYaxis()->GetXmax()));
+            background_additional_parameters_vector[pair][category] = new TH2D((tempHistName+"_"+category+"_").c_str(), (histogram_title+"-dependent background extra parameter:   _{};;"+axis_title).c_str(), 1, 0, 1, signal_vector[pair][category]->GetNbinsY(), signal_vector[pair][category]->GetYaxis()->GetXmin(), signal_vector[pair][category]->GetYaxis()->GetXmax());
         }
     }
 
@@ -132,11 +132,11 @@ int main(int argc, char* argv[]){
     }
 
     //fitting loop
-    for(size_t i = 0; i<pairTab.size(); i++){
-        for(size_t j = 0; j<allCategories.size(); j++){
+    for(auto&& pair:pairTab){
+        for(auto&& category:allCategories){
             //copying total histogram for given pair and cathegory
-            TH2D* sig_pointer = (TH2D*)signal_vector[i*allCategories.size()+j]->Clone();
-            TH2D* bcg_pointer = (TH2D*)background_vector[i*allCategories.size()+j]->Clone();
+            TH2D* sig_pointer = (TH2D*)signal_vector[pair][category]->Clone();
+            TH2D* bcg_pointer = (TH2D*)background_vector[pair][category]->Clone();
             //for keeping title
             std::string baseOfTitle = std::string(sig_pointer->GetTitle())+" #in ";
             for(Int_t k = 0; k<sig_pointer->GetNbinsY(); k++){
@@ -172,11 +172,11 @@ int main(int argc, char* argv[]){
                 //fitting singular slice
                 double par_value, par_error;
                 std::string newTitle = baseOfTitle;
-                std::string newName = pairTab[i]+" "+allCategories[j];
+                std::string newName = pair+" "+category;
                 std::string boundaries = "("+rountToNSignificantFigures(sig_pointer->GetYaxis()->GetBinLowEdge(k+1))+", ";
                 boundaries += rountToNSignificantFigures(sig_pointer->GetYaxis()->GetBinUpEdge(k+1))+")";
                 sig_slice->SetTitle(newTitle.c_str());
-                std::string folderToSave = folderWithDiagonal+pairTab[i]+"/"+allCategories[j]+"/";
+                std::string folderToSave = folderWithDiagonal+pair+"/"+category+"/";
                 //replacing title fragments
                 //title is in format:
                 //"pair_name category #in (lower_bound, upper_bound)"
@@ -189,26 +189,26 @@ int main(int argc, char* argv[]){
                 TFitResult tempResult = fit_and_draw_and_save(sig_slice, &fit_func_sig, &fit_func_bcg, folderToSave, newName, newTitle, "e1", bcg_slice);
                 //saving fit results for further analysys
                 //Chi2
-                Chi2withbcg_vector[i*allCategories.size()+j]->SetBinContent(k+1, tempResult.Chi2()/tempResult.Ndf());
+                Chi2withbcg_vector[pair][category]->SetBinContent(k+1, tempResult.Chi2()/tempResult.Ndf());
                 //result
-                double bin_width = result_vector[i*allCategories.size()+j]->GetBinWidth(k+1);
+                double bin_width = result_vector[pair][category]->GetBinWidth(k+1);
                 //TODO: check later if taking constant bin width does not mess things up
                 par_value = fabs(tempResult.Parameter(0)/sig_slice->GetXaxis()->GetBinWidth(1)*bin_width);
                 par_error = tempResult.ParError(0)/sig_slice->GetXaxis()->GetBinWidth(1)*bin_width;
-                result_vector[i*allCategories.size()+j]->SetBinContent(k+1, par_value);
-                result_vector[i*allCategories.size()+j]->SetBinError(k+1, par_error);
+                result_vector[pair][category]->SetBinContent(k+1, par_value);
+                result_vector[pair][category]->SetBinError(k+1, par_error);
                 //mass
-                mass_vector[i*allCategories.size()+j]->SetBinContent(k+1, tempResult.Parameter(1));
-                mass_vector[i*allCategories.size()+j]->SetBinError(k+1, tempResult.Error(1));
+                mass_vector[pair][category]->SetBinContent(k+1, tempResult.Parameter(1));
+                mass_vector[pair][category]->SetBinError(k+1, tempResult.Error(1));
                 //width
-                width_vector[i*allCategories.size()+j]->SetBinContent(k+1, tempResult.Parameter(2));
-                width_vector[i*allCategories.size()+j]->SetBinError(k+1, tempResult.Error(2));
+                width_vector[pair][category]->SetBinContent(k+1, tempResult.Parameter(2));
+                width_vector[pair][category]->SetBinError(k+1, tempResult.Error(2));
                 //resolution
-                resolution_vector[i*allCategories.size()+j]->SetBinContent(k+1, tempResult.Parameter(3));
-                resolution_vector[i*allCategories.size()+j]->SetBinError(k+1, tempResult.Error(3));
+                resolution_vector[pair][category]->SetBinContent(k+1, tempResult.Parameter(3));
+                resolution_vector[pair][category]->SetBinError(k+1, tempResult.Error(3));
                 //background normalisation
-                background_normalisation_vector[i*allCategories.size()+j]->SetBinContent(k+1, tempResult.Parameter(4));
-                background_normalisation_vector[i*allCategories.size()+j]->SetBinError(k+1, tempResult.Error(4));
+                background_normalisation_vector[pair][category]->SetBinContent(k+1, tempResult.Parameter(4));
+                background_normalisation_vector[pair][category]->SetBinError(k+1, tempResult.Error(4));
                 //background additional parameters
                 //index 0 to 3 for signal, 4 for bcg normalisation
                 //additional parameters start with index 5
@@ -217,28 +217,28 @@ int main(int argc, char* argv[]){
                     // std::string parameter_name = tempResult.ParName(par);
                     // use this instead
                     std::string parameter_name = fit_func_bcg.GetParName(par-4); //we start from index 1, because 0 is mixed bcg normalzation
-                    double bin_center = background_additional_parameters_vector[i*allCategories.size()+j]->GetYaxis()->GetBinCenter(k+1);
-                    background_additional_parameters_vector[i*allCategories.size()+j]->Fill(parameter_name.c_str(), bin_center, tempResult.Parameter(par));
-                    int parameter_bin_number = background_additional_parameters_vector[i*allCategories.size()+j]->GetXaxis()->FindFixBin(parameter_name.c_str());
-                    background_additional_parameters_vector[i*allCategories.size()+j]->SetBinError(parameter_bin_number, k+1, tempResult.Error(par));
+                    double bin_center = background_additional_parameters_vector[pair][category]->GetYaxis()->GetBinCenter(k+1);
+                    background_additional_parameters_vector[pair][category]->Fill(parameter_name.c_str(), bin_center, tempResult.Parameter(par));
+                    int parameter_bin_number = background_additional_parameters_vector[pair][category]->GetXaxis()->FindFixBin(parameter_name.c_str());
+                    background_additional_parameters_vector[pair][category]->SetBinError(parameter_bin_number, k+1, tempResult.Error(par));
                 }
             }
         }
     }
 
     //drawing results - chi2, number of detected decays and width of resonances and more
-    for(size_t i = 0; i<pairTab.size(); i++){
-        for(size_t j = 0; j<allCategories.size(); j++){
-            std::string folderToSave = folderWithDiagonal+pairTab[i]+"/"+allCategories[j]+"/";
+    for(auto&& pair:pairTab){
+        for(auto&& category:allCategories){
+            std::string folderToSave = folderWithDiagonal+pair+"/"+category+"/";
             //always present
-            custom_draw_and_save(Chi2withbcg_vector[i*allCategories.size()+j], 1., folderToSave, "", "", "hist min0");
-            custom_draw_and_save(result_vector[i*allCategories.size()+j], 0., folderToSave, "", "", "e1 min0");
-            custom_draw_and_save(mass_vector[i*allCategories.size()+j], fitMaximum, folderToSave, "", "", "e1");
-            custom_draw_and_save(width_vector[i*allCategories.size()+j], fitWidth, folderToSave, "", "", "e1 min0");
-            custom_draw_and_save(resolution_vector[i*allCategories.size()+j], 0., folderToSave, "", "", "e1 min0");
-            custom_draw_and_save(background_normalisation_vector[i*allCategories.size()+j], 0., folderToSave, "", "", "e1 min0");
+            custom_draw_and_save(Chi2withbcg_vector[pair][category], 1., folderToSave, "", "", "hist min0");
+            custom_draw_and_save(result_vector[pair][category], 0., folderToSave, "", "", "e1 min0");
+            custom_draw_and_save(mass_vector[pair][category], fitMaximum, folderToSave, "", "", "e1");
+            custom_draw_and_save(width_vector[pair][category], fitWidth, folderToSave, "", "", "e1 min0");
+            custom_draw_and_save(resolution_vector[pair][category], 0., folderToSave, "", "", "e1 min0");
+            custom_draw_and_save(background_normalisation_vector[pair][category], 0., folderToSave, "", "", "e1 min0");
             //custom parameters (including those from linear background)
-            TH2D* hist_pointer = background_additional_parameters_vector[i*allCategories.size()+j];
+            TH2D* hist_pointer = background_additional_parameters_vector[pair][category];
             hist_pointer->LabelsDeflate("X");
             for(size_t bin_number = 0; bin_number<hist_pointer->GetXaxis()->GetNbins(); bin_number++){
                 //name (if there is nothing added, there is no additional parameters and no histogram should be made)
