@@ -40,18 +40,11 @@ int main(int argc, char* argv[]){
     //input file
     TFile* input = TFile::Open(static_cast<const char*>(argv[1]));
 
-    // //getting signal histograms out
-    // TH1D* MKpiChi2 = (TH1D*)input->Get("MKpiChi2");
-    // TH1D* MpiKChi2 = (TH1D*)input->Get("MpiKChi2");
-
-    // //getting background histograms out
-    // TH1D* MKpiChi2bcg = (TH1D*)input->Get("MKpiChi2BcgMixedEvent");
-    // TH1D* MpiKChi2bcg = (TH1D*)input->Get("MpiKChi2BcgMixedEvent");
-
     //getting diffractive background and signal
     std::vector<std::string> pairTab = { "Kpi", "piK" };
-    double fitMaximum = 0.892;
-    double fitWidth = 0.0514;//51.4 MeV for K*(892)
+    //data taken from PDG for neutral only
+    double fitMaximum = 0.89556;
+    double fitWidth = 0.0471;
     //creating list of categories
     std::vector<std::string> allCategories;
     std::ifstream infile("STAR-Analysis/Inclusive_Analysis/star-upc/execs/PhD_deg_analysis/Differential_crossection_values.txt");
@@ -115,23 +108,21 @@ int main(int argc, char* argv[]){
     //                FITTING
     //###########################################################
 
-    //creating convolution of BW and gauss
-    TF1Convolution conv_sig("breitwigner", "gausn", 0.0, 3.0); //extra range for all your convolution needs
-    conv_sig.SetNofPointsFFT(10000);
-    TF1 fit_func_sig("fit_func_sig", conv_sig, 0.99, 1.05, 6);
+    //convolution of BW and gauss (default range [0. 1.] will be changed later anyway)
+    //!!! GAMMA AND GAUSS STD ARE SWAPPED TO PRESERVE m, gamma, std ORDER !!!
+    TF1 fit_func_sig("fit_func_sig", "[0]*TMath::Voigt(x-[1], [3], [2])");
     //naming parameters
     fit_func_sig.SetParameter(0, 1.);           //N_sig
     fit_func_sig.SetParameter(1, fitMaximum);   //m0
     fit_func_sig.SetParameter(2, fitWidth);     //gamma0
-    fit_func_sig.FixParameter(3, 1.);           //N_Gauss  (fixed to 1)
-    fit_func_sig.FixParameter(4, 0.);           //mu_Gauss (fixed to 0)
-    fit_func_sig.SetParameter(5, 0.0013);       //sigma_Gauss
-    fit_func_sig.SetParNames("N_{sig}", "m_{0}", "#Gamma_{BW}", "N_{Gauss}", "#mu_{Gauss}", "#sigma_{Gauss}");
+    fit_func_sig.SetParameter(3, 0.0013);       //sigma_Gauss
+
+    fit_func_sig.SetParNames("N_{sig}", "m_{K^{*}(892)}", "#Gamma_{K^{*}(892)}", "#sigma_{Gauss}");
     //setting parameter limits
     fit_func_sig.SetParLimits(0, 0., 1e3);
     fit_func_sig.SetParLimits(1, fitMaximum-fitWidth, fitMaximum+fitWidth);
     fit_func_sig.SetParLimits(2, 0., 2*fitWidth);
-    fit_func_sig.SetParLimits(5, 0., 1.);
+    fit_func_sig.SetParLimits(3, 0., 1.);
 
     //creating folders for saving pdfs
     for(auto&& pair:pairTab){
@@ -156,7 +147,7 @@ int main(int argc, char* argv[]){
                 auto mixed_event_background = [&](double* x, double* p){
                     return p[0]*bcg_slice->GetBinContent(bcg_slice->FindBin(x[0]))+p[1]*x[0]+p[2];
                 };
-                TF1 fit_func_bcg("fit_func_bcg", mixed_event_background, 0.99, 1.05, 3, 1);
+                TF1 fit_func_bcg("fit_func_bcg", mixed_event_background, 0., 1., 3, 1);//width will be changed later anyway, 3 params, 1 dim
 
                 //fitting and filling result
                 //setting lower range for m0-3*gamma
@@ -172,11 +163,11 @@ int main(int argc, char* argv[]){
                 fit_func_bcg.SetParNames("N_{bcg}", "a_{1}", "a_{0}");
 
                 //setting initial fitting values
+                double initial_sig_height = (sig_slice->GetBinContent(sig_slice->FindBin(fitMaximum))-sig_slice->GetBinContent(sig_slice->FindBin(fitMaximum+fitWidth)))*TMath::PiOver2()*fitWidth;
+                fit_func_sig.SetParameters(initial_sig_height, fitMaximum, fitWidth, 0.006);
                 double initial_bcg_scale = sig_slice->GetBinContent(sig_slice->FindBin(fitMaximum+fitWidth))/bcg_slice->GetBinContent(bcg_slice->FindBin(fitMaximum+fitWidth));
                 fit_func_bcg.SetParameters(initial_bcg_scale, 0., 0.);
                 fit_func_bcg.SetParLimits(0, 0., 10.);
-                double initial_sig_height = (sig_slice->GetBinContent(sig_slice->FindBin(fitMaximum))-sig_slice->GetBinContent(sig_slice->FindBin(fitMaximum+fitWidth)))*TMath::PiOver2()*fitWidth;
-                fit_func_sig.SetParameters(initial_sig_height, fitMaximum, fitWidth);
 
                 //fitting singular slice
                 double par_value, par_error;
@@ -201,30 +192,31 @@ int main(int argc, char* argv[]){
                 Chi2withbcg_vector[i*allCategories.size()+j]->SetBinContent(k+1, tempResult.Chi2()/tempResult.Ndf());
                 //result
                 double bin_width = result_vector[i*allCategories.size()+j]->GetBinWidth(k+1);
+                //TODO: check later if taking constant bin width does not mess things up
                 par_value = fabs(tempResult.Parameter(0)/sig_slice->GetXaxis()->GetBinWidth(1)*bin_width);
                 par_error = tempResult.ParError(0)/sig_slice->GetXaxis()->GetBinWidth(1)*bin_width;
                 result_vector[i*allCategories.size()+j]->SetBinContent(k+1, par_value);
                 result_vector[i*allCategories.size()+j]->SetBinError(k+1, par_error);
                 //mass
-                mass_vector[i*allCategories.size()+j]->SetBinContent(k+1, fabs(tempResult.Parameter(1)));
+                mass_vector[i*allCategories.size()+j]->SetBinContent(k+1, tempResult.Parameter(1));
                 mass_vector[i*allCategories.size()+j]->SetBinError(k+1, tempResult.Error(1));
                 //width
-                width_vector[i*allCategories.size()+j]->SetBinContent(k+1, fabs(tempResult.Parameter(2)));
+                width_vector[i*allCategories.size()+j]->SetBinContent(k+1, tempResult.Parameter(2));
                 width_vector[i*allCategories.size()+j]->SetBinError(k+1, tempResult.Error(2));
                 //resolution
-                resolution_vector[i*allCategories.size()+j]->SetBinContent(k+1, tempResult.Parameter(5));
-                resolution_vector[i*allCategories.size()+j]->SetBinError(k+1, tempResult.Error(5));
+                resolution_vector[i*allCategories.size()+j]->SetBinContent(k+1, tempResult.Parameter(3));
+                resolution_vector[i*allCategories.size()+j]->SetBinError(k+1, tempResult.Error(3));
                 //background normalisation
-                background_normalisation_vector[i*allCategories.size()+j]->SetBinContent(k+1, tempResult.Parameter(6));
-                background_normalisation_vector[i*allCategories.size()+j]->SetBinError(k+1, tempResult.Error(6));
+                background_normalisation_vector[i*allCategories.size()+j]->SetBinContent(k+1, tempResult.Parameter(4));
+                background_normalisation_vector[i*allCategories.size()+j]->SetBinError(k+1, tempResult.Error(4));
                 //background additional parameters
-                //index 0 to 5 for signal, 6 for bcg normalisation
-                //additional parameters start with index 7
-                for(size_t par = 7; par<tempResult.NTotalParameters(); par++){
+                //index 0 to 3 for signal, 4 for bcg normalisation
+                //additional parameters start with index 5
+                for(size_t par = 5; par<tempResult.NTotalParameters(); par++){
                     // it does not work; possibly because function fitted is going out of scope
                     // std::string parameter_name = tempResult.ParName(par);
                     // use this instead
-                    std::string parameter_name = fit_func_bcg.GetParName(par-6); //we start from index 1, because 0 is mixed bcg normalzation
+                    std::string parameter_name = fit_func_bcg.GetParName(par-4); //we start from index 1, because 0 is mixed bcg normalzation
                     double bin_center = background_additional_parameters_vector[i*allCategories.size()+j]->GetYaxis()->GetBinCenter(k+1);
                     background_additional_parameters_vector[i*allCategories.size()+j]->Fill(parameter_name.c_str(), bin_center, tempResult.Parameter(par));
                     int parameter_bin_number = background_additional_parameters_vector[i*allCategories.size()+j]->GetXaxis()->FindFixBin(parameter_name.c_str());
