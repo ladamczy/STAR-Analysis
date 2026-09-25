@@ -308,7 +308,6 @@ int main(int argc, char* argv[]){
 
     //setting up TTreeReader without multithread processing
     TTreeReader myReader(eventFiles);
-    int tempCounter = -1;
 
     //getting values from TChain, in-loop histogram initialization
     TTreeReaderValue<StUPCEvent> StUPCEventInstance(myReader, "mUPCEvent");
@@ -316,9 +315,8 @@ int main(int argc, char* argv[]){
 
     while(myReader.Next()){
         tempUPCpointer = StUPCEventInstance.Get();
-        tempCounter++;
-        if(tempCounter%10000==0){
-            printf("Event %d analysed\n", tempCounter);
+        if(myReader.GetCurrentEntry()%10000==0){
+            printf("Event %d analysed\n", myReader.GetCurrentEntry());
         }
         //cleaning
 

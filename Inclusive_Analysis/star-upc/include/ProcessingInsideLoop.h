@@ -18,6 +18,8 @@ public:
     void Fill(const char *, double, double);
     void Fill(int, const char*, double);
     void Fill(const char*, const char*, double);
+    void Fill(int, double, double, double);
+    void Fill(const char*, double, double, double);
     void Fill(int, const char*, double, double);
     void Fill(const char*, const char*, double, double);
     void Fill(int, double, const char*, double);
@@ -109,6 +111,34 @@ void ProcessingInsideLoop::Fill(const char* hist_name, const char* key, double w
     for(long unsigned int i = 0; i<hist1dtabLocal.size(); i++){
         if(hist1dtabLocal[i]!=nullptr&&strcmp(hist_name, hist1dtabLocal[i]->GetName())==0){
             ProcessingInsideLoop::Fill(i, key, w);
+            return;
+        }
+    }
+    throw std::invalid_argument("Histogram with name \""+std::string(hist_name)+"\" could not be found.");
+}
+
+//2d histogram, weight, or 3d histogram, no weight
+void ProcessingInsideLoop::Fill(int hist_number, double x, double y, double z_or_w){
+    if(hist2dtabLocal[hist_number]!=nullptr){
+        hist2dtabLocal[hist_number]->Fill(x, y, z_or_w);
+    } else if(hist3dtabLocal[hist_number]!=nullptr){
+        hist3dtabLocal[hist_number]->Fill(x, y, z_or_w);
+    } else{
+        throw std::invalid_argument("1D nor 2D histogram with number \""+std::to_string(hist_number)+"\" does not exist.");
+    }
+}
+void ProcessingInsideLoop::Fill(const char* hist_name, double x, double y, double z_or_w){
+    //looking through 1d histograms
+    for(long unsigned int i = 0; i<hist2dtabLocal.size(); i++){
+        if(hist2dtabLocal[i]!=nullptr&&strcmp(hist_name, hist2dtabLocal[i]->GetName())==0){
+            ProcessingInsideLoop::Fill(i, x, y, z_or_w);
+            return;
+        }
+    }
+    //looking through 2d histograms
+    for(long unsigned int i = 0; i<hist3dtabLocal.size(); i++){
+        if(hist3dtabLocal[i]!=nullptr&&strcmp(hist_name, hist3dtabLocal[i]->GetName())==0){
+            ProcessingInsideLoop::Fill(i, x, y, z_or_w);
             return;
         }
     }
