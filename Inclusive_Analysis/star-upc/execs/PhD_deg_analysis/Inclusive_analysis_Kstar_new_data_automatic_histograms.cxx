@@ -45,6 +45,7 @@ int main(int argc, char* argv[]){
     //data taken from PDG for neutral only
     double fitMaximum = 0.89556;
     double fitWidth = 0.0471;
+
     //creating list of categories
     std::vector<std::string> allCategories;
     std::ifstream infile("STAR-Analysis/Inclusive_Analysis/star-upc/execs/PhD_deg_analysis/Differential_crossection_values.txt");
@@ -65,16 +66,71 @@ int main(int argc, char* argv[]){
         folderWithDiagonal += "/";
     }
 
+    //###########################################################
+    //       SETTING UP FUNCTIONS FOR SIGNAL AND BACKGROUND
+    //###########################################################
+
+    //SIGNAL FUNCTIONS
+    //convolution of BW and gauss (default range [0. 1.] will be changed later anyway)
+    //!!! GAMMA AND GAUSS STD ARE SWAPPED TO PRESERVE m, gamma, std ORDER !!!
+    TF1 fit_func_sig_template("fit_func_sig_template", "[0]*TMath::Voigt(x-[1], [3], [2])");
+    //vector of potential signals, filled with functions
+    std::vector<TF1> signal_function_vector;
+    signal_function_vector.push_back(*static_cast<TF1*>(fit_func_sig_template.Clone("Kstar700")));
+    signal_function_vector.push_back(*static_cast<TF1*>(fit_func_sig_template.Clone("Kstar892")));
+    signal_function_vector.push_back(*static_cast<TF1*>(fit_func_sig_template.Clone("Kstar1430")));
+    //naming parameters
+    signal_function_vector[0].SetParNames("N_{K^{*}(700)}", "m_{K^{*}(700)}", "#Gamma_{K^{*}(700)}", "#sigma_{K^{*}(700)}");
+    signal_function_vector[1].SetParNames("N_{K^{*}(892)}", "m_{K^{*}(892)}", "#Gamma_{K^{*}(892)}", "#sigma_{K^{*}(892)}");
+    signal_function_vector[2].SetParNames("N_{K^{*}(1430)}", "m_{K^{*}(1430)}", "#Gamma_{K^{*}(1430)}", "#sigma_{K^{*}(1430)}");
+    //setting PDG values of mass and width
+    std::vector<std::pair<double, double>> PDG_data;
+    PDG_data.emplace_back(0.838, 0.463);
+    PDG_data.emplace_back(fitMaximum, fitWidth);
+    PDG_data.emplace_back(1.425, 0.27);
+    //setting parameters (//N_sig, m0, gamma0, sigma_Gauss)
+    signal_function_vector[0].SetParameters(10., 0.838, 0.463, 0.006);
+    signal_function_vector[1].SetParameters(10., fitMaximum, fitWidth, 0.006);
+    signal_function_vector[2].SetParameters(10., 1.425, 0.270, 0.006);
+    //setting parameter limits
+    for(size_t i = 0; i<signal_function_vector.size(); i++){
+        //getting
+        double currentfitMaximum = signal_function_vector[i].GetParameter(1);
+        double currentfitWidth = signal_function_vector[i].GetParameter(2);
+        //setting
+        signal_function_vector[i].SetParLimits(0, 0., 1e3);
+        signal_function_vector[i].SetParLimits(1, currentfitMaximum-currentfitWidth, currentfitMaximum+currentfitWidth);
+        signal_function_vector[i].SetParLimits(2, 0., 2*currentfitWidth);
+        signal_function_vector[i].SetParLimits(3, 0., 1.);
+    }
+
+    //###########################################################
+    //                 SETTING UP HISTOGRAMS
+    //###########################################################
+
+    //creating folders for saving pdfs
+    for(auto&& pair:pairTab){
+        for(auto&& category:allCategories){
+            gSystem->mkdir((folderWithDiagonal+pair+"/"+category).c_str(), true);
+        }
+    }
+
     //filling vectors of background and signal and Chi2 with and without the background
     //this scary nested map exists so I can do map[pair][category] = histogram
+    //data
     std::map<std::string, std::map<std::string, TH2D*>> background_vector, signal_vector;
-    std::map<std::string, std::map<std::string, TH1D*>> Chi2withbcg_vector,
-        result_vector,
-        mass_vector,
-        width_vector,
-        resolution_vector,
-        background_normalisation_vector;
+    //total chi2
+    std::map<std::string, std::map<std::string, TH1D*>> Chi2withbcg_vector;
+    //separate histograms for each signal
+    std::map<std::string, std::map<std::string, std::vector<TH1D*>>> result_vector;
+    std::map<std::string, std::map<std::string, std::vector<TH1D*>>> mass_vector;
+    std::map<std::string, std::map<std::string, std::vector<TH1D*>>> width_vector;
+    std::map<std::string, std::map<std::string, std::vector<TH1D*>>> resolution_vector;
+    //background
+    std::map<std::string, std::map<std::string, TH1D*>> background_normalisation_vector;
     std::map<std::string, std::map<std::string, TH2D*>> background_additional_parameters_vector;
+
+    //creating histograms
     std::string tempSignalName = "M$Chi2";
     std::string tempBackgroundName = "M$Chi2BcgMixedEvent";
     std::string tempHistName;
@@ -89,11 +145,18 @@ int main(int argc, char* argv[]){
             std::string axis_title = signal_vector[pair][category]->GetYaxis()->GetTitle();
             //creating histograms
             Chi2withbcg_vector[pair][category] = new TH1D((tempHistName+"_"+category+"_Chi2").c_str(), (histogram_title+"-dependent #chi2/NDF;"+axis_title+";#chi^{2}/NDF").c_str(), signal_vector[pair][category]->GetNbinsY(), signal_vector[pair][category]->GetYaxis()->GetXmin(), signal_vector[pair][category]->GetYaxis()->GetXmax());
-            result_vector[pair][category] = new TH1D((tempHistName+"_"+category+"_Result").c_str(), (histogram_title+"-dependent yield;"+axis_title+";Number of pairs").c_str(), signal_vector[pair][category]->GetNbinsY(), signal_vector[pair][category]->GetYaxis()->GetXmin(), signal_vector[pair][category]->GetYaxis()->GetXmax());
-            mass_vector[pair][category] = new TH1D((tempHistName+"_"+category+"_Mass").c_str(), (histogram_title+"-dependent mass;"+axis_title+";m_{0} [GeV/c^{2}]").c_str(), signal_vector[pair][category]->GetNbinsY(), signal_vector[pair][category]->GetYaxis()->GetXmin(), signal_vector[pair][category]->GetYaxis()->GetXmax());
-            width_vector[pair][category] = new TH1D((tempHistName+"_"+category+"_Width").c_str(), (histogram_title+"-dependent B-W width;"+axis_title+";#Gamma_{0} [GeV/c^{2}]").c_str(), signal_vector[pair][category]->GetNbinsY(), signal_vector[pair][category]->GetYaxis()->GetXmin(), signal_vector[pair][category]->GetYaxis()->GetXmax());
-            resolution_vector[pair][category] = new TH1D((tempHistName+"_"+category+"_Resolution").c_str(), (histogram_title+"-dependent Gaussian width;"+axis_title+";#sigma [GeV/c^{2}]").c_str(), signal_vector[pair][category]->GetNbinsY(), signal_vector[pair][category]->GetYaxis()->GetXmin(), signal_vector[pair][category]->GetYaxis()->GetXmax());
             background_normalisation_vector[pair][category] = new TH1D((tempHistName+"_"+category+"_Bcgnorm").c_str(), (histogram_title+"-dependent background normalization;"+axis_title+";Bcg normalization").c_str(), signal_vector[pair][category]->GetNbinsY(), signal_vector[pair][category]->GetYaxis()->GetXmin(), signal_vector[pair][category]->GetYaxis()->GetXmax());
+            for(size_t i = 0; i<signal_function_vector.size(); i++){
+                //name of particle (takes N_{XYZ} and removes first 3 and last characters, leaving XYZ)
+                std::string particle_name = std::string(signal_function_vector[i].GetParName(0)).substr(3, std::string(signal_function_vector[i].GetParName(0)).length()-4);
+                //title
+                std::string title_part = signal_function_vector[i].GetName();
+                //histograms
+                result_vector[pair][category].push_back(new TH1D((tempHistName+"_"+category+"_Result_"+title_part).c_str(), (histogram_title+"-dependent yield of "+particle_name+";"+axis_title+";Number of pairs").c_str(), signal_vector[pair][category]->GetNbinsY(), signal_vector[pair][category]->GetYaxis()->GetXmin(), signal_vector[pair][category]->GetYaxis()->GetXmax()));
+                mass_vector[pair][category].push_back(new TH1D((tempHistName+"_"+category+"_Mass_"+title_part).c_str(), (histogram_title+"-dependent mass of "+particle_name+";"+axis_title+";m_{0} [GeV/c^{2}]").c_str(), signal_vector[pair][category]->GetNbinsY(), signal_vector[pair][category]->GetYaxis()->GetXmin(), signal_vector[pair][category]->GetYaxis()->GetXmax()));
+                width_vector[pair][category].push_back(new TH1D((tempHistName+"_"+category+"_Width_"+title_part).c_str(), (histogram_title+"-dependent B-W width of "+particle_name+";"+axis_title+";#Gamma_{0} [GeV/c^{2}]").c_str(), signal_vector[pair][category]->GetNbinsY(), signal_vector[pair][category]->GetYaxis()->GetXmin(), signal_vector[pair][category]->GetYaxis()->GetXmax()));
+                resolution_vector[pair][category].push_back(new TH1D((tempHistName+"_"+category+"_Resolution_"+title_part).c_str(), (histogram_title+"-dependent Gaussian width of "+particle_name+";"+axis_title+";#sigma [GeV/c^{2}]").c_str(), signal_vector[pair][category]->GetNbinsY(), signal_vector[pair][category]->GetYaxis()->GetXmin(), signal_vector[pair][category]->GetYaxis()->GetXmax()));
+            }
             //background
             tempHistName = tempBackgroundName;
             tempHistName.replace(find(tempHistName.begin(), tempHistName.end(), '$')-tempHistName.begin(), 1, pair);
@@ -108,29 +171,6 @@ int main(int argc, char* argv[]){
     //                FITTING
     //###########################################################
 
-    //convolution of BW and gauss (default range [0. 1.] will be changed later anyway)
-    //!!! GAMMA AND GAUSS STD ARE SWAPPED TO PRESERVE m, gamma, std ORDER !!!
-    TF1 fit_func_sig("fit_func_sig", "[0]*TMath::Voigt(x-[1], [3], [2])");
-    //naming parameters
-    fit_func_sig.SetParameter(0, 1.);           //N_sig
-    fit_func_sig.SetParameter(1, fitMaximum);   //m0
-    fit_func_sig.SetParameter(2, fitWidth);     //gamma0
-    fit_func_sig.SetParameter(3, 0.0013);       //sigma_Gauss
-
-    fit_func_sig.SetParNames("N_{sig}", "m_{K^{*}(892)}", "#Gamma_{K^{*}(892)}", "#sigma_{Gauss}");
-    //setting parameter limits
-    fit_func_sig.SetParLimits(0, 0., 1e3);
-    fit_func_sig.SetParLimits(1, fitMaximum-fitWidth, fitMaximum+fitWidth);
-    fit_func_sig.SetParLimits(2, 0., 2*fitWidth);
-    fit_func_sig.SetParLimits(3, 0., 1.);
-
-    //creating folders for saving pdfs
-    for(auto&& pair:pairTab){
-        for(auto&& category:allCategories){
-            gSystem->mkdir((folderWithDiagonal+pair+"/"+category).c_str(), true);
-        }
-    }
-
     //fitting loop
     for(auto&& pair:pairTab){
         for(auto&& category:allCategories){
@@ -140,34 +180,66 @@ int main(int argc, char* argv[]){
             //for keeping title
             std::string baseOfTitle = std::string(sig_pointer->GetTitle())+" #in ";
             for(Int_t k = 0; k<sig_pointer->GetNbinsY(); k++){
+                //slices of signal and background
                 TH1D* sig_slice = sig_pointer->ProjectionX("_sig", k+1, k+1, "e1");
                 sig_slice->GetYaxis()->SetTitle("Number of pairs");
                 TH1D* bcg_slice = bcg_pointer->ProjectionX("_bcg", k+1, k+1, "e1");
+
+                //setting fitting range
+                double lower_range = 0.65;
+                double upper_range = 1.6;
+
+
+                //creating signal function - a sum of all the signals
+                auto signal_sum_function = [&](double* x, double* p){
+                    double result = 0;
+                    int starting_parameter = 0;
+                    for(auto&& sig_func_partial:signal_function_vector){
+                        result += sig_func_partial.EvalPar(x, p+starting_parameter);
+                        starting_parameter += sig_func_partial.GetNpar();
+                    }
+                    return result;
+                };
+                int total_number_of_parameters = 0;
+                for(auto&& sig_func_partial:signal_function_vector){
+                    total_number_of_parameters += sig_func_partial.GetNpar();
+                }
+                TF1 fit_func_sig("fit_func_sig", signal_sum_function, lower_range, upper_range, total_number_of_parameters, 1);
+                int temp_par_number = 0;
+                for(auto&& sig_func_partial:signal_function_vector){
+                    for(size_t n_par = 0; n_par<sig_func_partial.GetNpar(); n_par++){
+                        fit_func_sig.SetParName(temp_par_number, sig_func_partial.GetParName(n_par));
+                        double min_limit, max_limit;
+                        sig_func_partial.GetParLimits(temp_par_number, min_limit, max_limit);
+                        fit_func_sig.SetParLimits(temp_par_number, min_limit, max_limit);
+                        temp_par_number++;
+                    }
+                }
+                //setting initial fitting values for signal 
+                double initial_Kstar892_height = (sig_slice->GetBinContent(sig_slice->FindBin(fitMaximum))-sig_slice->GetBinContent(sig_slice->FindBin(fitMaximum+fitWidth)))*TMath::PiOver2()*fitWidth;
+                temp_par_number = 0;
+                for(auto&& sig_func_partial:signal_function_vector){
+                    for(size_t n_par = 0; n_par<sig_func_partial.GetNpar(); n_par++){
+                        fit_func_sig.SetParameter(temp_par_number, sig_func_partial.GetParameter(n_par));
+                        if(strcmp(sig_func_partial.GetName(), "Kstar892")==0&&n_par==0){
+                            fit_func_sig.SetParameter(temp_par_number, initial_Kstar892_height);
+                        }
+                        temp_par_number++;
+                    }
+                }
+
+
                 //creating background function - a scaled slice of mixed event background
                 auto mixed_event_background = [&](double* x, double* p){
-                    return p[0]*bcg_slice->GetBinContent(bcg_slice->FindBin(x[0]))+p[1]*x[0]+p[2];
+                    return p[0]*bcg_slice->GetBinContent(bcg_slice->FindBin(x[0]));
                 };
-                TF1 fit_func_bcg("fit_func_bcg", mixed_event_background, 0., 1., 3, 1);//width will be changed later anyway, 3 params, 1 dim
-
-                //fitting and filling result
-                //setting lower range for m0-3*gamma
-                //if lower bound is lower than m0-4*gamma
-                //and 2*width otherwise
-                double lower_range = fitMaximum-3*fitWidth;
-                if(sig_slice->GetBinLowEdge(GetFirstNonzeroBinNumber(sig_slice))>fitMaximum-4*fitWidth){
-                    lower_range = fitMaximum-2*fitWidth;
-                }
-                double upper_range = 1.2;
-                fit_func_sig.SetRange(lower_range, upper_range);
-                fit_func_bcg.SetRange(lower_range, upper_range);
-                fit_func_bcg.SetParNames("N_{bcg}", "a_{1}", "a_{0}");
-
-                //setting initial fitting values
-                double initial_sig_height = (sig_slice->GetBinContent(sig_slice->FindBin(fitMaximum))-sig_slice->GetBinContent(sig_slice->FindBin(fitMaximum+fitWidth)))*TMath::PiOver2()*fitWidth;
-                fit_func_sig.SetParameters(initial_sig_height, fitMaximum, fitWidth, 0.006);
+                TF1 fit_func_bcg("fit_func_bcg", mixed_event_background, lower_range, upper_range, 1, 1);
+                fit_func_bcg.SetParNames("N_{bcg}");
+                //setting initial fitting values for background
                 double initial_bcg_scale = sig_slice->GetBinContent(sig_slice->FindBin(fitMaximum+fitWidth))/bcg_slice->GetBinContent(bcg_slice->FindBin(fitMaximum+fitWidth));
-                fit_func_bcg.SetParameters(initial_bcg_scale, 0., 0.);
+                fit_func_bcg.SetParameters(initial_bcg_scale);
                 fit_func_bcg.SetParLimits(0, 0., 10.);
+
 
                 //fitting singular slice
                 double par_value, par_error;
@@ -190,33 +262,35 @@ int main(int argc, char* argv[]){
                 //saving fit results for further analysys
                 //Chi2
                 Chi2withbcg_vector[pair][category]->SetBinContent(k+1, tempResult.Chi2()/tempResult.Ndf());
-                //result
-                double bin_width = result_vector[pair][category]->GetBinWidth(k+1);
-                //TODO: check later if taking constant bin width does not mess things up
-                par_value = fabs(tempResult.Parameter(0)/sig_slice->GetXaxis()->GetBinWidth(1)*bin_width);
-                par_error = tempResult.ParError(0)/sig_slice->GetXaxis()->GetBinWidth(1)*bin_width;
-                result_vector[pair][category]->SetBinContent(k+1, par_value);
-                result_vector[pair][category]->SetBinError(k+1, par_error);
-                //mass
-                mass_vector[pair][category]->SetBinContent(k+1, tempResult.Parameter(1));
-                mass_vector[pair][category]->SetBinError(k+1, tempResult.Error(1));
-                //width
-                width_vector[pair][category]->SetBinContent(k+1, tempResult.Parameter(2));
-                width_vector[pair][category]->SetBinError(k+1, tempResult.Error(2));
-                //resolution
-                resolution_vector[pair][category]->SetBinContent(k+1, tempResult.Parameter(3));
-                resolution_vector[pair][category]->SetBinError(k+1, tempResult.Error(3));
+                for(size_t i = 0; i<signal_function_vector.size(); i++){
+                    //result
+                    double bin_width = result_vector[pair][category][i]->GetBinWidth(k+1);
+                    //TODO: check later if taking constant bin width does not mess things up
+                    //TOFO: change i*fit_func_sig_template.GetNpar() into proper values
+                    par_value = fabs(tempResult.Parameter(i*fit_func_sig_template.GetNpar()+0)/sig_slice->GetXaxis()->GetBinWidth(1)*bin_width);
+                    par_error = tempResult.ParError(i*fit_func_sig_template.GetNpar()+0)/sig_slice->GetXaxis()->GetBinWidth(1)*bin_width;
+                    result_vector[pair][category][i]->SetBinContent(k+1, par_value);
+                    result_vector[pair][category][i]->SetBinError(k+1, par_error);
+                    //mass
+                    mass_vector[pair][category][i]->SetBinContent(k+1, tempResult.Parameter(i*fit_func_sig_template.GetNpar()+1));
+                    mass_vector[pair][category][i]->SetBinError(k+1, tempResult.Error(i*fit_func_sig_template.GetNpar()+1));
+                    //width
+                    width_vector[pair][category][i]->SetBinContent(k+1, tempResult.Parameter(i*fit_func_sig_template.GetNpar()+2));
+                    width_vector[pair][category][i]->SetBinError(k+1, tempResult.Error(i*fit_func_sig_template.GetNpar()+2));
+                    //resolution
+                    resolution_vector[pair][category][i]->SetBinContent(k+1, tempResult.Parameter(i*fit_func_sig_template.GetNpar()+3));
+                    resolution_vector[pair][category][i]->SetBinError(k+1, tempResult.Error(i*fit_func_sig_template.GetNpar()+3));
+                }
                 //background normalisation
                 background_normalisation_vector[pair][category]->SetBinContent(k+1, tempResult.Parameter(4));
                 background_normalisation_vector[pair][category]->SetBinError(k+1, tempResult.Error(4));
                 //background additional parameters
-                //index 0 to 3 for signal, 4 for bcg normalisation
-                //additional parameters start with index 5
-                for(size_t par = 5; par<tempResult.NTotalParameters(); par++){
-                    // it does not work; possibly because function fitted is going out of scope
-                    // std::string parameter_name = tempResult.ParName(par);
-                    // use this instead
-                    std::string parameter_name = fit_func_bcg.GetParName(par-4); //we start from index 1, because 0 is mixed bcg normalzation
+                int total_signal_parameters = fit_func_sig.GetNpar();
+                int total_mixed_event_background_parameters = 1;
+                for(size_t par = total_signal_parameters+total_mixed_event_background_parameters; par<tempResult.NTotalParameters(); par++){
+                    //this way we start fit_func_bcg parameters from after signal and after mixed background
+                    int fit_func_bcg_additional_param_number = par-total_signal_parameters;
+                    std::string parameter_name = fit_func_bcg.GetParName(fit_func_bcg_additional_param_number);
                     double bin_center = background_additional_parameters_vector[pair][category]->GetYaxis()->GetBinCenter(k+1);
                     background_additional_parameters_vector[pair][category]->Fill(parameter_name.c_str(), bin_center, tempResult.Parameter(par));
                     int parameter_bin_number = background_additional_parameters_vector[pair][category]->GetXaxis()->FindFixBin(parameter_name.c_str());
@@ -232,10 +306,12 @@ int main(int argc, char* argv[]){
             std::string folderToSave = folderWithDiagonal+pair+"/"+category+"/";
             //always present
             custom_draw_and_save(Chi2withbcg_vector[pair][category], 1., folderToSave, "", "", "hist min0");
-            custom_draw_and_save(result_vector[pair][category], 0., folderToSave, "", "", "e1 min0");
-            custom_draw_and_save(mass_vector[pair][category], fitMaximum, folderToSave, "", "", "e1");
-            custom_draw_and_save(width_vector[pair][category], fitWidth, folderToSave, "", "", "e1 min0");
-            custom_draw_and_save(resolution_vector[pair][category], 0., folderToSave, "", "", "e1 min0");
+            for(size_t i = 0; i<signal_function_vector.size(); i++){
+                custom_draw_and_save(result_vector[pair][category][i], 0., folderToSave, "", "", "e1 min0");
+                custom_draw_and_save(mass_vector[pair][category][i], PDG_data[i].first, folderToSave, "", "", "e1");
+                custom_draw_and_save(width_vector[pair][category][i], PDG_data[i].second, folderToSave, "", "", "e1 min0");
+                custom_draw_and_save(resolution_vector[pair][category][i], 0., folderToSave, "", "", "e1 min0");
+            }
             custom_draw_and_save(background_normalisation_vector[pair][category], 0., folderToSave, "", "", "e1 min0");
             //custom parameters (including those from linear background)
             TH2D* hist_pointer = background_additional_parameters_vector[pair][category];
@@ -341,7 +417,7 @@ TFitResult fit_and_draw_and_save(TH1D* data, TF1* signal, TF1* background, std::
     data->SetMarkerStyle(kFullCircle);
     data->SetMarkerColor(kBlue);
     //drawing data and function
-    TFitResultPtr fitPointer = data->Fit(fitting_function_total, "BRS");
+    TFitResultPtr fitPointer = data->Fit(fitting_function_total, "BRSWL");
     data->Draw(options.c_str());
     //drawing legend
     double width = 0.3;
@@ -354,13 +430,14 @@ TFitResult fit_and_draw_and_save(TH1D* data, TF1* signal, TF1* background, std::
     legend_for_background_fitting.AddEntry(fitting_function_total, "Mixed background + signal fit", "l");
     legend_for_background_fitting.Draw("SAME");
     //setting proper look of fitting parameters
-    double stats_height = 0.25;
+    double stats_height = 0.35;
     gPad->Update();
     TPaveStats* stats = static_cast<TPaveStats*>(data->GetListOfFunctions()->FindObject("stats"));
     stats->SetX1NDC(leftedge);
     stats->SetX2NDC(leftedge+width);
     stats->SetY1NDC(loweredge-stats_height);
     stats->SetY2NDC(loweredge);
+    stats->SetTextSize(0.025);
     //drawing before saving
     gPad->ModifiedUpdate();
     //saving
@@ -379,9 +456,19 @@ TFitResult fit_and_draw_and_save(TH1D* data, TF1* signal, TF1* background, std::
         line2.SetLineStyle(kDashed);
         line2.SetLineWidth(2);
         line2.Draw("same");
-        //redrawing fitting function in full range and adding drawing components
+
+        //redrawing fitting functions in full range and adding drawing components
+        //preparations
         TF1* fitting_function_total = static_cast<TF1*>(data->GetListOfFunctions()->FindObject("fitting_function_total"));
         fitting_function_total->SetRange(resultCanvas->GetUxmin(), resultCanvas->GetUxmax());
+        //signals
+        signal->SetParameters(fitting_function_total->GetParameters());
+        signal->SetLineColor(kRed);
+        signal->SetLineStyle(kDashed);
+        signal->SetNpx(1000);
+        TF1* signal_copy = signal->DrawCopy("same");//fix to draw signal in the whooooole region
+        signal_copy->SetRange(resultCanvas->GetUxmin(), resultCanvas->GetUxmax());
+        //mixed background
         auto only_mixed_event_background = [&](double* x, double* p){
             return p[0]*only_mixed_background->GetBinContent(only_mixed_background->FindBin(x[0]));
         };
@@ -391,6 +478,7 @@ TFitResult fit_and_draw_and_save(TH1D* data, TF1* signal, TF1* background, std::
         fitting_function_mixed_background.SetLineStyle(kDashed);
         fitting_function_mixed_background.SetNpx(1000);
         fitting_function_mixed_background.Draw("same");
+        //remaining, non-mixed background
         auto remaining_background = [&](double* x, double* p){
             return background->EvalPar(x, fitting_function_total->GetParameters()+signalparams)-fitting_function_mixed_background.Eval(x[0]);
         };
@@ -399,6 +487,7 @@ TFitResult fit_and_draw_and_save(TH1D* data, TF1* signal, TF1* background, std::
         fitting_function_remaining_background.SetLineStyle(kDashed);
         fitting_function_remaining_background.SetNpx(1000);
         fitting_function_remaining_background.Draw("same");
+
         //adding fitting region and other function markers to legend
         legend_for_background_fitting.AddEntry(&fitting_function_mixed_background, "Mixed events background", "l");
         legend_for_background_fitting.AddEntry(&fitting_function_remaining_background, "Other parts of the background", "l");
@@ -408,6 +497,7 @@ TFitResult fit_and_draw_and_save(TH1D* data, TF1* signal, TF1* background, std::
         legend_for_background_fitting.SetY1NDC(loweredge-0.05);
         stats->SetY1NDC(loweredge-stats_height-0.05);
         stats->SetY2NDC(loweredge-0.05);
+
         //saving in subfolder
         gPad->ModifiedUpdate();
         gSystem->mkdir((folderWithDiagonal+"whole_background").c_str(), true);
