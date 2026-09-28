@@ -1216,9 +1216,10 @@ int main(int argc, char** argv){
                 insideprocessing.Fill("XiEDifference", Xi_E_difference);
                 insideprocessing.Fill("XiBothDifference", Xi_W_difference, Xi_E_difference);
                 //if the difference is bigger than 1 GeV (arbitrarily chosen), we skip this event
-                if(fabs(Mx_difference)>1.){
-                    continue;
-                }
+                //currently commented because it did not seem to have much impact, and made comparison to MC difficult
+                // if(fabs(Mx_difference)>1.){
+                //     continue;
+                // }
 
 
                 //MIXED-EVENT DIFFERENT-SIGN
