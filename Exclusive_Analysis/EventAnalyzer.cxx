@@ -923,7 +923,7 @@ int main(int argc, char** argv)
 
             HistInvMassPiPi2DN1[i]->Write();
             HistInvMassPiPi2D_BgTail[i]->Write();
-            
+
             HistArmenterosBefore[i]->Write();
             HistArmenterosCore[i]->Write();
             HistArmenterosFringe[i]->Write();
@@ -944,7 +944,7 @@ int main(int argc, char** argv)
         }
         HistMassK0K0->Write();
 
-    } // end systematic loop
+    } // end systematic loop 
 
     outfile->Close();
     cout << "\n ✅ All done. Output: " << argv[2] << endl;
