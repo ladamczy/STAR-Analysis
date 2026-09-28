@@ -165,6 +165,7 @@ int main(int argc, char** argv)
         vector<TH1D*> HistSumProtonMomentaXN1, HistSumProtonMomentaYN1;
         vector<TH1D*> HistZDiffN1, HistZMeanN1, HistCosThetaStarN1;
         vector<TH2D*> HistInvMassPiPi2DN1;
+        vector<TH2D*> HistInvMassPiPi2D_BgTail;
         for (int i = 2; i < 6; i++) {
             HistInvMassPiPiN1.push_back(         new TH1D(MakeHistName(Form("histInvMassPiPiN1%d",i),sf).c_str(),"",30,0.44,0.56));
             HistPtMissN1.push_back(              new TH1D(MakeHistName(Form("histPtMissN1%d",i),sf).c_str(),"",20,0,1));
@@ -185,6 +186,7 @@ int main(int argc, char** argv)
             HistZMeanN1.push_back(               new TH1D(MakeHistName(Form("histZMeanN1%d",i),sf).c_str(),"",51,-200,200));
             HistCosThetaStarN1.push_back(        new TH1D(MakeHistName(Form("histCosThetaStarN1%d",i),sf).c_str(),"",50,-1.0,1.0));
             HistInvMassPiPi2DN1.push_back(       new TH2D(MakeHistName(Form("histInvMassPiPi2DN1%d",i),sf).c_str(),";m_{lead} [GeV];m_{sublead} [GeV]",30,0.44,0.56,30,0.44,0.56));
+            HistInvMassPiPi2D_BgTail.push_back(  new TH2D(MakeHistName(Form("histInvMassPiPi2D_BgTail%d",i),sf).c_str(),";m_{lead} [GeV];m_{sublead} [GeV]",30,0.44,0.56,30,0.44,0.56));
         }
 
         TH1D* HistMassK0K0 = new TH1D(MakeHistName("HistMassK0K0",sf).c_str(), ";m_{K^{0}K^{0}} [GeV];events", 21, 0.9, 3);
@@ -669,6 +671,24 @@ int main(int argc, char** argv)
                 // ------------------------------------------
             }
             
+            //Background Tail 2D Mass Plot
+            bool passedOtherCuts = true;
+            for (int c = 0; c < vCuts.size(); c++) {
+                // Ignore the mass window (we are plotting mass) 
+                // AND ignore the nominal ptMiss cut (we are defining a new tail region)
+                if (vCuts[c] == &areKaonsInNarrowMassWindow || vCuts[c] == &isPtMissingSmall) continue;
+                
+                if (*(vCuts[c]) == false) {
+                    passedOtherCuts = false;
+                    break;
+                }
+            }
+            
+            // "Veto exclusive cut": Require the tail region instead of the signal region
+            if (passedOtherCuts && pTmiss >= 0.2 && pTmiss <= 0.8) {
+                HistInvMassPiPi2D_BgTail[iH]->Fill(leadingKaonMass, subleadingKaonMass);
+            }
+
             bool N1_ptmiss = true; CheckN1(vCuts, isPtMissingSmall, N1_ptmiss);
             if (N1_ptmiss) {
                 HistPtMissN1[iH]->Fill(pTmiss);
@@ -902,6 +922,8 @@ int main(int argc, char** argv)
             HistCosThetaStarBefore[i]->Write();
 
             HistInvMassPiPi2DN1[i]->Write();
+            HistInvMassPiPi2D_BgTail[i]->Write();
+            
             HistArmenterosBefore[i]->Write();
             HistArmenterosCore[i]->Write();
             HistArmenterosFringe[i]->Write();

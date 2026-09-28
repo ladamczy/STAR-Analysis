@@ -204,7 +204,7 @@ void ProjectionNFit(TH2D* h2, double massLow, double massHigh, double fitmin, do
 
     // 8. Draw it beautifully for presentation
     TCanvas* c2 = new TCanvas("c2", "Signal vs Background", 800, 600);
-    hSubleading->GetYaxis()->SetRangeUser(0, hSubleading->GetMaximum() * 3.8);
+    hSubleading->GetYaxis()->SetRangeUser(0, hSubleading->GetMaximum() * 23.8);
     hSubleading->Draw("E1");
     fitFunc->Draw("SAME");
     sigFunc->Draw("SAME");
@@ -447,6 +447,67 @@ void DrawSignalExtraction(TH1D* hRaw, TH1D* hMix, double scaleFactor, TString cl
     c1->SaveAs(Form("plots/SignalExtraction_%s.png", className.Data()));
 }
 
+void PerformHybridSubtraction(TH1D* hPtMiss, TH2D* hSignal2D, TH2D* hTail2D, const char* suffix) {
+    
+    // 2. Fit the background tail (0.2 to 0.8) to estimate the underlying shape
+    // PHYSICS FIX: Combinatorial background in 2D pT space must include a linear 
+    // phase-space factor ('x') so it correctly drops to 0 at the origin.
+    TF1* bgFit = new TF1(Form("bgFit_%s", suffix), "[0] * x * exp(-[1] * x)", 0.2, 0.8);
+    bgFit->SetParameters(200, 2.0); // Robust starting guesses for the minimizer
+    bgFit->SetLineColor(kRed);
+    hPtMiss->Fit(bgFit, "R Q I"); // I = Integral method for more accurate bin areas
+
+    // 3. Calculate the global scaleFactor
+    double binWidth = hPtMiss->GetBinWidth(1);
+    
+    // Extrapolate the fit backwards to integrate the signal region (0.0 to 0.15)
+    double bgInSignalRegion = bgFit->Integral(0.0, 0.15) / binWidth;
+    
+    // Count the actual observed data events in the tail region (0.2 to 0.8)
+    int binLow = hPtMiss->FindBin(0.2);
+    int binHigh = hPtMiss->FindBin(0.8 - 1e-6); 
+    double eventsInTail = hPtMiss->Integral(binLow, binHigh);
+
+    double scaleFactor = (eventsInTail > 0) ? (bgInSignalRegion / eventsInTail) : 0.0;
+
+    std::cout << "\n=================================================" << std::endl;
+    std::cout << " 🧮 HYBRID BACKGROUND SUBTRACTION: " << suffix << std::endl;
+    std::cout << "=================================================" << std::endl;
+    std::cout << " Fit Est. Bg in Signal (0-0.15) : " << bgInSignalRegion << std::endl;
+    std::cout << " Obs. Events in Tail (0.2-0.8)  : " << eventsInTail << std::endl;
+    std::cout << " Global Scale Factor            : " << scaleFactor << std::endl;
+    std::cout << "=================================================\n" << std::endl;
+
+    // 4. Subtract the background bin-by-bin from the invariant mass plot
+    TH2D* hTailScaled = (TH2D*)hTail2D->Clone(Form("hTailScaled_%s", suffix));
+    hTailScaled->Sumw2(); // ⬅️ CRITICAL: Forces ROOT to track error bars properly during subtraction
+    hTailScaled->Scale(scaleFactor);
+
+    TH2D* hPureSignal2D = (TH2D*)hSignal2D->Clone(Form("hPureSignal2D_%s", suffix));
+    hPureSignal2D->Sumw2(); // ⬅️ CRITICAL: Forces ROOT to track error bars properly during subtraction
+    hPureSignal2D->Add(hTailScaled, -1.0); // -1.0 means subtraction
+
+    // 5. Draw the PtMiss Extrapolation for visual verification
+    TCanvas* cPt = new TCanvas(Form("cPt_%s", suffix), "PtMiss Extrapolation", 800, 600);
+    gPad->SetLogy();
+    hPtMiss->SetTitle("p_{T}^{miss} N-1 Extrapolation;p_{T}^{miss} [GeV/c];Events");
+    hPtMiss->GetXaxis()->SetRangeUser(0, 1.0);
+    hPtMiss->SetMarkerStyle(20);
+    hPtMiss->Draw("E1");
+    bgFit->Draw("SAME");
+    
+    // Draw a line to mark the exclusive cut boundary
+    TLine* lineSignal = new TLine(0.15, hPtMiss->GetMinimum(), 0.15, hPtMiss->GetMaximum());
+    lineSignal->SetLineStyle(2); 
+    lineSignal->SetLineColor(kBlue); 
+    lineSignal->Draw("SAME");
+    cPt->SaveAs(Form("plots/PtMiss_TailFit_%s.png", suffix));
+
+    // 6. Analyze the pure signal with your existing projection tool
+    ProjectionNFit(hPureSignal2D, 0.48, 0.52, 0.44, 0.56, Form("PureSignal_narrow%s", suffix), -1, -1);
+    ProjectionNFit(hPureSignal2D, 0.47, 0.53, 0.44, 0.56, Form("PureSignal_wide%s", suffix), -1, -1);
+}
+
 void DrawHistsFromFile(const char* filename, const char* suffix)
 {
     // This is majorly done for without mass window cut except  for HistArmenterosCore
@@ -536,17 +597,18 @@ void DrawHistsFromFile(const char* filename, const char* suffix)
     DrawSignalExtraction(HistMassRaw_2Tof, HistMassMixed_2Tof, scaleFactor2_MethodB, "2-TOF");
 
 }
+
 void Inspect() {
 
     // 1. Open the file
-    string DataFile1 = "MixedEvMW4753.root"; //wide
-    string DataFile2  = "MixedEvMW4852.root"; //narrow
+    string DataFile1 = "Sep28Data_MW4753.root"; //wide
+    string DataFile2  = "Sep28Data_MW4852.root"; //narrow
    
     TFile* fwide    = TFile::Open(DataFile1.c_str(), "READ");
     TFile* fnarrow = TFile::Open(DataFile2.c_str(), "READ");
 
     // 2. Fetch the newly created 2D N-1 histogram.
-    TH2D* histInvMass_4ToF = (TH2D*)fwide->Get("histInvMassPiPi2DN14_nominal");
+    TH2D* histInvMass_4ToF = (TH2D*)fwide->Get("histInvMassPiPi2DN14_nominal");  
     TH2D* histInvMass_3ToF = (TH2D*)fwide->Get("histInvMassPiPi2DN13_nominal");
     TH2D* histInvMass_2ToF = (TH2D*)fwide->Get("histInvMassPiPi2DN12_nominal");
 
@@ -599,6 +661,34 @@ void Inspect() {
     ExtractMassCuts(histInvMass_combined, "Combined (Inclusive)");
 
    
-    DrawHistsFromFile("MixedEvMW4852.root", "narrow");
+    DrawHistsFromFile("Sep28Data_MW4852.root", "narrow");
+
+
+    TH2D *histInvMass_BgTail_4ToF = (TH2D*)fnarrow->Get("histInvMassPiPi2D_BgTail4_nominal");
+    TH2D *histInvMass_BgTail_3ToF = (TH2D*)fnarrow->Get("histInvMassPiPi2D_BgTail3_nominal");
+    TH2D *histInvMass_BgTail_2ToF = (TH2D*)fnarrow->Get("histInvMassPiPi2D_BgTail2_nominal");
+
+    // 1. Get the PtMiss N-1 plots to build the high-statistics global distribution
+    TH1D* hPtMiss4 = (TH1D*)fnarrow->Get("histPtMissN14_nominal");
+    TH1D* hPtMiss3 = (TH1D*)fnarrow->Get("histPtMissN13_nominal");
+    TH1D* hPtMiss2 = (TH1D*)fnarrow->Get("histPtMissN12_nominal");
+
+    TH1D* hPtMiss_combined = (TH1D*)hPtMiss4->Clone("hPtMiss_combined");
+    hPtMiss_combined->Add(hPtMiss3);
+    hPtMiss_combined->Add(hPtMiss2);
+
+    //Add 3 hists
+    TH2D* histInvMass_BgTail_combined = (TH2D*)histInvMass_BgTail_2ToF->Clone("histInvMass_BgTail_combined");
+    histInvMass_BgTail_combined->Add(histInvMass_BgTail_3ToF);
+    histInvMass_BgTail_combined->Add(histInvMass_BgTail_4ToF);
+
+    ProjectionNFit(histInvMass_BgTail_combined, 0.48, 0.52, 0.44, 0.56, "BgTail_combined_narrow");
+    ProjectionNFit(histInvMass_BgTail_combined, 0.47, 0.53, 0.44, 0.56, "BgTail_combined_wide");
+   
+    //PerformHybridSubtraction(hPtMiss4, histInvMass_4ToF, histInvMass_BgTail_4ToF, "4ToF");
+    //PerformHybridSubtraction(hPtMiss3, histInvMass_3ToF, histInvMass_BgTail_3ToF, "3ToF");
+    //PerformHybridSubtraction(hPtMiss2, histInvMass_2ToF, histInvMass_BgTail_2ToF, "2ToF");
+
     
+  
 }
