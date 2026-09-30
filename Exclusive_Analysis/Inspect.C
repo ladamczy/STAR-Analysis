@@ -682,8 +682,16 @@ void Inspect() {
     histInvMass_BgTail_combined->Add(histInvMass_BgTail_3ToF);
     histInvMass_BgTail_combined->Add(histInvMass_BgTail_4ToF);
 
-    ProjectionNFit(histInvMass_BgTail_combined, 0.48, 0.52, 0.44, 0.56, "BgTail_combined_narrow");
-    ProjectionNFit(histInvMass_BgTail_combined, 0.47, 0.53, 0.44, 0.56, "BgTail_combined_wide");
+    //ProjectionNFit(histInvMass_BgTail_combined, 0.48, 0.52, 0.44, 0.56, "BgTail_combined_narrow");
+    //ProjectionNFit(histInvMass_BgTail_combined, 0.47, 0.53, 0.44, 0.56, "BgTail_combined_wide");
+
+
+    ProjectionNFit(histInvMass_BgTail_4ToF, 0.48, 0.52, 0.44, 0.56, "BgTail_4ToF_narrow");
+    ProjectionNFit(histInvMass_BgTail_3ToF, 0.48, 0.52, 0.44, 0.56, "BgTail_3ToF_narrow");
+    ProjectionNFit(histInvMass_BgTail_2ToF, 0.48, 0.52, 0.44, 0.56, "BgTail_2ToF_narrow");
+    ProjectionNFit(histInvMass_BgTail_4ToF, 0.47, 0.53, 0.44, 0.56, "BgTail_4ToF_wide");
+    ProjectionNFit(histInvMass_BgTail_3ToF, 0.47, 0.53, 0.44, 0.56, "BgTail_3ToF_wide");
+    ProjectionNFit(histInvMass_BgTail_2ToF, 0.47, 0.53, 0.44, 0.56, "BgTail_2ToF_wide");
    
     //PerformHybridSubtraction(hPtMiss4, histInvMass_4ToF, histInvMass_BgTail_4ToF, "4ToF");
     //PerformHybridSubtraction(hPtMiss3, histInvMass_3ToF, histInvMass_BgTail_3ToF, "3ToF");
