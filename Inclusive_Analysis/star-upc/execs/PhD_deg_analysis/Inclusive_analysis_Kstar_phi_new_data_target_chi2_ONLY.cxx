@@ -490,14 +490,11 @@ int main(int argc, char** argv){
                         if(1.06<mass&&mass<1.08){
                             vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
                             vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
-                            mass = (positive_track+negative_track).M();
-                            insideprocessing.Fill("MKKSuspiciousPeakTestedAsPionPair", mass);
-                        }
-                        if((1.05<mass&&mass<1.06)||(1.08<mass&&mass<1.09)){
+                            insideprocessing.Fill("MKKSuspiciousPeakTestedAsPionPair", (positive_track+negative_track).M());
+                        } else if(1.05<mass&&mass<1.09){
                             vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
                             vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
-                            mass = (positive_track+negative_track).M();
-                            insideprocessing.Fill("MKKSuspiciousPeakTestedAsPionPairNeighbourhood", mass);
+                            insideprocessing.Fill("MKKSuspiciousPeakTestedAsPionPairNeighbourhood", (positive_track+negative_track).M());
                         }
                     }
                     if(chi2Map["pi_pi"]<9){
