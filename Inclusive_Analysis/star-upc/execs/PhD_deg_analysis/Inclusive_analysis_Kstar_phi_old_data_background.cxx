@@ -76,7 +76,7 @@ int main(int argc, char** argv){
     char sigmaName[10];
     double sigmaValue;
     map<string, double> sigmaMap;
-    sigmaFile.open("STAR-Analysis/Inclusive_Analysis/star-upc/AnaOutput_Inclusive_analysis_Kstar_phi_old_data_TOF_tests_sigmaValues.txt");
+    sigmaFile.open("STAR-Analysis/Inclusive_Analysis/star-upc/AnaOutput_Inclusive_analysis_Kstar_phi_new_data_TOF_tests_sigmaValues.txt");
     while(getline(sigmaFile, line)){
         sscanf(line.c_str(), "%s\t\t%lf", sigmaName, &sigmaValue);
         sigmaMap.insert({ string(sigmaName), sigmaValue });

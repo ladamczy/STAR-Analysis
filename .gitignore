@@ -2,6 +2,7 @@ Inclusive_Analysis/**/build/
 Inclusive_Analysis/**/.sl*/
 Inclusive_Analysis/**/CVS/
 Inclusive_Analysis/**/old_data/
+Inclusive_Analysis/**/new_data/
 Inclusive_Analysis/**/*.pdf
 Inclusive_Analysis/**/*.root
 Inclusive_Analysis/**/*.png
@@ -25,7 +26,6 @@ Inclusive_Analysis/starsim/starsim_and_bfc/send.zip
 Inclusive_Analysis/starsim/starsim_and_bfc/schedTemplateExp.xml
 Inclusive_Analysis/starsim/starsim_and_bfc/fpsgeom.txt
 Inclusive_Analysis/starsim/starsim_and_bfc/prs*.txt
-Inclusive_Analysis/star-upc/AnaOutput_Inclusive_analysis_Kstar_phi_old_data_TOF_tests_sigmaValues.txt
 test/build
 test/run
 star-upc/build
