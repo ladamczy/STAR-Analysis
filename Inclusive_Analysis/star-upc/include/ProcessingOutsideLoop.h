@@ -56,18 +56,21 @@ ProcessingOutsideLoop::~ProcessingOutsideLoop() {
 }
 
 void ProcessingOutsideLoop::AddHistogram(TH1D hist){
+    hist.Sumw2();
     hist1dtab.push_back(new ROOT::TThreadedObject<TH1D>(hist));
     hist2dtab.push_back(nullptr);
     hist3dtab.push_back(nullptr);
 }
 
 void ProcessingOutsideLoop::AddHistogram(TH2D hist){
+    hist.Sumw2();
     hist1dtab.push_back(nullptr);
     hist2dtab.push_back(new ROOT::TThreadedObject<TH2D>(hist));
     hist3dtab.push_back(nullptr);
 }
 
 void ProcessingOutsideLoop::AddHistogram(TH3D hist){
+    hist.Sumw2();
     hist1dtab.push_back(nullptr);
     hist2dtab.push_back(nullptr);
     hist3dtab.push_back(new ROOT::TThreadedObject<TH3D>(hist));

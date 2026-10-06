@@ -8,6 +8,10 @@
 #include <TTreeReader.h>
 #include <ROOT/TTreeProcessorMT.hxx>
 #include <TRandom3.h>
+#include <TFileCollection.h>
+#include <THashList.h>
+#include <TFileInfo.h>
+#include <TSystem.h>
 
 // picoDst headers
 #include "StRPEvent.h"
@@ -19,6 +23,7 @@
 #include "StUPCVertex.h"
 #include "StUPCTofHit.h"
 #include "StPicoPhysicalHelix.h"
+#include "StEfficiencyCorrector3D.h"
 
 //my headers
 #include "UsefulThings.h"
@@ -37,29 +42,152 @@ enum RP_ID{ E1U, E1D, E2U, E2D, W1U, W1D, W2U, W2D, nRomanPots };
 enum SUSPECTED_PARTICLES{ K0S, Lambda, Kstar, Phi };
 string particleNicks[EXTENDED_PARTICLES::nParticlesExtended] = { "e", "pi", "K", "p" };
 
+enum CHARGE{ positive = 0, negative = 1, nCharge = 2 };
+TFile* getNewestFile(std::string folder, std::string filename);
+StEfficiencyCorrector3D* getInitialisedEfficiencyCorrector(std::string folder, CHARGE charge, PARTICLES particle);
+
 int main(int argc, char** argv){
 
     //argv:
     //1 - .root file or .list list
     //2 - output folder
-    //3 - number of cores
-    //4 - number of events to look back for (default 1 to speed things up, 1000 gives good results for mixed background)
+    //3 - (optional) number of cores
+    //4 - (optional) number of events to look back for (default 1 to speed things up, 1000 gives good results for mixed background)
+    //5 - (optional) folder with efficiency files for Sneha's efficiency correction (named SPPion*.root/SPProton*.root/SPKaon*.root)
 
     int nthreads = 1;
-    if(argc>=4){
+    int total_events_in_queue = 1000;
+    std::string efficiency_folder = "";
+    switch(argc){
+    case 6:
         nthreads = atoi(argv[3]);
+        total_events_in_queue = atoi(argv[4]);
+        efficiency_folder = argv[5];
+        break;
+    case 5:
+        //if the last one is a path, then we have # of cores & path to efficiency corrections
+        //if both are numbers, we have # of cores & number of previous events
+        if(atoi(argv[4])==0){
+            nthreads = atoi(argv[3]);
+            efficiency_folder = argv[4];
+        } else{
+            nthreads = atoi(argv[3]);
+            total_events_in_queue = atoi(argv[4]);
+        }
+        break;
+    case 4:
+        //if it is the path, then we have path to efficiency corrections
+        //if it is the number, we have number of cores
+        if(atoi(argv[3])==0){
+            efficiency_folder = argv[3];
+        } else{
+            nthreads = atoi(argv[3]);
+        }
+        break;
+    default:
+        printf("Invalid number of arguments. Proper argument usage:\n");
+        printf("argv[1] - .root file or .list list\n");
+        printf("argv[2] - output folder\n");
+        printf("argv[3] - (optional) number of cores (default 1)\n");
+        printf("argv[4] - (optional) number of events to look back for (default 1000 - gives good results for mixed background)\n");
+        printf("argv[5] - (optional) folder for Sneha's efficiency correction files(named SPPion*.root/SPProton*.root/SPKaon*.root)\n");
+        return 1;
+        break;
     }
-    if(argc>4){
-        printf("Previous events to combine for mixed background: %d\n", atoi(argv[4]));
-    } else{
-        printf("Previous events to combine for mixed background: 1000\n");
+    //summary
+    printf("Program is running on %d threads\n", nthreads);
+    printf("Previous events to combine for mixed background: %d\n", total_events_in_queue);
+    printf("Efficiency corrections: %s\n", efficiency_folder.length()!=0 ? efficiency_folder.c_str() : "Not used");
+    //because number of events includes the current one, we need to add 1
+    total_events_in_queue++;
+
+    //setting up efficiency correction
+    StEfficiencyCorrector3D* totalEfficiencyCorrector[nCharge][nParticles];
+    bool loadedCorrectorCorrectly = true;
+    for(size_t i = 0; i<nCharge; i++){
+        for(size_t j = 0; j<nParticles; j++){
+            totalEfficiencyCorrector[i][j] = getInitialisedEfficiencyCorrector(efficiency_folder, static_cast<CHARGE>(i), static_cast<PARTICLES>(j));
+            if(totalEfficiencyCorrector[i][j]==nullptr){
+                loadedCorrectorCorrectly = false;
+                break;
+            }
+        }
+        if(!loadedCorrectorCorrectly)
+            break;
     }
+    printf("Corrections initialised %s\n", loadedCorrectorCorrectly ? "successfully!" : "unsuccessfully! Falling back to default weight of 1.");
+    //a nice wrapper
+    auto correction_coefficient = [&](int total_pair_charge, PARTICLES positive_id, PARTICLES negative_id, StUPCTrack* positive_track, StUPCTrack* negative_track, double Vz_positive, double Vz_negative){
+        //fallback if something broke
+        if(!loadedCorrectorCorrectly)
+            return 1.;
+        //if success, we gotta load all the variables
+        double pt1 = positive_track->getPt();
+        double pt2 = negative_track->getPt();
+        double eta1 = positive_track->getEta();
+        double eta2 = negative_track->getEta();
 
+        //choosing correct signs for detected tracks
+        CHARGE first_track_charge_enum, second_track_charge_enum;
+        int first_track_charge, second_track_charge;
+        if(total_pair_charge==0){
+            first_track_charge_enum = positive;
+            first_track_charge = 1;
+            second_track_charge_enum = negative;
+            second_track_charge = -1;
+        } else if(total_pair_charge>0){
+            first_track_charge_enum = positive;
+            first_track_charge = 1;
+            second_track_charge_enum = positive;
+            second_track_charge = 1;
+        } else if(total_pair_charge<0){
+            first_track_charge_enum = negative;
+            first_track_charge = -1;
+            second_track_charge_enum = negative;
+            second_track_charge = -1;
+        } else{
+            return 1.;
+        }
 
-    cout<<"Program is running on "<<nthreads<<" threads"<<endl;
+        //calculating correction
+        double efficiency = 1.;
+        //positive
+        switch(positive_id){
+        case Pion:
+            efficiency *= totalEfficiencyCorrector[first_track_charge_enum][positive_id]->getCombinedEfficiency(eta1, pt1, Vz_positive, first_track_charge, StEfficiencyCorrector3D::PION);
+            break;
+        case Kaon:
+            efficiency *= totalEfficiencyCorrector[first_track_charge_enum][positive_id]->getCombinedEfficiency(eta1, pt1, Vz_positive, first_track_charge, StEfficiencyCorrector3D::KAON);
+            break;
+        case Proton:
+            efficiency *= totalEfficiencyCorrector[first_track_charge_enum][positive_id]->getCombinedEfficiency(eta1, pt1, Vz_positive, first_track_charge, StEfficiencyCorrector3D::PROTON);
+            break;
+        default:
+            return 1.;
+            break;
+        }
+        //negative
+        switch(negative_id){
+        case Pion:
+            efficiency *= totalEfficiencyCorrector[second_track_charge_enum][negative_id]->getCombinedEfficiency(eta2, pt2, Vz_negative, second_track_charge, StEfficiencyCorrector3D::PION);
+            break;
+        case Kaon:
+            efficiency *= totalEfficiencyCorrector[second_track_charge_enum][negative_id]->getCombinedEfficiency(eta2, pt2, Vz_negative, second_track_charge, StEfficiencyCorrector3D::KAON);
+            break;
+        case Proton:
+            efficiency *= totalEfficiencyCorrector[second_track_charge_enum][negative_id]->getCombinedEfficiency(eta2, pt2, Vz_negative, second_track_charge, StEfficiencyCorrector3D::PROTON);
+            break;
+        default:
+            return 1.;
+            break;
+        }
+
+        return 1./efficiency;
+    };
+
     ROOT::EnableThreadSafety();
     //actually i'm not sure if it's needed here
-    // ROOT::EnableImplicitMT(nthreads); //turn on multicore processing
+    ROOT::EnableImplicitMT(nthreads); //turn on multicore processing
 
     //preparing input & output
     TChain* upcChain = new TChain("mUPCTree");
@@ -67,15 +195,6 @@ int main(int argc, char** argv){
         cout<<"All files connected"<<endl;
     }
     const string& outputFolder = argv[2];
-
-    //histograms
-    ProcessingOutsideLoop outsideprocessing;
-    outsideprocessing.AddHistogram(TH1D("pairInfoSignal", "", 1, 0, 1));
-    outsideprocessing.AddHistogram(TH1D("pairInfoBackgroundSameSign", "", 1, 0, 1));
-    outsideprocessing.AddHistogram(TH1D("pairInfoBackgroundTrackRotation", "", 1, 0, 1));
-    outsideprocessing.AddHistogram(TH1D("pairInfoBackgroundRandomTrackRotation", "", 1, 0, 1));
-
-    outsideprocessing.AddHistogram(TH1D("Flowchart", "", 1, 0, 1));
 
     //adding chi2 histograms
     //file with sigma values:
@@ -91,7 +210,17 @@ int main(int argc, char** argv){
     }
     sigmaFile.close();
 
+    //pairs that are actively looked for
     std::vector<std::string> pairTab = { "Kpi", "piK", "ppi", "pip", "KK", "pipi", "pp" };
+
+    //histograms
+    ProcessingOutsideLoop outsideprocessing;
+    outsideprocessing.AddHistogram(TH1D("pairInfoSignal", "", 1, 0, 1));
+    outsideprocessing.AddHistogram(TH1D("pairInfoBackgroundSameSign", "", 1, 0, 1));
+    outsideprocessing.AddHistogram(TH1D("pairInfoBackgroundTrackRotation", "", 1, 0, 1));
+    outsideprocessing.AddHistogram(TH1D("pairInfoBackgroundRandomTrackRotation", "", 1, 0, 1));
+
+    outsideprocessing.AddHistogram(TH1D("Flowchart", "", 1, 0, 1));
 
     //mass histograms (signal)
     outsideprocessing.AddHistogram(TH1D("MKpiChi2", ";m_{K^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 200, 0.5, 2.0));
@@ -258,7 +387,7 @@ int main(int argc, char** argv){
         TLorentzVector negative_track;
         TLorentzVector positive_track2;
         TLorentzVector negative_track2;
-        double mass, chi2pipi, chi2Kpi, eta, pT, phi;
+        double mass, chi2pipi, chi2Kpi, eta, pT, phi, correction;
         map<string, double> chi2Map;
         bool isdEdxOk, isTOFOk;
         string tempPairName;
@@ -286,14 +415,6 @@ int main(int argc, char** argv){
         //xi of protons
         std::deque<double> queue_of_previous_Xi_W;
         std::deque<double> queue_of_previous_Xi_E;
-
-        //parameters
-        int total_events_in_queue = 1000;
-        if(argc>4){
-            total_events_in_queue = atoi(argv[4]);
-        }
-        //because number of events includes the current one, we need to add 1
-        total_events_in_queue++;
 
         //actual loop
         while(myReader.Next()){
@@ -434,10 +555,11 @@ int main(int argc, char** argv){
                         mass = (positive_track+negative_track).M();
                         eta = (positive_track+negative_track).Eta();
                         pT = (positive_track+negative_track).Pt();
-                        insideprocessing.Fill("MKpiChi2", mass);
-                        insideprocessing.Fill("MKpiChi2Close", mass);
-                        insideprocessing.Fill("MKpiChi2eta", mass, eta);
-                        insideprocessing.Fill("MKpiChi2pT", mass, pT);
+                        correction = correction_coefficient(0, Kaon, Pion, vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
+                        insideprocessing.Fill("MKpiChi2", mass, correction);
+                        insideprocessing.Fill("MKpiChi2Close", mass, correction);
+                        insideprocessing.Fill("MKpiChi2eta", mass, eta, correction);
+                        insideprocessing.Fill("MKpiChi2pT", mass, pT, correction);
                     }
                     if(chi2Map["pi_K"]<9){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
@@ -445,10 +567,11 @@ int main(int argc, char** argv){
                         mass = (positive_track+negative_track).M();
                         eta = (positive_track+negative_track).Eta();
                         pT = (positive_track+negative_track).Pt();
-                        insideprocessing.Fill("MpiKChi2", mass);
-                        insideprocessing.Fill("MpiKChi2Close", mass);
-                        insideprocessing.Fill("MpiKChi2eta", mass, eta);
-                        insideprocessing.Fill("MpiKChi2pT", mass, pT);
+                        correction = correction_coefficient(0, Pion, Kaon, vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
+                        insideprocessing.Fill("MpiKChi2", mass, correction);
+                        insideprocessing.Fill("MpiKChi2Close", mass, correction);
+                        insideprocessing.Fill("MpiKChi2eta", mass, eta, correction);
+                        insideprocessing.Fill("MpiKChi2pT", mass, pT, correction);
                     }
                     if(chi2Map["p_pi"]<9){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Proton]);
@@ -456,9 +579,10 @@ int main(int argc, char** argv){
                         mass = (positive_track+negative_track).M();
                         eta = (positive_track+negative_track).Eta();
                         pT = (positive_track+negative_track).Pt();
-                        insideprocessing.Fill("MppiChi2", mass);
-                        insideprocessing.Fill("MppiChi2eta", mass, eta);
-                        insideprocessing.Fill("MppiChi2pT", mass, pT);
+                        correction = correction_coefficient(0, Proton, Pion, vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
+                        insideprocessing.Fill("MppiChi2", mass, correction);
+                        insideprocessing.Fill("MppiChi2eta", mass, eta, correction);
+                        insideprocessing.Fill("MppiChi2pT", mass, pT, correction);
                     }
                     if(chi2Map["pi_p"]<9){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
@@ -466,9 +590,10 @@ int main(int argc, char** argv){
                         mass = (positive_track+negative_track).M();
                         eta = (positive_track+negative_track).Eta();
                         pT = (positive_track+negative_track).Pt();
-                        insideprocessing.Fill("MpipChi2", mass);
-                        insideprocessing.Fill("MpipChi2eta", mass, eta);
-                        insideprocessing.Fill("MpipChi2pT", mass, pT);
+                        correction = correction_coefficient(0, Pion, Proton, vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
+                        insideprocessing.Fill("MpipChi2", mass, correction);
+                        insideprocessing.Fill("MpipChi2eta", mass, eta, correction);
+                        insideprocessing.Fill("MpipChi2pT", mass, pT, correction);
                     }
                     if(chi2Map["K_K"]<9){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Kaon]);
@@ -476,25 +601,27 @@ int main(int argc, char** argv){
                         mass = (positive_track+negative_track).M();
                         eta = (positive_track+negative_track).Eta();
                         pT = (positive_track+negative_track).Pt();
-                        insideprocessing.Fill("MKKChi2", mass);
-                        insideprocessing.Fill("MKKChi2Close", mass);
-                        insideprocessing.Fill("MKKChi2eta", mass, eta);
-                        insideprocessing.Fill("MKKChi2pT", mass, pT);
+                        correction = correction_coefficient(0, Kaon, Kaon, vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
+                        insideprocessing.Fill("MKKChi2", mass, correction);
+                        insideprocessing.Fill("MKKChi2Close", mass, correction);
+                        insideprocessing.Fill("MKKChi2eta", mass, eta, correction);
+                        insideprocessing.Fill("MKKChi2pT", mass, pT, correction);
                         //test of suspicious peak and its neighbourhood
                         if(chi2Map["K_K"]<3){
-                            insideprocessing.Fill("MKKSuspiciousPeakTestedWithStrictChi2LessThan3", mass);
+                            insideprocessing.Fill("MKKSuspiciousPeakTestedWithStrictChi2LessThan3", mass, correction);
                         }
                         if(chi2Map["K_K"]<1){
-                            insideprocessing.Fill("MKKSuspiciousPeakTestedWithStrictChi2LessThan1", mass);
+                            insideprocessing.Fill("MKKSuspiciousPeakTestedWithStrictChi2LessThan1", mass, correction);
                         }
+                        correction = correction_coefficient(0, Pion, Pion, vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
                         if(1.06<mass&&mass<1.08){
                             vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
                             vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
-                            insideprocessing.Fill("MKKSuspiciousPeakTestedAsPionPair", (positive_track+negative_track).M());
+                            insideprocessing.Fill("MKKSuspiciousPeakTestedAsPionPair", (positive_track+negative_track).M(), correction);
                         } else if(1.05<mass&&mass<1.09){
                             vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
                             vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
-                            insideprocessing.Fill("MKKSuspiciousPeakTestedAsPionPairNeighbourhood", (positive_track+negative_track).M());
+                            insideprocessing.Fill("MKKSuspiciousPeakTestedAsPionPairNeighbourhood", (positive_track+negative_track).M(), correction);
                         }
                     }
                     if(chi2Map["pi_pi"]<9){
@@ -503,6 +630,7 @@ int main(int argc, char** argv){
                         mass = (positive_track+negative_track).M();
                         eta = (positive_track+negative_track).Eta();
                         pT = (positive_track+negative_track).Pt();
+                        correction = correction_coefficient(0, Pion, Pion, vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
                         insideprocessing.Fill("MpipiChi2", mass);
                         insideprocessing.Fill("MpipiChi2eta", mass, eta);
                         insideprocessing.Fill("MpipiChi2pT", mass, pT);
@@ -513,6 +641,7 @@ int main(int argc, char** argv){
                         mass = (positive_track+negative_track).M();
                         eta = (positive_track+negative_track).Eta();
                         pT = (positive_track+negative_track).Pt();
+                        correction = correction_coefficient(0, Proton, Proton, vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
                         insideprocessing.Fill("MppChi2", mass);
                         insideprocessing.Fill("MppChi2eta", mass, eta);
                         insideprocessing.Fill("MppChi2pT", mass, pT);
@@ -555,10 +684,11 @@ int main(int argc, char** argv){
                         mass = (positive_track+positive_track2).M();
                         eta = (positive_track+positive_track2).Eta();
                         pT = (positive_track+positive_track2).Pt();
-                        insideprocessing.Fill("MKpiChi2BcgSameSign", mass);
-                        insideprocessing.Fill("MKpiChi2BcgSameSignClose", mass);
-                        insideprocessing.Fill("MKpiChi2BcgSameSigneta", mass, eta);
-                        insideprocessing.Fill("MKpiChi2BcgSameSignpT", mass, pT);
+                        correction = correction_coefficient(2, Kaon, Pion, vector_Track_positive[i], vector_Track_positive[j], PV_position.Z(), PV_position.Z());
+                        insideprocessing.Fill("MKpiChi2BcgSameSign", mass, correction);
+                        insideprocessing.Fill("MKpiChi2BcgSameSignClose", mass, correction);
+                        insideprocessing.Fill("MKpiChi2BcgSameSigneta", mass, eta, correction);
+                        insideprocessing.Fill("MKpiChi2BcgSameSignpT", mass, pT, correction);
                     }
                     if(chi2Map["pi_K"]<9){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
@@ -566,10 +696,11 @@ int main(int argc, char** argv){
                         mass = (positive_track+positive_track2).M();
                         eta = (positive_track+positive_track2).Eta();
                         pT = (positive_track+positive_track2).Pt();
-                        insideprocessing.Fill("MpiKChi2BcgSameSign", mass);
-                        insideprocessing.Fill("MpiKChi2BcgSameSignClose", mass);
-                        insideprocessing.Fill("MpiKChi2BcgSameSigneta", mass, eta);
-                        insideprocessing.Fill("MpiKChi2BcgSameSignpT", mass, pT);
+                        correction = correction_coefficient(2, Pion, Kaon, vector_Track_positive[i], vector_Track_positive[j], PV_position.Z(), PV_position.Z());
+                        insideprocessing.Fill("MpiKChi2BcgSameSign", mass, correction);
+                        insideprocessing.Fill("MpiKChi2BcgSameSignClose", mass, correction);
+                        insideprocessing.Fill("MpiKChi2BcgSameSigneta", mass, eta, correction);
+                        insideprocessing.Fill("MpiKChi2BcgSameSignpT", mass, pT, correction);
                     }
                     if(chi2Map["p_pi"]<9){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Proton]);
@@ -577,9 +708,10 @@ int main(int argc, char** argv){
                         mass = (positive_track+positive_track2).M();
                         eta = (positive_track+positive_track2).Eta();
                         pT = (positive_track+positive_track2).Pt();
-                        insideprocessing.Fill("MppiChi2BcgSameSign", mass);
-                        insideprocessing.Fill("MppiChi2BcgSameSigneta", mass, eta);
-                        insideprocessing.Fill("MppiChi2BcgSameSignpT", mass, pT);
+                        correction = correction_coefficient(2, Proton, Pion, vector_Track_positive[i], vector_Track_positive[j], PV_position.Z(), PV_position.Z());
+                        insideprocessing.Fill("MppiChi2BcgSameSign", mass, correction);
+                        insideprocessing.Fill("MppiChi2BcgSameSigneta", mass, eta, correction);
+                        insideprocessing.Fill("MppiChi2BcgSameSignpT", mass, pT, correction);
                     }
                     if(chi2Map["pi_p"]<9){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
@@ -587,9 +719,10 @@ int main(int argc, char** argv){
                         mass = (positive_track+positive_track2).M();
                         eta = (positive_track+positive_track2).Eta();
                         pT = (positive_track+positive_track2).Pt();
-                        insideprocessing.Fill("MpipChi2BcgSameSign", mass);
-                        insideprocessing.Fill("MpipChi2BcgSameSigneta", mass, eta);
-                        insideprocessing.Fill("MpipChi2BcgSameSignpT", mass, pT);
+                        correction = correction_coefficient(2, Pion, Proton, vector_Track_positive[i], vector_Track_positive[j], PV_position.Z(), PV_position.Z());
+                        insideprocessing.Fill("MpipChi2BcgSameSign", mass, correction);
+                        insideprocessing.Fill("MpipChi2BcgSameSigneta", mass, eta, correction);
+                        insideprocessing.Fill("MpipChi2BcgSameSignpT", mass, pT, correction);
                     }
                     if(chi2Map["K_K"]<9){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Kaon]);
@@ -597,10 +730,11 @@ int main(int argc, char** argv){
                         mass = (positive_track+positive_track2).M();
                         eta = (positive_track+positive_track2).Eta();
                         pT = (positive_track+positive_track2).Pt();
-                        insideprocessing.Fill("MKKChi2BcgSameSign", mass);
-                        insideprocessing.Fill("MKKChi2BcgSameSignClose", mass);
-                        insideprocessing.Fill("MKKChi2BcgSameSigneta", mass, eta);
-                        insideprocessing.Fill("MKKChi2BcgSameSignpT", mass, pT);
+                        correction = correction_coefficient(2, Kaon, Kaon, vector_Track_positive[i], vector_Track_positive[j], PV_position.Z(), PV_position.Z());
+                        insideprocessing.Fill("MKKChi2BcgSameSign", mass, correction);
+                        insideprocessing.Fill("MKKChi2BcgSameSignClose", mass, correction);
+                        insideprocessing.Fill("MKKChi2BcgSameSigneta", mass, eta, correction);
+                        insideprocessing.Fill("MKKChi2BcgSameSignpT", mass, pT, correction);
                     }
                     if(chi2Map["pi_pi"]<9){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
@@ -608,9 +742,10 @@ int main(int argc, char** argv){
                         mass = (positive_track+positive_track2).M();
                         eta = (positive_track+positive_track2).Eta();
                         pT = (positive_track+positive_track2).Pt();
-                        insideprocessing.Fill("MpipiChi2BcgSameSign", mass);
-                        insideprocessing.Fill("MpipiChi2BcgSameSigneta", mass, eta);
-                        insideprocessing.Fill("MpipiChi2BcgSameSignpT", mass, pT);
+                        correction = correction_coefficient(2, Pion, Pion, vector_Track_positive[i], vector_Track_positive[j], PV_position.Z(), PV_position.Z());
+                        insideprocessing.Fill("MpipiChi2BcgSameSign", mass, correction);
+                        insideprocessing.Fill("MpipiChi2BcgSameSigneta", mass, eta, correction);
+                        insideprocessing.Fill("MpipiChi2BcgSameSignpT", mass, pT, correction);
                     }
                     if(chi2Map["p_p"]<9){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Proton]);
@@ -618,9 +753,10 @@ int main(int argc, char** argv){
                         mass = (positive_track+positive_track2).M();
                         eta = (positive_track+positive_track2).Eta();
                         pT = (positive_track+positive_track2).Pt();
-                        insideprocessing.Fill("MppChi2BcgSameSign", mass);
-                        insideprocessing.Fill("MppChi2BcgSameSigneta", mass, eta);
-                        insideprocessing.Fill("MppChi2BcgSameSignpT", mass, pT);
+                        correction = correction_coefficient(2, Proton, Proton, vector_Track_positive[i], vector_Track_positive[j], PV_position.Z(), PV_position.Z());
+                        insideprocessing.Fill("MppChi2BcgSameSign", mass, correction);
+                        insideprocessing.Fill("MppChi2BcgSameSigneta", mass, eta, correction);
+                        insideprocessing.Fill("MppChi2BcgSameSignpT", mass, pT, correction);
                     }
                 }
             }
@@ -657,10 +793,11 @@ int main(int argc, char** argv){
                         mass = (negative_track+negative_track2).M();
                         eta = (negative_track+negative_track2).Eta();
                         pT = (negative_track+negative_track2).Pt();
-                        insideprocessing.Fill("MKpiChi2BcgSameSigneta", mass, eta);
-                        insideprocessing.Fill("MKpiChi2BcgSameSign", mass);
-                        insideprocessing.Fill("MKpiChi2BcgSameSignClose", mass);
-                        insideprocessing.Fill("MKpiChi2BcgSameSignpT", mass, pT);
+                        correction = correction_coefficient(-2, Kaon, Pion, vector_Track_negative[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
+                        insideprocessing.Fill("MKpiChi2BcgSameSigneta", mass, eta, correction);
+                        insideprocessing.Fill("MKpiChi2BcgSameSign", mass, correction);
+                        insideprocessing.Fill("MKpiChi2BcgSameSignClose", mass, correction);
+                        insideprocessing.Fill("MKpiChi2BcgSameSignpT", mass, pT, correction);
                     }
                     if(chi2Map["pi_K"]<9){
                         vector_Track_negative[i]->getLorentzVector(negative_track, particleMass[Pion]);
@@ -668,10 +805,11 @@ int main(int argc, char** argv){
                         mass = (negative_track+negative_track2).M();
                         eta = (negative_track+negative_track2).Eta();
                         pT = (negative_track+negative_track2).Pt();
-                        insideprocessing.Fill("MpiKChi2BcgSameSign", mass);
-                        insideprocessing.Fill("MpiKChi2BcgSameSignClose", mass);
-                        insideprocessing.Fill("MpiKChi2BcgSameSigneta", mass, eta);
-                        insideprocessing.Fill("MpiKChi2BcgSameSignpT", mass, pT);
+                        correction = correction_coefficient(-2, Pion, Kaon, vector_Track_negative[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
+                        insideprocessing.Fill("MpiKChi2BcgSameSign", mass, correction);
+                        insideprocessing.Fill("MpiKChi2BcgSameSignClose", mass, correction);
+                        insideprocessing.Fill("MpiKChi2BcgSameSigneta", mass, eta, correction);
+                        insideprocessing.Fill("MpiKChi2BcgSameSignpT", mass, pT, correction);
                     }
                     if(chi2Map["p_pi"]<9){
                         vector_Track_negative[i]->getLorentzVector(negative_track, particleMass[Proton]);
@@ -679,9 +817,10 @@ int main(int argc, char** argv){
                         mass = (negative_track+negative_track2).M();
                         eta = (negative_track+negative_track2).Eta();
                         pT = (negative_track+negative_track2).Pt();
-                        insideprocessing.Fill("MppiChi2BcgSameSign", mass);
-                        insideprocessing.Fill("MppiChi2BcgSameSigneta", mass, eta);
-                        insideprocessing.Fill("MppiChi2BcgSameSignpT", mass, pT);
+                        correction = correction_coefficient(-2, Proton, Pion, vector_Track_negative[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
+                        insideprocessing.Fill("MppiChi2BcgSameSign", mass, correction);
+                        insideprocessing.Fill("MppiChi2BcgSameSigneta", mass, eta, correction);
+                        insideprocessing.Fill("MppiChi2BcgSameSignpT", mass, pT, correction);
                     }
                     if(chi2Map["pi_p"]<9){
                         vector_Track_negative[i]->getLorentzVector(negative_track, particleMass[Pion]);
@@ -689,9 +828,10 @@ int main(int argc, char** argv){
                         mass = (negative_track+negative_track2).M();
                         eta = (negative_track+negative_track2).Eta();
                         pT = (negative_track+negative_track2).Pt();
-                        insideprocessing.Fill("MpipChi2BcgSameSign", mass);
-                        insideprocessing.Fill("MpipChi2BcgSameSigneta", mass, eta);
-                        insideprocessing.Fill("MpipChi2BcgSameSignpT", mass, pT);
+                        correction = correction_coefficient(-2, Pion, Proton, vector_Track_negative[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
+                        insideprocessing.Fill("MpipChi2BcgSameSign", mass, correction);
+                        insideprocessing.Fill("MpipChi2BcgSameSigneta", mass, eta, correction);
+                        insideprocessing.Fill("MpipChi2BcgSameSignpT", mass, pT, correction);
                     }
                     if(chi2Map["K_K"]<9){
                         vector_Track_negative[i]->getLorentzVector(negative_track, particleMass[Kaon]);
@@ -699,10 +839,11 @@ int main(int argc, char** argv){
                         mass = (negative_track+negative_track2).M();
                         eta = (negative_track+negative_track2).Eta();
                         pT = (negative_track+negative_track2).Pt();
-                        insideprocessing.Fill("MKKChi2BcgSameSign", mass);
-                        insideprocessing.Fill("MKKChi2BcgSameSignClose", mass);
-                        insideprocessing.Fill("MKKChi2BcgSameSigneta", mass, eta);
-                        insideprocessing.Fill("MKKChi2BcgSameSignpT", mass, pT);
+                        correction = correction_coefficient(-2, Kaon, Kaon, vector_Track_negative[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
+                        insideprocessing.Fill("MKKChi2BcgSameSign", mass, correction);
+                        insideprocessing.Fill("MKKChi2BcgSameSignClose", mass, correction);
+                        insideprocessing.Fill("MKKChi2BcgSameSigneta", mass, eta, correction);
+                        insideprocessing.Fill("MKKChi2BcgSameSignpT", mass, pT, correction);
                     }
                     if(chi2Map["pi_pi"]<9){
                         vector_Track_negative[i]->getLorentzVector(negative_track, particleMass[Pion]);
@@ -710,9 +851,10 @@ int main(int argc, char** argv){
                         mass = (negative_track+negative_track2).M();
                         eta = (negative_track+negative_track2).Eta();
                         pT = (negative_track+negative_track2).Pt();
-                        insideprocessing.Fill("MpipiChi2BcgSameSign", mass);
-                        insideprocessing.Fill("MpipiChi2BcgSameSigneta", mass, eta);
-                        insideprocessing.Fill("MpipiChi2BcgSameSignpT", mass, pT);
+                        correction = correction_coefficient(-2, Pion, Pion, vector_Track_negative[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
+                        insideprocessing.Fill("MpipiChi2BcgSameSign", mass, correction);
+                        insideprocessing.Fill("MpipiChi2BcgSameSigneta", mass, eta, correction);
+                        insideprocessing.Fill("MpipiChi2BcgSameSignpT", mass, pT, correction);
                     }
                     if(chi2Map["p_p"]<9){
                         vector_Track_negative[i]->getLorentzVector(negative_track, particleMass[Proton]);
@@ -720,9 +862,10 @@ int main(int argc, char** argv){
                         mass = (negative_track+negative_track2).M();
                         eta = (negative_track+negative_track2).Eta();
                         pT = (negative_track+negative_track2).Pt();
-                        insideprocessing.Fill("MppChi2BcgSameSign", mass);
-                        insideprocessing.Fill("MppChi2BcgSameSigneta", mass, eta);
-                        insideprocessing.Fill("MppChi2BcgSameSignpT", mass, pT);
+                        correction = correction_coefficient(-2, Proton, Proton, vector_Track_negative[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
+                        insideprocessing.Fill("MppChi2BcgSameSign", mass, correction);
+                        insideprocessing.Fill("MppChi2BcgSameSigneta", mass, eta, correction);
+                        insideprocessing.Fill("MppChi2BcgSameSignpT", mass, pT, correction);
                     }
                 }
             }
@@ -765,10 +908,11 @@ int main(int argc, char** argv){
                         mass = (positive_track+negative_track).M();
                         eta = (positive_track+negative_track).Eta();
                         pT = (positive_track+negative_track).Pt();
-                        insideprocessing.Fill("MKpiChi2BcgTrackRotation", mass);
-                        insideprocessing.Fill("MKpiChi2BcgTrackRotationClose", mass);
-                        insideprocessing.Fill("MKpiChi2BcgTrackRotationeta", mass, eta);
-                        insideprocessing.Fill("MKpiChi2BcgTrackRotationpT", mass, pT);
+                        correction = correction_coefficient(0, Kaon, Pion, vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
+                        insideprocessing.Fill("MKpiChi2BcgTrackRotation", mass, correction);
+                        insideprocessing.Fill("MKpiChi2BcgTrackRotationClose", mass, correction);
+                        insideprocessing.Fill("MKpiChi2BcgTrackRotationeta", mass, eta, correction);
+                        insideprocessing.Fill("MKpiChi2BcgTrackRotationpT", mass, pT, correction);
                     }
                     if(chi2Map["pi_K"]<9){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
@@ -779,10 +923,11 @@ int main(int argc, char** argv){
                         mass = (positive_track+negative_track).M();
                         eta = (positive_track+negative_track).Eta();
                         pT = (positive_track+negative_track).Pt();
-                        insideprocessing.Fill("MpiKChi2BcgTrackRotation", mass);
-                        insideprocessing.Fill("MpiKChi2BcgTrackRotationClose", mass);
-                        insideprocessing.Fill("MpiKChi2BcgTrackRotationeta", mass, eta);
-                        insideprocessing.Fill("MpiKChi2BcgTrackRotationpT", mass, pT);
+                        correction = correction_coefficient(0, Pion, Kaon, vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
+                        insideprocessing.Fill("MpiKChi2BcgTrackRotation", mass, correction);
+                        insideprocessing.Fill("MpiKChi2BcgTrackRotationClose", mass, correction);
+                        insideprocessing.Fill("MpiKChi2BcgTrackRotationeta", mass, eta, correction);
+                        insideprocessing.Fill("MpiKChi2BcgTrackRotationpT", mass, pT, correction);
                     }
                     if(chi2Map["p_pi"]<9){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Proton]);
@@ -793,9 +938,10 @@ int main(int argc, char** argv){
                         mass = (positive_track+negative_track).M();
                         eta = (positive_track+negative_track).Eta();
                         pT = (positive_track+negative_track).Pt();
-                        insideprocessing.Fill("MppiChi2BcgTrackRotation", mass);
-                        insideprocessing.Fill("MppiChi2BcgTrackRotationeta", mass, eta);
-                        insideprocessing.Fill("MppiChi2BcgTrackRotationpT", mass, pT);
+                        correction = correction_coefficient(0, Proton, Pion, vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
+                        insideprocessing.Fill("MppiChi2BcgTrackRotation", mass, correction);
+                        insideprocessing.Fill("MppiChi2BcgTrackRotationeta", mass, eta, correction);
+                        insideprocessing.Fill("MppiChi2BcgTrackRotationpT", mass, pT, correction);
                     }
                     if(chi2Map["pi_p"]<9){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
@@ -806,9 +952,10 @@ int main(int argc, char** argv){
                         mass = (positive_track+negative_track).M();
                         eta = (positive_track+negative_track).Eta();
                         pT = (positive_track+negative_track).Pt();
-                        insideprocessing.Fill("MpipChi2BcgTrackRotation", mass);
-                        insideprocessing.Fill("MpipChi2BcgTrackRotationeta", mass, eta);
-                        insideprocessing.Fill("MpipChi2BcgTrackRotationpT", mass, pT);
+                        correction = correction_coefficient(0, Pion, Proton, vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
+                        insideprocessing.Fill("MpipChi2BcgTrackRotation", mass, correction);
+                        insideprocessing.Fill("MpipChi2BcgTrackRotationeta", mass, eta, correction);
+                        insideprocessing.Fill("MpipChi2BcgTrackRotationpT", mass, pT, correction);
                     }
                     if(chi2Map["K_K"]<9){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Kaon]);
@@ -819,10 +966,11 @@ int main(int argc, char** argv){
                         mass = (positive_track+negative_track).M();
                         eta = (positive_track+negative_track).Eta();
                         pT = (positive_track+negative_track).Pt();
-                        insideprocessing.Fill("MKKChi2BcgTrackRotation", mass);
-                        insideprocessing.Fill("MKKChi2BcgTrackRotationClose", mass);
-                        insideprocessing.Fill("MKKChi2BcgTrackRotationeta", mass, eta);
-                        insideprocessing.Fill("MKKChi2BcgTrackRotationpT", mass, pT);
+                        correction = correction_coefficient(0, Kaon, Kaon, vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
+                        insideprocessing.Fill("MKKChi2BcgTrackRotation", mass, correction);
+                        insideprocessing.Fill("MKKChi2BcgTrackRotationClose", mass, correction);
+                        insideprocessing.Fill("MKKChi2BcgTrackRotationeta", mass, eta, correction);
+                        insideprocessing.Fill("MKKChi2BcgTrackRotationpT", mass, pT, correction);
                     }
                     if(chi2Map["pi_pi"]<9){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
@@ -833,9 +981,10 @@ int main(int argc, char** argv){
                         mass = (positive_track+negative_track).M();
                         eta = (positive_track+negative_track).Eta();
                         pT = (positive_track+negative_track).Pt();
-                        insideprocessing.Fill("MpipiChi2BcgTrackRotation", mass);
-                        insideprocessing.Fill("MpipiChi2BcgTrackRotationeta", mass, eta);
-                        insideprocessing.Fill("MpipiChi2BcgTrackRotationpT", mass, pT);
+                        correction = correction_coefficient(0, Pion, Pion, vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
+                        insideprocessing.Fill("MpipiChi2BcgTrackRotation", mass, correction);
+                        insideprocessing.Fill("MpipiChi2BcgTrackRotationeta", mass, eta, correction);
+                        insideprocessing.Fill("MpipiChi2BcgTrackRotationpT", mass, pT, correction);
                     }
                     if(chi2Map["p_p"]<9){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Proton]);
@@ -846,9 +995,10 @@ int main(int argc, char** argv){
                         mass = (positive_track+negative_track).M();
                         eta = (positive_track+negative_track).Eta();
                         pT = (positive_track+negative_track).Pt();
-                        insideprocessing.Fill("MppChi2BcgTrackRotation", mass);
-                        insideprocessing.Fill("MppChi2BcgTrackRotationeta", mass, eta);
-                        insideprocessing.Fill("MppChi2BcgTrackRotationpT", mass, pT);
+                        correction = correction_coefficient(0, Proton, Proton, vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
+                        insideprocessing.Fill("MppChi2BcgTrackRotation", mass, correction);
+                        insideprocessing.Fill("MppChi2BcgTrackRotationeta", mass, eta, correction);
+                        insideprocessing.Fill("MppChi2BcgTrackRotationpT", mass, pT, correction);
                     }
                 }
             }
@@ -891,10 +1041,11 @@ int main(int argc, char** argv){
                         mass = (positive_track+negative_track).M();
                         eta = (positive_track+negative_track).Eta();
                         pT = (positive_track+negative_track).Pt();
-                        insideprocessing.Fill("MKpiChi2BcgRandomTrackRotation", mass);
-                        insideprocessing.Fill("MKpiChi2BcgRandomTrackRotationClose", mass);
-                        insideprocessing.Fill("MKpiChi2BcgRandomTrackRotationeta", mass, eta);
-                        insideprocessing.Fill("MKpiChi2BcgRandomTrackRotationpT", mass, pT);
+                        correction = correction_coefficient(0, Kaon, Pion, vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
+                        insideprocessing.Fill("MKpiChi2BcgRandomTrackRotation", mass, correction);
+                        insideprocessing.Fill("MKpiChi2BcgRandomTrackRotationClose", mass, correction);
+                        insideprocessing.Fill("MKpiChi2BcgRandomTrackRotationeta", mass, eta, correction);
+                        insideprocessing.Fill("MKpiChi2BcgRandomTrackRotationpT", mass, pT, correction);
                     }
                     if(chi2Map["pi_K"]<9){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
@@ -905,10 +1056,11 @@ int main(int argc, char** argv){
                         mass = (positive_track+negative_track).M();
                         eta = (positive_track+negative_track).Eta();
                         pT = (positive_track+negative_track).Pt();
-                        insideprocessing.Fill("MpiKChi2BcgRandomTrackRotation", mass);
-                        insideprocessing.Fill("MpiKChi2BcgRandomTrackRotationClose", mass);
-                        insideprocessing.Fill("MpiKChi2BcgRandomTrackRotationeta", mass, eta);
-                        insideprocessing.Fill("MpiKChi2BcgRandomTrackRotationpT", mass, pT);
+                        correction = correction_coefficient(0, Pion, Kaon, vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
+                        insideprocessing.Fill("MpiKChi2BcgRandomTrackRotation", mass, correction);
+                        insideprocessing.Fill("MpiKChi2BcgRandomTrackRotationClose", mass, correction);
+                        insideprocessing.Fill("MpiKChi2BcgRandomTrackRotationeta", mass, eta, correction);
+                        insideprocessing.Fill("MpiKChi2BcgRandomTrackRotationpT", mass, pT, correction);
                     }
                     if(chi2Map["p_pi"]<9){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Proton]);
@@ -919,9 +1071,10 @@ int main(int argc, char** argv){
                         mass = (positive_track+negative_track).M();
                         eta = (positive_track+negative_track).Eta();
                         pT = (positive_track+negative_track).Pt();
-                        insideprocessing.Fill("MppiChi2BcgRandomTrackRotation", mass);
-                        insideprocessing.Fill("MppiChi2BcgRandomTrackRotationeta", mass, eta);
-                        insideprocessing.Fill("MppiChi2BcgRandomTrackRotationpT", mass, pT);
+                        correction = correction_coefficient(0, Proton, Pion, vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
+                        insideprocessing.Fill("MppiChi2BcgRandomTrackRotation", mass, correction);
+                        insideprocessing.Fill("MppiChi2BcgRandomTrackRotationeta", mass, eta, correction);
+                        insideprocessing.Fill("MppiChi2BcgRandomTrackRotationpT", mass, pT, correction);
                     }
                     if(chi2Map["pi_p"]<9){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
@@ -932,9 +1085,10 @@ int main(int argc, char** argv){
                         mass = (positive_track+negative_track).M();
                         eta = (positive_track+negative_track).Eta();
                         pT = (positive_track+negative_track).Pt();
-                        insideprocessing.Fill("MpipChi2BcgRandomTrackRotation", mass);
-                        insideprocessing.Fill("MpipChi2BcgRandomTrackRotationeta", mass, eta);
-                        insideprocessing.Fill("MpipChi2BcgRandomTrackRotationpT", mass, pT);
+                        correction = correction_coefficient(0, Pion, Proton, vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
+                        insideprocessing.Fill("MpipChi2BcgRandomTrackRotation", mass, correction);
+                        insideprocessing.Fill("MpipChi2BcgRandomTrackRotationeta", mass, eta, correction);
+                        insideprocessing.Fill("MpipChi2BcgRandomTrackRotationpT", mass, pT, correction);
                     }
                     if(chi2Map["K_K"]<9){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Kaon]);
@@ -945,10 +1099,11 @@ int main(int argc, char** argv){
                         mass = (positive_track+negative_track).M();
                         eta = (positive_track+negative_track).Eta();
                         pT = (positive_track+negative_track).Pt();
-                        insideprocessing.Fill("MKKChi2BcgRandomTrackRotation", mass);
-                        insideprocessing.Fill("MKKChi2BcgRandomTrackRotationClose", mass);
-                        insideprocessing.Fill("MKKChi2BcgRandomTrackRotationeta", mass, eta);
-                        insideprocessing.Fill("MKKChi2BcgRandomTrackRotationpT", mass, pT);
+                        correction = correction_coefficient(0, Kaon, Kaon, vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
+                        insideprocessing.Fill("MKKChi2BcgRandomTrackRotation", mass, correction);
+                        insideprocessing.Fill("MKKChi2BcgRandomTrackRotationClose", mass, correction);
+                        insideprocessing.Fill("MKKChi2BcgRandomTrackRotationeta", mass, eta, correction);
+                        insideprocessing.Fill("MKKChi2BcgRandomTrackRotationpT", mass, pT, correction);
                     }
                     if(chi2Map["pi_pi"]<9){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
@@ -959,9 +1114,10 @@ int main(int argc, char** argv){
                         mass = (positive_track+negative_track).M();
                         eta = (positive_track+negative_track).Eta();
                         pT = (positive_track+negative_track).Pt();
-                        insideprocessing.Fill("MpipiChi2BcgRandomTrackRotation", mass);
-                        insideprocessing.Fill("MpipiChi2BcgRandomTrackRotationeta", mass, eta);
-                        insideprocessing.Fill("MpipiChi2BcgRandomTrackRotationpT", mass, pT);
+                        correction = correction_coefficient(0, Pion, Pion, vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
+                        insideprocessing.Fill("MpipiChi2BcgRandomTrackRotation", mass, correction);
+                        insideprocessing.Fill("MpipiChi2BcgRandomTrackRotationeta", mass, eta, correction);
+                        insideprocessing.Fill("MpipiChi2BcgRandomTrackRotationpT", mass, pT, correction);
                     }
                     if(chi2Map["p_p"]<9){
                         vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Proton]);
@@ -972,9 +1128,10 @@ int main(int argc, char** argv){
                         mass = (positive_track+negative_track).M();
                         eta = (positive_track+negative_track).Eta();
                         pT = (positive_track+negative_track).Pt();
-                        insideprocessing.Fill("MppChi2BcgRandomTrackRotation", mass);
-                        insideprocessing.Fill("MppChi2BcgRandomTrackRotationeta", mass, eta);
-                        insideprocessing.Fill("MppChi2BcgRandomTrackRotationpT", mass, pT);
+                        correction = correction_coefficient(0, Proton, Proton, vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
+                        insideprocessing.Fill("MppChi2BcgRandomTrackRotation", mass, correction);
+                        insideprocessing.Fill("MppChi2BcgRandomTrackRotationeta", mass, eta, correction);
+                        insideprocessing.Fill("MppChi2BcgRandomTrackRotationpT", mass, pT, correction);
                     }
                 }
             }
@@ -1230,10 +1387,11 @@ int main(int argc, char** argv){
                         mass = (positive_track+negative_track).M();
                         eta = (positive_track+negative_track).Eta();
                         pT = (positive_track+negative_track).Pt();
-                        insideprocessing.Fill("MKpiChi2BcgMixedEvent", mass);
-                        insideprocessing.Fill("MKpiChi2BcgMixedEventClose", mass);
-                        insideprocessing.Fill("MKpiChi2BcgMixedEventeta", mass, eta);
-                        insideprocessing.Fill("MKpiChi2BcgMixedEventpT", mass, pT);
+                        correction = correction_coefficient(0, Kaon, Pion, queue_of_previous_vector_Tracks_Kpi_positive.back()[i], queue_of_previous_vector_Tracks_Kpi_negative[evt][j], queue_of_previous_PV_positions.back().Z(), queue_of_previous_PV_positions[evt].Z());
+                        insideprocessing.Fill("MKpiChi2BcgMixedEvent", mass, correction);
+                        insideprocessing.Fill("MKpiChi2BcgMixedEventClose", mass, correction);
+                        insideprocessing.Fill("MKpiChi2BcgMixedEventeta", mass, eta, correction);
+                        insideprocessing.Fill("MKpiChi2BcgMixedEventpT", mass, pT, correction);
                     }
                 }
                 //piK
@@ -1244,10 +1402,11 @@ int main(int argc, char** argv){
                         mass = (positive_track+negative_track).M();
                         eta = (positive_track+negative_track).Eta();
                         pT = (positive_track+negative_track).Pt();
-                        insideprocessing.Fill("MpiKChi2BcgMixedEvent", mass);
-                        insideprocessing.Fill("MpiKChi2BcgMixedEventClose", mass);
-                        insideprocessing.Fill("MpiKChi2BcgMixedEventeta", mass, eta);
-                        insideprocessing.Fill("MpiKChi2BcgMixedEventpT", mass, pT);
+                        correction = correction_coefficient(0, Pion, Kaon, queue_of_previous_vector_Tracks_piK_positive.back()[i], queue_of_previous_vector_Tracks_piK_negative[evt][j], queue_of_previous_PV_positions.back().Z(), queue_of_previous_PV_positions[evt].Z());
+                        insideprocessing.Fill("MpiKChi2BcgMixedEvent", mass, correction);
+                        insideprocessing.Fill("MpiKChi2BcgMixedEventClose", mass, correction);
+                        insideprocessing.Fill("MpiKChi2BcgMixedEventeta", mass, eta, correction);
+                        insideprocessing.Fill("MpiKChi2BcgMixedEventpT", mass, pT, correction);
                     }
                 }
                 //ppi
@@ -1258,9 +1417,10 @@ int main(int argc, char** argv){
                         mass = (positive_track+negative_track).M();
                         eta = (positive_track+negative_track).Eta();
                         pT = (positive_track+negative_track).Pt();
-                        insideprocessing.Fill("MppiChi2BcgMixedEvent", mass);
-                        insideprocessing.Fill("MppiChi2BcgMixedEventeta", mass, eta);
-                        insideprocessing.Fill("MppiChi2BcgMixedEventpT", mass, pT);
+                        correction = correction_coefficient(0, Proton, Pion, queue_of_previous_vector_Tracks_ppi_positive.back()[i], queue_of_previous_vector_Tracks_ppi_negative[evt][j], queue_of_previous_PV_positions.back().Z(), queue_of_previous_PV_positions[evt].Z());
+                        insideprocessing.Fill("MppiChi2BcgMixedEvent", mass, correction);
+                        insideprocessing.Fill("MppiChi2BcgMixedEventeta", mass, eta, correction);
+                        insideprocessing.Fill("MppiChi2BcgMixedEventpT", mass, pT, correction);
                     }
                 }
                 //pip
@@ -1271,9 +1431,10 @@ int main(int argc, char** argv){
                         mass = (positive_track+negative_track).M();
                         eta = (positive_track+negative_track).Eta();
                         pT = (positive_track+negative_track).Pt();
-                        insideprocessing.Fill("MpipChi2BcgMixedEvent", mass);
-                        insideprocessing.Fill("MpipChi2BcgMixedEventeta", mass, eta);
-                        insideprocessing.Fill("MpipChi2BcgMixedEventpT", mass, pT);
+                        correction = correction_coefficient(0, Pion, Proton, queue_of_previous_vector_Tracks_pip_positive.back()[i], queue_of_previous_vector_Tracks_pip_negative[evt][j], queue_of_previous_PV_positions.back().Z(), queue_of_previous_PV_positions[evt].Z());
+                        insideprocessing.Fill("MpipChi2BcgMixedEvent", mass, correction);
+                        insideprocessing.Fill("MpipChi2BcgMixedEventeta", mass, eta, correction);
+                        insideprocessing.Fill("MpipChi2BcgMixedEventpT", mass, pT, correction);
                     }
                 }
                 //KK
@@ -1284,10 +1445,11 @@ int main(int argc, char** argv){
                         mass = (positive_track+negative_track).M();
                         eta = (positive_track+negative_track).Eta();
                         pT = (positive_track+negative_track).Pt();
-                        insideprocessing.Fill("MKKChi2BcgMixedEvent", mass);
-                        insideprocessing.Fill("MKKChi2BcgMixedEventClose", mass);
-                        insideprocessing.Fill("MKKChi2BcgMixedEventeta", mass, eta);
-                        insideprocessing.Fill("MKKChi2BcgMixedEventpT", mass, pT);
+                        correction = correction_coefficient(0, Kaon, Kaon, queue_of_previous_vector_Tracks_KK_positive.back()[i], queue_of_previous_vector_Tracks_KK_negative[evt][j], queue_of_previous_PV_positions.back().Z(), queue_of_previous_PV_positions[evt].Z());
+                        insideprocessing.Fill("MKKChi2BcgMixedEvent", mass, correction);
+                        insideprocessing.Fill("MKKChi2BcgMixedEventClose", mass, correction);
+                        insideprocessing.Fill("MKKChi2BcgMixedEventeta", mass, eta, correction);
+                        insideprocessing.Fill("MKKChi2BcgMixedEventpT", mass, pT, correction);
                     }
                 }
                 //pipi
@@ -1298,9 +1460,10 @@ int main(int argc, char** argv){
                         mass = (positive_track+negative_track).M();
                         eta = (positive_track+negative_track).Eta();
                         pT = (positive_track+negative_track).Pt();
-                        insideprocessing.Fill("MpipiChi2BcgMixedEvent", mass);
-                        insideprocessing.Fill("MpipiChi2BcgMixedEventeta", mass, eta);
-                        insideprocessing.Fill("MpipiChi2BcgMixedEventpT", mass, pT);
+                        correction = correction_coefficient(0, Pion, Pion, queue_of_previous_vector_Tracks_pipi_positive.back()[i], queue_of_previous_vector_Tracks_pipi_negative[evt][j], queue_of_previous_PV_positions.back().Z(), queue_of_previous_PV_positions[evt].Z());
+                        insideprocessing.Fill("MpipiChi2BcgMixedEvent", mass, correction);
+                        insideprocessing.Fill("MpipiChi2BcgMixedEventeta", mass, eta, correction);
+                        insideprocessing.Fill("MpipiChi2BcgMixedEventpT", mass, pT, correction);
                     }
                 }
                 //pp
@@ -1311,9 +1474,10 @@ int main(int argc, char** argv){
                         mass = (positive_track+negative_track).M();
                         eta = (positive_track+negative_track).Eta();
                         pT = (positive_track+negative_track).Pt();
-                        insideprocessing.Fill("MppChi2BcgMixedEvent", mass);
-                        insideprocessing.Fill("MppChi2BcgMixedEventeta", mass, eta);
-                        insideprocessing.Fill("MppChi2BcgMixedEventpT", mass, pT);
+                        correction = correction_coefficient(0, Proton, Proton, queue_of_previous_vector_Tracks_pp_positive.back()[i], queue_of_previous_vector_Tracks_pp_negative[evt][j], queue_of_previous_PV_positions.back().Z(), queue_of_previous_PV_positions[evt].Z());
+                        insideprocessing.Fill("MppChi2BcgMixedEvent", mass, correction);
+                        insideprocessing.Fill("MppChi2BcgMixedEventeta", mass, eta, correction);
+                        insideprocessing.Fill("MppChi2BcgMixedEventpT", mass, pT, correction);
                     }
                 }
 
@@ -1328,10 +1492,11 @@ int main(int argc, char** argv){
                         mass = (positive_track+negative_track).M();
                         eta = (positive_track+negative_track).Eta();
                         pT = (positive_track+negative_track).Pt();
-                        insideprocessing.Fill("MKpiChi2BcgMixedEvent", mass);
-                        insideprocessing.Fill("MKpiChi2BcgMixedEventClose", mass);
-                        insideprocessing.Fill("MKpiChi2BcgMixedEventeta", mass, eta);
-                        insideprocessing.Fill("MKpiChi2BcgMixedEventpT", mass, pT);
+                        correction = correction_coefficient(0, Kaon, Pion, queue_of_previous_vector_Tracks_Kpi_positive[evt][i], queue_of_previous_vector_Tracks_Kpi_negative.back()[j], queue_of_previous_PV_positions[evt].Z(), queue_of_previous_PV_positions.back().Z());
+                        insideprocessing.Fill("MKpiChi2BcgMixedEvent", mass, correction);
+                        insideprocessing.Fill("MKpiChi2BcgMixedEventClose", mass, correction);
+                        insideprocessing.Fill("MKpiChi2BcgMixedEventeta", mass, eta, correction);
+                        insideprocessing.Fill("MKpiChi2BcgMixedEventpT", mass, pT, correction);
                     }
                 }
                 //piK
@@ -1342,10 +1507,11 @@ int main(int argc, char** argv){
                         mass = (positive_track+negative_track).M();
                         eta = (positive_track+negative_track).Eta();
                         pT = (positive_track+negative_track).Pt();
-                        insideprocessing.Fill("MpiKChi2BcgMixedEvent", mass);
-                        insideprocessing.Fill("MpiKChi2BcgMixedEventClose", mass);
-                        insideprocessing.Fill("MpiKChi2BcgMixedEventeta", mass, eta);
-                        insideprocessing.Fill("MpiKChi2BcgMixedEventpT", mass, pT);
+                        correction = correction_coefficient(0, Pion, Kaon, queue_of_previous_vector_Tracks_piK_positive[evt][i], queue_of_previous_vector_Tracks_piK_negative.back()[j], queue_of_previous_PV_positions[evt].Z(), queue_of_previous_PV_positions.back().Z());
+                        insideprocessing.Fill("MpiKChi2BcgMixedEvent", mass, correction);
+                        insideprocessing.Fill("MpiKChi2BcgMixedEventClose", mass, correction);
+                        insideprocessing.Fill("MpiKChi2BcgMixedEventeta", mass, eta, correction);
+                        insideprocessing.Fill("MpiKChi2BcgMixedEventpT", mass, pT, correction);
                     }
                 }
                 //ppi
@@ -1356,9 +1522,10 @@ int main(int argc, char** argv){
                         mass = (positive_track+negative_track).M();
                         eta = (positive_track+negative_track).Eta();
                         pT = (positive_track+negative_track).Pt();
-                        insideprocessing.Fill("MppiChi2BcgMixedEvent", mass);
-                        insideprocessing.Fill("MppiChi2BcgMixedEventeta", mass, eta);
-                        insideprocessing.Fill("MppiChi2BcgMixedEventpT", mass, pT);
+                        correction = correction_coefficient(0, Proton, Pion, queue_of_previous_vector_Tracks_ppi_positive[evt][i], queue_of_previous_vector_Tracks_ppi_negative.back()[j], queue_of_previous_PV_positions[evt].Z(), queue_of_previous_PV_positions.back().Z());
+                        insideprocessing.Fill("MppiChi2BcgMixedEvent", mass, correction);
+                        insideprocessing.Fill("MppiChi2BcgMixedEventeta", mass, eta, correction);
+                        insideprocessing.Fill("MppiChi2BcgMixedEventpT", mass, pT, correction);
                     }
                 }
                 //pip
@@ -1369,9 +1536,10 @@ int main(int argc, char** argv){
                         mass = (positive_track+negative_track).M();
                         eta = (positive_track+negative_track).Eta();
                         pT = (positive_track+negative_track).Pt();
-                        insideprocessing.Fill("MpipChi2BcgMixedEvent", mass);
-                        insideprocessing.Fill("MpipChi2BcgMixedEventeta", mass, eta);
-                        insideprocessing.Fill("MpipChi2BcgMixedEventpT", mass, pT);
+                        correction = correction_coefficient(0, Pion, Proton, queue_of_previous_vector_Tracks_pip_positive[evt][i], queue_of_previous_vector_Tracks_pip_negative.back()[j], queue_of_previous_PV_positions[evt].Z(), queue_of_previous_PV_positions.back().Z());
+                        insideprocessing.Fill("MpipChi2BcgMixedEvent", mass, correction);
+                        insideprocessing.Fill("MpipChi2BcgMixedEventeta", mass, eta, correction);
+                        insideprocessing.Fill("MpipChi2BcgMixedEventpT", mass, pT, correction);
                     }
                 }
                 //KK
@@ -1382,10 +1550,11 @@ int main(int argc, char** argv){
                         mass = (positive_track+negative_track).M();
                         eta = (positive_track+negative_track).Eta();
                         pT = (positive_track+negative_track).Pt();
-                        insideprocessing.Fill("MKKChi2BcgMixedEvent", mass);
-                        insideprocessing.Fill("MKKChi2BcgMixedEventClose", mass);
-                        insideprocessing.Fill("MKKChi2BcgMixedEventeta", mass, eta);
-                        insideprocessing.Fill("MKKChi2BcgMixedEventpT", mass, pT);
+                        correction = correction_coefficient(0, Kaon, Kaon, queue_of_previous_vector_Tracks_KK_positive[evt][i], queue_of_previous_vector_Tracks_KK_negative.back()[j], queue_of_previous_PV_positions[evt].Z(), queue_of_previous_PV_positions.back().Z());
+                        insideprocessing.Fill("MKKChi2BcgMixedEvent", mass, correction);
+                        insideprocessing.Fill("MKKChi2BcgMixedEventClose", mass, correction);
+                        insideprocessing.Fill("MKKChi2BcgMixedEventeta", mass, eta, correction);
+                        insideprocessing.Fill("MKKChi2BcgMixedEventpT", mass, pT, correction);
                     }
                 }
                 //pipi
@@ -1396,9 +1565,10 @@ int main(int argc, char** argv){
                         mass = (positive_track+negative_track).M();
                         eta = (positive_track+negative_track).Eta();
                         pT = (positive_track+negative_track).Pt();
-                        insideprocessing.Fill("MpipiChi2BcgMixedEvent", mass);
-                        insideprocessing.Fill("MpipiChi2BcgMixedEventeta", mass, eta);
-                        insideprocessing.Fill("MpipiChi2BcgMixedEventpT", mass, pT);
+                        correction = correction_coefficient(0, Pion, Pion, queue_of_previous_vector_Tracks_pipi_positive[evt][i], queue_of_previous_vector_Tracks_pipi_negative.back()[j], queue_of_previous_PV_positions[evt].Z(), queue_of_previous_PV_positions.back().Z());
+                        insideprocessing.Fill("MpipiChi2BcgMixedEvent", mass, correction);
+                        insideprocessing.Fill("MpipiChi2BcgMixedEventeta", mass, eta, correction);
+                        insideprocessing.Fill("MpipiChi2BcgMixedEventpT", mass, pT, correction);
                     }
                 }
                 //pp
@@ -1409,9 +1579,10 @@ int main(int argc, char** argv){
                         mass = (positive_track+negative_track).M();
                         eta = (positive_track+negative_track).Eta();
                         pT = (positive_track+negative_track).Pt();
-                        insideprocessing.Fill("MppChi2BcgMixedEvent", mass);
-                        insideprocessing.Fill("MppChi2BcgMixedEventeta", mass, eta);
-                        insideprocessing.Fill("MppChi2BcgMixedEventpT", mass, pT);
+                        correction = correction_coefficient(0, Proton, Proton, queue_of_previous_vector_Tracks_pp_positive[evt][i], queue_of_previous_vector_Tracks_pp_negative.back()[j], queue_of_previous_PV_positions[evt].Z(), queue_of_previous_PV_positions.back().Z());
+                        insideprocessing.Fill("MppChi2BcgMixedEvent", mass, correction);
+                        insideprocessing.Fill("MppChi2BcgMixedEventeta", mass, eta, correction);
+                        insideprocessing.Fill("MppChi2BcgMixedEventpT", mass, pT, correction);
                     }
                 }
 
@@ -1428,18 +1599,39 @@ int main(int argc, char** argv){
                         mass = (positive_track+negative_track).M();
                         eta = (positive_track+negative_track).Eta();
                         pT = (positive_track+negative_track).Pt();
+                        correction = correction_coefficient(2, Kaon, Pion, queue_of_previous_vector_Tracks_Kpi_positive[evt][i], queue_of_previous_vector_Tracks_piK_positive.back()[j], queue_of_previous_PV_positions[evt].Z(), queue_of_previous_PV_positions.back().Z());
                         //Kpi
-                        insideprocessing.Fill("MKpiChi2BcgMixedEventSameSign", mass);
-                        insideprocessing.Fill("MKpiChi2BcgMixedEventSameSignClose", mass);
-                        insideprocessing.Fill("MKpiChi2BcgMixedEventSameSigneta", mass, eta);
-                        insideprocessing.Fill("MKpiChi2BcgMixedEventSameSignpT", mass, pT);
+                        insideprocessing.Fill("MKpiChi2BcgMixedEventSameSign", mass, correction);
+                        insideprocessing.Fill("MKpiChi2BcgMixedEventSameSignClose", mass, correction);
+                        insideprocessing.Fill("MKpiChi2BcgMixedEventSameSigneta", mass, eta, correction);
+                        insideprocessing.Fill("MKpiChi2BcgMixedEventSameSignpT", mass, pT, correction);
                         //piK
-                        insideprocessing.Fill("MpiKChi2BcgMixedEventSameSign", mass);
-                        insideprocessing.Fill("MpiKChi2BcgMixedEventSameSignClose", mass);
-                        insideprocessing.Fill("MpiKChi2BcgMixedEventSameSigneta", mass, eta);
-                        insideprocessing.Fill("MpiKChi2BcgMixedEventSameSignpT", mass, pT);
+                        insideprocessing.Fill("MpiKChi2BcgMixedEventSameSign", mass, correction);
+                        insideprocessing.Fill("MpiKChi2BcgMixedEventSameSignClose", mass, correction);
+                        insideprocessing.Fill("MpiKChi2BcgMixedEventSameSigneta", mass, eta, correction);
+                        insideprocessing.Fill("MpiKChi2BcgMixedEventSameSignpT", mass, pT, correction);
                     }
                 }
+                // for(long unsigned int i = 0; i<queue_of_previous_vector_Tracks_Kpi_positive.back().size(); i++){
+                //     for(long unsigned int j = 0; j<queue_of_previous_vector_Tracks_piK_positive[evt].size(); j++){
+                //         queue_of_previous_vector_Tracks_Kpi_positive.back()[i]->getLorentzVector(positive_track, particleMass[Kaon]);
+                //         queue_of_previous_vector_Tracks_piK_positive[evt][j]->getLorentzVector(negative_track, particleMass[Pion]);
+                //         mass = (positive_track+negative_track).M();
+                //         eta = (positive_track+negative_track).Eta();
+                //         pT = (positive_track+negative_track).Pt();
+                //         correction = correction_coefficient(2, Kaon, Pion, queue_of_previous_vector_Tracks_Kpi_positive.back()[i], queue_of_previous_vector_Tracks_piK_positive[evt][j], queue_of_previous_PV_positions.back().Z(), queue_of_previous_PV_positions[evt].Z());
+                //         //Kpi
+                //         insideprocessing.Fill("MKpiChi2BcgMixedEventSameSign", mass, correction);
+                //         insideprocessing.Fill("MKpiChi2BcgMixedEventSameSignClose", mass, correction);
+                //         insideprocessing.Fill("MKpiChi2BcgMixedEventSameSigneta", mass, eta, correction);
+                //         insideprocessing.Fill("MKpiChi2BcgMixedEventSameSignpT", mass, pT, correction);
+                //         //piK
+                //         insideprocessing.Fill("MpiKChi2BcgMixedEventSameSign", mass, correction);
+                //         insideprocessing.Fill("MpiKChi2BcgMixedEventSameSignClose", mass, correction);
+                //         insideprocessing.Fill("MpiKChi2BcgMixedEventSameSigneta", mass, eta, correction);
+                //         insideprocessing.Fill("MpiKChi2BcgMixedEventSameSignpT", mass, pT, correction);
+                //     }
+                // }
                 //ppi/pip
                 for(long unsigned int i = 0; i<queue_of_previous_vector_Tracks_ppi_positive[evt].size(); i++){
                     for(long unsigned int j = 0; j<queue_of_previous_vector_Tracks_pip_positive.back().size(); j++){
@@ -1448,16 +1640,35 @@ int main(int argc, char** argv){
                         mass = (positive_track+negative_track).M();
                         eta = (positive_track+negative_track).Eta();
                         pT = (positive_track+negative_track).Pt();
+                        correction = correction_coefficient(2, Proton, Pion, queue_of_previous_vector_Tracks_ppi_positive[evt][i], queue_of_previous_vector_Tracks_pip_positive.back()[j], queue_of_previous_PV_positions[evt].Z(), queue_of_previous_PV_positions.back().Z());
                         //ppi
-                        insideprocessing.Fill("MppiChi2BcgMixedEventSameSign", mass);
-                        insideprocessing.Fill("MppiChi2BcgMixedEventSameSigneta", mass, eta);
-                        insideprocessing.Fill("MppiChi2BcgMixedEventSameSignpT", mass, pT);
+                        insideprocessing.Fill("MppiChi2BcgMixedEventSameSign", mass, correction);
+                        insideprocessing.Fill("MppiChi2BcgMixedEventSameSigneta", mass, eta, correction);
+                        insideprocessing.Fill("MppiChi2BcgMixedEventSameSignpT", mass, pT, correction);
                         //pip
-                        insideprocessing.Fill("MpipChi2BcgMixedEventSameSign", mass);
-                        insideprocessing.Fill("MpipChi2BcgMixedEventSameSigneta", mass, eta);
-                        insideprocessing.Fill("MpipChi2BcgMixedEventSameSignpT", mass, pT);
+                        insideprocessing.Fill("MpipChi2BcgMixedEventSameSign", mass, correction);
+                        insideprocessing.Fill("MpipChi2BcgMixedEventSameSigneta", mass, eta, correction);
+                        insideprocessing.Fill("MpipChi2BcgMixedEventSameSignpT", mass, pT, correction);
                     }
                 }
+                // for(long unsigned int i = 0; i<queue_of_previous_vector_Tracks_ppi_positive.back().size(); i++){
+                //     for(long unsigned int j = 0; j<queue_of_previous_vector_Tracks_pip_positive[evt].size(); j++){
+                //         queue_of_previous_vector_Tracks_ppi_positive.back()[i]->getLorentzVector(positive_track, particleMass[Proton]);
+                //         queue_of_previous_vector_Tracks_pip_positive[evt][j]->getLorentzVector(negative_track, particleMass[Pion]);
+                //         mass = (positive_track+negative_track).M();
+                //         eta = (positive_track+negative_track).Eta();
+                //         pT = (positive_track+negative_track).Pt();
+                //         correction = correction_coefficient(2, Proton, Pion, queue_of_previous_vector_Tracks_ppi_positive.back()[i], queue_of_previous_vector_Tracks_pip_positive[evt][j], queue_of_previous_PV_positions.back().Z(), queue_of_previous_PV_positions[evt].Z());
+                //         //ppi
+                //         insideprocessing.Fill("MppiChi2BcgMixedEventSameSign", mass, correction);
+                //         insideprocessing.Fill("MppiChi2BcgMixedEventSameSigneta", mass, eta, correction);
+                //         insideprocessing.Fill("MppiChi2BcgMixedEventSameSignpT", mass, pT, correction);
+                //         //pip
+                //         insideprocessing.Fill("MpipChi2BcgMixedEventSameSign", mass, correction);
+                //         insideprocessing.Fill("MpipChi2BcgMixedEventSameSigneta", mass, eta, correction);
+                //         insideprocessing.Fill("MpipChi2BcgMixedEventSameSignpT", mass, pT, correction);
+                //     }
+                // }
                 //KK
                 for(long unsigned int i = 0; i<queue_of_previous_vector_Tracks_KK_positive[evt].size(); i++){
                     for(long unsigned int j = 0; j<queue_of_previous_vector_Tracks_KK_positive.back().size(); j++){
@@ -1466,10 +1677,11 @@ int main(int argc, char** argv){
                         mass = (positive_track+negative_track).M();
                         eta = (positive_track+negative_track).Eta();
                         pT = (positive_track+negative_track).Pt();
-                        insideprocessing.Fill("MKKChi2BcgMixedEventSameSign", mass);
-                        insideprocessing.Fill("MKKChi2BcgMixedEventSameSignClose", mass);
-                        insideprocessing.Fill("MKKChi2BcgMixedEventSameSigneta", mass, eta);
-                        insideprocessing.Fill("MKKChi2BcgMixedEventSameSignpT", mass, pT);
+                        correction = correction_coefficient(2, Kaon, Kaon, queue_of_previous_vector_Tracks_KK_positive[evt][i], queue_of_previous_vector_Tracks_KK_positive.back()[j], queue_of_previous_PV_positions[evt].Z(), queue_of_previous_PV_positions.back().Z());
+                        insideprocessing.Fill("MKKChi2BcgMixedEventSameSign", mass, correction);
+                        insideprocessing.Fill("MKKChi2BcgMixedEventSameSignClose", mass, correction);
+                        insideprocessing.Fill("MKKChi2BcgMixedEventSameSigneta", mass, eta, correction);
+                        insideprocessing.Fill("MKKChi2BcgMixedEventSameSignpT", mass, pT, correction);
                     }
                 }
                 //pipi
@@ -1480,9 +1692,10 @@ int main(int argc, char** argv){
                         mass = (positive_track+negative_track).M();
                         eta = (positive_track+negative_track).Eta();
                         pT = (positive_track+negative_track).Pt();
-                        insideprocessing.Fill("MpipiChi2BcgMixedEventSameSign", mass);
-                        insideprocessing.Fill("MpipiChi2BcgMixedEventSameSigneta", mass, eta);
-                        insideprocessing.Fill("MpipiChi2BcgMixedEventSameSignpT", mass, pT);
+                        correction = correction_coefficient(2, Pion, Pion, queue_of_previous_vector_Tracks_pipi_positive[evt][i], queue_of_previous_vector_Tracks_pipi_positive.back()[j], queue_of_previous_PV_positions[evt].Z(), queue_of_previous_PV_positions.back().Z());
+                        insideprocessing.Fill("MpipiChi2BcgMixedEventSameSign", mass, correction);
+                        insideprocessing.Fill("MpipiChi2BcgMixedEventSameSigneta", mass, eta, correction);
+                        insideprocessing.Fill("MpipiChi2BcgMixedEventSameSignpT", mass, pT, correction);
                     }
                 }
                 //pp
@@ -1493,9 +1706,10 @@ int main(int argc, char** argv){
                         mass = (positive_track+negative_track).M();
                         eta = (positive_track+negative_track).Eta();
                         pT = (positive_track+negative_track).Pt();
-                        insideprocessing.Fill("MppChi2BcgMixedEventSameSign", mass);
-                        insideprocessing.Fill("MppChi2BcgMixedEventSameSigneta", mass, eta);
-                        insideprocessing.Fill("MppChi2BcgMixedEventSameSignpT", mass, pT);
+                        correction = correction_coefficient(2, Proton, Proton, queue_of_previous_vector_Tracks_pp_positive[evt][i], queue_of_previous_vector_Tracks_pp_positive.back()[j], queue_of_previous_PV_positions[evt].Z(), queue_of_previous_PV_positions.back().Z());
+                        insideprocessing.Fill("MppChi2BcgMixedEventSameSign", mass, correction);
+                        insideprocessing.Fill("MppChi2BcgMixedEventSameSigneta", mass, eta, correction);
+                        insideprocessing.Fill("MppChi2BcgMixedEventSameSignpT", mass, pT, correction);
                     }
                 }
 
@@ -1510,18 +1724,39 @@ int main(int argc, char** argv){
                         mass = (positive_track+negative_track).M();
                         eta = (positive_track+negative_track).Eta();
                         pT = (positive_track+negative_track).Pt();
+                        correction = correction_coefficient(-2, Kaon, Pion, queue_of_previous_vector_Tracks_Kpi_negative[evt][i], queue_of_previous_vector_Tracks_piK_negative.back()[j], queue_of_previous_PV_positions[evt].Z(), queue_of_previous_PV_positions.back().Z());
                         //Kpi
-                        insideprocessing.Fill("MKpiChi2BcgMixedEventSameSign", mass);
-                        insideprocessing.Fill("MKpiChi2BcgMixedEventSameSignClose", mass);
-                        insideprocessing.Fill("MKpiChi2BcgMixedEventSameSigneta", mass, eta);
-                        insideprocessing.Fill("MKpiChi2BcgMixedEventSameSignpT", mass, pT);
+                        insideprocessing.Fill("MKpiChi2BcgMixedEventSameSign", mass, correction);
+                        insideprocessing.Fill("MKpiChi2BcgMixedEventSameSignClose", mass, correction);
+                        insideprocessing.Fill("MKpiChi2BcgMixedEventSameSigneta", mass, eta, correction);
+                        insideprocessing.Fill("MKpiChi2BcgMixedEventSameSignpT", mass, pT, correction);
                         //piK
-                        insideprocessing.Fill("MpiKChi2BcgMixedEventSameSign", mass);
-                        insideprocessing.Fill("MpiKChi2BcgMixedEventSameSignClose", mass);
-                        insideprocessing.Fill("MpiKChi2BcgMixedEventSameSigneta", mass, eta);
-                        insideprocessing.Fill("MpiKChi2BcgMixedEventSameSignpT", mass, pT);
+                        insideprocessing.Fill("MpiKChi2BcgMixedEventSameSign", mass, correction);
+                        insideprocessing.Fill("MpiKChi2BcgMixedEventSameSignClose", mass, correction);
+                        insideprocessing.Fill("MpiKChi2BcgMixedEventSameSigneta", mass, eta, correction);
+                        insideprocessing.Fill("MpiKChi2BcgMixedEventSameSignpT", mass, pT, correction);
                     }
                 }
+                // for(long unsigned int i = 0; i<queue_of_previous_vector_Tracks_Kpi_negative.back().size(); i++){
+                //     for(long unsigned int j = 0; j<queue_of_previous_vector_Tracks_piK_negative[evt].size(); j++){
+                //         queue_of_previous_vector_Tracks_Kpi_negative.back()[i]->getLorentzVector(positive_track, particleMass[Kaon]);
+                //         queue_of_previous_vector_Tracks_piK_negative[evt][j]->getLorentzVector(negative_track, particleMass[Pion]);
+                //         mass = (positive_track+negative_track).M();
+                //         eta = (positive_track+negative_track).Eta();
+                //         pT = (positive_track+negative_track).Pt();
+                //         correction = correction_coefficient(-2, Kaon, Pion, queue_of_previous_vector_Tracks_Kpi_negative.back()[i], queue_of_previous_vector_Tracks_piK_negative[evt][j], queue_of_previous_PV_positions.back().Z(), queue_of_previous_PV_positions[evt].Z());
+                //         //Kpi
+                //         insideprocessing.Fill("MKpiChi2BcgMixedEventSameSign", mass, correction);
+                //         insideprocessing.Fill("MKpiChi2BcgMixedEventSameSignClose", mass, correction);
+                //         insideprocessing.Fill("MKpiChi2BcgMixedEventSameSigneta", mass, eta, correction);
+                //         insideprocessing.Fill("MKpiChi2BcgMixedEventSameSignpT", mass, pT, correction);
+                //         //piK
+                //         insideprocessing.Fill("MpiKChi2BcgMixedEventSameSign", mass, correction);
+                //         insideprocessing.Fill("MpiKChi2BcgMixedEventSameSignClose", mass, correction);
+                //         insideprocessing.Fill("MpiKChi2BcgMixedEventSameSigneta", mass, eta, correction);
+                //         insideprocessing.Fill("MpiKChi2BcgMixedEventSameSignpT", mass, pT, correction);
+                //     }
+                // }
                 //ppi/pip
                 for(long unsigned int i = 0; i<queue_of_previous_vector_Tracks_ppi_negative[evt].size(); i++){
                     for(long unsigned int j = 0; j<queue_of_previous_vector_Tracks_pip_negative.back().size(); j++){
@@ -1530,16 +1765,35 @@ int main(int argc, char** argv){
                         mass = (positive_track+negative_track).M();
                         eta = (positive_track+negative_track).Eta();
                         pT = (positive_track+negative_track).Pt();
+                        correction = correction_coefficient(-2, Proton, Pion, queue_of_previous_vector_Tracks_ppi_negative[evt][i], queue_of_previous_vector_Tracks_pip_negative.back()[j], queue_of_previous_PV_positions[evt].Z(), queue_of_previous_PV_positions.back().Z());
                         //ppi
-                        insideprocessing.Fill("MppiChi2BcgMixedEventSameSign", mass);
-                        insideprocessing.Fill("MppiChi2BcgMixedEventSameSigneta", mass, eta);
-                        insideprocessing.Fill("MppiChi2BcgMixedEventSameSignpT", mass, pT);
+                        insideprocessing.Fill("MppiChi2BcgMixedEventSameSign", mass, correction);
+                        insideprocessing.Fill("MppiChi2BcgMixedEventSameSigneta", mass, eta, correction);
+                        insideprocessing.Fill("MppiChi2BcgMixedEventSameSignpT", mass, pT, correction);
                         //pip
-                        insideprocessing.Fill("MpipChi2BcgMixedEventSameSign", mass);
-                        insideprocessing.Fill("MpipChi2BcgMixedEventSameSigneta", mass, eta);
-                        insideprocessing.Fill("MpipChi2BcgMixedEventSameSignpT", mass, pT);
+                        insideprocessing.Fill("MpipChi2BcgMixedEventSameSign", mass, correction);
+                        insideprocessing.Fill("MpipChi2BcgMixedEventSameSigneta", mass, eta, correction);
+                        insideprocessing.Fill("MpipChi2BcgMixedEventSameSignpT", mass, pT, correction);
                     }
                 }
+                // for(long unsigned int i = 0; i<queue_of_previous_vector_Tracks_ppi_negative.back().size(); i++){
+                //     for(long unsigned int j = 0; j<queue_of_previous_vector_Tracks_pip_negative[evt].size(); j++){
+                //         queue_of_previous_vector_Tracks_ppi_negative.back()[i]->getLorentzVector(positive_track, particleMass[Proton]);
+                //         queue_of_previous_vector_Tracks_pip_negative[evt][j]->getLorentzVector(negative_track, particleMass[Pion]);
+                //         mass = (positive_track+negative_track).M();
+                //         eta = (positive_track+negative_track).Eta();
+                //         pT = (positive_track+negative_track).Pt();
+                //         correction = correction_coefficient(-2, Proton, Pion, queue_of_previous_vector_Tracks_ppi_negative.back()[i], queue_of_previous_vector_Tracks_pip_negative[evt][j], queue_of_previous_PV_positions.back().Z(), queue_of_previous_PV_positions[evt].Z());
+                //         //ppi
+                //         insideprocessing.Fill("MppiChi2BcgMixedEventSameSign", mass, correction);
+                //         insideprocessing.Fill("MppiChi2BcgMixedEventSameSigneta", mass, eta, correction);
+                //         insideprocessing.Fill("MppiChi2BcgMixedEventSameSignpT", mass, pT, correction);
+                //         //pip
+                //         insideprocessing.Fill("MpipChi2BcgMixedEventSameSign", mass, correction);
+                //         insideprocessing.Fill("MpipChi2BcgMixedEventSameSigneta", mass, eta, correction);
+                //         insideprocessing.Fill("MpipChi2BcgMixedEventSameSignpT", mass, pT, correction);
+                //     }
+                // }
                 //KK
                 for(long unsigned int i = 0; i<queue_of_previous_vector_Tracks_KK_negative[evt].size(); i++){
                     for(long unsigned int j = 0; j<queue_of_previous_vector_Tracks_KK_negative.back().size(); j++){
@@ -1548,10 +1802,11 @@ int main(int argc, char** argv){
                         mass = (positive_track+negative_track).M();
                         eta = (positive_track+negative_track).Eta();
                         pT = (positive_track+negative_track).Pt();
-                        insideprocessing.Fill("MKKChi2BcgMixedEventSameSign", mass);
-                        insideprocessing.Fill("MKKChi2BcgMixedEventSameSignClose", mass);
-                        insideprocessing.Fill("MKKChi2BcgMixedEventSameSigneta", mass, eta);
-                        insideprocessing.Fill("MKKChi2BcgMixedEventSameSignpT", mass, pT);
+                        correction = correction_coefficient(-2, Kaon, Kaon, queue_of_previous_vector_Tracks_KK_negative[evt][i], queue_of_previous_vector_Tracks_KK_negative.back()[j], queue_of_previous_PV_positions[evt].Z(), queue_of_previous_PV_positions.back().Z());
+                        insideprocessing.Fill("MKKChi2BcgMixedEventSameSign", mass, correction);
+                        insideprocessing.Fill("MKKChi2BcgMixedEventSameSignClose", mass, correction);
+                        insideprocessing.Fill("MKKChi2BcgMixedEventSameSigneta", mass, eta, correction);
+                        insideprocessing.Fill("MKKChi2BcgMixedEventSameSignpT", mass, pT, correction);
                     }
                 }
                 //pipi
@@ -1562,9 +1817,10 @@ int main(int argc, char** argv){
                         mass = (positive_track+negative_track).M();
                         eta = (positive_track+negative_track).Eta();
                         pT = (positive_track+negative_track).Pt();
-                        insideprocessing.Fill("MpipiChi2BcgMixedEventSameSign", mass);
-                        insideprocessing.Fill("MpipiChi2BcgMixedEventSameSigneta", mass, eta);
-                        insideprocessing.Fill("MpipiChi2BcgMixedEventSameSignpT", mass, pT);
+                        correction = correction_coefficient(-2, Pion, Pion, queue_of_previous_vector_Tracks_pipi_negative[evt][i], queue_of_previous_vector_Tracks_pipi_negative.back()[j], queue_of_previous_PV_positions[evt].Z(), queue_of_previous_PV_positions.back().Z());
+                        insideprocessing.Fill("MpipiChi2BcgMixedEventSameSign", mass, correction);
+                        insideprocessing.Fill("MpipiChi2BcgMixedEventSameSigneta", mass, eta, correction);
+                        insideprocessing.Fill("MpipiChi2BcgMixedEventSameSignpT", mass, pT, correction);
                     }
                 }
                 //pp
@@ -1575,9 +1831,10 @@ int main(int argc, char** argv){
                         mass = (positive_track+negative_track).M();
                         eta = (positive_track+negative_track).Eta();
                         pT = (positive_track+negative_track).Pt();
-                        insideprocessing.Fill("MppChi2BcgMixedEventSameSign", mass);
-                        insideprocessing.Fill("MppChi2BcgMixedEventSameSigneta", mass, eta);
-                        insideprocessing.Fill("MppChi2BcgMixedEventSameSignpT", mass, pT);
+                        correction = correction_coefficient(-2, Proton, Proton, queue_of_previous_vector_Tracks_pp_negative[evt][i], queue_of_previous_vector_Tracks_pp_negative.back()[j], queue_of_previous_PV_positions[evt].Z(), queue_of_previous_PV_positions.back().Z());
+                        insideprocessing.Fill("MppChi2BcgMixedEventSameSign", mass, correction);
+                        insideprocessing.Fill("MppChi2BcgMixedEventSameSigneta", mass, eta, correction);
+                        insideprocessing.Fill("MppChi2BcgMixedEventSameSignpT", mass, pT, correction);
                     }
                 }
             }
@@ -1678,4 +1935,142 @@ int main(int argc, char** argv){
     outputFileHist->Close();
 
     return 0;
+}
+
+TFile* getNewestFile(std::string folder, std::string filename){
+    //mounting path
+    std::string full_path;
+    if(folder.find_last_of("/")==folder.length()-1){
+        full_path = folder+filename;
+    } else{
+        full_path = folder+"/"+filename;
+    }
+    //necessary to expand "~" into /home/adam/ or whatever will it be
+    full_path = gSystem->ExpandPathName(full_path.c_str());
+
+    //making file collection
+    TFileCollection collection;
+    int files_found = collection.Add(full_path.c_str());
+    std::string result;
+    Long_t id, size, flags, modtime = 0, new_modtime;
+    switch(files_found){
+    case 0:
+        //no files
+        printf("Search for %s returned 0 results\n", full_path.c_str());
+        return nullptr;
+        break;
+    case 1:
+        //exactly one file
+        result = static_cast<TFileInfo*>(collection.GetList()->At(0))->GetCurrentUrl()->GetFile();
+        printf("Search for %s returned 1 result:\n%s\n", full_path.c_str(), result.c_str());
+        return TFile::Open(result.c_str());
+        break;
+    default:
+        //many files; need to iterate through the file collection
+        printf("Search for %s returned %d results:\n", full_path.c_str(), collection.GetList()->GetEntries());
+        for(auto&& i:*collection.GetList()){
+            gSystem->GetPathInfo(static_cast<TFileInfo*>(i)->GetCurrentUrl()->GetFile(), &id, &size, &flags, &new_modtime);
+            printf("%s\n", static_cast<TFileInfo*>(i)->GetCurrentUrl()->GetFile());
+            if(modtime<new_modtime){
+                modtime = new_modtime;
+                result = static_cast<TFileInfo*>(i)->GetCurrentUrl()->GetFile();
+            }
+        }
+        printf("Final result chosen:\n%s\n", result.c_str());
+        return TFile::Open(result.c_str());
+        break;
+    }
+
+    //just in case, the program should NOT be even here
+    return nullptr;
+}
+
+StEfficiencyCorrector3D* getInitialisedEfficiencyCorrector(std::string folder, CHARGE charge, PARTICLES particle){
+    //loading file
+    TFile* correction_file = nullptr;
+    switch(particle){
+    case Pion:
+        correction_file = getNewestFile(folder, "SPPion*.root");
+        break;
+    case Kaon:
+        correction_file = getNewestFile(folder, "SPKaon*.root");
+        break;
+    case Proton:
+        correction_file = getNewestFile(folder, "SPProton*.root");
+        break;
+    default:
+        return nullptr;
+        break;
+    }
+    //if file not loaded, return nullptr
+    if(correction_file==nullptr)
+        return nullptr;
+    printf("Successfully loaded efficiency correction file\n");
+
+    //getting efficiency histograms out
+    TH3F* TPC_num = nullptr;
+    TH3F* TPC_den = nullptr;
+    TH3F* TOF_num = nullptr;
+    TH3F* TOF_den = nullptr;
+    switch(charge){
+    case positive:
+        TPC_num = (TH3F*)correction_file->Get("h3D_TPC_RecoMatched_P");
+        TPC_den = (TH3F*)correction_file->Get("h3D_TPC_True_P");
+        TOF_num = (TH3F*)correction_file->Get("h3D_TOF_RecoMatchedWithTOF_P");
+        TOF_den = (TH3F*)correction_file->Get("h3D_TOF_RecoMatched_P");
+        break;
+    case negative:
+        TPC_num = (TH3F*)correction_file->Get("h3D_TPC_RecoMatched_N");
+        TPC_den = (TH3F*)correction_file->Get("h3D_TPC_True_N");
+        TOF_num = (TH3F*)correction_file->Get("h3D_TOF_RecoMatchedWithTOF_N");
+        TOF_den = (TH3F*)correction_file->Get("h3D_TOF_RecoMatched_N");
+        break;
+    default:
+        return nullptr;
+        break;
+    }
+    if(TPC_num!=nullptr&&TPC_den!=nullptr&&TOF_num!=nullptr&&TOF_den!=nullptr){
+        printf("Successfully loaded histograms\n");
+    } else{
+        printf("Something went wrong with loading histograms!\n");
+        return nullptr;
+    }
+
+    //calculating efficiency
+    TH3F* tpcEfficiency = (TH3F*)TPC_num->Clone("tpcEfficiency");
+    TH3F* tofEfficiency = (TH3F*)TOF_num->Clone("tofEfficiency");
+
+    //binomial division for proper error handling - taken directly from Sneha's example
+    tpcEfficiency->Divide(TPC_num, TPC_den, 1, 1, "B");
+    tofEfficiency->Divide(TOF_num, TOF_den, 1, 1, "B");
+
+    //setting efficiencies
+    StEfficiencyCorrector3D* efficiency_corrector = new StEfficiencyCorrector3D();
+    bool cloneHist = true;  // Make internal copy, I guess for when the function goes out of scope?
+    switch(particle){
+    case Pion:
+        efficiency_corrector->setTpcEfficiency(tpcEfficiency, charge==positive ? 1 : -1, StEfficiencyCorrector3D::PION, cloneHist);
+        efficiency_corrector->setTofEfficiency(tofEfficiency, charge==positive ? 1 : -1, StEfficiencyCorrector3D::PION, cloneHist);
+        break;
+    case Kaon:
+        efficiency_corrector->setTpcEfficiency(tpcEfficiency, charge==positive ? 1 : -1, StEfficiencyCorrector3D::KAON, cloneHist);
+        efficiency_corrector->setTofEfficiency(tofEfficiency, charge==positive ? 1 : -1, StEfficiencyCorrector3D::KAON, cloneHist);
+        break;
+    case Proton:
+        efficiency_corrector->setTpcEfficiency(tpcEfficiency, charge==positive ? 1 : -1, StEfficiencyCorrector3D::PROTON, cloneHist);
+        efficiency_corrector->setTofEfficiency(tofEfficiency, charge==positive ? 1 : -1, StEfficiencyCorrector3D::PROTON, cloneHist);
+        break;
+    default:
+        delete efficiency_corrector;
+        return nullptr;
+        break;
+    }
+    printf("Successfully set up efficiencies\n");
+
+    //cleaning up
+    //uncommenting it causes segfault because of nullptr somewhere down the line
+    // correction_file->Close();
+    // delete correction_file;
+
+    return efficiency_corrector;
 }
