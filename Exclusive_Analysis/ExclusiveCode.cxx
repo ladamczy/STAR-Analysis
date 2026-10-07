@@ -3,6 +3,7 @@
 
 void CheckN1(vector <bool *> vCuts,bool & condition, bool & conditionN1 )
 {
+    // Loop through all cut flags in the event analysis sequence
     for (int i = 0; i < vCuts.size(); i++ )
     {
      
@@ -17,33 +18,36 @@ void CheckN1(vector <bool *> vCuts,bool & condition, bool & conditionN1 )
 
 void FindProtons(bool isMC, StRPEvent *rpEvt, StUPCEvent *upcEvt, TLorentzVector & protonE, TLorentzVector & protonW)
 {
-   
-    if (isMC == 0 && rpEvt)  // Add null check)
+    // Reconstructs the 4-momenta of the forward-scattered East and West protons from Roman Pots (data) or truth kinematics (MC).
+    //new and old gives same results , not event a misplaced
+    if (isMC == 0)
     {
-            if (rpEvt->getNumberOfTracks() < 2) return;  // Add safety check
-            
-            StUPCRpsTrack *trk = rpEvt->getTrack(0);
-            StUPCRpsTrack *trk2 = rpEvt->getTrack(1);
-            
-            trk->setEvent(rpEvt);
-            trk2->setEvent(rpEvt);
-            if (!trk || !trk2) return;  // Add safety check
+        // REAL DATA: Extract the two Roman Pot tracks and assign them to East (branch < 2) and West (branch >= 2) stations.
+        StUPCRpsTrack *trk = rpEvt->getTrack(0);
+        StUPCRpsTrack *trk2 = rpEvt->getTrack(1);
+        trk->setEvent(rpEvt);
+        trk2->setEvent(rpEvt);
 
-            if (trk->branch() < 2)
-            {
-                protonE.SetPxPyPzE(ExclusiveK0K0::BEAM_ENERGY*trk->thetaRp(0), ExclusiveK0K0::BEAM_ENERGY*trk->thetaRp(1), -(ExclusiveK0K0::BEAM_ENERGY-ExclusiveK0K0::BEAM_ENERGY*trk->thetaRp(1)-ExclusiveK0K0::BEAM_ENERGY*trk->thetaRp(0)), ExclusiveK0K0::BEAM_ENERGY);
-                protonW.SetPxPyPzE(ExclusiveK0K0::BEAM_ENERGY*trk2->thetaRp(0), ExclusiveK0K0::BEAM_ENERGY*trk2->thetaRp(1),ExclusiveK0K0::BEAM_ENERGY-ExclusiveK0K0::BEAM_ENERGY*trk2->thetaRp(1)-ExclusiveK0K0::BEAM_ENERGY*trk2->thetaRp(0), ExclusiveK0K0::BEAM_ENERGY);    
-            }
+        // Map tracks to East (< 2) and West (>= 2) branches cleanly
+        StUPCRpsTrack *trkE = (trk->branch() < 2) ? trk : trk2;
+        StUPCRpsTrack *trkW = (trk->branch() < 2) ? trk2 : trk;
 
-            else if (trk2->branch() < 2)
-            {
-                protonE.SetPxPyPzE(ExclusiveK0K0::BEAM_ENERGY*trk2->thetaRp(0), ExclusiveK0K0::BEAM_ENERGY*trk2->thetaRp(1), -(ExclusiveK0K0::BEAM_ENERGY-ExclusiveK0K0::BEAM_ENERGY*trk2->thetaRp(1)-ExclusiveK0K0::BEAM_ENERGY*trk2->thetaRp(0)), ExclusiveK0K0::BEAM_ENERGY);
-                protonW.SetPxPyPzE(ExclusiveK0K0::BEAM_ENERGY*trk->thetaRp(0), ExclusiveK0K0::BEAM_ENERGY*trk->thetaRp(1), ExclusiveK0K0::BEAM_ENERGY-ExclusiveK0K0::BEAM_ENERGY*trk->thetaRp(1)-ExclusiveK0K0::BEAM_ENERGY*trk->thetaRp(0), ExclusiveK0K0::BEAM_ENERGY);    
-            }
+        // East Proton (Negative Z direction)
+        double pxE = ExclusiveK0K0::BEAM_ENERGY * trkE->thetaRp(0);
+        double pyE = ExclusiveK0K0::BEAM_ENERGY * trkE->thetaRp(1);
+        double pzE = -sqrt(pow(ExclusiveK0K0::BEAM_ENERGY, 2) - pow(pxE, 2) - pow(pyE, 2) - pow(ExclusiveK0K0::MASS_PROTON, 2));
+        protonE.SetPxPyPzE(pxE, pyE, pzE, ExclusiveK0K0::BEAM_ENERGY);
+
+        // West Proton (Positive Z direction)
+        double pxW = ExclusiveK0K0::BEAM_ENERGY * trkW->thetaRp(0);
+        double pyW = ExclusiveK0K0::BEAM_ENERGY * trkW->thetaRp(1);
+        double pzW = sqrt(pow(ExclusiveK0K0::BEAM_ENERGY, 2) - pow(pxW, 2) - pow(pyW, 2) - pow(ExclusiveK0K0::MASS_PROTON, 2));
+        protonW.SetPxPyPzE(pxW, pyW, pzW, ExclusiveK0K0::BEAM_ENERGY);
     }    
 
     else if (isMC == 1)
     {
+        // MONTE CARLO: Retrieve the primary generated protons (PDG 2212).
         vector <TParticle*> vProtons;
         TParticle* particle;
         
@@ -56,6 +60,8 @@ void FindProtons(bool isMC, StRPEvent *rpEvt, StUPCEvent *upcEvt, TLorentzVector
             }
         }
 
+        // Apply Gaussian smearing to true MC momenta to simulate detector resolution. 
+        // Transverse sigma = 33 MeV/c; Longitudinal sigma = 510 MeV/c.
         double sigma = 0.033;
         double sigmaz = 0.51;
         double px_reco1 = gRandom->Gaus(vProtons[0]->Px(), sigma);
@@ -68,6 +74,7 @@ void FindProtons(bool isMC, StRPEvent *rpEvt, StUPCEvent *upcEvt, TLorentzVector
         double pz_reco2 = gRandom->Gaus(vProtons[1]->Pz(), sigmaz);
         protonW.SetXYZM(px_reco2,py_reco2, pz_reco2, ExclusiveK0K0::MASS_PROTON);
         
+        // Assign smeared 4-momenta to East/West vectors based on the sign of the longitudinal momentum (pz).
         if (pz_reco1 < 0.0)
         {
             protonE.SetXYZM(px_reco1,py_reco1, pz_reco1, ExclusiveK0K0::MASS_PROTON);
@@ -87,10 +94,9 @@ void FindProtons(bool isMC, StRPEvent *rpEvt, StUPCEvent *upcEvt, TLorentzVector
 }
 
 
-
 void SeparateTracks(StUPCEvent *upcEvt, vector <StUPCTrack const*> &tracksWithTofHit, vector <StUPCTrack const*> &tracksWithoutTofHit, bool isMC, TH1D* HistNumWithTofTrakcs,TH1D* HistNumWithoutTofTrakcs)
 {
-
+    // 1. Sort tracks based on data type (Data vs MC)
     for (Int_t i = 0; i<upcEvt->getNumberOfTracks(); i++)
     {
 
@@ -105,7 +111,7 @@ void SeparateTracks(StUPCEvent *upcEvt, vector <StUPCTrack const*> &tracksWithTo
                 tracksWithoutTofHit.push_back(upcEvt->getTrack(i));
             }
         }
-
+        // 2. Fill multiplicity histograms (applying BBC cuts exclusively for MC)
         else if (isMC == 1)
         {
             if((upcEvt->getTrack(i)->getFlag(StUPCTrack::kTof)))  
@@ -124,7 +130,7 @@ void SeparateTracks(StUPCEvent *upcEvt, vector <StUPCTrack const*> &tracksWithTo
             
             Int_t BBCLEast = upcEvt->getBBCLargeEast();
             Int_t BBCLWest = upcEvt->getBBCLargeWest();
-
+            // MC specific cut: suppress background by requiring quiet BBCs
             if (tracksWithoutTofHit.size() >= 2 and BBCLWest <= 52 and BBCLEast <= 52.0)
             {
                 HistNumWithTofTrakcs->Fill(tracksWithTofHit.size());
@@ -134,12 +140,11 @@ void SeparateTracks(StUPCEvent *upcEvt, vector <StUPCTrack const*> &tracksWithTo
         }
         else
         {
-                    HistNumWithTofTrakcs->Fill(tracksWithTofHit.size());
-        HistNumWithoutTofTrakcs->Fill(tracksWithoutTofHit.size());
+            HistNumWithTofTrakcs->Fill(tracksWithTofHit.size());
+            HistNumWithoutTofTrakcs->Fill(tracksWithoutTofHit.size());
 
         }
 }
-
 
 
 bool ValidNumberOfTofTracks(vector <int> vNums, vector <StUPCTrack const*>  tracksWithTofHit , vector <StUPCTrack const*>  tracksWithoutTofHit,vector<TH1D *>&HistPtPionWithTof,vector<TH1D *>&HistPtPionWithoutTof, vector<TH1D *>& HistEtaPionWithTof, vector<TH1D *> &HistEtaPionWithoutTof, vector<TH1D *>& HistNfitPionWithTof,vector<TH1D *>  &HistNfitPionWithoutTof  )
@@ -318,7 +323,6 @@ bool AreTofTracksGood(vector <StUPCTrack const*>  &tracksWithTofHit)
 }
 
 
-
 bool FindTracks( vector <StUPCTrack const*> &tracksWithTofHit, vector <StUPCTrack const*> &tracksWithoutTofHit, vector <StUPCTrack const*> &goodTracksWithoutTofHit)
 {
     bool flag = false;
@@ -416,8 +420,6 @@ bool FindTracks( vector <StUPCTrack const*> &tracksWithTofHit, vector <StUPCTrac
 }
 
 
-
-
 void FillProtons(double protonSignsY, TH1D*HistProtonsSameSide, TH1D*HistProtonsOppositeSide, int iCutFlow)
 {
     if (protonSignsY >= 0.0)
@@ -429,6 +431,7 @@ void FillProtons(double protonSignsY, TH1D*HistProtonsSameSide, TH1D*HistProtons
        HistProtonsOppositeSide->Fill(iCutFlow);      
     }
 }
+
 
 void GetBeamPar(StUPCEvent *upcEvt, double * beamPar, bool isMC)
 {
@@ -451,6 +454,7 @@ void GetBeamPar(StUPCEvent *upcEvt, double * beamPar, bool isMC)
     }
 
 }
+
 
 bool FindProtonsAndPions(StUPCEvent *upcEvt, vector <StUPCTrack const*> &tracksWithTofHit,  vector <StUPCTrack const*> &goodTracksWithoutTofHit,vector <StUPCTrack const*> &  vFinalProtons, vector <StUPCTrack const*> & vFinalPions, double * beamPar)
 {
@@ -494,12 +498,13 @@ bool FindProtonsAndPions(StUPCEvent *upcEvt, vector <StUPCTrack const*> &tracksW
 
         else if (vProtons2Sigma.size() == 3)
         {   
+            // the loop populating protonsPionSign and protonsNoPionSign
             if (vPions3Sigma.size() == 0) {flag = false; return flag;}
     
             double pionCharge = vPions3Sigma[0]->getCharge();
             vector <StUPCTrack const *> protonsPionSign;
             vector <StUPCTrack const *> protonsNoPionSign;
-            
+            // Populate the vectors first
             for (int i = 0; i < vProtons2Sigma.size(); i++)
             {
                 if (vProtons2Sigma[i]->getCharge() == pionCharge )
@@ -510,6 +515,11 @@ bool FindProtonsAndPions(StUPCEvent *upcEvt, vector <StUPCTrack const*> &tracksW
                 {
                     protonsNoPionSign.push_back(vProtons2Sigma[i]);
                 }
+            }
+
+            // Now check their sizes after they are populated
+            if (protonsPionSign.empty() || protonsNoPionSign.size() < 2) {
+                flag = false; return flag;
             }
 
             vector <StUPCTrack const *> protonsNoPionSignThatCanBeAlsoPion;
@@ -525,7 +535,7 @@ bool FindProtonsAndPions(StUPCEvent *upcEvt, vector <StUPCTrack const*> &tracksW
             if (protonsNoPionSignThatCanBeAlsoPion.size() == 0) {flag = false; return flag;}
             else if (protonsNoPionSignThatCanBeAlsoPion.size() == 1)
             {
-                if (protonsNoPionSign[0]->getPt() == protonsNoPionSignThatCanBeAlsoPion[0]->getPt())
+                if (protonsNoPionSign[0] == protonsNoPionSignThatCanBeAlsoPion[0])
                 {
                     vFinalPions.push_back(vPions3Sigma[0]);  vFinalPions.push_back(protonsNoPionSign[0]);
              
@@ -569,7 +579,8 @@ bool FindProtonsAndPions(StUPCEvent *upcEvt, vector <StUPCTrack const*> &tracksW
 
             else
             {
-                cout << "HEERERERER " <<endl;
+                flag = false;
+                return flag;
             }
         }
         
@@ -640,6 +651,10 @@ bool FindProtonsAndPions(StUPCEvent *upcEvt, vector <StUPCTrack const*> &tracksW
                     }
                 }
 
+                if (pionsProtonCharge.empty() || pionsNoProtonCharge.size() < 2) {
+                    flag = false; return flag;
+                }
+
                 TVector3 const tryVec(0,0,0);
                 StUPCV0 lVecKaonComb1a(pionsNoProtonCharge[0], vProtons2SigmaThatCanNotBeAlsoPion[0], ExclusiveK0K0::MASS_PION, ExclusiveK0K0::MASS_PROTON, 1, 1, tryVec, beamPar,upcEvt->getMagneticField(), true);
                 StUPCV0 lVecKaonComb1b(pionsProtonCharge[0], pionsNoProtonCharge[1], ExclusiveK0K0::MASS_PION, ExclusiveK0K0::MASS_PROTON, 1, 1, tryVec, beamPar,upcEvt->getMagneticField(), true);
@@ -666,9 +681,10 @@ bool FindProtonsAndPions(StUPCEvent *upcEvt, vector <StUPCTrack const*> &tracksW
                 }            
             }
 
-                   else
+            else
             {
-                cout << "HEERERERER " <<endl;
+                flag = false;
+                return flag; 
             }
 
         }
@@ -948,15 +964,17 @@ bool FindProtonsAndPions(StUPCEvent *upcEvt, vector <StUPCTrack const*> &tracksW
                         auto minElementProton = std::min_element(massesProtons.begin(), massesProtons.end());
                         int minIndexProton = std::distance(massesProtons.begin(), minElementProton);
 
-                        if (massesProtons[minIndexProton] <massesPions[minIndexPion] )
+                        if (massesProtons[minIndexProton] < massesPions[minIndexPion] )
                         {
-                            vFinalPions.push_back(vOtherPions[minIndexPion]);
-                            vFinalProtons.push_back(otherPP);
+                            // Proton hypothesis is a better match
+                            vFinalPions.push_back(otherPP);
+                            vFinalProtons.push_back(vOtherProtons[minIndexProton]);
                         }
                         else
                         {
-                            vFinalPions.push_back(otherPP);
-                            vFinalProtons.push_back(vOtherProtons[minIndexProton]);
+                            // Pion hypothesis is a better match
+                            vFinalPions.push_back(vOtherPions[minIndexPion]);
+                            vFinalProtons.push_back(otherPP);
                         }
                      
                     }
@@ -1087,14 +1105,14 @@ bool FindProtonsAndPions(StUPCEvent *upcEvt, vector <StUPCTrack const*> &tracksW
                         if (vProtons2Sigma_NOTOF.size() == 0) {flag = false; return flag;} // brak śladów bez TOF kótre mogłybyb być pionami 
                         vector <StUPCTrack const *> vProtons2Sigma_NOTOF_GOODcharge;
                         
-                        for (int i = 0; i < vPions3Sigma_NOTOF.size(); i++)
+                        for (int i = 0; i < vProtons2Sigma_NOTOF.size(); i++)
                         {
-                            StUPCTrack const * track = vPions3Sigma_NOTOF[i];
+                            StUPCTrack const * track = vProtons2Sigma_NOTOF[i];
                             if (track->getCharge() != sumCharge )
                             {
                                 vProtons2Sigma_NOTOF_GOODcharge.push_back(track);
                             }
-                        }    
+                        } 
                         if (vProtons2Sigma_NOTOF_GOODcharge.size() == 0) {flag = false; return flag;}  // jeżeli brak pionów bez TOF mających dobry ładunek                   
 
                         vector <double> masses;
@@ -1172,6 +1190,10 @@ bool FindProtonsAndPions(StUPCEvent *upcEvt, vector <StUPCTrack const*> &tracksW
             else 
             {  
                 int charge = vProtons2SigmaThatCanBePions_TOF[0]->getCharge() + vProtons2SigmaThatCanBePions_TOF[1]->getCharge() + vProtons2SigmaThatCanBePions_TOF[2]->getCharge() ;
+                
+                if (abs(charge) == 3) {
+                    flag = false; return flag;
+                }
                 vector <StUPCTrack const *> vProtonsThatCanBePionsSameCharge; 
                 vector <StUPCTrack const *> vProtonsThatCanBePionsUniqeCharge; 
 
@@ -1272,6 +1294,8 @@ bool FindProtonsAndPions(StUPCEvent *upcEvt, vector <StUPCTrack const*> &tracksW
                         }
                     }
 
+                    if (vProtons3Sigma_NOTOF_GOODcharge.empty()) return false; 
+
                     for (int i = 0; i < vProtons3Sigma_NOTOF_GOODcharge.size(); i++)
                     {
                         StUPCV0 lambda(vProtons3Sigma_NOTOF_GOODcharge[i], vProtonsThatCanBePionsSameCharge[indexOtherProton], ExclusiveK0K0::MASS_PROTON, ExclusiveK0K0::MASS_PION, 1, 1, tryVec, beamPar,upcEvt->getMagneticField(), true);
@@ -1302,7 +1326,6 @@ bool FindProtonsAndPions(StUPCEvent *upcEvt, vector <StUPCTrack const*> &tracksW
 
     return flag;
 }
-
 
 
 bool  FindPions(  StUPCEvent *upcEvt, vector <StUPCTrack const*> &tracksWithTofHit, vector <StUPCTrack const*> &tracksWithoutTofHit, vector <StUPCTrack const*> &goodTracksWithoutTofHit,vector <StUPCTrack const*> &  vPosNegPionLeadingKaon, vector <StUPCTrack const*> & vPosNegPionSubLeadingKaon, double * beamPar)
@@ -1343,21 +1366,25 @@ bool  FindPions(  StUPCEvent *upcEvt, vector <StUPCTrack const*> &tracksWithTofH
                 if (i!=j)
                 {
                     vector <StUPCTrack const *> t;
-                    StUPCV0 *lVecKaonComb1 = new StUPCV0(vec3[i], vec2[0], ExclusiveK0K0::MASS_PION, ExclusiveK0K0::MASS_PION, 1, 1, tryVec, beamPar, upcEvt->getMagneticField(),  true);
-                    StUPCV0 *lVecKaonComb2 = new StUPCV0(vec3[j], vec2[1], ExclusiveK0K0::MASS_PION, ExclusiveK0K0::MASS_PION, 1, 1, tryVec, beamPar,upcEvt->getMagneticField(), true);
-                    double dcaDau1 = lVecKaonComb1->dcaDaughters();
-                    double dcaDau2 = lVecKaonComb2->dcaDaughters();
-                    double dcaBeam1 = lVecKaonComb1->DCABeamLine();
-                    double dcaBeam2 = lVecKaonComb2->DCABeamLine();
+                    
+                    // Allocate on the stack instead of the heap to prevent leaks and speed up the loop
+                    StUPCV0 lVecKaonComb1(vec3[i], vec2[0], ExclusiveK0K0::MASS_PION, ExclusiveK0K0::MASS_PION, 1, 1, tryVec, beamPar, upcEvt->getMagneticField(),  true);
+                    StUPCV0 lVecKaonComb2(vec3[j], vec2[1], ExclusiveK0K0::MASS_PION, ExclusiveK0K0::MASS_PION, 1, 1, tryVec, beamPar,upcEvt->getMagneticField(), true);
+                    
+                    // Update pointer accesses (->) to stack accesses (.)
+                    double dcaDau1 = lVecKaonComb1.dcaDaughters();
+                    double dcaDau2 = lVecKaonComb2.dcaDaughters();
+                    double dcaBeam1 = lVecKaonComb1.DCABeamLine();
+                    double dcaBeam2 = lVecKaonComb2.DCABeamLine();
 
-                    double cos1 = lVecKaonComb1->pointingAngleHypo();
-                    double cos2 = lVecKaonComb2->pointingAngleHypo();
-                    double len1 = lVecKaonComb1->decayLengthHypo();
-                    double len2 = lVecKaonComb2->decayLengthHypo();
+                    double cos1 = lVecKaonComb1.pointingAngleHypo();
+                    double cos2 = lVecKaonComb2.pointingAngleHypo();
+                    double len1 = lVecKaonComb1.decayLengthHypo();
+                    double len2 = lVecKaonComb2.decayLengthHypo();
 
                     if (dcaDau1 < 2.5 and dcaDau2 < 2.5 and dcaBeam1 < 2.5 and dcaBeam2 < 2.5  and (cos1>0.925 or len1 < 3.0) and  (cos2>0.925 or len2 < 3.0) )
                     {
-                        double distMass = sqrt(pow((lVecKaonComb1->m()-ExclusiveK0K0::MASS_KAON), 2) + pow((lVecKaonComb2->m()-ExclusiveK0K0::MASS_KAON), 2));
+                        double distMass = sqrt(pow((lVecKaonComb1.m()-ExclusiveK0K0::MASS_KAON), 2) + pow((lVecKaonComb2.m()-ExclusiveK0K0::MASS_KAON), 2));
                         masses.push_back(distMass);
                         t.push_back(vec3[i]);
                         t.push_back(vec3[j]);
@@ -1612,6 +1639,18 @@ bool  FindPions(  StUPCEvent *upcEvt, vector <StUPCTrack const*> &tracksWithTofH
             }
         }
     }
+    // ENFORCE [POSITIVE, NEGATIVE] DAUGHTER ORDERING
+    if (flag && vPosNegPionLeadingKaon.size() == 2 && vPosNegPionSubLeadingKaon.size() == 2) {
+        // Swap leading kaon daughters if the first one is negative
+        if (vPosNegPionLeadingKaon[0]->getCharge() < 0) {
+            std::swap(vPosNegPionLeadingKaon[0], vPosNegPionLeadingKaon[1]);
+        }
+        // Swap subleading kaon daughters if the first one is negative
+        if (vPosNegPionSubLeadingKaon[0]->getCharge() < 0) {
+            std::swap(vPosNegPionSubLeadingKaon[0], vPosNegPionSubLeadingKaon[1]);
+        }
+    }
+
     return flag;
 }
 
@@ -1629,14 +1668,13 @@ bool CheckPtMiss(StUPCV0 &leadingKaon, StUPCV0 &subLeadingKaon, TLorentzVector p
     return flag;
 }
 
-bool CheckNumberOfClusters(  StUPCEvent *upcEvt, vector <StUPCTrack const*> &tracksWithTofHit, int &  totalCluster)
+
+bool CheckNumberOfClusters(StUPCEvent *upcEvt, vector<StUPCTrack const*> &tracksWithTofHit, int &totalCluster)
 {
- 
     Int_t nTofHits = upcEvt->getNumberOfHits();           
-    vector <Int_t> vTray;
-    vector <Int_t> vTrayUniqueVector;
-    vector <Int_t> vTrayUniqueSet;
-    vector <Int_t> vMmodule;
+    vector<Int_t> vTray;
+    vector<Int_t> vTrayUniqueVector;
+    vector<Int_t> vMmodule;
     
     for (Int_t i = 0; i < nTofHits; i++)
     {
@@ -1648,82 +1686,58 @@ bool CheckNumberOfClusters(  StUPCEvent *upcEvt, vector <StUPCTrack const*> &tra
     sort(vTrayUniqueVector.begin(), vTrayUniqueVector.end());   
     auto last = unique(vTrayUniqueVector.begin(), vTrayUniqueVector.end());   
     vTrayUniqueVector.erase(last, vTrayUniqueVector.end()); 
-    
 
-    vector <vector <Int_t>> vModuleUniqueTray;
+    vector<vector<Int_t>> vModuleUniqueTray;
     for (int i = 0; i < vTrayUniqueVector.size(); i++)
     {
-        vector <Int_t> vModuleUnique;
+        vector<Int_t> vModuleUnique;
         for (int j = 0; j < nTofHits; j++)
         {
-            if (vTrayUniqueVector[i] == vTray[j] )
+            if (vTrayUniqueVector[i] == vTray[j])
             {
                 vModuleUnique.push_back(vMmodule[j]);
             }
         }
         vModuleUniqueTray.push_back(vModuleUnique);
-        vModuleUnique.clear();
     }
 
-    
-    for (int i  = 0; i < vModuleUniqueTray.size(); i++)
+    // Reset totalCluster to ensure no carry-over
+    totalCluster = 0; 
+
+    // Loop over each unique tray
+    for (int i = 0; i < vModuleUniqueTray.size(); i++)
     {
-        vector <Int_t> vec =  vModuleUniqueTray[i] ;  
+        vector<Int_t> vec = vModuleUniqueTray[i];  
+        if (vec.empty()) continue;
+
+        // Sort and deduplicate modules on this tray
         sort(vec.begin(), vec.end());   
-        auto last = unique(vec.begin(), vec.end());   
-        vec.erase(last, vec.end()); 
-    
-        if (vec.size() == 1)
-        {
-            totalCluster+=1;
-        
-        } 
+        auto lastMod = unique(vec.begin(), vec.end());   
+        vec.erase(lastMod, vec.end()); 
 
+        // A tray with at least one hit inherently has 1 cluster
+        int trayClusters = 1; 
         
-        for (int j = 0; j < vec.size()-1; j++)
+        // Iterate through the sorted, unique modules
+        for (size_t j = 1; j < vec.size(); j++)
         {
-            Int_t modNum = vec[j];
-            if (vec.size() == 1)
-            cout << vec.size() << endl;
-            int diff = 1;
-            int num = 0;
-            for (int z = j+1; z < vec.size(); z++)
+            // If the current module is not strictly adjacent to the previous one,
+            // it breaks the contiguous chain and forms a new cluster.
+            if (vec[j] != vec[j-1] + 1)
             {
-                if (modNum+diff == vec[z])
-                {
-                    num+=0;
-                    diff+=1;
-
-                    if (z == j+1)
-                    {
-                        num+=1;
-                    }
-                }
-
-                else if ( j == (vec.size()-2) and  vec[vec.size()-2]+1 != vec[vec.size()-1])
-                {
-                    num+=2; 
-                    continue;
-                }
-
-                else
-                {
-                    num+=1;
-                }
-
-                j+=(diff);
+                trayClusters++;
             }
-        
-            totalCluster+=num;
         }
-    
+        
+        totalCluster += trayClusters;
     }
 
+    // Apply the exclusivity cut threshold
     bool flag = 0;
-
-    if (totalCluster  <= 2*tracksWithTofHit.size() + 1)
+    if (totalCluster <= 2 * tracksWithTofHit.size() + 1)
     {
         flag = 1;
     }
+    
     return flag;
 }
