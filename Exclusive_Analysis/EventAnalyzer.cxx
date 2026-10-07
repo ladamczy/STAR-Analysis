@@ -83,6 +83,13 @@ int main(int argc, char** argv)
 
     TFile *outfile = TFile::Open(argv[2], "recreate");
 
+    // Define the 22 edges for 21 bins
+    double edges[22];
+    edges[0] = 0.995; // Kinematic threshold
+    for (int i = 1; i < 22; ++i) {
+        edges[i] = 1.0 + (i - 1) * 0.1; 
+    }
+
     // =========================================================
     // LOOP OVER SYSTEMATIC CONFIGURATIONS
     // =========================================================
@@ -190,7 +197,7 @@ int main(int argc, char** argv)
             HistInvMassPiPi2D_BgTail.push_back(  new TH2D(MakeHistName(Form("histInvMassPiPi2D_BgTail%d",i),sf).c_str(),";m_{lead} [GeV];m_{sublead} [GeV]",30,0.44,0.56,30,0.44,0.56));
         }
 
-        TH1D* HistMassK0K0 = new TH1D(MakeHistName("HistMassK0K0",sf).c_str(), ";m_{K^{0}K^{0}} [GeV];events", 21, 0.9, 3);
+        TH1D* HistMassK0K0 = new TH1D(MakeHistName("HistMassK0K0",sf).c_str(), ";m_{K^{0}K^{0}} [GeV];events", 21, edges);
 
         // N-1 track quality plots
         vector<TH1D*> HistPtPionWithTofN1, HistPtPionWithoutTofN1;
@@ -212,7 +219,7 @@ int main(int argc, char** argv)
             for (int j = 0; j < 11; j++) {
                 vPt.push_back(  new TH1D(MakeHistName(Form("histPtMissCF%d%d",i,j),   sf).c_str(),"",20,0,1));
                 vMass.push_back(new TH1D(MakeHistName(Form("histInvMassPiPiCF%d%d",i,j),sf).c_str(),"",30,0.44,0.56));
-                vKK.push_back(  new TH1D(MakeHistName(Form("histInvMassKKCF%d%d",i,j),sf).c_str(),"",42,0.9,3));
+                vKK.push_back(  new TH1D(MakeHistName(Form("histInvMassKKCF%d%d",i,j),sf).c_str(),"", 21, edges));
             }
             HistPtMissCF.push_back(vPt);
             HistInvMassPiPiCF.push_back(vMass);
@@ -310,6 +317,15 @@ int main(int argc, char** argv)
 
             double beamPar[4] = {};
             GetBeamPar(upcEvt, beamPar, isMC);
+
+            // =========================================================
+            /*if (isMC == 0 && i < 20) { // Print for the first 20 real data events
+                cout << "\n--- Event " << i << " Beam Parameters ---" << endl;
+                cout << "  X Position : " << upcEvt->getBeamXPosition() << " cm" << endl;
+                cout << "  X Slope    : " << upcEvt->getBeamXSlope()    << " rad" << endl;
+                cout << "  Y Position : " << upcEvt->getBeamYPosition() << " cm" << endl;
+                cout << "  Y Slope    : " << upcEvt->getBeamYSlope()    << " rad" << endl;
+            }*/
 
             vector<StUPCTrack const*> vPosNegPionLeadingKaon;
             vector<StUPCTrack const*> vPosNegPionSubLeadingKaon;

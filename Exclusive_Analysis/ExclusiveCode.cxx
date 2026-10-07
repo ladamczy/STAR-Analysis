@@ -437,8 +437,8 @@ void GetBeamPar(StUPCEvent *upcEvt, double * beamPar, bool isMC)
     if (isMC == 0)
     {    
         beamPar[0] = upcEvt->getBeamXPosition();
-        beamPar[1] = upcEvt->getBeamXSlope();
-        beamPar[2] = upcEvt->getBeamYPosition();
+        beamPar[1] = upcEvt->getBeamYPosition();
+        beamPar[2] = upcEvt->getBeamXSlope();
         beamPar[3] = upcEvt->getBeamYSlope();
     }
 
