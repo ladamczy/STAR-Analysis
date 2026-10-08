@@ -45,6 +45,7 @@ string particleNicks[EXTENDED_PARTICLES::nParticlesExtended] = { "e", "pi", "K",
 enum CHARGE{ positive = 0, negative = 1, nCharge = 2 };
 TFile* getNewestFile(std::string folder, std::string filename);
 StEfficiencyCorrector3D* getInitialisedEfficiencyCorrector(std::string folder, CHARGE charge, PARTICLES particle);
+std::pair<PARTICLES, PARTICLES> getPairPID(std::string pair_with_underscore);
 
 int main(int argc, char** argv){
 
@@ -211,7 +212,16 @@ int main(int argc, char** argv){
     sigmaFile.close();
 
     //pairs that are actively looked for
-    std::vector<std::string> pairTab = { "Kpi", "piK", "ppi", "pip", "KK", "pipi", "pp" };
+    std::vector<std::string> pairTabWithUnderscores = { "K_pi", "pi_K", "p_pi", "pi_p", "K_K", "pi_pi", "p_p" };
+    std::vector<std::string> pairTab;
+    std::vector<std::pair<PARTICLES, PARTICLES>> pairTabPID;
+    for(auto&& temp_pair:pairTabWithUnderscores){
+        std::string temp_pair_copy = temp_pair;
+        temp_pair_copy.erase(std::remove(temp_pair_copy.begin(), temp_pair_copy.end(), '_'), temp_pair_copy.end());
+        pairTab.push_back(temp_pair_copy);
+        pairTabPID.push_back(getPairPID(temp_pair));
+    }
+
 
     //histograms
     ProcessingOutsideLoop outsideprocessing;
@@ -548,104 +558,54 @@ int main(int argc, char** argv){
                         }
                     }
 
-                    //mass tests on different pairs
-                    if(chi2Map["K_pi"]<9){
-                        vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Kaon]);
-                        vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
-                        mass = (positive_track+negative_track).M();
-                        eta = (positive_track+negative_track).Eta();
-                        pT = (positive_track+negative_track).Pt();
-                        correction = correction_coefficient(0, Kaon, Pion, vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
-                        insideprocessing.Fill("MKpiChi2", mass, correction);
-                        insideprocessing.Fill("MKpiChi2Close", mass, correction);
-                        insideprocessing.Fill("MKpiChi2eta", mass, eta, correction);
-                        insideprocessing.Fill("MKpiChi2pT", mass, pT, correction);
-                    }
-                    if(chi2Map["pi_K"]<9){
-                        vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
-                        vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Kaon]);
-                        mass = (positive_track+negative_track).M();
-                        eta = (positive_track+negative_track).Eta();
-                        pT = (positive_track+negative_track).Pt();
-                        correction = correction_coefficient(0, Pion, Kaon, vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
-                        insideprocessing.Fill("MpiKChi2", mass, correction);
-                        insideprocessing.Fill("MpiKChi2Close", mass, correction);
-                        insideprocessing.Fill("MpiKChi2eta", mass, eta, correction);
-                        insideprocessing.Fill("MpiKChi2pT", mass, pT, correction);
-                    }
-                    if(chi2Map["p_pi"]<9){
-                        vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Proton]);
-                        vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
-                        mass = (positive_track+negative_track).M();
-                        eta = (positive_track+negative_track).Eta();
-                        pT = (positive_track+negative_track).Pt();
-                        correction = correction_coefficient(0, Proton, Pion, vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
-                        insideprocessing.Fill("MppiChi2", mass, correction);
-                        insideprocessing.Fill("MppiChi2eta", mass, eta, correction);
-                        insideprocessing.Fill("MppiChi2pT", mass, pT, correction);
-                    }
-                    if(chi2Map["pi_p"]<9){
-                        vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
-                        vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Proton]);
-                        mass = (positive_track+negative_track).M();
-                        eta = (positive_track+negative_track).Eta();
-                        pT = (positive_track+negative_track).Pt();
-                        correction = correction_coefficient(0, Pion, Proton, vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
-                        insideprocessing.Fill("MpipChi2", mass, correction);
-                        insideprocessing.Fill("MpipChi2eta", mass, eta, correction);
-                        insideprocessing.Fill("MpipChi2pT", mass, pT, correction);
-                    }
-                    if(chi2Map["K_K"]<9){
-                        vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Kaon]);
-                        vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Kaon]);
-                        mass = (positive_track+negative_track).M();
-                        eta = (positive_track+negative_track).Eta();
-                        pT = (positive_track+negative_track).Pt();
-                        correction = correction_coefficient(0, Kaon, Kaon, vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
-                        insideprocessing.Fill("MKKChi2", mass, correction);
-                        insideprocessing.Fill("MKKChi2Close", mass, correction);
-                        insideprocessing.Fill("MKKChi2eta", mass, eta, correction);
-                        insideprocessing.Fill("MKKChi2pT", mass, pT, correction);
-                        //test of suspicious peak and its neighbourhood
-                        if(chi2Map["K_K"]<3){
-                            insideprocessing.Fill("MKKSuspiciousPeakTestedWithStrictChi2LessThan3", mass, correction);
+                    for(size_t pair_number = 0; pair_number<pairTabWithUnderscores.size(); pair_number++){
+                        if(chi2Map[pairTabWithUnderscores[pair_number]]<9){
+                            //getting all the indentificators out
+                            std::pair<PARTICLES, PARTICLES> pairPID = getPairPID(pairTabWithUnderscores[pair_number]);
+                            std::string temp_pair = pairTab[pair_number];
+
+                            //calculating physics (general)
+                            vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[pairPID.first]);
+                            vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[pairPID.second]);
+                            mass = (positive_track+negative_track).M();
+                            eta = (positive_track+negative_track).Eta();
+                            pT = (positive_track+negative_track).Pt();
+                            correction = correction_coefficient(0, pairPID.first, pairPID.second, vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2").c_str(), mass, correction);
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2eta").c_str(), mass, eta, correction);
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2pT").c_str(), mass, pT, correction);
+
+                            //calculating physics (specific)
+                            if(temp_pair=="Kpi"||temp_pair=="piK"||temp_pair=="KK"){
+                                insideprocessing.Fill(("M"+temp_pair+"Chi2Close").c_str(), mass, correction);
+                            }
+                            if(temp_pair=="KK"){
+                                //test of suspicious peak and its neighbourhood
+                                if(chi2Map["K_K"]<3){
+                                    insideprocessing.Fill("MKKSuspiciousPeakTestedWithStrictChi2LessThan3", mass, correction);
+                                }
+                                if(chi2Map["K_K"]<1){
+                                    insideprocessing.Fill("MKKSuspiciousPeakTestedWithStrictChi2LessThan1", mass, correction);
+                                }
+                                //!!!!!!!!!!
+                                //CORRECTION CHANGE!!!!!!!!
+                                //!!!!!!!!!!
+                                correction = correction_coefficient(0, Pion, Pion, vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
+                                if(1.06<mass&&mass<1.08){
+                                    vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
+                                    vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
+                                    insideprocessing.Fill("MKKSuspiciousPeakTestedAsPionPair", (positive_track+negative_track).M(), correction);
+                                } else if(1.05<mass&&mass<1.09){
+                                    vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
+                                    vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
+                                    insideprocessing.Fill("MKKSuspiciousPeakTestedAsPionPairNeighbourhood", (positive_track+negative_track).M(), correction);
+                                }
+                            }
+                            //end of chi2 test
                         }
-                        if(chi2Map["K_K"]<1){
-                            insideprocessing.Fill("MKKSuspiciousPeakTestedWithStrictChi2LessThan1", mass, correction);
-                        }
-                        correction = correction_coefficient(0, Pion, Pion, vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
-                        if(1.06<mass&&mass<1.08){
-                            vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
-                            vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
-                            insideprocessing.Fill("MKKSuspiciousPeakTestedAsPionPair", (positive_track+negative_track).M(), correction);
-                        } else if(1.05<mass&&mass<1.09){
-                            vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
-                            vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
-                            insideprocessing.Fill("MKKSuspiciousPeakTestedAsPionPairNeighbourhood", (positive_track+negative_track).M(), correction);
-                        }
+                        //end of pair loop
                     }
-                    if(chi2Map["pi_pi"]<9){
-                        vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
-                        vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
-                        mass = (positive_track+negative_track).M();
-                        eta = (positive_track+negative_track).Eta();
-                        pT = (positive_track+negative_track).Pt();
-                        correction = correction_coefficient(0, Pion, Pion, vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
-                        insideprocessing.Fill("MpipiChi2", mass);
-                        insideprocessing.Fill("MpipiChi2eta", mass, eta);
-                        insideprocessing.Fill("MpipiChi2pT", mass, pT);
-                    }
-                    if(chi2Map["p_p"]<9){
-                        vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Proton]);
-                        vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Proton]);
-                        mass = (positive_track+negative_track).M();
-                        eta = (positive_track+negative_track).Eta();
-                        pT = (positive_track+negative_track).Pt();
-                        correction = correction_coefficient(0, Proton, Proton, vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
-                        insideprocessing.Fill("MppChi2", mass);
-                        insideprocessing.Fill("MppChi2eta", mass, eta);
-                        insideprocessing.Fill("MppChi2pT", mass, pT);
-                    }
+                    //end of innermost vector pair loop
                 }
             }
 
@@ -677,87 +637,32 @@ int main(int argc, char** argv){
                         }
                     }
 
-                    //mass tests on different pairs
-                    if(chi2Map["K_pi"]<9){
-                        vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Kaon]);
-                        vector_Track_positive[j]->getLorentzVector(positive_track2, particleMass[Pion]);
-                        mass = (positive_track+positive_track2).M();
-                        eta = (positive_track+positive_track2).Eta();
-                        pT = (positive_track+positive_track2).Pt();
-                        correction = correction_coefficient(2, Kaon, Pion, vector_Track_positive[i], vector_Track_positive[j], PV_position.Z(), PV_position.Z());
-                        insideprocessing.Fill("MKpiChi2BcgSameSign", mass, correction);
-                        insideprocessing.Fill("MKpiChi2BcgSameSignClose", mass, correction);
-                        insideprocessing.Fill("MKpiChi2BcgSameSigneta", mass, eta, correction);
-                        insideprocessing.Fill("MKpiChi2BcgSameSignpT", mass, pT, correction);
+                    for(size_t pair_number = 0; pair_number<pairTabWithUnderscores.size(); pair_number++){
+                        if(chi2Map[pairTabWithUnderscores[pair_number]]<9){
+                            //getting all the indentificators out
+                            std::pair<PARTICLES, PARTICLES> pairPID = getPairPID(pairTabWithUnderscores[pair_number]);
+                            std::string temp_pair = pairTab[pair_number];
+
+                            //calculating physics (general)
+                            vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[pairPID.first]);
+                            vector_Track_positive[j]->getLorentzVector(positive_track2, particleMass[pairPID.second]);
+                            mass = (positive_track+positive_track2).M();
+                            eta = (positive_track+positive_track2).Eta();
+                            pT = (positive_track+positive_track2).Pt();
+                            correction = correction_coefficient(2, pairPID.first, pairPID.second, vector_Track_positive[i], vector_Track_positive[j], PV_position.Z(), PV_position.Z());
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgSameSign").c_str(), mass, correction);
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgSameSigneta").c_str(), mass, eta, correction);
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgSameSignpT").c_str(), mass, pT, correction);
+
+                            //calculating physics (specific)
+                            if(temp_pair=="Kpi"||temp_pair=="piK"||temp_pair=="KK"){
+                                insideprocessing.Fill(("M"+temp_pair+"Chi2BcgSameSignClose").c_str(), mass, correction);
+                            }
+                            //end of chi2 test
+                        }
+                        //end of pair loop
                     }
-                    if(chi2Map["pi_K"]<9){
-                        vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
-                        vector_Track_positive[j]->getLorentzVector(positive_track2, particleMass[Kaon]);
-                        mass = (positive_track+positive_track2).M();
-                        eta = (positive_track+positive_track2).Eta();
-                        pT = (positive_track+positive_track2).Pt();
-                        correction = correction_coefficient(2, Pion, Kaon, vector_Track_positive[i], vector_Track_positive[j], PV_position.Z(), PV_position.Z());
-                        insideprocessing.Fill("MpiKChi2BcgSameSign", mass, correction);
-                        insideprocessing.Fill("MpiKChi2BcgSameSignClose", mass, correction);
-                        insideprocessing.Fill("MpiKChi2BcgSameSigneta", mass, eta, correction);
-                        insideprocessing.Fill("MpiKChi2BcgSameSignpT", mass, pT, correction);
-                    }
-                    if(chi2Map["p_pi"]<9){
-                        vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Proton]);
-                        vector_Track_positive[j]->getLorentzVector(positive_track2, particleMass[Pion]);
-                        mass = (positive_track+positive_track2).M();
-                        eta = (positive_track+positive_track2).Eta();
-                        pT = (positive_track+positive_track2).Pt();
-                        correction = correction_coefficient(2, Proton, Pion, vector_Track_positive[i], vector_Track_positive[j], PV_position.Z(), PV_position.Z());
-                        insideprocessing.Fill("MppiChi2BcgSameSign", mass, correction);
-                        insideprocessing.Fill("MppiChi2BcgSameSigneta", mass, eta, correction);
-                        insideprocessing.Fill("MppiChi2BcgSameSignpT", mass, pT, correction);
-                    }
-                    if(chi2Map["pi_p"]<9){
-                        vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
-                        vector_Track_positive[j]->getLorentzVector(positive_track2, particleMass[Proton]);
-                        mass = (positive_track+positive_track2).M();
-                        eta = (positive_track+positive_track2).Eta();
-                        pT = (positive_track+positive_track2).Pt();
-                        correction = correction_coefficient(2, Pion, Proton, vector_Track_positive[i], vector_Track_positive[j], PV_position.Z(), PV_position.Z());
-                        insideprocessing.Fill("MpipChi2BcgSameSign", mass, correction);
-                        insideprocessing.Fill("MpipChi2BcgSameSigneta", mass, eta, correction);
-                        insideprocessing.Fill("MpipChi2BcgSameSignpT", mass, pT, correction);
-                    }
-                    if(chi2Map["K_K"]<9){
-                        vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Kaon]);
-                        vector_Track_positive[j]->getLorentzVector(positive_track2, particleMass[Kaon]);
-                        mass = (positive_track+positive_track2).M();
-                        eta = (positive_track+positive_track2).Eta();
-                        pT = (positive_track+positive_track2).Pt();
-                        correction = correction_coefficient(2, Kaon, Kaon, vector_Track_positive[i], vector_Track_positive[j], PV_position.Z(), PV_position.Z());
-                        insideprocessing.Fill("MKKChi2BcgSameSign", mass, correction);
-                        insideprocessing.Fill("MKKChi2BcgSameSignClose", mass, correction);
-                        insideprocessing.Fill("MKKChi2BcgSameSigneta", mass, eta, correction);
-                        insideprocessing.Fill("MKKChi2BcgSameSignpT", mass, pT, correction);
-                    }
-                    if(chi2Map["pi_pi"]<9){
-                        vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
-                        vector_Track_positive[j]->getLorentzVector(positive_track2, particleMass[Pion]);
-                        mass = (positive_track+positive_track2).M();
-                        eta = (positive_track+positive_track2).Eta();
-                        pT = (positive_track+positive_track2).Pt();
-                        correction = correction_coefficient(2, Pion, Pion, vector_Track_positive[i], vector_Track_positive[j], PV_position.Z(), PV_position.Z());
-                        insideprocessing.Fill("MpipiChi2BcgSameSign", mass, correction);
-                        insideprocessing.Fill("MpipiChi2BcgSameSigneta", mass, eta, correction);
-                        insideprocessing.Fill("MpipiChi2BcgSameSignpT", mass, pT, correction);
-                    }
-                    if(chi2Map["p_p"]<9){
-                        vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Proton]);
-                        vector_Track_positive[j]->getLorentzVector(positive_track2, particleMass[Proton]);
-                        mass = (positive_track+positive_track2).M();
-                        eta = (positive_track+positive_track2).Eta();
-                        pT = (positive_track+positive_track2).Pt();
-                        correction = correction_coefficient(2, Proton, Proton, vector_Track_positive[i], vector_Track_positive[j], PV_position.Z(), PV_position.Z());
-                        insideprocessing.Fill("MppChi2BcgSameSign", mass, correction);
-                        insideprocessing.Fill("MppChi2BcgSameSigneta", mass, eta, correction);
-                        insideprocessing.Fill("MppChi2BcgSameSignpT", mass, pT, correction);
-                    }
+                    //end of innermost vector pair loop
                 }
             }
             //loop through identified particles (background, same-sign negative)
@@ -786,87 +691,32 @@ int main(int argc, char** argv){
                         }
                     }
 
-                    //mass tests on different pairs
-                    if(chi2Map["K_pi"]<9){
-                        vector_Track_negative[i]->getLorentzVector(negative_track, particleMass[Kaon]);
-                        vector_Track_negative[j]->getLorentzVector(negative_track2, particleMass[Pion]);
-                        mass = (negative_track+negative_track2).M();
-                        eta = (negative_track+negative_track2).Eta();
-                        pT = (negative_track+negative_track2).Pt();
-                        correction = correction_coefficient(-2, Kaon, Pion, vector_Track_negative[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
-                        insideprocessing.Fill("MKpiChi2BcgSameSigneta", mass, eta, correction);
-                        insideprocessing.Fill("MKpiChi2BcgSameSign", mass, correction);
-                        insideprocessing.Fill("MKpiChi2BcgSameSignClose", mass, correction);
-                        insideprocessing.Fill("MKpiChi2BcgSameSignpT", mass, pT, correction);
+                    for(size_t pair_number = 0; pair_number<pairTabWithUnderscores.size(); pair_number++){
+                        if(chi2Map[pairTabWithUnderscores[pair_number]]<9){
+                            //getting all the indentificators out
+                            std::pair<PARTICLES, PARTICLES> pairPID = getPairPID(pairTabWithUnderscores[pair_number]);
+                            std::string temp_pair = pairTab[pair_number];
+
+                            //calculating physics (general)
+                            vector_Track_negative[i]->getLorentzVector(negative_track, particleMass[pairPID.first]);
+                            vector_Track_negative[j]->getLorentzVector(negative_track2, particleMass[pairPID.second]);
+                            mass = (negative_track+negative_track2).M();
+                            eta = (negative_track+negative_track2).Eta();
+                            pT = (negative_track+negative_track2).Pt();
+                            correction = correction_coefficient(2, pairPID.first, pairPID.second, vector_Track_negative[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgSameSign").c_str(), mass, correction);
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgSameSigneta").c_str(), mass, eta, correction);
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgSameSignpT").c_str(), mass, pT, correction);
+
+                            //calculating physics (specific)
+                            if(temp_pair=="Kpi"||temp_pair=="piK"||temp_pair=="KK"){
+                                insideprocessing.Fill(("M"+temp_pair+"Chi2BcgSameSignClose").c_str(), mass, correction);
+                            }
+                            //end of chi2 test
+                        }
+                        //end of pair loop
                     }
-                    if(chi2Map["pi_K"]<9){
-                        vector_Track_negative[i]->getLorentzVector(negative_track, particleMass[Pion]);
-                        vector_Track_negative[j]->getLorentzVector(negative_track2, particleMass[Kaon]);
-                        mass = (negative_track+negative_track2).M();
-                        eta = (negative_track+negative_track2).Eta();
-                        pT = (negative_track+negative_track2).Pt();
-                        correction = correction_coefficient(-2, Pion, Kaon, vector_Track_negative[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
-                        insideprocessing.Fill("MpiKChi2BcgSameSign", mass, correction);
-                        insideprocessing.Fill("MpiKChi2BcgSameSignClose", mass, correction);
-                        insideprocessing.Fill("MpiKChi2BcgSameSigneta", mass, eta, correction);
-                        insideprocessing.Fill("MpiKChi2BcgSameSignpT", mass, pT, correction);
-                    }
-                    if(chi2Map["p_pi"]<9){
-                        vector_Track_negative[i]->getLorentzVector(negative_track, particleMass[Proton]);
-                        vector_Track_negative[j]->getLorentzVector(negative_track2, particleMass[Pion]);
-                        mass = (negative_track+negative_track2).M();
-                        eta = (negative_track+negative_track2).Eta();
-                        pT = (negative_track+negative_track2).Pt();
-                        correction = correction_coefficient(-2, Proton, Pion, vector_Track_negative[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
-                        insideprocessing.Fill("MppiChi2BcgSameSign", mass, correction);
-                        insideprocessing.Fill("MppiChi2BcgSameSigneta", mass, eta, correction);
-                        insideprocessing.Fill("MppiChi2BcgSameSignpT", mass, pT, correction);
-                    }
-                    if(chi2Map["pi_p"]<9){
-                        vector_Track_negative[i]->getLorentzVector(negative_track, particleMass[Pion]);
-                        vector_Track_negative[j]->getLorentzVector(negative_track2, particleMass[Proton]);
-                        mass = (negative_track+negative_track2).M();
-                        eta = (negative_track+negative_track2).Eta();
-                        pT = (negative_track+negative_track2).Pt();
-                        correction = correction_coefficient(-2, Pion, Proton, vector_Track_negative[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
-                        insideprocessing.Fill("MpipChi2BcgSameSign", mass, correction);
-                        insideprocessing.Fill("MpipChi2BcgSameSigneta", mass, eta, correction);
-                        insideprocessing.Fill("MpipChi2BcgSameSignpT", mass, pT, correction);
-                    }
-                    if(chi2Map["K_K"]<9){
-                        vector_Track_negative[i]->getLorentzVector(negative_track, particleMass[Kaon]);
-                        vector_Track_negative[j]->getLorentzVector(negative_track2, particleMass[Kaon]);
-                        mass = (negative_track+negative_track2).M();
-                        eta = (negative_track+negative_track2).Eta();
-                        pT = (negative_track+negative_track2).Pt();
-                        correction = correction_coefficient(-2, Kaon, Kaon, vector_Track_negative[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
-                        insideprocessing.Fill("MKKChi2BcgSameSign", mass, correction);
-                        insideprocessing.Fill("MKKChi2BcgSameSignClose", mass, correction);
-                        insideprocessing.Fill("MKKChi2BcgSameSigneta", mass, eta, correction);
-                        insideprocessing.Fill("MKKChi2BcgSameSignpT", mass, pT, correction);
-                    }
-                    if(chi2Map["pi_pi"]<9){
-                        vector_Track_negative[i]->getLorentzVector(negative_track, particleMass[Pion]);
-                        vector_Track_negative[j]->getLorentzVector(negative_track2, particleMass[Pion]);
-                        mass = (negative_track+negative_track2).M();
-                        eta = (negative_track+negative_track2).Eta();
-                        pT = (negative_track+negative_track2).Pt();
-                        correction = correction_coefficient(-2, Pion, Pion, vector_Track_negative[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
-                        insideprocessing.Fill("MpipiChi2BcgSameSign", mass, correction);
-                        insideprocessing.Fill("MpipiChi2BcgSameSigneta", mass, eta, correction);
-                        insideprocessing.Fill("MpipiChi2BcgSameSignpT", mass, pT, correction);
-                    }
-                    if(chi2Map["p_p"]<9){
-                        vector_Track_negative[i]->getLorentzVector(negative_track, particleMass[Proton]);
-                        vector_Track_negative[j]->getLorentzVector(negative_track2, particleMass[Proton]);
-                        mass = (negative_track+negative_track2).M();
-                        eta = (negative_track+negative_track2).Eta();
-                        pT = (negative_track+negative_track2).Pt();
-                        correction = correction_coefficient(-2, Proton, Proton, vector_Track_negative[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
-                        insideprocessing.Fill("MppChi2BcgSameSign", mass, correction);
-                        insideprocessing.Fill("MppChi2BcgSameSigneta", mass, eta, correction);
-                        insideprocessing.Fill("MppChi2BcgSameSignpT", mass, pT, correction);
-                    }
+                    //end of innermost vector pair loop
                 }
             }
 
@@ -898,108 +748,35 @@ int main(int argc, char** argv){
                         }
                     }
 
-                    //mass tests on different pairs
-                    if(chi2Map["K_pi"]<9){
-                        vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Kaon]);
-                        vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
-                        //track rotation (rotating only the negative one)
-                        negative_track.RotateZ(TMath::Pi());
-                        //the rest as usual
-                        mass = (positive_track+negative_track).M();
-                        eta = (positive_track+negative_track).Eta();
-                        pT = (positive_track+negative_track).Pt();
-                        correction = correction_coefficient(0, Kaon, Pion, vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
-                        insideprocessing.Fill("MKpiChi2BcgTrackRotation", mass, correction);
-                        insideprocessing.Fill("MKpiChi2BcgTrackRotationClose", mass, correction);
-                        insideprocessing.Fill("MKpiChi2BcgTrackRotationeta", mass, eta, correction);
-                        insideprocessing.Fill("MKpiChi2BcgTrackRotationpT", mass, pT, correction);
+                    for(size_t pair_number = 0; pair_number<pairTabWithUnderscores.size(); pair_number++){
+                        if(chi2Map[pairTabWithUnderscores[pair_number]]<9){
+                            //getting all the indentificators out
+                            std::pair<PARTICLES, PARTICLES> pairPID = getPairPID(pairTabWithUnderscores[pair_number]);
+                            std::string temp_pair = pairTab[pair_number];
+
+                            //calculating physics (general)
+                            vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[pairPID.first]);
+                            vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[pairPID.second]);
+                            //track rotation (rotating only the negative one)
+                            negative_track.RotateZ(TMath::Pi());
+                            //the rest as usual
+                            mass = (positive_track+negative_track).M();
+                            eta = (positive_track+negative_track).Eta();
+                            pT = (positive_track+negative_track).Pt();
+                            correction = correction_coefficient(0, pairPID.first, pairPID.second, vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgTrackRotation").c_str(), mass, correction);
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgTrackRotationeta").c_str(), mass, eta, correction);
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgTrackRotationpT").c_str(), mass, pT, correction);
+
+                            //calculating physics (specific)
+                            if(temp_pair=="Kpi"||temp_pair=="piK"||temp_pair=="KK"){
+                                insideprocessing.Fill(("M"+temp_pair+"Chi2BcgTrackRotationClose").c_str(), mass, correction);
+                            }
+                            //end of chi2 test
+                        }
+                        //end of pair loop
                     }
-                    if(chi2Map["pi_K"]<9){
-                        vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
-                        vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Kaon]);
-                        //track rotation (rotating only the negative one)
-                        negative_track.RotateZ(TMath::Pi());
-                        //the rest as usual
-                        mass = (positive_track+negative_track).M();
-                        eta = (positive_track+negative_track).Eta();
-                        pT = (positive_track+negative_track).Pt();
-                        correction = correction_coefficient(0, Pion, Kaon, vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
-                        insideprocessing.Fill("MpiKChi2BcgTrackRotation", mass, correction);
-                        insideprocessing.Fill("MpiKChi2BcgTrackRotationClose", mass, correction);
-                        insideprocessing.Fill("MpiKChi2BcgTrackRotationeta", mass, eta, correction);
-                        insideprocessing.Fill("MpiKChi2BcgTrackRotationpT", mass, pT, correction);
-                    }
-                    if(chi2Map["p_pi"]<9){
-                        vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Proton]);
-                        vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
-                        //track rotation (rotating only the negative one)
-                        negative_track.RotateZ(TMath::Pi());
-                        //the rest as usual
-                        mass = (positive_track+negative_track).M();
-                        eta = (positive_track+negative_track).Eta();
-                        pT = (positive_track+negative_track).Pt();
-                        correction = correction_coefficient(0, Proton, Pion, vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
-                        insideprocessing.Fill("MppiChi2BcgTrackRotation", mass, correction);
-                        insideprocessing.Fill("MppiChi2BcgTrackRotationeta", mass, eta, correction);
-                        insideprocessing.Fill("MppiChi2BcgTrackRotationpT", mass, pT, correction);
-                    }
-                    if(chi2Map["pi_p"]<9){
-                        vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
-                        vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Proton]);
-                        //track rotation (rotating only the negative one)
-                        negative_track.RotateZ(TMath::Pi());
-                        //the rest as usual
-                        mass = (positive_track+negative_track).M();
-                        eta = (positive_track+negative_track).Eta();
-                        pT = (positive_track+negative_track).Pt();
-                        correction = correction_coefficient(0, Pion, Proton, vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
-                        insideprocessing.Fill("MpipChi2BcgTrackRotation", mass, correction);
-                        insideprocessing.Fill("MpipChi2BcgTrackRotationeta", mass, eta, correction);
-                        insideprocessing.Fill("MpipChi2BcgTrackRotationpT", mass, pT, correction);
-                    }
-                    if(chi2Map["K_K"]<9){
-                        vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Kaon]);
-                        vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Kaon]);
-                        //track rotation (rotating only the negative one)
-                        negative_track.RotateZ(TMath::Pi());
-                        //the rest as usual
-                        mass = (positive_track+negative_track).M();
-                        eta = (positive_track+negative_track).Eta();
-                        pT = (positive_track+negative_track).Pt();
-                        correction = correction_coefficient(0, Kaon, Kaon, vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
-                        insideprocessing.Fill("MKKChi2BcgTrackRotation", mass, correction);
-                        insideprocessing.Fill("MKKChi2BcgTrackRotationClose", mass, correction);
-                        insideprocessing.Fill("MKKChi2BcgTrackRotationeta", mass, eta, correction);
-                        insideprocessing.Fill("MKKChi2BcgTrackRotationpT", mass, pT, correction);
-                    }
-                    if(chi2Map["pi_pi"]<9){
-                        vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
-                        vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
-                        //track rotation (rotating only the negative one)
-                        negative_track.RotateZ(TMath::Pi());
-                        //the rest as usual
-                        mass = (positive_track+negative_track).M();
-                        eta = (positive_track+negative_track).Eta();
-                        pT = (positive_track+negative_track).Pt();
-                        correction = correction_coefficient(0, Pion, Pion, vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
-                        insideprocessing.Fill("MpipiChi2BcgTrackRotation", mass, correction);
-                        insideprocessing.Fill("MpipiChi2BcgTrackRotationeta", mass, eta, correction);
-                        insideprocessing.Fill("MpipiChi2BcgTrackRotationpT", mass, pT, correction);
-                    }
-                    if(chi2Map["p_p"]<9){
-                        vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Proton]);
-                        vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Proton]);
-                        //track rotation (rotating only the negative one)
-                        negative_track.RotateZ(TMath::Pi());
-                        //the rest as usual
-                        mass = (positive_track+negative_track).M();
-                        eta = (positive_track+negative_track).Eta();
-                        pT = (positive_track+negative_track).Pt();
-                        correction = correction_coefficient(0, Proton, Proton, vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
-                        insideprocessing.Fill("MppChi2BcgTrackRotation", mass, correction);
-                        insideprocessing.Fill("MppChi2BcgTrackRotationeta", mass, eta, correction);
-                        insideprocessing.Fill("MppChi2BcgTrackRotationpT", mass, pT, correction);
-                    }
+                    //end of innermost vector pair loop
                 }
             }
 
@@ -1031,108 +808,36 @@ int main(int argc, char** argv){
                         }
                     }
 
-                    //mass tests on different pairs
-                    if(chi2Map["K_pi"]<9){
-                        vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Kaon]);
-                        vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
-                        //track rotation (rotating only the negative one)
-                        negative_track.RotateZ(random_generator.Uniform(2*TMath::Pi()));
-                        //the rest as usual
-                        mass = (positive_track+negative_track).M();
-                        eta = (positive_track+negative_track).Eta();
-                        pT = (positive_track+negative_track).Pt();
-                        correction = correction_coefficient(0, Kaon, Pion, vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
-                        insideprocessing.Fill("MKpiChi2BcgRandomTrackRotation", mass, correction);
-                        insideprocessing.Fill("MKpiChi2BcgRandomTrackRotationClose", mass, correction);
-                        insideprocessing.Fill("MKpiChi2BcgRandomTrackRotationeta", mass, eta, correction);
-                        insideprocessing.Fill("MKpiChi2BcgRandomTrackRotationpT", mass, pT, correction);
+
+                    for(size_t pair_number = 0; pair_number<pairTabWithUnderscores.size(); pair_number++){
+                        if(chi2Map[pairTabWithUnderscores[pair_number]]<9){
+                            //getting all the indentificators out
+                            std::pair<PARTICLES, PARTICLES> pairPID = getPairPID(pairTabWithUnderscores[pair_number]);
+                            std::string temp_pair = pairTab[pair_number];
+
+                            //calculating physics (general)
+                            vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[pairPID.first]);
+                            vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[pairPID.second]);
+                            //track rotation (rotating only the negative one)
+                            negative_track.RotateZ(random_generator.Uniform(2*TMath::Pi()));
+                            //the rest as usual
+                            mass = (positive_track+negative_track).M();
+                            eta = (positive_track+negative_track).Eta();
+                            pT = (positive_track+negative_track).Pt();
+                            correction = correction_coefficient(0, pairPID.first, pairPID.second, vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgRandomTrackRotation").c_str(), mass, correction);
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgRandomTrackRotationeta").c_str(), mass, eta, correction);
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgRandomTrackRotationpT").c_str(), mass, pT, correction);
+
+                            //calculating physics (specific)
+                            if(temp_pair=="Kpi"||temp_pair=="piK"||temp_pair=="KK"){
+                                insideprocessing.Fill(("M"+temp_pair+"Chi2BcgRandomTrackRotationClose").c_str(), mass, correction);
+                            }
+                            //end of chi2 test
+                        }
+                        //end of pair loop
                     }
-                    if(chi2Map["pi_K"]<9){
-                        vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
-                        vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Kaon]);
-                        //track rotation (rotating only the negative one)
-                        negative_track.RotateZ(random_generator.Uniform(2*TMath::Pi()));
-                        //the rest as usual
-                        mass = (positive_track+negative_track).M();
-                        eta = (positive_track+negative_track).Eta();
-                        pT = (positive_track+negative_track).Pt();
-                        correction = correction_coefficient(0, Pion, Kaon, vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
-                        insideprocessing.Fill("MpiKChi2BcgRandomTrackRotation", mass, correction);
-                        insideprocessing.Fill("MpiKChi2BcgRandomTrackRotationClose", mass, correction);
-                        insideprocessing.Fill("MpiKChi2BcgRandomTrackRotationeta", mass, eta, correction);
-                        insideprocessing.Fill("MpiKChi2BcgRandomTrackRotationpT", mass, pT, correction);
-                    }
-                    if(chi2Map["p_pi"]<9){
-                        vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Proton]);
-                        vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
-                        //track rotation (rotating only the negative one)
-                        negative_track.RotateZ(random_generator.Uniform(2*TMath::Pi()));
-                        //the rest as usual
-                        mass = (positive_track+negative_track).M();
-                        eta = (positive_track+negative_track).Eta();
-                        pT = (positive_track+negative_track).Pt();
-                        correction = correction_coefficient(0, Proton, Pion, vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
-                        insideprocessing.Fill("MppiChi2BcgRandomTrackRotation", mass, correction);
-                        insideprocessing.Fill("MppiChi2BcgRandomTrackRotationeta", mass, eta, correction);
-                        insideprocessing.Fill("MppiChi2BcgRandomTrackRotationpT", mass, pT, correction);
-                    }
-                    if(chi2Map["pi_p"]<9){
-                        vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
-                        vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Proton]);
-                        //track rotation (rotating only the negative one)
-                        negative_track.RotateZ(random_generator.Uniform(2*TMath::Pi()));
-                        //the rest as usual
-                        mass = (positive_track+negative_track).M();
-                        eta = (positive_track+negative_track).Eta();
-                        pT = (positive_track+negative_track).Pt();
-                        correction = correction_coefficient(0, Pion, Proton, vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
-                        insideprocessing.Fill("MpipChi2BcgRandomTrackRotation", mass, correction);
-                        insideprocessing.Fill("MpipChi2BcgRandomTrackRotationeta", mass, eta, correction);
-                        insideprocessing.Fill("MpipChi2BcgRandomTrackRotationpT", mass, pT, correction);
-                    }
-                    if(chi2Map["K_K"]<9){
-                        vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Kaon]);
-                        vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Kaon]);
-                        //track rotation (rotating only the negative one)
-                        negative_track.RotateZ(random_generator.Uniform(2*TMath::Pi()));
-                        //the rest as usual
-                        mass = (positive_track+negative_track).M();
-                        eta = (positive_track+negative_track).Eta();
-                        pT = (positive_track+negative_track).Pt();
-                        correction = correction_coefficient(0, Kaon, Kaon, vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
-                        insideprocessing.Fill("MKKChi2BcgRandomTrackRotation", mass, correction);
-                        insideprocessing.Fill("MKKChi2BcgRandomTrackRotationClose", mass, correction);
-                        insideprocessing.Fill("MKKChi2BcgRandomTrackRotationeta", mass, eta, correction);
-                        insideprocessing.Fill("MKKChi2BcgRandomTrackRotationpT", mass, pT, correction);
-                    }
-                    if(chi2Map["pi_pi"]<9){
-                        vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
-                        vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
-                        //track rotation (rotating only the negative one)
-                        negative_track.RotateZ(random_generator.Uniform(2*TMath::Pi()));
-                        //the rest as usual
-                        mass = (positive_track+negative_track).M();
-                        eta = (positive_track+negative_track).Eta();
-                        pT = (positive_track+negative_track).Pt();
-                        correction = correction_coefficient(0, Pion, Pion, vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
-                        insideprocessing.Fill("MpipiChi2BcgRandomTrackRotation", mass, correction);
-                        insideprocessing.Fill("MpipiChi2BcgRandomTrackRotationeta", mass, eta, correction);
-                        insideprocessing.Fill("MpipiChi2BcgRandomTrackRotationpT", mass, pT, correction);
-                    }
-                    if(chi2Map["p_p"]<9){
-                        vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Proton]);
-                        vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Proton]);
-                        //track rotation (rotating only the negative one)
-                        negative_track.RotateZ(random_generator.Uniform(2*TMath::Pi()));
-                        //the rest as usual
-                        mass = (positive_track+negative_track).M();
-                        eta = (positive_track+negative_track).Eta();
-                        pT = (positive_track+negative_track).Pt();
-                        correction = correction_coefficient(0, Proton, Proton, vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
-                        insideprocessing.Fill("MppChi2BcgRandomTrackRotation", mass, correction);
-                        insideprocessing.Fill("MppChi2BcgRandomTrackRotationeta", mass, eta, correction);
-                        insideprocessing.Fill("MppChi2BcgRandomTrackRotationpT", mass, pT, correction);
-                    }
+                    //end of innermost vector pair loop
                 }
             }
 
@@ -1348,7 +1053,10 @@ int main(int argc, char** argv){
 
             //useful variables
             double pt, eta, phi;
+
+            //################################################################################
             //matching this event (on the back, "last" one, n-1) with previous ones (0 to n-2)
+            //################################################################################
             for(size_t evt = 0; evt<min(total_events_in_queue, (int)queue_of_previous_vector_Tracks_Kpi_positive.size())-1; evt++){
                 //checking the difference in vertex position
                 TVector3 difference = queue_of_previous_PV_positions.back()-queue_of_previous_PV_positions[evt];
@@ -1376,8 +1084,7 @@ int main(int argc, char** argv){
                 // }
 
 
-                //MIXED-EVENT DIFFERENT-SIGN
-                //############################################################################
+                //################### MIXED-EVENT DIFFERENT-SIGN ##################
                 //this positive, past negative
                 //Kpi
                 for(long unsigned int i = 0; i<queue_of_previous_vector_Tracks_Kpi_positive.back().size(); i++){
@@ -1481,8 +1188,7 @@ int main(int argc, char** argv){
                     }
                 }
 
-                //MIXED-EVENT DIFFERENT-SIGN
-                //############################################################################
+                //################### MIXED-EVENT DIFFERENT-SIGN ##################
                 //this negative, past positive
                 //Kpi
                 for(long unsigned int i = 0; i<queue_of_previous_vector_Tracks_Kpi_positive[evt].size(); i++){
@@ -2073,4 +1779,30 @@ StEfficiencyCorrector3D* getInitialisedEfficiencyCorrector(std::string folder, C
     // delete correction_file;
 
     return efficiency_corrector;
+}
+
+std::pair<PARTICLES, PARTICLES> getPairPID(std::string pair_with_underscore){
+    int underscore_position = pair_with_underscore.find("_");
+    std::string firstPID = pair_with_underscore.substr(0, underscore_position);
+    std::string secondPID = pair_with_underscore.substr(underscore_position+2, pair_with_underscore.size()-1-underscore_position);
+    std::pair<PARTICLES, PARTICLES> output;
+    if(firstPID=="pi"){
+        output.first = Pion;
+    } else if(firstPID=="K"){
+        output.first = Kaon;
+    } else if(firstPID=="p"){
+        output.first = Proton;
+    } else{
+        output.first = nParticles;
+    }
+    if(secondPID=="pi"){
+        output.second = Pion;
+    } else if(secondPID=="K"){
+        output.second = Kaon;
+    } else if(secondPID=="p"){
+        output.second = Proton;
+    } else{
+        output.second = nParticles;
+    }
+    return output;
 }
