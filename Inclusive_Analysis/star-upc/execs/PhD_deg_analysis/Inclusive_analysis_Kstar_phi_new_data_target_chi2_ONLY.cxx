@@ -104,6 +104,7 @@ int main(int argc, char** argv){
     total_events_in_queue++;
 
     //setting up efficiency correction
+    double min_efficiency = 1e-4;
     StEfficiencyCorrector3D* totalEfficiencyCorrector[nCharge][nParticles];
     bool loadedCorrectorCorrectly = true;
     for(size_t i = 0; i<nCharge; i++){
@@ -118,6 +119,10 @@ int main(int argc, char** argv){
             break;
     }
     printf("Corrections initialised %s\n", loadedCorrectorCorrectly ? "successfully!" : "unsuccessfully! Falling back to default weight of 1.");
+    //efficiency histograms
+    TH1D efficiency1("efficiency1", "Particle reconstruction efficiency (0.0-1.0);efficiency;particles", 100, 0., 1.);
+    TH1D efficiency2("efficiency2", "Particle reconstruction efficiency (10^{-2}-10^{-4});efficiency;particles", 100, 1e-2, 1e-4);
+    TH1D efficiency3("efficiency3", "Particle reconstruction efficiency (10^{-4}-10^{-6});efficiency;particles", 100, 1e-4, 1e-6);
     //a nice wrapper
     auto correction_coefficient = [&](int total_pair_charge, PARTICLES positive_id, PARTICLES negative_id, StUPCTrack* positive_track, StUPCTrack* negative_track, double Vz_positive, double Vz_negative){
         //fallback if something broke
@@ -184,6 +189,12 @@ int main(int argc, char** argv){
             break;
         }
 
+        efficiency1.Fill(efficiency);
+        efficiency2.Fill(efficiency);
+        efficiency3.Fill(efficiency);
+
+        if(efficiency<min_efficiency)
+            return 1./min_efficiency;
         return 1./efficiency;
     };
 
@@ -1139,6 +1150,10 @@ int main(int argc, char** argv){
     cout<<"Created output file "<<outfileName<<endl;
     TFile* outputFileHist = TFile::Open(outfileName.c_str(), "recreate");
     //saving multicore histgrams and a special one
+    outputFileHist->cd();
+    efficiency1.Write();
+    efficiency2.Write();
+    efficiency3.Write();
     outsideprocessing.SaveToFile(outputFileHist);
 
     outputFileHist->Close();
