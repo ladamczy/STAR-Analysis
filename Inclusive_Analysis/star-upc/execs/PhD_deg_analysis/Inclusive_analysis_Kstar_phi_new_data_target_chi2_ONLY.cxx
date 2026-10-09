@@ -46,6 +46,7 @@ enum CHARGE{ positive = 0, negative = 1, nCharge = 2 };
 TFile* getNewestFile(std::string folder, std::string filename);
 StEfficiencyCorrector3D* getInitialisedEfficiencyCorrector(std::string folder, CHARGE charge, PARTICLES particle);
 std::pair<PARTICLES, PARTICLES> getPairPID(std::string pair_with_underscore);
+std::string reversePairAndRemoveUnderscore(std::string pair_with_underscore);
 
 int main(int argc, char** argv){
 
@@ -98,7 +99,7 @@ int main(int argc, char** argv){
     //summary
     printf("Program is running on %d threads\n", nthreads);
     printf("Previous events to combine for mixed background: %d\n", total_events_in_queue);
-    printf("Efficiency corrections: %s\n", efficiency_folder.length()!=0 ? efficiency_folder.c_str() : "Not used");
+    printf("Efficiency corrections folder: %s\n", efficiency_folder.length()!=0 ? efficiency_folder.c_str() : "Not used");
     //because number of events includes the current one, we need to add 1
     total_events_in_queue++;
 
@@ -404,20 +405,13 @@ int main(int argc, char** argv){
         TRandom3 random_generator;
 
         //queues for vectors of tracks from previous events assigned to particular pairs
-        std::deque<std::vector<StUPCTrack*>> queue_of_previous_vector_Tracks_Kpi_positive;
-        std::deque<std::vector<StUPCTrack*>> queue_of_previous_vector_Tracks_piK_positive;
-        std::deque<std::vector<StUPCTrack*>> queue_of_previous_vector_Tracks_ppi_positive;
-        std::deque<std::vector<StUPCTrack*>> queue_of_previous_vector_Tracks_pip_positive;
-        std::deque<std::vector<StUPCTrack*>> queue_of_previous_vector_Tracks_KK_positive;
-        std::deque<std::vector<StUPCTrack*>> queue_of_previous_vector_Tracks_pipi_positive;
-        std::deque<std::vector<StUPCTrack*>> queue_of_previous_vector_Tracks_pp_positive;
-        std::deque<std::vector<StUPCTrack*>> queue_of_previous_vector_Tracks_Kpi_negative;
-        std::deque<std::vector<StUPCTrack*>> queue_of_previous_vector_Tracks_piK_negative;
-        std::deque<std::vector<StUPCTrack*>> queue_of_previous_vector_Tracks_ppi_negative;
-        std::deque<std::vector<StUPCTrack*>> queue_of_previous_vector_Tracks_pip_negative;
-        std::deque<std::vector<StUPCTrack*>> queue_of_previous_vector_Tracks_KK_negative;
-        std::deque<std::vector<StUPCTrack*>> queue_of_previous_vector_Tracks_pipi_negative;
-        std::deque<std::vector<StUPCTrack*>> queue_of_previous_vector_Tracks_pp_negative;
+        std::map<std::string, std::deque<std::vector<StUPCTrack*>>> map_of_queue_of_previous_vector_Tracks_positive;
+        std::map<std::string, std::deque<std::vector<StUPCTrack*>>> map_of_queue_of_previous_vector_Tracks_negative;
+        for(auto&& temp_pair_no_underscores:pairTab){
+            map_of_queue_of_previous_vector_Tracks_positive[temp_pair_no_underscores];
+            map_of_queue_of_previous_vector_Tracks_negative[temp_pair_no_underscores];
+        }
+
         //positions of primary vertex from previous events
         std::deque<TVector3> queue_of_previous_PV_positions;
         //total central mass
@@ -561,7 +555,7 @@ int main(int argc, char** argv){
                     for(size_t pair_number = 0; pair_number<pairTabWithUnderscores.size(); pair_number++){
                         if(chi2Map[pairTabWithUnderscores[pair_number]]<9){
                             //getting all the indentificators out
-                            std::pair<PARTICLES, PARTICLES> pairPID = getPairPID(pairTabWithUnderscores[pair_number]);
+                            std::pair<PARTICLES, PARTICLES> pairPID = pairTabPID[pair_number];
                             std::string temp_pair = pairTab[pair_number];
 
                             //calculating physics (general)
@@ -640,7 +634,7 @@ int main(int argc, char** argv){
                     for(size_t pair_number = 0; pair_number<pairTabWithUnderscores.size(); pair_number++){
                         if(chi2Map[pairTabWithUnderscores[pair_number]]<9){
                             //getting all the indentificators out
-                            std::pair<PARTICLES, PARTICLES> pairPID = getPairPID(pairTabWithUnderscores[pair_number]);
+                            std::pair<PARTICLES, PARTICLES> pairPID = pairTabPID[pair_number];
                             std::string temp_pair = pairTab[pair_number];
 
                             //calculating physics (general)
@@ -694,7 +688,7 @@ int main(int argc, char** argv){
                     for(size_t pair_number = 0; pair_number<pairTabWithUnderscores.size(); pair_number++){
                         if(chi2Map[pairTabWithUnderscores[pair_number]]<9){
                             //getting all the indentificators out
-                            std::pair<PARTICLES, PARTICLES> pairPID = getPairPID(pairTabWithUnderscores[pair_number]);
+                            std::pair<PARTICLES, PARTICLES> pairPID = pairTabPID[pair_number];
                             std::string temp_pair = pairTab[pair_number];
 
                             //calculating physics (general)
@@ -751,7 +745,7 @@ int main(int argc, char** argv){
                     for(size_t pair_number = 0; pair_number<pairTabWithUnderscores.size(); pair_number++){
                         if(chi2Map[pairTabWithUnderscores[pair_number]]<9){
                             //getting all the indentificators out
-                            std::pair<PARTICLES, PARTICLES> pairPID = getPairPID(pairTabWithUnderscores[pair_number]);
+                            std::pair<PARTICLES, PARTICLES> pairPID = pairTabPID[pair_number];
                             std::string temp_pair = pairTab[pair_number];
 
                             //calculating physics (general)
@@ -812,7 +806,7 @@ int main(int argc, char** argv){
                     for(size_t pair_number = 0; pair_number<pairTabWithUnderscores.size(); pair_number++){
                         if(chi2Map[pairTabWithUnderscores[pair_number]]<9){
                             //getting all the indentificators out
-                            std::pair<PARTICLES, PARTICLES> pairPID = getPairPID(pairTabWithUnderscores[pair_number]);
+                            std::pair<PARTICLES, PARTICLES> pairPID = pairTabPID[pair_number];
                             std::string temp_pair = pairTab[pair_number];
 
                             //calculating physics (general)
@@ -848,20 +842,11 @@ int main(int argc, char** argv){
 
             //picking pairs good for comparing with previous ones (and saving as ones)
             //we load the queue with the copy of the current event
-            queue_of_previous_vector_Tracks_Kpi_positive.emplace_back();
-            queue_of_previous_vector_Tracks_piK_positive.emplace_back();
-            queue_of_previous_vector_Tracks_ppi_positive.emplace_back();
-            queue_of_previous_vector_Tracks_pip_positive.emplace_back();
-            queue_of_previous_vector_Tracks_KK_positive.emplace_back();
-            queue_of_previous_vector_Tracks_pipi_positive.emplace_back();
-            queue_of_previous_vector_Tracks_pp_positive.emplace_back();
-            queue_of_previous_vector_Tracks_Kpi_negative.emplace_back();
-            queue_of_previous_vector_Tracks_piK_negative.emplace_back();
-            queue_of_previous_vector_Tracks_ppi_negative.emplace_back();
-            queue_of_previous_vector_Tracks_pip_negative.emplace_back();
-            queue_of_previous_vector_Tracks_KK_negative.emplace_back();
-            queue_of_previous_vector_Tracks_pipi_negative.emplace_back();
-            queue_of_previous_vector_Tracks_pp_negative.emplace_back();
+            for(auto&& temp_pair_no_underscores:pairTab){
+                map_of_queue_of_previous_vector_Tracks_positive[temp_pair_no_underscores].emplace_back();
+                map_of_queue_of_previous_vector_Tracks_negative[temp_pair_no_underscores].emplace_back();
+            }
+
             for(long unsigned int i = 0; i<vector_Track_positive.size(); i++){
                 for(long unsigned int j = 0; j<vector_Track_negative.size(); j++){
                     isdEdxOk = (vector_Track_positive[i]->getNhitsDEdx()>=15)&&(vector_Track_negative[j]->getNhitsDEdx()>=15);
@@ -883,165 +868,43 @@ int main(int argc, char** argv){
                     //useful variables
                     double pt, eta, phi;
                     //chi2 tests on different pairs
-                    if(chi2Map["K_pi"]<9){
-                        //positive
-                        queue_of_previous_vector_Tracks_Kpi_positive.back().push_back(new StUPCTrack());
-                        vector_Track_positive[i]->getPtEtaPhi(pt, eta, phi);
-                        queue_of_previous_vector_Tracks_Kpi_positive.back().back()->setPtEtaPhi(pt, eta, phi);
-                        queue_of_previous_vector_Tracks_Kpi_positive.back().back()->setNhitsDEdx(vector_Track_positive[i]->getNhitsDEdx());
-                        queue_of_previous_vector_Tracks_Kpi_positive.back().back()->setTofPathLength(vector_Track_positive[i]->getTofPathLength());
-                        queue_of_previous_vector_Tracks_Kpi_positive.back().back()->setTofTime(vector_Track_positive[i]->getTofTime());
-                        for(size_t part = 0; part<nParticlesExtended; part++){
-                            queue_of_previous_vector_Tracks_Kpi_positive.back().back()->setNSigmasTPC(static_cast<StUPCTrack::Part>(part), vector_Track_positive[i]->getNSigmasTPC(static_cast<StUPCTrack::Part>(part)));
+
+
+                    for(size_t pair_number = 0; pair_number<pairTabWithUnderscores.size(); pair_number++){
+                        if(chi2Map[pairTabWithUnderscores[pair_number]]<9){
+                            //getting all the indentificators out
+                            std::string temp_pair = pairTab[pair_number];
+
+                            //positive
+                            map_of_queue_of_previous_vector_Tracks_positive[temp_pair].back().push_back(new StUPCTrack());
+                            vector_Track_positive[i]->getPtEtaPhi(pt, eta, phi);
+                            map_of_queue_of_previous_vector_Tracks_positive[temp_pair].back().back()->setPtEtaPhi(pt, eta, phi);
+                            map_of_queue_of_previous_vector_Tracks_positive[temp_pair].back().back()->setNhitsDEdx(vector_Track_positive[i]->getNhitsDEdx());
+                            map_of_queue_of_previous_vector_Tracks_positive[temp_pair].back().back()->setTofPathLength(vector_Track_positive[i]->getTofPathLength());
+                            map_of_queue_of_previous_vector_Tracks_positive[temp_pair].back().back()->setTofTime(vector_Track_positive[i]->getTofTime());
+                            for(size_t part = 0; part<nParticlesExtended; part++){
+                                map_of_queue_of_previous_vector_Tracks_positive[temp_pair].back().back()->setNSigmasTPC(static_cast<StUPCTrack::Part>(part), vector_Track_positive[i]->getNSigmasTPC(static_cast<StUPCTrack::Part>(part)));
+                            }
+                            //negative
+                            map_of_queue_of_previous_vector_Tracks_negative[temp_pair].back().push_back(new StUPCTrack());
+                            vector_Track_negative[j]->getPtEtaPhi(pt, eta, phi);
+                            map_of_queue_of_previous_vector_Tracks_negative[temp_pair].back().back()->setPtEtaPhi(pt, eta, phi);
+                            map_of_queue_of_previous_vector_Tracks_negative[temp_pair].back().back()->setNhitsDEdx(vector_Track_negative[j]->getNhitsDEdx());
+                            map_of_queue_of_previous_vector_Tracks_negative[temp_pair].back().back()->setTofPathLength(vector_Track_negative[j]->getTofPathLength());
+                            map_of_queue_of_previous_vector_Tracks_negative[temp_pair].back().back()->setTofTime(vector_Track_negative[j]->getTofTime());
+                            for(size_t part = 0; part<nParticlesExtended; part++){
+                                map_of_queue_of_previous_vector_Tracks_negative[temp_pair].back().back()->setNSigmasTPC(static_cast<StUPCTrack::Part>(part), vector_Track_negative[j]->getNSigmasTPC(static_cast<StUPCTrack::Part>(part)));
+                            }
+
+                            //end of filling current event
                         }
-                        //negative
-                        queue_of_previous_vector_Tracks_Kpi_negative.back().push_back(new StUPCTrack());
-                        vector_Track_negative[j]->getPtEtaPhi(pt, eta, phi);
-                        queue_of_previous_vector_Tracks_Kpi_negative.back().back()->setPtEtaPhi(pt, eta, phi);
-                        queue_of_previous_vector_Tracks_Kpi_negative.back().back()->setNhitsDEdx(vector_Track_negative[j]->getNhitsDEdx());
-                        queue_of_previous_vector_Tracks_Kpi_negative.back().back()->setTofPathLength(vector_Track_negative[j]->getTofPathLength());
-                        queue_of_previous_vector_Tracks_Kpi_negative.back().back()->setTofTime(vector_Track_negative[j]->getTofTime());
-                        for(size_t part = 0; part<nParticlesExtended; part++){
-                            queue_of_previous_vector_Tracks_Kpi_negative.back().back()->setNSigmasTPC(static_cast<StUPCTrack::Part>(part), vector_Track_negative[j]->getNSigmasTPC(static_cast<StUPCTrack::Part>(part)));
-                        }
+                        //end of pair loop
                     }
-                    if(chi2Map["pi_K"]<9){
-                        //positive
-                        queue_of_previous_vector_Tracks_piK_positive.back().push_back(new StUPCTrack());
-                        vector_Track_positive[i]->getPtEtaPhi(pt, eta, phi);
-                        queue_of_previous_vector_Tracks_piK_positive.back().back()->setPtEtaPhi(pt, eta, phi);
-                        queue_of_previous_vector_Tracks_piK_positive.back().back()->setNhitsDEdx(vector_Track_positive[i]->getNhitsDEdx());
-                        queue_of_previous_vector_Tracks_piK_positive.back().back()->setTofPathLength(vector_Track_positive[i]->getTofPathLength());
-                        queue_of_previous_vector_Tracks_piK_positive.back().back()->setTofTime(vector_Track_positive[i]->getTofTime());
-                        for(size_t part = 0; part<nParticlesExtended; part++){
-                            queue_of_previous_vector_Tracks_piK_positive.back().back()->setNSigmasTPC(static_cast<StUPCTrack::Part>(part), vector_Track_positive[i]->getNSigmasTPC(static_cast<StUPCTrack::Part>(part)));
-                        }
-                        //negative
-                        queue_of_previous_vector_Tracks_piK_negative.back().push_back(new StUPCTrack());
-                        vector_Track_negative[j]->getPtEtaPhi(pt, eta, phi);
-                        queue_of_previous_vector_Tracks_piK_negative.back().back()->setPtEtaPhi(pt, eta, phi);
-                        queue_of_previous_vector_Tracks_piK_negative.back().back()->setNhitsDEdx(vector_Track_negative[j]->getNhitsDEdx());
-                        queue_of_previous_vector_Tracks_piK_negative.back().back()->setTofPathLength(vector_Track_negative[j]->getTofPathLength());
-                        queue_of_previous_vector_Tracks_piK_negative.back().back()->setTofTime(vector_Track_negative[j]->getTofTime());
-                        for(size_t part = 0; part<nParticlesExtended; part++){
-                            queue_of_previous_vector_Tracks_piK_negative.back().back()->setNSigmasTPC(static_cast<StUPCTrack::Part>(part), vector_Track_negative[j]->getNSigmasTPC(static_cast<StUPCTrack::Part>(part)));
-                        }
-                    }
-                    if(chi2Map["p_pi"]<9){
-                        //positive
-                        queue_of_previous_vector_Tracks_ppi_positive.back().push_back(new StUPCTrack());
-                        vector_Track_positive[i]->getPtEtaPhi(pt, eta, phi);
-                        queue_of_previous_vector_Tracks_ppi_positive.back().back()->setPtEtaPhi(pt, eta, phi);
-                        queue_of_previous_vector_Tracks_ppi_positive.back().back()->setNhitsDEdx(vector_Track_positive[i]->getNhitsDEdx());
-                        queue_of_previous_vector_Tracks_ppi_positive.back().back()->setTofPathLength(vector_Track_positive[i]->getTofPathLength());
-                        queue_of_previous_vector_Tracks_ppi_positive.back().back()->setTofTime(vector_Track_positive[i]->getTofTime());
-                        for(size_t part = 0; part<nParticlesExtended; part++){
-                            queue_of_previous_vector_Tracks_ppi_positive.back().back()->setNSigmasTPC(static_cast<StUPCTrack::Part>(part), vector_Track_positive[i]->getNSigmasTPC(static_cast<StUPCTrack::Part>(part)));
-                        }
-                        //negative
-                        queue_of_previous_vector_Tracks_ppi_negative.back().push_back(new StUPCTrack());
-                        vector_Track_negative[j]->getPtEtaPhi(pt, eta, phi);
-                        queue_of_previous_vector_Tracks_ppi_negative.back().back()->setPtEtaPhi(pt, eta, phi);
-                        queue_of_previous_vector_Tracks_ppi_negative.back().back()->setNhitsDEdx(vector_Track_negative[j]->getNhitsDEdx());
-                        queue_of_previous_vector_Tracks_ppi_negative.back().back()->setTofPathLength(vector_Track_negative[j]->getTofPathLength());
-                        queue_of_previous_vector_Tracks_ppi_negative.back().back()->setTofTime(vector_Track_negative[j]->getTofTime());
-                        for(size_t part = 0; part<nParticlesExtended; part++){
-                            queue_of_previous_vector_Tracks_ppi_negative.back().back()->setNSigmasTPC(static_cast<StUPCTrack::Part>(part), vector_Track_negative[j]->getNSigmasTPC(static_cast<StUPCTrack::Part>(part)));
-                        }
-                    }
-                    if(chi2Map["pi_p"]<9){
-                        //positive
-                        queue_of_previous_vector_Tracks_pip_positive.back().push_back(new StUPCTrack());
-                        vector_Track_positive[i]->getPtEtaPhi(pt, eta, phi);
-                        queue_of_previous_vector_Tracks_pip_positive.back().back()->setPtEtaPhi(pt, eta, phi);
-                        queue_of_previous_vector_Tracks_pip_positive.back().back()->setNhitsDEdx(vector_Track_positive[i]->getNhitsDEdx());
-                        queue_of_previous_vector_Tracks_pip_positive.back().back()->setTofPathLength(vector_Track_positive[i]->getTofPathLength());
-                        queue_of_previous_vector_Tracks_pip_positive.back().back()->setTofTime(vector_Track_positive[i]->getTofTime());
-                        for(size_t part = 0; part<nParticlesExtended; part++){
-                            queue_of_previous_vector_Tracks_pip_positive.back().back()->setNSigmasTPC(static_cast<StUPCTrack::Part>(part), vector_Track_positive[i]->getNSigmasTPC(static_cast<StUPCTrack::Part>(part)));
-                        }
-                        //negative
-                        queue_of_previous_vector_Tracks_pip_negative.back().push_back(new StUPCTrack());
-                        vector_Track_negative[j]->getPtEtaPhi(pt, eta, phi);
-                        queue_of_previous_vector_Tracks_pip_negative.back().back()->setPtEtaPhi(pt, eta, phi);
-                        queue_of_previous_vector_Tracks_pip_negative.back().back()->setNhitsDEdx(vector_Track_negative[j]->getNhitsDEdx());
-                        queue_of_previous_vector_Tracks_pip_negative.back().back()->setTofPathLength(vector_Track_negative[j]->getTofPathLength());
-                        queue_of_previous_vector_Tracks_pip_negative.back().back()->setTofTime(vector_Track_negative[j]->getTofTime());
-                        for(size_t part = 0; part<nParticlesExtended; part++){
-                            queue_of_previous_vector_Tracks_pip_negative.back().back()->setNSigmasTPC(static_cast<StUPCTrack::Part>(part), vector_Track_negative[j]->getNSigmasTPC(static_cast<StUPCTrack::Part>(part)));
-                        }
-                    }
-                    if(chi2Map["K_K"]<9){
-                        //positive
-                        queue_of_previous_vector_Tracks_KK_positive.back().push_back(new StUPCTrack());
-                        vector_Track_positive[i]->getPtEtaPhi(pt, eta, phi);
-                        queue_of_previous_vector_Tracks_KK_positive.back().back()->setPtEtaPhi(pt, eta, phi);
-                        queue_of_previous_vector_Tracks_KK_positive.back().back()->setNhitsDEdx(vector_Track_positive[i]->getNhitsDEdx());
-                        queue_of_previous_vector_Tracks_KK_positive.back().back()->setTofPathLength(vector_Track_positive[i]->getTofPathLength());
-                        queue_of_previous_vector_Tracks_KK_positive.back().back()->setTofTime(vector_Track_positive[i]->getTofTime());
-                        for(size_t part = 0; part<nParticlesExtended; part++){
-                            queue_of_previous_vector_Tracks_KK_positive.back().back()->setNSigmasTPC(static_cast<StUPCTrack::Part>(part), vector_Track_positive[i]->getNSigmasTPC(static_cast<StUPCTrack::Part>(part)));
-                        }
-                        //negative
-                        queue_of_previous_vector_Tracks_KK_negative.back().push_back(new StUPCTrack());
-                        vector_Track_negative[j]->getPtEtaPhi(pt, eta, phi);
-                        queue_of_previous_vector_Tracks_KK_negative.back().back()->setPtEtaPhi(pt, eta, phi);
-                        queue_of_previous_vector_Tracks_KK_negative.back().back()->setNhitsDEdx(vector_Track_negative[j]->getNhitsDEdx());
-                        queue_of_previous_vector_Tracks_KK_negative.back().back()->setTofPathLength(vector_Track_negative[j]->getTofPathLength());
-                        queue_of_previous_vector_Tracks_KK_negative.back().back()->setTofTime(vector_Track_negative[j]->getTofTime());
-                        for(size_t part = 0; part<nParticlesExtended; part++){
-                            queue_of_previous_vector_Tracks_KK_negative.back().back()->setNSigmasTPC(static_cast<StUPCTrack::Part>(part), vector_Track_negative[j]->getNSigmasTPC(static_cast<StUPCTrack::Part>(part)));
-                        }
-                    }
-                    if(chi2Map["pi_pi"]<9){
-                        //positive
-                        queue_of_previous_vector_Tracks_pipi_positive.back().push_back(new StUPCTrack());
-                        vector_Track_positive[i]->getPtEtaPhi(pt, eta, phi);
-                        queue_of_previous_vector_Tracks_pipi_positive.back().back()->setPtEtaPhi(pt, eta, phi);
-                        queue_of_previous_vector_Tracks_pipi_positive.back().back()->setNhitsDEdx(vector_Track_positive[i]->getNhitsDEdx());
-                        queue_of_previous_vector_Tracks_pipi_positive.back().back()->setTofPathLength(vector_Track_positive[i]->getTofPathLength());
-                        queue_of_previous_vector_Tracks_pipi_positive.back().back()->setTofTime(vector_Track_positive[i]->getTofTime());
-                        for(size_t part = 0; part<nParticlesExtended; part++){
-                            queue_of_previous_vector_Tracks_pipi_positive.back().back()->setNSigmasTPC(static_cast<StUPCTrack::Part>(part), vector_Track_positive[i]->getNSigmasTPC(static_cast<StUPCTrack::Part>(part)));
-                        }
-                        //negative
-                        queue_of_previous_vector_Tracks_pipi_negative.back().push_back(new StUPCTrack());
-                        vector_Track_negative[j]->getPtEtaPhi(pt, eta, phi);
-                        queue_of_previous_vector_Tracks_pipi_negative.back().back()->setPtEtaPhi(pt, eta, phi);
-                        queue_of_previous_vector_Tracks_pipi_negative.back().back()->setNhitsDEdx(vector_Track_negative[j]->getNhitsDEdx());
-                        queue_of_previous_vector_Tracks_pipi_negative.back().back()->setTofPathLength(vector_Track_negative[j]->getTofPathLength());
-                        queue_of_previous_vector_Tracks_pipi_negative.back().back()->setTofTime(vector_Track_negative[j]->getTofTime());
-                        for(size_t part = 0; part<nParticlesExtended; part++){
-                            queue_of_previous_vector_Tracks_pipi_negative.back().back()->setNSigmasTPC(static_cast<StUPCTrack::Part>(part), vector_Track_negative[j]->getNSigmasTPC(static_cast<StUPCTrack::Part>(part)));
-                        }
-                    }
-                    if(chi2Map["p_p"]<9){
-                        //positive
-                        queue_of_previous_vector_Tracks_pp_positive.back().push_back(new StUPCTrack());
-                        vector_Track_positive[i]->getPtEtaPhi(pt, eta, phi);
-                        queue_of_previous_vector_Tracks_pp_positive.back().back()->setPtEtaPhi(pt, eta, phi);
-                        queue_of_previous_vector_Tracks_pp_positive.back().back()->setNhitsDEdx(vector_Track_positive[i]->getNhitsDEdx());
-                        queue_of_previous_vector_Tracks_pp_positive.back().back()->setTofPathLength(vector_Track_positive[i]->getTofPathLength());
-                        queue_of_previous_vector_Tracks_pp_positive.back().back()->setTofTime(vector_Track_positive[i]->getTofTime());
-                        for(size_t part = 0; part<nParticlesExtended; part++){
-                            queue_of_previous_vector_Tracks_pp_positive.back().back()->setNSigmasTPC(static_cast<StUPCTrack::Part>(part), vector_Track_positive[i]->getNSigmasTPC(static_cast<StUPCTrack::Part>(part)));
-                        }
-                        //negative
-                        queue_of_previous_vector_Tracks_pp_negative.back().push_back(new StUPCTrack());
-                        vector_Track_negative[j]->getPtEtaPhi(pt, eta, phi);
-                        queue_of_previous_vector_Tracks_pp_negative.back().back()->setPtEtaPhi(pt, eta, phi);
-                        queue_of_previous_vector_Tracks_pp_negative.back().back()->setNhitsDEdx(vector_Track_negative[j]->getNhitsDEdx());
-                        queue_of_previous_vector_Tracks_pp_negative.back().back()->setTofPathLength(vector_Track_negative[j]->getTofPathLength());
-                        queue_of_previous_vector_Tracks_pp_negative.back().back()->setTofTime(vector_Track_negative[j]->getTofTime());
-                        for(size_t part = 0; part<nParticlesExtended; part++){
-                            queue_of_previous_vector_Tracks_pp_negative.back().back()->setNSigmasTPC(static_cast<StUPCTrack::Part>(part), vector_Track_negative[j]->getNSigmasTPC(static_cast<StUPCTrack::Part>(part)));
-                        }
-                    }
+                    //end of innermost vector pair loop
                 }
             }
             //noting current position of primary vertex and other values
-            queue_of_previous_PV_positions.emplace_back();
-            queue_of_previous_PV_positions.back().SetXYZ(tempUPCpointer->getVertex(0)->getPosX(), tempUPCpointer->getVertex(0)->getPosY(), tempUPCpointer->getVertex(0)->getPosZ());
+            queue_of_previous_PV_positions.emplace_back(tempUPCpointer->getVertex(0)->getPosX(), tempUPCpointer->getVertex(0)->getPosY(), tempUPCpointer->getVertex(0)->getPosZ());
             queue_of_previous_Mx.emplace_back(tempRPpointer->getTrack(0)->xi(beamMomentum)* tempRPpointer->getTrack(1)->xi(beamMomentum)*510.);
             if(tempRPpointer->getTrack(0)->branch()==WU||tempRPpointer->getTrack(0)->branch()==WD){
                 queue_of_previous_Xi_W.emplace_back(tempRPpointer->getTrack(0)->xi(beamMomentum));
@@ -1053,11 +916,11 @@ int main(int argc, char** argv){
 
             //useful variables
             double pt, eta, phi;
-
             //################################################################################
             //matching this event (on the back, "last" one, n-1) with previous ones (0 to n-2)
             //################################################################################
-            for(size_t evt = 0; evt<min(total_events_in_queue, (int)queue_of_previous_vector_Tracks_Kpi_positive.size())-1; evt++){
+            //(to check it, we check the size of a random pair queue, as all of them have the same length)
+            for(size_t evt = 0; evt<min(total_events_in_queue, (int)map_of_queue_of_previous_vector_Tracks_positive["Kpi"].size())-1; evt++){
                 //checking the difference in vertex position
                 TVector3 difference = queue_of_previous_PV_positions.back()-queue_of_previous_PV_positions[evt];
                 insideprocessing.Fill("PrimaryVertexPositionDifferenceX", difference.X());
@@ -1083,534 +946,174 @@ int main(int argc, char** argv){
                 //     continue;
                 // }
 
-
                 //################### MIXED-EVENT DIFFERENT-SIGN ##################
-                //this positive, past negative
-                //Kpi
-                for(long unsigned int i = 0; i<queue_of_previous_vector_Tracks_Kpi_positive.back().size(); i++){
-                    for(long unsigned int j = 0; j<queue_of_previous_vector_Tracks_Kpi_negative[evt].size(); j++){
-                        queue_of_previous_vector_Tracks_Kpi_positive.back()[i]->getLorentzVector(positive_track, particleMass[Kaon]);
-                        queue_of_previous_vector_Tracks_Kpi_negative[evt][j]->getLorentzVector(negative_track, particleMass[Pion]);
-                        mass = (positive_track+negative_track).M();
-                        eta = (positive_track+negative_track).Eta();
-                        pT = (positive_track+negative_track).Pt();
-                        correction = correction_coefficient(0, Kaon, Pion, queue_of_previous_vector_Tracks_Kpi_positive.back()[i], queue_of_previous_vector_Tracks_Kpi_negative[evt][j], queue_of_previous_PV_positions.back().Z(), queue_of_previous_PV_positions[evt].Z());
-                        insideprocessing.Fill("MKpiChi2BcgMixedEvent", mass, correction);
-                        insideprocessing.Fill("MKpiChi2BcgMixedEventClose", mass, correction);
-                        insideprocessing.Fill("MKpiChi2BcgMixedEventeta", mass, eta, correction);
-                        insideprocessing.Fill("MKpiChi2BcgMixedEventpT", mass, pT, correction);
+
+                for(size_t pair_number = 0; pair_number<pairTabWithUnderscores.size(); pair_number++){
+                    //getting all the indentificators out
+                    std::pair<PARTICLES, PARTICLES> pairPID = pairTabPID[pair_number];
+                    std::string temp_pair = pairTab[pair_number];
+
+                    //LOOPS
+                    //this positive, past negative
+                    for(long unsigned int i = 0; i<map_of_queue_of_previous_vector_Tracks_positive[temp_pair].back().size(); i++){
+                        for(long unsigned int j = 0; j<map_of_queue_of_previous_vector_Tracks_negative[temp_pair][evt].size(); j++){
+                            map_of_queue_of_previous_vector_Tracks_positive[temp_pair].back()[i]->getLorentzVector(positive_track, particleMass[pairPID.first]);
+                            map_of_queue_of_previous_vector_Tracks_negative[temp_pair][evt][j]->getLorentzVector(negative_track, particleMass[pairPID.second]);
+                            mass = (positive_track+negative_track).M();
+                            eta = (positive_track+negative_track).Eta();
+                            pT = (positive_track+negative_track).Pt();
+                            correction = correction_coefficient(0, pairPID.first, pairPID.second, map_of_queue_of_previous_vector_Tracks_positive[temp_pair].back()[i], map_of_queue_of_previous_vector_Tracks_negative[temp_pair][evt][j], queue_of_previous_PV_positions.back().Z(), queue_of_previous_PV_positions[evt].Z());
+                            //filling (general)
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEvent").c_str(), mass, correction);
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventeta").c_str(), mass, eta, correction);
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventpT").c_str(), mass, pT, correction);
+                            //filling (specific)
+                            if(temp_pair=="Kpi"||temp_pair=="piK"||temp_pair=="KK"){
+                                insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventClose").c_str(), mass, correction);
+                            }
+                            //end of pairing
+                        }
                     }
-                }
-                //piK
-                for(long unsigned int i = 0; i<queue_of_previous_vector_Tracks_piK_positive.back().size(); i++){
-                    for(long unsigned int j = 0; j<queue_of_previous_vector_Tracks_piK_negative[evt].size(); j++){
-                        queue_of_previous_vector_Tracks_piK_positive.back()[i]->getLorentzVector(positive_track, particleMass[Pion]);
-                        queue_of_previous_vector_Tracks_piK_negative[evt][j]->getLorentzVector(negative_track, particleMass[Kaon]);
-                        mass = (positive_track+negative_track).M();
-                        eta = (positive_track+negative_track).Eta();
-                        pT = (positive_track+negative_track).Pt();
-                        correction = correction_coefficient(0, Pion, Kaon, queue_of_previous_vector_Tracks_piK_positive.back()[i], queue_of_previous_vector_Tracks_piK_negative[evt][j], queue_of_previous_PV_positions.back().Z(), queue_of_previous_PV_positions[evt].Z());
-                        insideprocessing.Fill("MpiKChi2BcgMixedEvent", mass, correction);
-                        insideprocessing.Fill("MpiKChi2BcgMixedEventClose", mass, correction);
-                        insideprocessing.Fill("MpiKChi2BcgMixedEventeta", mass, eta, correction);
-                        insideprocessing.Fill("MpiKChi2BcgMixedEventpT", mass, pT, correction);
+                    //this negative, past positive
+                    for(long unsigned int i = 0; i<map_of_queue_of_previous_vector_Tracks_positive[temp_pair][evt].size(); i++){
+                        for(long unsigned int j = 0; j<map_of_queue_of_previous_vector_Tracks_negative[temp_pair].back().size(); j++){
+                            map_of_queue_of_previous_vector_Tracks_positive[temp_pair][evt][i]->getLorentzVector(positive_track, particleMass[pairPID.first]);
+                            map_of_queue_of_previous_vector_Tracks_negative[temp_pair].back()[j]->getLorentzVector(negative_track, particleMass[pairPID.second]);
+                            mass = (positive_track+negative_track).M();
+                            eta = (positive_track+negative_track).Eta();
+                            pT = (positive_track+negative_track).Pt();
+                            correction = correction_coefficient(0, pairPID.first, pairPID.second, map_of_queue_of_previous_vector_Tracks_positive[temp_pair][evt][i], map_of_queue_of_previous_vector_Tracks_negative[temp_pair].back()[j], queue_of_previous_PV_positions[evt].Z(), queue_of_previous_PV_positions.back().Z());
+                            //filling (general)
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEvent").c_str(), mass, correction);
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventeta").c_str(), mass, eta, correction);
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventpT").c_str(), mass, pT, correction);
+                            //filling (specific)
+                            if(temp_pair=="Kpi"||temp_pair=="piK"||temp_pair=="KK"){
+                                insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventClose").c_str(), mass, correction);
+                            }
+                            //end of pairing
+                        }
                     }
-                }
-                //ppi
-                for(long unsigned int i = 0; i<queue_of_previous_vector_Tracks_ppi_positive.back().size(); i++){
-                    for(long unsigned int j = 0; j<queue_of_previous_vector_Tracks_ppi_negative[evt].size(); j++){
-                        queue_of_previous_vector_Tracks_ppi_positive.back()[i]->getLorentzVector(positive_track, particleMass[Proton]);
-                        queue_of_previous_vector_Tracks_ppi_negative[evt][j]->getLorentzVector(negative_track, particleMass[Pion]);
-                        mass = (positive_track+negative_track).M();
-                        eta = (positive_track+negative_track).Eta();
-                        pT = (positive_track+negative_track).Pt();
-                        correction = correction_coefficient(0, Proton, Pion, queue_of_previous_vector_Tracks_ppi_positive.back()[i], queue_of_previous_vector_Tracks_ppi_negative[evt][j], queue_of_previous_PV_positions.back().Z(), queue_of_previous_PV_positions[evt].Z());
-                        insideprocessing.Fill("MppiChi2BcgMixedEvent", mass, correction);
-                        insideprocessing.Fill("MppiChi2BcgMixedEventeta", mass, eta, correction);
-                        insideprocessing.Fill("MppiChi2BcgMixedEventpT", mass, pT, correction);
-                    }
-                }
-                //pip
-                for(long unsigned int i = 0; i<queue_of_previous_vector_Tracks_pip_positive.back().size(); i++){
-                    for(long unsigned int j = 0; j<queue_of_previous_vector_Tracks_pip_negative[evt].size(); j++){
-                        queue_of_previous_vector_Tracks_pip_positive.back()[i]->getLorentzVector(positive_track, particleMass[Pion]);
-                        queue_of_previous_vector_Tracks_pip_negative[evt][j]->getLorentzVector(negative_track, particleMass[Proton]);
-                        mass = (positive_track+negative_track).M();
-                        eta = (positive_track+negative_track).Eta();
-                        pT = (positive_track+negative_track).Pt();
-                        correction = correction_coefficient(0, Pion, Proton, queue_of_previous_vector_Tracks_pip_positive.back()[i], queue_of_previous_vector_Tracks_pip_negative[evt][j], queue_of_previous_PV_positions.back().Z(), queue_of_previous_PV_positions[evt].Z());
-                        insideprocessing.Fill("MpipChi2BcgMixedEvent", mass, correction);
-                        insideprocessing.Fill("MpipChi2BcgMixedEventeta", mass, eta, correction);
-                        insideprocessing.Fill("MpipChi2BcgMixedEventpT", mass, pT, correction);
-                    }
-                }
-                //KK
-                for(long unsigned int i = 0; i<queue_of_previous_vector_Tracks_KK_positive.back().size(); i++){
-                    for(long unsigned int j = 0; j<queue_of_previous_vector_Tracks_KK_negative[evt].size(); j++){
-                        queue_of_previous_vector_Tracks_KK_positive.back()[i]->getLorentzVector(positive_track, particleMass[Kaon]);
-                        queue_of_previous_vector_Tracks_KK_negative[evt][j]->getLorentzVector(negative_track, particleMass[Kaon]);
-                        mass = (positive_track+negative_track).M();
-                        eta = (positive_track+negative_track).Eta();
-                        pT = (positive_track+negative_track).Pt();
-                        correction = correction_coefficient(0, Kaon, Kaon, queue_of_previous_vector_Tracks_KK_positive.back()[i], queue_of_previous_vector_Tracks_KK_negative[evt][j], queue_of_previous_PV_positions.back().Z(), queue_of_previous_PV_positions[evt].Z());
-                        insideprocessing.Fill("MKKChi2BcgMixedEvent", mass, correction);
-                        insideprocessing.Fill("MKKChi2BcgMixedEventClose", mass, correction);
-                        insideprocessing.Fill("MKKChi2BcgMixedEventeta", mass, eta, correction);
-                        insideprocessing.Fill("MKKChi2BcgMixedEventpT", mass, pT, correction);
-                    }
-                }
-                //pipi
-                for(long unsigned int i = 0; i<queue_of_previous_vector_Tracks_pipi_positive.back().size(); i++){
-                    for(long unsigned int j = 0; j<queue_of_previous_vector_Tracks_pipi_negative[evt].size(); j++){
-                        queue_of_previous_vector_Tracks_pipi_positive.back()[i]->getLorentzVector(positive_track, particleMass[Pion]);
-                        queue_of_previous_vector_Tracks_pipi_negative[evt][j]->getLorentzVector(negative_track, particleMass[Pion]);
-                        mass = (positive_track+negative_track).M();
-                        eta = (positive_track+negative_track).Eta();
-                        pT = (positive_track+negative_track).Pt();
-                        correction = correction_coefficient(0, Pion, Pion, queue_of_previous_vector_Tracks_pipi_positive.back()[i], queue_of_previous_vector_Tracks_pipi_negative[evt][j], queue_of_previous_PV_positions.back().Z(), queue_of_previous_PV_positions[evt].Z());
-                        insideprocessing.Fill("MpipiChi2BcgMixedEvent", mass, correction);
-                        insideprocessing.Fill("MpipiChi2BcgMixedEventeta", mass, eta, correction);
-                        insideprocessing.Fill("MpipiChi2BcgMixedEventpT", mass, pT, correction);
-                    }
-                }
-                //pp
-                for(long unsigned int i = 0; i<queue_of_previous_vector_Tracks_pp_positive.back().size(); i++){
-                    for(long unsigned int j = 0; j<queue_of_previous_vector_Tracks_pp_negative[evt].size(); j++){
-                        queue_of_previous_vector_Tracks_pp_positive.back()[i]->getLorentzVector(positive_track, particleMass[Proton]);
-                        queue_of_previous_vector_Tracks_pp_negative[evt][j]->getLorentzVector(negative_track, particleMass[Proton]);
-                        mass = (positive_track+negative_track).M();
-                        eta = (positive_track+negative_track).Eta();
-                        pT = (positive_track+negative_track).Pt();
-                        correction = correction_coefficient(0, Proton, Proton, queue_of_previous_vector_Tracks_pp_positive.back()[i], queue_of_previous_vector_Tracks_pp_negative[evt][j], queue_of_previous_PV_positions.back().Z(), queue_of_previous_PV_positions[evt].Z());
-                        insideprocessing.Fill("MppChi2BcgMixedEvent", mass, correction);
-                        insideprocessing.Fill("MppChi2BcgMixedEventeta", mass, eta, correction);
-                        insideprocessing.Fill("MppChi2BcgMixedEventpT", mass, pT, correction);
-                    }
+                    //end of particle loops
                 }
 
-                //################### MIXED-EVENT DIFFERENT-SIGN ##################
-                //this negative, past positive
-                //Kpi
-                for(long unsigned int i = 0; i<queue_of_previous_vector_Tracks_Kpi_positive[evt].size(); i++){
-                    for(long unsigned int j = 0; j<queue_of_previous_vector_Tracks_Kpi_negative.back().size(); j++){
-                        queue_of_previous_vector_Tracks_Kpi_positive[evt][i]->getLorentzVector(positive_track, particleMass[Kaon]);
-                        queue_of_previous_vector_Tracks_Kpi_negative.back()[j]->getLorentzVector(negative_track, particleMass[Pion]);
-                        mass = (positive_track+negative_track).M();
-                        eta = (positive_track+negative_track).Eta();
-                        pT = (positive_track+negative_track).Pt();
-                        correction = correction_coefficient(0, Kaon, Pion, queue_of_previous_vector_Tracks_Kpi_positive[evt][i], queue_of_previous_vector_Tracks_Kpi_negative.back()[j], queue_of_previous_PV_positions[evt].Z(), queue_of_previous_PV_positions.back().Z());
-                        insideprocessing.Fill("MKpiChi2BcgMixedEvent", mass, correction);
-                        insideprocessing.Fill("MKpiChi2BcgMixedEventClose", mass, correction);
-                        insideprocessing.Fill("MKpiChi2BcgMixedEventeta", mass, eta, correction);
-                        insideprocessing.Fill("MKpiChi2BcgMixedEventpT", mass, pT, correction);
-                    }
-                }
-                //piK
-                for(long unsigned int i = 0; i<queue_of_previous_vector_Tracks_piK_positive[evt].size(); i++){
-                    for(long unsigned int j = 0; j<queue_of_previous_vector_Tracks_piK_negative.back().size(); j++){
-                        queue_of_previous_vector_Tracks_piK_positive[evt][i]->getLorentzVector(positive_track, particleMass[Pion]);
-                        queue_of_previous_vector_Tracks_piK_negative.back()[j]->getLorentzVector(negative_track, particleMass[Kaon]);
-                        mass = (positive_track+negative_track).M();
-                        eta = (positive_track+negative_track).Eta();
-                        pT = (positive_track+negative_track).Pt();
-                        correction = correction_coefficient(0, Pion, Kaon, queue_of_previous_vector_Tracks_piK_positive[evt][i], queue_of_previous_vector_Tracks_piK_negative.back()[j], queue_of_previous_PV_positions[evt].Z(), queue_of_previous_PV_positions.back().Z());
-                        insideprocessing.Fill("MpiKChi2BcgMixedEvent", mass, correction);
-                        insideprocessing.Fill("MpiKChi2BcgMixedEventClose", mass, correction);
-                        insideprocessing.Fill("MpiKChi2BcgMixedEventeta", mass, eta, correction);
-                        insideprocessing.Fill("MpiKChi2BcgMixedEventpT", mass, pT, correction);
-                    }
-                }
-                //ppi
-                for(long unsigned int i = 0; i<queue_of_previous_vector_Tracks_ppi_positive[evt].size(); i++){
-                    for(long unsigned int j = 0; j<queue_of_previous_vector_Tracks_ppi_negative.back().size(); j++){
-                        queue_of_previous_vector_Tracks_ppi_positive[evt][i]->getLorentzVector(positive_track, particleMass[Proton]);
-                        queue_of_previous_vector_Tracks_ppi_negative.back()[j]->getLorentzVector(negative_track, particleMass[Pion]);
-                        mass = (positive_track+negative_track).M();
-                        eta = (positive_track+negative_track).Eta();
-                        pT = (positive_track+negative_track).Pt();
-                        correction = correction_coefficient(0, Proton, Pion, queue_of_previous_vector_Tracks_ppi_positive[evt][i], queue_of_previous_vector_Tracks_ppi_negative.back()[j], queue_of_previous_PV_positions[evt].Z(), queue_of_previous_PV_positions.back().Z());
-                        insideprocessing.Fill("MppiChi2BcgMixedEvent", mass, correction);
-                        insideprocessing.Fill("MppiChi2BcgMixedEventeta", mass, eta, correction);
-                        insideprocessing.Fill("MppiChi2BcgMixedEventpT", mass, pT, correction);
-                    }
-                }
-                //pip
-                for(long unsigned int i = 0; i<queue_of_previous_vector_Tracks_pip_positive[evt].size(); i++){
-                    for(long unsigned int j = 0; j<queue_of_previous_vector_Tracks_pip_negative.back().size(); j++){
-                        queue_of_previous_vector_Tracks_pip_positive[evt][i]->getLorentzVector(positive_track, particleMass[Pion]);
-                        queue_of_previous_vector_Tracks_pip_negative.back()[j]->getLorentzVector(negative_track, particleMass[Proton]);
-                        mass = (positive_track+negative_track).M();
-                        eta = (positive_track+negative_track).Eta();
-                        pT = (positive_track+negative_track).Pt();
-                        correction = correction_coefficient(0, Pion, Proton, queue_of_previous_vector_Tracks_pip_positive[evt][i], queue_of_previous_vector_Tracks_pip_negative.back()[j], queue_of_previous_PV_positions[evt].Z(), queue_of_previous_PV_positions.back().Z());
-                        insideprocessing.Fill("MpipChi2BcgMixedEvent", mass, correction);
-                        insideprocessing.Fill("MpipChi2BcgMixedEventeta", mass, eta, correction);
-                        insideprocessing.Fill("MpipChi2BcgMixedEventpT", mass, pT, correction);
-                    }
-                }
-                //KK
-                for(long unsigned int i = 0; i<queue_of_previous_vector_Tracks_KK_positive[evt].size(); i++){
-                    for(long unsigned int j = 0; j<queue_of_previous_vector_Tracks_KK_negative.back().size(); j++){
-                        queue_of_previous_vector_Tracks_KK_positive[evt][i]->getLorentzVector(positive_track, particleMass[Kaon]);
-                        queue_of_previous_vector_Tracks_KK_negative.back()[j]->getLorentzVector(negative_track, particleMass[Kaon]);
-                        mass = (positive_track+negative_track).M();
-                        eta = (positive_track+negative_track).Eta();
-                        pT = (positive_track+negative_track).Pt();
-                        correction = correction_coefficient(0, Kaon, Kaon, queue_of_previous_vector_Tracks_KK_positive[evt][i], queue_of_previous_vector_Tracks_KK_negative.back()[j], queue_of_previous_PV_positions[evt].Z(), queue_of_previous_PV_positions.back().Z());
-                        insideprocessing.Fill("MKKChi2BcgMixedEvent", mass, correction);
-                        insideprocessing.Fill("MKKChi2BcgMixedEventClose", mass, correction);
-                        insideprocessing.Fill("MKKChi2BcgMixedEventeta", mass, eta, correction);
-                        insideprocessing.Fill("MKKChi2BcgMixedEventpT", mass, pT, correction);
-                    }
-                }
-                //pipi
-                for(long unsigned int i = 0; i<queue_of_previous_vector_Tracks_pipi_positive[evt].size(); i++){
-                    for(long unsigned int j = 0; j<queue_of_previous_vector_Tracks_pipi_negative.back().size(); j++){
-                        queue_of_previous_vector_Tracks_pipi_positive[evt][i]->getLorentzVector(positive_track, particleMass[Pion]);
-                        queue_of_previous_vector_Tracks_pipi_negative.back()[j]->getLorentzVector(negative_track, particleMass[Pion]);
-                        mass = (positive_track+negative_track).M();
-                        eta = (positive_track+negative_track).Eta();
-                        pT = (positive_track+negative_track).Pt();
-                        correction = correction_coefficient(0, Pion, Pion, queue_of_previous_vector_Tracks_pipi_positive[evt][i], queue_of_previous_vector_Tracks_pipi_negative.back()[j], queue_of_previous_PV_positions[evt].Z(), queue_of_previous_PV_positions.back().Z());
-                        insideprocessing.Fill("MpipiChi2BcgMixedEvent", mass, correction);
-                        insideprocessing.Fill("MpipiChi2BcgMixedEventeta", mass, eta, correction);
-                        insideprocessing.Fill("MpipiChi2BcgMixedEventpT", mass, pT, correction);
-                    }
-                }
-                //pp
-                for(long unsigned int i = 0; i<queue_of_previous_vector_Tracks_pp_positive[evt].size(); i++){
-                    for(long unsigned int j = 0; j<queue_of_previous_vector_Tracks_pp_negative.back().size(); j++){
-                        queue_of_previous_vector_Tracks_pp_positive[evt][i]->getLorentzVector(positive_track, particleMass[Proton]);
-                        queue_of_previous_vector_Tracks_pp_negative.back()[j]->getLorentzVector(negative_track, particleMass[Proton]);
-                        mass = (positive_track+negative_track).M();
-                        eta = (positive_track+negative_track).Eta();
-                        pT = (positive_track+negative_track).Pt();
-                        correction = correction_coefficient(0, Proton, Proton, queue_of_previous_vector_Tracks_pp_positive[evt][i], queue_of_previous_vector_Tracks_pp_negative.back()[j], queue_of_previous_PV_positions[evt].Z(), queue_of_previous_PV_positions.back().Z());
-                        insideprocessing.Fill("MppChi2BcgMixedEvent", mass, correction);
-                        insideprocessing.Fill("MppChi2BcgMixedEventeta", mass, eta, correction);
-                        insideprocessing.Fill("MppChi2BcgMixedEventpT", mass, pT, correction);
-                    }
-                }
+                //####################### MIXED-EVENT SAME-SIGN ############################
 
-                //MIXED-EVENT SAME-SIGN
-                //THERE ARE NO POSITIVE AND NEGATIVE TRACKS IN ONE 
-                //IT IS JUST A REUSED NAME
-                //############################################################################
-                //both positive
-                //Kpi/piK
-                for(long unsigned int i = 0; i<queue_of_previous_vector_Tracks_Kpi_positive[evt].size(); i++){
-                    for(long unsigned int j = 0; j<queue_of_previous_vector_Tracks_piK_positive.back().size(); j++){
-                        queue_of_previous_vector_Tracks_Kpi_positive[evt][i]->getLorentzVector(positive_track, particleMass[Kaon]);
-                        queue_of_previous_vector_Tracks_piK_positive.back()[j]->getLorentzVector(negative_track, particleMass[Pion]);
-                        mass = (positive_track+negative_track).M();
-                        eta = (positive_track+negative_track).Eta();
-                        pT = (positive_track+negative_track).Pt();
-                        correction = correction_coefficient(2, Kaon, Pion, queue_of_previous_vector_Tracks_Kpi_positive[evt][i], queue_of_previous_vector_Tracks_piK_positive.back()[j], queue_of_previous_PV_positions[evt].Z(), queue_of_previous_PV_positions.back().Z());
-                        //Kpi
-                        insideprocessing.Fill("MKpiChi2BcgMixedEventSameSign", mass, correction);
-                        insideprocessing.Fill("MKpiChi2BcgMixedEventSameSignClose", mass, correction);
-                        insideprocessing.Fill("MKpiChi2BcgMixedEventSameSigneta", mass, eta, correction);
-                        insideprocessing.Fill("MKpiChi2BcgMixedEventSameSignpT", mass, pT, correction);
-                        //piK
-                        insideprocessing.Fill("MpiKChi2BcgMixedEventSameSign", mass, correction);
-                        insideprocessing.Fill("MpiKChi2BcgMixedEventSameSignClose", mass, correction);
-                        insideprocessing.Fill("MpiKChi2BcgMixedEventSameSigneta", mass, eta, correction);
-                        insideprocessing.Fill("MpiKChi2BcgMixedEventSameSignpT", mass, pT, correction);
-                    }
-                }
-                // for(long unsigned int i = 0; i<queue_of_previous_vector_Tracks_Kpi_positive.back().size(); i++){
-                //     for(long unsigned int j = 0; j<queue_of_previous_vector_Tracks_piK_positive[evt].size(); j++){
-                //         queue_of_previous_vector_Tracks_Kpi_positive.back()[i]->getLorentzVector(positive_track, particleMass[Kaon]);
-                //         queue_of_previous_vector_Tracks_piK_positive[evt][j]->getLorentzVector(negative_track, particleMass[Pion]);
-                //         mass = (positive_track+negative_track).M();
-                //         eta = (positive_track+negative_track).Eta();
-                //         pT = (positive_track+negative_track).Pt();
-                //         correction = correction_coefficient(2, Kaon, Pion, queue_of_previous_vector_Tracks_Kpi_positive.back()[i], queue_of_previous_vector_Tracks_piK_positive[evt][j], queue_of_previous_PV_positions.back().Z(), queue_of_previous_PV_positions[evt].Z());
-                //         //Kpi
-                //         insideprocessing.Fill("MKpiChi2BcgMixedEventSameSign", mass, correction);
-                //         insideprocessing.Fill("MKpiChi2BcgMixedEventSameSignClose", mass, correction);
-                //         insideprocessing.Fill("MKpiChi2BcgMixedEventSameSigneta", mass, eta, correction);
-                //         insideprocessing.Fill("MKpiChi2BcgMixedEventSameSignpT", mass, pT, correction);
-                //         //piK
-                //         insideprocessing.Fill("MpiKChi2BcgMixedEventSameSign", mass, correction);
-                //         insideprocessing.Fill("MpiKChi2BcgMixedEventSameSignClose", mass, correction);
-                //         insideprocessing.Fill("MpiKChi2BcgMixedEventSameSigneta", mass, eta, correction);
-                //         insideprocessing.Fill("MpiKChi2BcgMixedEventSameSignpT", mass, pT, correction);
-                //     }
-                // }
-                //ppi/pip
-                for(long unsigned int i = 0; i<queue_of_previous_vector_Tracks_ppi_positive[evt].size(); i++){
-                    for(long unsigned int j = 0; j<queue_of_previous_vector_Tracks_pip_positive.back().size(); j++){
-                        queue_of_previous_vector_Tracks_ppi_positive[evt][i]->getLorentzVector(positive_track, particleMass[Proton]);
-                        queue_of_previous_vector_Tracks_pip_positive.back()[j]->getLorentzVector(negative_track, particleMass[Pion]);
-                        mass = (positive_track+negative_track).M();
-                        eta = (positive_track+negative_track).Eta();
-                        pT = (positive_track+negative_track).Pt();
-                        correction = correction_coefficient(2, Proton, Pion, queue_of_previous_vector_Tracks_ppi_positive[evt][i], queue_of_previous_vector_Tracks_pip_positive.back()[j], queue_of_previous_PV_positions[evt].Z(), queue_of_previous_PV_positions.back().Z());
-                        //ppi
-                        insideprocessing.Fill("MppiChi2BcgMixedEventSameSign", mass, correction);
-                        insideprocessing.Fill("MppiChi2BcgMixedEventSameSigneta", mass, eta, correction);
-                        insideprocessing.Fill("MppiChi2BcgMixedEventSameSignpT", mass, pT, correction);
-                        //pip
-                        insideprocessing.Fill("MpipChi2BcgMixedEventSameSign", mass, correction);
-                        insideprocessing.Fill("MpipChi2BcgMixedEventSameSigneta", mass, eta, correction);
-                        insideprocessing.Fill("MpipChi2BcgMixedEventSameSignpT", mass, pT, correction);
-                    }
-                }
-                // for(long unsigned int i = 0; i<queue_of_previous_vector_Tracks_ppi_positive.back().size(); i++){
-                //     for(long unsigned int j = 0; j<queue_of_previous_vector_Tracks_pip_positive[evt].size(); j++){
-                //         queue_of_previous_vector_Tracks_ppi_positive.back()[i]->getLorentzVector(positive_track, particleMass[Proton]);
-                //         queue_of_previous_vector_Tracks_pip_positive[evt][j]->getLorentzVector(negative_track, particleMass[Pion]);
-                //         mass = (positive_track+negative_track).M();
-                //         eta = (positive_track+negative_track).Eta();
-                //         pT = (positive_track+negative_track).Pt();
-                //         correction = correction_coefficient(2, Proton, Pion, queue_of_previous_vector_Tracks_ppi_positive.back()[i], queue_of_previous_vector_Tracks_pip_positive[evt][j], queue_of_previous_PV_positions.back().Z(), queue_of_previous_PV_positions[evt].Z());
-                //         //ppi
-                //         insideprocessing.Fill("MppiChi2BcgMixedEventSameSign", mass, correction);
-                //         insideprocessing.Fill("MppiChi2BcgMixedEventSameSigneta", mass, eta, correction);
-                //         insideprocessing.Fill("MppiChi2BcgMixedEventSameSignpT", mass, pT, correction);
-                //         //pip
-                //         insideprocessing.Fill("MpipChi2BcgMixedEventSameSign", mass, correction);
-                //         insideprocessing.Fill("MpipChi2BcgMixedEventSameSigneta", mass, eta, correction);
-                //         insideprocessing.Fill("MpipChi2BcgMixedEventSameSignpT", mass, pT, correction);
-                //     }
-                // }
-                //KK
-                for(long unsigned int i = 0; i<queue_of_previous_vector_Tracks_KK_positive[evt].size(); i++){
-                    for(long unsigned int j = 0; j<queue_of_previous_vector_Tracks_KK_positive.back().size(); j++){
-                        queue_of_previous_vector_Tracks_KK_positive[evt][i]->getLorentzVector(positive_track, particleMass[Kaon]);
-                        queue_of_previous_vector_Tracks_KK_positive.back()[j]->getLorentzVector(negative_track, particleMass[Kaon]);
-                        mass = (positive_track+negative_track).M();
-                        eta = (positive_track+negative_track).Eta();
-                        pT = (positive_track+negative_track).Pt();
-                        correction = correction_coefficient(2, Kaon, Kaon, queue_of_previous_vector_Tracks_KK_positive[evt][i], queue_of_previous_vector_Tracks_KK_positive.back()[j], queue_of_previous_PV_positions[evt].Z(), queue_of_previous_PV_positions.back().Z());
-                        insideprocessing.Fill("MKKChi2BcgMixedEventSameSign", mass, correction);
-                        insideprocessing.Fill("MKKChi2BcgMixedEventSameSignClose", mass, correction);
-                        insideprocessing.Fill("MKKChi2BcgMixedEventSameSigneta", mass, eta, correction);
-                        insideprocessing.Fill("MKKChi2BcgMixedEventSameSignpT", mass, pT, correction);
-                    }
-                }
-                //pipi
-                for(long unsigned int i = 0; i<queue_of_previous_vector_Tracks_pipi_positive[evt].size(); i++){
-                    for(long unsigned int j = 0; j<queue_of_previous_vector_Tracks_pipi_positive.back().size(); j++){
-                        queue_of_previous_vector_Tracks_pipi_positive[evt][i]->getLorentzVector(positive_track, particleMass[Pion]);
-                        queue_of_previous_vector_Tracks_pipi_positive.back()[j]->getLorentzVector(negative_track, particleMass[Pion]);
-                        mass = (positive_track+negative_track).M();
-                        eta = (positive_track+negative_track).Eta();
-                        pT = (positive_track+negative_track).Pt();
-                        correction = correction_coefficient(2, Pion, Pion, queue_of_previous_vector_Tracks_pipi_positive[evt][i], queue_of_previous_vector_Tracks_pipi_positive.back()[j], queue_of_previous_PV_positions[evt].Z(), queue_of_previous_PV_positions.back().Z());
-                        insideprocessing.Fill("MpipiChi2BcgMixedEventSameSign", mass, correction);
-                        insideprocessing.Fill("MpipiChi2BcgMixedEventSameSigneta", mass, eta, correction);
-                        insideprocessing.Fill("MpipiChi2BcgMixedEventSameSignpT", mass, pT, correction);
-                    }
-                }
-                //pp
-                for(long unsigned int i = 0; i<queue_of_previous_vector_Tracks_pp_positive[evt].size(); i++){
-                    for(long unsigned int j = 0; j<queue_of_previous_vector_Tracks_pp_positive.back().size(); j++){
-                        queue_of_previous_vector_Tracks_pp_positive[evt][i]->getLorentzVector(positive_track, particleMass[Proton]);
-                        queue_of_previous_vector_Tracks_pp_positive.back()[j]->getLorentzVector(negative_track, particleMass[Proton]);
-                        mass = (positive_track+negative_track).M();
-                        eta = (positive_track+negative_track).Eta();
-                        pT = (positive_track+negative_track).Pt();
-                        correction = correction_coefficient(2, Proton, Proton, queue_of_previous_vector_Tracks_pp_positive[evt][i], queue_of_previous_vector_Tracks_pp_positive.back()[j], queue_of_previous_PV_positions[evt].Z(), queue_of_previous_PV_positions.back().Z());
-                        insideprocessing.Fill("MppChi2BcgMixedEventSameSign", mass, correction);
-                        insideprocessing.Fill("MppChi2BcgMixedEventSameSigneta", mass, eta, correction);
-                        insideprocessing.Fill("MppChi2BcgMixedEventSameSignpT", mass, pT, correction);
-                    }
-                }
+                for(size_t pair_number = 0; pair_number<pairTabWithUnderscores.size(); pair_number++){
+                    //getting all the indentificators out
+                    std::pair<PARTICLES, PARTICLES> pairPID = pairTabPID[pair_number];
+                    std::string temp_pair = pairTab[pair_number];
+                    std::string reverse_temp_pair = reversePairAndRemoveUnderscore(pairTabWithUnderscores[pair_number]);
 
-                //MIXED-EVENT SAME-SIGN
-                //############################################################################
-                //both negative
-                //Kpi/piK
-                for(long unsigned int i = 0; i<queue_of_previous_vector_Tracks_Kpi_negative[evt].size(); i++){
-                    for(long unsigned int j = 0; j<queue_of_previous_vector_Tracks_piK_negative.back().size(); j++){
-                        queue_of_previous_vector_Tracks_Kpi_negative[evt][i]->getLorentzVector(positive_track, particleMass[Kaon]);
-                        queue_of_previous_vector_Tracks_piK_negative.back()[j]->getLorentzVector(negative_track, particleMass[Pion]);
-                        mass = (positive_track+negative_track).M();
-                        eta = (positive_track+negative_track).Eta();
-                        pT = (positive_track+negative_track).Pt();
-                        correction = correction_coefficient(-2, Kaon, Pion, queue_of_previous_vector_Tracks_Kpi_negative[evt][i], queue_of_previous_vector_Tracks_piK_negative.back()[j], queue_of_previous_PV_positions[evt].Z(), queue_of_previous_PV_positions.back().Z());
-                        //Kpi
-                        insideprocessing.Fill("MKpiChi2BcgMixedEventSameSign", mass, correction);
-                        insideprocessing.Fill("MKpiChi2BcgMixedEventSameSignClose", mass, correction);
-                        insideprocessing.Fill("MKpiChi2BcgMixedEventSameSigneta", mass, eta, correction);
-                        insideprocessing.Fill("MKpiChi2BcgMixedEventSameSignpT", mass, pT, correction);
-                        //piK
-                        insideprocessing.Fill("MpiKChi2BcgMixedEventSameSign", mass, correction);
-                        insideprocessing.Fill("MpiKChi2BcgMixedEventSameSignClose", mass, correction);
-                        insideprocessing.Fill("MpiKChi2BcgMixedEventSameSigneta", mass, eta, correction);
-                        insideprocessing.Fill("MpiKChi2BcgMixedEventSameSignpT", mass, pT, correction);
+                    //LOOPS
+                    //both positive
+                    for(long unsigned int i = 0; i<map_of_queue_of_previous_vector_Tracks_positive[temp_pair][evt].size(); i++){
+                        for(long unsigned int j = 0; j<map_of_queue_of_previous_vector_Tracks_positive[reverse_temp_pair].back().size(); j++){
+                            map_of_queue_of_previous_vector_Tracks_positive[temp_pair][evt][i]->getLorentzVector(positive_track, particleMass[pairPID.first]);
+                            map_of_queue_of_previous_vector_Tracks_positive[reverse_temp_pair].back()[j]->getLorentzVector(positive_track2, particleMass[pairPID.second]);
+                            mass = (positive_track+positive_track2).M();
+                            eta = (positive_track+positive_track2).Eta();
+                            pT = (positive_track+positive_track2).Pt();
+                            correction = correction_coefficient(2, pairPID.first, pairPID.second, map_of_queue_of_previous_vector_Tracks_positive[temp_pair][evt][i], map_of_queue_of_previous_vector_Tracks_positive[reverse_temp_pair].back()[j], queue_of_previous_PV_positions[evt].Z(), queue_of_previous_PV_positions.back().Z());
+                            //filling (general)
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSign").c_str(), mass, correction);
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSigneta").c_str(), mass, eta, correction);
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSignpT").c_str(), mass, pT, correction);
+                            //filling (specific)
+                            if(temp_pair=="Kpi"||temp_pair=="piK"||temp_pair=="KK"){
+                                insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSignClose").c_str(), mass, correction);
+                            }
+                            //end of pairing
+                        }
                     }
-                }
-                // for(long unsigned int i = 0; i<queue_of_previous_vector_Tracks_Kpi_negative.back().size(); i++){
-                //     for(long unsigned int j = 0; j<queue_of_previous_vector_Tracks_piK_negative[evt].size(); j++){
-                //         queue_of_previous_vector_Tracks_Kpi_negative.back()[i]->getLorentzVector(positive_track, particleMass[Kaon]);
-                //         queue_of_previous_vector_Tracks_piK_negative[evt][j]->getLorentzVector(negative_track, particleMass[Pion]);
-                //         mass = (positive_track+negative_track).M();
-                //         eta = (positive_track+negative_track).Eta();
-                //         pT = (positive_track+negative_track).Pt();
-                //         correction = correction_coefficient(-2, Kaon, Pion, queue_of_previous_vector_Tracks_Kpi_negative.back()[i], queue_of_previous_vector_Tracks_piK_negative[evt][j], queue_of_previous_PV_positions.back().Z(), queue_of_previous_PV_positions[evt].Z());
-                //         //Kpi
-                //         insideprocessing.Fill("MKpiChi2BcgMixedEventSameSign", mass, correction);
-                //         insideprocessing.Fill("MKpiChi2BcgMixedEventSameSignClose", mass, correction);
-                //         insideprocessing.Fill("MKpiChi2BcgMixedEventSameSigneta", mass, eta, correction);
-                //         insideprocessing.Fill("MKpiChi2BcgMixedEventSameSignpT", mass, pT, correction);
-                //         //piK
-                //         insideprocessing.Fill("MpiKChi2BcgMixedEventSameSign", mass, correction);
-                //         insideprocessing.Fill("MpiKChi2BcgMixedEventSameSignClose", mass, correction);
-                //         insideprocessing.Fill("MpiKChi2BcgMixedEventSameSigneta", mass, eta, correction);
-                //         insideprocessing.Fill("MpiKChi2BcgMixedEventSameSignpT", mass, pT, correction);
-                //     }
-                // }
-                //ppi/pip
-                for(long unsigned int i = 0; i<queue_of_previous_vector_Tracks_ppi_negative[evt].size(); i++){
-                    for(long unsigned int j = 0; j<queue_of_previous_vector_Tracks_pip_negative.back().size(); j++){
-                        queue_of_previous_vector_Tracks_ppi_negative[evt][i]->getLorentzVector(positive_track, particleMass[Proton]);
-                        queue_of_previous_vector_Tracks_pip_negative.back()[j]->getLorentzVector(negative_track, particleMass[Pion]);
-                        mass = (positive_track+negative_track).M();
-                        eta = (positive_track+negative_track).Eta();
-                        pT = (positive_track+negative_track).Pt();
-                        correction = correction_coefficient(-2, Proton, Pion, queue_of_previous_vector_Tracks_ppi_negative[evt][i], queue_of_previous_vector_Tracks_pip_negative.back()[j], queue_of_previous_PV_positions[evt].Z(), queue_of_previous_PV_positions.back().Z());
-                        //ppi
-                        insideprocessing.Fill("MppiChi2BcgMixedEventSameSign", mass, correction);
-                        insideprocessing.Fill("MppiChi2BcgMixedEventSameSigneta", mass, eta, correction);
-                        insideprocessing.Fill("MppiChi2BcgMixedEventSameSignpT", mass, pT, correction);
-                        //pip
-                        insideprocessing.Fill("MpipChi2BcgMixedEventSameSign", mass, correction);
-                        insideprocessing.Fill("MpipChi2BcgMixedEventSameSigneta", mass, eta, correction);
-                        insideprocessing.Fill("MpipChi2BcgMixedEventSameSignpT", mass, pT, correction);
+                    //both negative
+                    for(long unsigned int i = 0; i<map_of_queue_of_previous_vector_Tracks_negative[temp_pair][evt].size(); i++){
+                        for(long unsigned int j = 0; j<map_of_queue_of_previous_vector_Tracks_negative[reverse_temp_pair].back().size(); j++){
+                            map_of_queue_of_previous_vector_Tracks_negative[temp_pair][evt][i]->getLorentzVector(negative_track, particleMass[pairPID.first]);
+                            map_of_queue_of_previous_vector_Tracks_negative[reverse_temp_pair].back()[j]->getLorentzVector(negative_track2, particleMass[pairPID.second]);
+                            mass = (negative_track+negative_track2).M();
+                            eta = (negative_track+negative_track2).Eta();
+                            pT = (negative_track+negative_track2).Pt();
+                            correction = correction_coefficient(-2, pairPID.first, pairPID.second, map_of_queue_of_previous_vector_Tracks_negative[temp_pair][evt][i], map_of_queue_of_previous_vector_Tracks_negative[reverse_temp_pair].back()[j], queue_of_previous_PV_positions[evt].Z(), queue_of_previous_PV_positions.back().Z());
+                            //filling (general)
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSign").c_str(), mass, correction);
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSigneta").c_str(), mass, eta, correction);
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSignpT").c_str(), mass, pT, correction);
+                            //filling (specific)
+                            if(temp_pair=="Kpi"||temp_pair=="piK"||temp_pair=="KK"){
+                                insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSignClose").c_str(), mass, correction);
+                            }
+                            //end of pairing
+                        }
                     }
-                }
-                // for(long unsigned int i = 0; i<queue_of_previous_vector_Tracks_ppi_negative.back().size(); i++){
-                //     for(long unsigned int j = 0; j<queue_of_previous_vector_Tracks_pip_negative[evt].size(); j++){
-                //         queue_of_previous_vector_Tracks_ppi_negative.back()[i]->getLorentzVector(positive_track, particleMass[Proton]);
-                //         queue_of_previous_vector_Tracks_pip_negative[evt][j]->getLorentzVector(negative_track, particleMass[Pion]);
-                //         mass = (positive_track+negative_track).M();
-                //         eta = (positive_track+negative_track).Eta();
-                //         pT = (positive_track+negative_track).Pt();
-                //         correction = correction_coefficient(-2, Proton, Pion, queue_of_previous_vector_Tracks_ppi_negative.back()[i], queue_of_previous_vector_Tracks_pip_negative[evt][j], queue_of_previous_PV_positions.back().Z(), queue_of_previous_PV_positions[evt].Z());
-                //         //ppi
-                //         insideprocessing.Fill("MppiChi2BcgMixedEventSameSign", mass, correction);
-                //         insideprocessing.Fill("MppiChi2BcgMixedEventSameSigneta", mass, eta, correction);
-                //         insideprocessing.Fill("MppiChi2BcgMixedEventSameSignpT", mass, pT, correction);
-                //         //pip
-                //         insideprocessing.Fill("MpipChi2BcgMixedEventSameSign", mass, correction);
-                //         insideprocessing.Fill("MpipChi2BcgMixedEventSameSigneta", mass, eta, correction);
-                //         insideprocessing.Fill("MpipChi2BcgMixedEventSameSignpT", mass, pT, correction);
-                //     }
-                // }
-                //KK
-                for(long unsigned int i = 0; i<queue_of_previous_vector_Tracks_KK_negative[evt].size(); i++){
-                    for(long unsigned int j = 0; j<queue_of_previous_vector_Tracks_KK_negative.back().size(); j++){
-                        queue_of_previous_vector_Tracks_KK_negative[evt][i]->getLorentzVector(positive_track, particleMass[Kaon]);
-                        queue_of_previous_vector_Tracks_KK_negative.back()[j]->getLorentzVector(negative_track, particleMass[Kaon]);
-                        mass = (positive_track+negative_track).M();
-                        eta = (positive_track+negative_track).Eta();
-                        pT = (positive_track+negative_track).Pt();
-                        correction = correction_coefficient(-2, Kaon, Kaon, queue_of_previous_vector_Tracks_KK_negative[evt][i], queue_of_previous_vector_Tracks_KK_negative.back()[j], queue_of_previous_PV_positions[evt].Z(), queue_of_previous_PV_positions.back().Z());
-                        insideprocessing.Fill("MKKChi2BcgMixedEventSameSign", mass, correction);
-                        insideprocessing.Fill("MKKChi2BcgMixedEventSameSignClose", mass, correction);
-                        insideprocessing.Fill("MKKChi2BcgMixedEventSameSigneta", mass, eta, correction);
-                        insideprocessing.Fill("MKKChi2BcgMixedEventSameSignpT", mass, pT, correction);
+                    //if both particles are different, then we need to have crossover in both directions
+                    //i.e. for K+pi+, we need:
+                    //current K+   previous pi+
+                    //current pi+  previous K+
+                    //while for same pairs it would be:
+                    //current K+   previous K+
+                    //current K+  previous K+
+                    //which obviously does not make sense
+                    if(temp_pair==reverse_temp_pair){
+                        continue;
                     }
-                }
-                //pipi
-                for(long unsigned int i = 0; i<queue_of_previous_vector_Tracks_pipi_negative[evt].size(); i++){
-                    for(long unsigned int j = 0; j<queue_of_previous_vector_Tracks_pipi_negative.back().size(); j++){
-                        queue_of_previous_vector_Tracks_pipi_negative[evt][i]->getLorentzVector(positive_track, particleMass[Pion]);
-                        queue_of_previous_vector_Tracks_pipi_negative.back()[j]->getLorentzVector(negative_track, particleMass[Pion]);
-                        mass = (positive_track+negative_track).M();
-                        eta = (positive_track+negative_track).Eta();
-                        pT = (positive_track+negative_track).Pt();
-                        correction = correction_coefficient(-2, Pion, Pion, queue_of_previous_vector_Tracks_pipi_negative[evt][i], queue_of_previous_vector_Tracks_pipi_negative.back()[j], queue_of_previous_PV_positions[evt].Z(), queue_of_previous_PV_positions.back().Z());
-                        insideprocessing.Fill("MpipiChi2BcgMixedEventSameSign", mass, correction);
-                        insideprocessing.Fill("MpipiChi2BcgMixedEventSameSigneta", mass, eta, correction);
-                        insideprocessing.Fill("MpipiChi2BcgMixedEventSameSignpT", mass, pT, correction);
+                    //both positive
+                    for(long unsigned int i = 0; i<map_of_queue_of_previous_vector_Tracks_positive[temp_pair].back().size(); i++){
+                        for(long unsigned int j = 0; j<map_of_queue_of_previous_vector_Tracks_positive[reverse_temp_pair][evt].size(); j++){
+                            map_of_queue_of_previous_vector_Tracks_positive[temp_pair].back()[i]->getLorentzVector(positive_track, particleMass[pairPID.first]);
+                            map_of_queue_of_previous_vector_Tracks_positive[reverse_temp_pair][evt][j]->getLorentzVector(positive_track2, particleMass[pairPID.second]);
+                            mass = (positive_track+positive_track2).M();
+                            eta = (positive_track+positive_track2).Eta();
+                            pT = (positive_track+positive_track2).Pt();
+                            correction = correction_coefficient(2, pairPID.first, pairPID.second, map_of_queue_of_previous_vector_Tracks_positive[temp_pair].back()[i], map_of_queue_of_previous_vector_Tracks_positive[reverse_temp_pair][evt][j], queue_of_previous_PV_positions.back().Z(), queue_of_previous_PV_positions[evt].Z());
+                            //filling (general)
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSign").c_str(), mass, correction);
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSigneta").c_str(), mass, eta, correction);
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSignpT").c_str(), mass, pT, correction);
+                            //filling (specific)
+                            if(temp_pair=="Kpi"||temp_pair=="piK"||temp_pair=="KK"){
+                                insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSignClose").c_str(), mass, correction);
+                            }
+                            //end of pairing
+                        }
                     }
-                }
-                //pp
-                for(long unsigned int i = 0; i<queue_of_previous_vector_Tracks_pp_negative[evt].size(); i++){
-                    for(long unsigned int j = 0; j<queue_of_previous_vector_Tracks_pp_negative.back().size(); j++){
-                        queue_of_previous_vector_Tracks_pp_negative[evt][i]->getLorentzVector(positive_track, particleMass[Proton]);
-                        queue_of_previous_vector_Tracks_pp_negative.back()[j]->getLorentzVector(negative_track, particleMass[Proton]);
-                        mass = (positive_track+negative_track).M();
-                        eta = (positive_track+negative_track).Eta();
-                        pT = (positive_track+negative_track).Pt();
-                        correction = correction_coefficient(-2, Proton, Proton, queue_of_previous_vector_Tracks_pp_negative[evt][i], queue_of_previous_vector_Tracks_pp_negative.back()[j], queue_of_previous_PV_positions[evt].Z(), queue_of_previous_PV_positions.back().Z());
-                        insideprocessing.Fill("MppChi2BcgMixedEventSameSign", mass, correction);
-                        insideprocessing.Fill("MppChi2BcgMixedEventSameSigneta", mass, eta, correction);
-                        insideprocessing.Fill("MppChi2BcgMixedEventSameSignpT", mass, pT, correction);
+                    //both negative
+                    for(long unsigned int i = 0; i<map_of_queue_of_previous_vector_Tracks_negative[temp_pair].back().size(); i++){
+                        for(long unsigned int j = 0; j<map_of_queue_of_previous_vector_Tracks_negative[reverse_temp_pair][evt].size(); j++){
+                            map_of_queue_of_previous_vector_Tracks_negative[temp_pair].back()[i]->getLorentzVector(negative_track, particleMass[pairPID.first]);
+                            map_of_queue_of_previous_vector_Tracks_negative[reverse_temp_pair][evt][j]->getLorentzVector(negative_track2, particleMass[pairPID.second]);
+                            mass = (negative_track+negative_track2).M();
+                            eta = (negative_track+negative_track2).Eta();
+                            pT = (negative_track+negative_track2).Pt();
+                            correction = correction_coefficient(-2, pairPID.first, pairPID.second, map_of_queue_of_previous_vector_Tracks_negative[temp_pair].back()[i], map_of_queue_of_previous_vector_Tracks_negative[reverse_temp_pair][evt][j], queue_of_previous_PV_positions.back().Z(), queue_of_previous_PV_positions[evt].Z());
+                            //filling (general)
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSign").c_str(), mass, correction);
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSigneta").c_str(), mass, eta, correction);
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSignpT").c_str(), mass, pT, correction);
+                            //filling (specific)
+                            if(temp_pair=="Kpi"||temp_pair=="piK"||temp_pair=="KK"){
+                                insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSignClose").c_str(), mass, correction);
+                            }
+                            //end of pairing
+                        }
                     }
+                    //end of THE LOOPS
                 }
+                //end of previous event loop
             }
-
             //if the recall limit has been reached, we pop the oldest one
             //(to check if its happening, we check the size of a random pair queue, as all of them have the same length)
-            if(queue_of_previous_vector_Tracks_Kpi_positive.size()>total_events_in_queue){
-                //Kpi
-                for(size_t i = 0; i<queue_of_previous_vector_Tracks_Kpi_positive.front().size(); i++){
-                    delete queue_of_previous_vector_Tracks_Kpi_positive.front()[i];
+            if(map_of_queue_of_previous_vector_Tracks_positive["Kpi"].size()>total_events_in_queue){
+                for(auto&& temp_pair_no_underscores:pairTab){
+                    for(size_t i = 0; i<map_of_queue_of_previous_vector_Tracks_positive[temp_pair_no_underscores].front().size(); i++){
+                        delete map_of_queue_of_previous_vector_Tracks_positive[temp_pair_no_underscores].front()[i];
+                    }
+                    map_of_queue_of_previous_vector_Tracks_positive[temp_pair_no_underscores].pop_front();
+                    for(size_t i = 0; i<map_of_queue_of_previous_vector_Tracks_negative[temp_pair_no_underscores].front().size(); i++){
+                        delete map_of_queue_of_previous_vector_Tracks_negative[temp_pair_no_underscores].front()[i];
+                    }
+                    map_of_queue_of_previous_vector_Tracks_negative[temp_pair_no_underscores].pop_front();
                 }
-                queue_of_previous_vector_Tracks_Kpi_positive.pop_front();
-                for(size_t i = 0; i<queue_of_previous_vector_Tracks_Kpi_negative.front().size(); i++){
-                    delete queue_of_previous_vector_Tracks_Kpi_negative.front()[i];
-                }
-                queue_of_previous_vector_Tracks_Kpi_negative.pop_front();
-                //piK
-                for(size_t i = 0; i<queue_of_previous_vector_Tracks_piK_positive.front().size(); i++){
-                    delete queue_of_previous_vector_Tracks_piK_positive.front()[i];
-                }
-                queue_of_previous_vector_Tracks_piK_positive.pop_front();
-                for(size_t i = 0; i<queue_of_previous_vector_Tracks_piK_negative.front().size(); i++){
-                    delete queue_of_previous_vector_Tracks_piK_negative.front()[i];
-                }
-                queue_of_previous_vector_Tracks_piK_negative.pop_front();
-                //ppi
-                for(size_t i = 0; i<queue_of_previous_vector_Tracks_ppi_positive.front().size(); i++){
-                    delete queue_of_previous_vector_Tracks_ppi_positive.front()[i];
-                }
-                queue_of_previous_vector_Tracks_ppi_positive.pop_front();
-                for(size_t i = 0; i<queue_of_previous_vector_Tracks_ppi_negative.front().size(); i++){
-                    delete queue_of_previous_vector_Tracks_ppi_negative.front()[i];
-                }
-                queue_of_previous_vector_Tracks_ppi_negative.pop_front();
-                //pip
-                for(size_t i = 0; i<queue_of_previous_vector_Tracks_pip_positive.front().size(); i++){
-                    delete queue_of_previous_vector_Tracks_pip_positive.front()[i];
-                }
-                queue_of_previous_vector_Tracks_pip_positive.pop_front();
-                for(size_t i = 0; i<queue_of_previous_vector_Tracks_pip_negative.front().size(); i++){
-                    delete queue_of_previous_vector_Tracks_pip_negative.front()[i];
-                }
-                queue_of_previous_vector_Tracks_pip_negative.pop_front();
-                //KK
-                for(size_t i = 0; i<queue_of_previous_vector_Tracks_KK_positive.front().size(); i++){
-                    delete queue_of_previous_vector_Tracks_KK_positive.front()[i];
-                }
-                queue_of_previous_vector_Tracks_KK_positive.pop_front();
-                for(size_t i = 0; i<queue_of_previous_vector_Tracks_KK_negative.front().size(); i++){
-                    delete queue_of_previous_vector_Tracks_KK_negative.front()[i];
-                }
-                queue_of_previous_vector_Tracks_KK_negative.pop_front();
-                //pipi
-                for(size_t i = 0; i<queue_of_previous_vector_Tracks_pipi_positive.front().size(); i++){
-                    delete queue_of_previous_vector_Tracks_pipi_positive.front()[i];
-                }
-                queue_of_previous_vector_Tracks_pipi_positive.pop_front();
-                for(size_t i = 0; i<queue_of_previous_vector_Tracks_pipi_negative.front().size(); i++){
-                    delete queue_of_previous_vector_Tracks_pipi_negative.front()[i];
-                }
-                queue_of_previous_vector_Tracks_pipi_negative.pop_front();
-                //pp
-                for(size_t i = 0; i<queue_of_previous_vector_Tracks_pp_positive.front().size(); i++){
-                    delete queue_of_previous_vector_Tracks_pp_positive.front()[i];
-                }
-                queue_of_previous_vector_Tracks_pp_positive.pop_front();
-                for(size_t i = 0; i<queue_of_previous_vector_Tracks_pp_negative.front().size(); i++){
-                    delete queue_of_previous_vector_Tracks_pp_negative.front()[i];
-                }
-                queue_of_previous_vector_Tracks_pp_negative.pop_front();
                 //primary vertex position
                 queue_of_previous_PV_positions.pop_front();
             }
@@ -1784,7 +1287,13 @@ StEfficiencyCorrector3D* getInitialisedEfficiencyCorrector(std::string folder, C
 std::pair<PARTICLES, PARTICLES> getPairPID(std::string pair_with_underscore){
     int underscore_position = pair_with_underscore.find("_");
     std::string firstPID = pair_with_underscore.substr(0, underscore_position);
-    std::string secondPID = pair_with_underscore.substr(underscore_position+2, pair_with_underscore.size()-1-underscore_position);
+    std::string secondPID = pair_with_underscore.substr(underscore_position+1, pair_with_underscore.size()-1-underscore_position);
+    //example:
+    //0123
+    //K_pi
+    //underscore_position: 1
+    //first string: from 0, length 1
+    //second string: from 2 (1+1), length 2 (4-1-1)
     std::pair<PARTICLES, PARTICLES> output;
     if(firstPID=="pi"){
         output.first = Pion;
@@ -1805,4 +1314,11 @@ std::pair<PARTICLES, PARTICLES> getPairPID(std::string pair_with_underscore){
         output.second = nParticles;
     }
     return output;
+}
+
+std::string reversePairAndRemoveUnderscore(std::string pair_with_underscore){
+    int underscore_position = pair_with_underscore.find("_");
+    std::string firstPID = pair_with_underscore.substr(0, underscore_position);
+    std::string secondPID = pair_with_underscore.substr(underscore_position+1, pair_with_underscore.size()-1-underscore_position);
+    return secondPID+firstPID;
 }
