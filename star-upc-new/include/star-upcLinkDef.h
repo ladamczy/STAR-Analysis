@@ -17,5 +17,8 @@
 #pragma link C++ class StUPCV0+;
 #pragma link C++ class StPicoPhysicalHelix+;
 #pragma link C++ class StPicoHelix+;
+#pragma link C++ class StBichsel+;
+#pragma link C++ class dEdxParameterization+;
+#pragma link C++ enum StPidParticle;
 #endif
 

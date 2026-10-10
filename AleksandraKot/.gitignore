@@ -8,3 +8,7 @@ simple_efficiency_correction_example.png
 *.err
 *.log
 *.out
+*.pdf
+SD_Analysis copy.cxx
+CreateBichselCurve.cxx
+dEdxWithBichselCurves.cxx

@@ -10,6 +10,7 @@
 #include "TH3.h"
 #include "TProfile2D.h"
 #include "TString.h"
+#include "TMath.h"
 #include "StPidParticleDefinition.h"
 class dEdxParameterization {
  private: 

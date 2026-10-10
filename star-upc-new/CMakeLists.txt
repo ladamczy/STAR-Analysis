@@ -16,6 +16,8 @@ set (SRCS
   src/StPicoHelix.cxx
   src/StPicoPhysicalHelix.cxx
   src/StUPCV0.cxx
+  src/StBichsel.cxx
+  src/dEdxParameterization.cxx
   )
 
 #name of shared libarary LIB
@@ -37,6 +39,8 @@ set (SRCS_DICT
   src/StPicoHelix.cxx
   src/StPicoPhysicalHelix.cxx
   src/StUPCV0.cxx
+  src/StBichsel.cxx
+  src/dEdxParameterization.cxx
   )
 
 #LinkDef file for ROOT dictionary
