@@ -1756,7 +1756,7 @@ int main(int argc, char** argv)
                 global_ref_idx_dedx = i_trk;
                 znaleziono_anchor = true;
         
-                best_pid = chi2_list[0].second; // Pewna identyfikacja cząstki bez porównywania double==double
+                best_pid = chi2_list[0].second;
                 if (best_pid == 0)      wyznaczony_t0 = trk->getT0(massPion);
                 else if (best_pid == 1) wyznaczony_t0 = trk->getT0(massKaon);
                 else if (best_pid == 2) wyznaczony_t0 = trk->getT0(massProton);
@@ -2246,7 +2246,6 @@ int main(int argc, char** argv)
                 // if (abs2 < min_delta) { min_delta = abs2; tof_limit = TOFPIONS_kaons; }
                 // if (abs5 < min_delta) { min_delta = abs5; tof_limit = TOFPIONS_protons; }
                 
-                // // 3. Sprawdzenie warunku
                 // if (min_delta / (tof_limit / 3.0) < 0.25 && (fabs(upcEvt->getTrack(i_p)->getNSigmasTPCPion())<0.25)) {
                 //     double dedx_meas=upcEvt->getTrack(i_p)->getDEdxSignal()*1e6;
                 //     TVector3 mom;
@@ -2584,7 +2583,7 @@ int main(int argc, char** argv)
                 // if (abs2 < min_delta) { min_delta = abs2; tof_limit = TOF_kaons; }
                 // if (abs5 < min_delta) { min_delta = abs5; tof_limit = TOF_protons; }
                 
-                // // 3. Sprawdzenie warunku
+
                 // if (min_delta / (tof_limit / 3.0) < 0.25 && (fabs(upcEvt->getTrack(i_p)->getNSigmasTPCProton())<0.25)) {
                 //     double dedx_meas=upcEvt->getTrack(i_p)->getDEdxSignal()*1e6;
                 //     TVector3 mom;
