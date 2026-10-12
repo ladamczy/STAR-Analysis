@@ -151,7 +151,7 @@ ROOT::TThreadedObject<TH3D>& ProcessingOutsideLoop::GetPointer3D(int i){
     return *hist3dtab[i];
 }
 ROOT::TThreadedObject<THnSparseD>& ProcessingOutsideLoop::GetPointerND(int i){
-    if(hist3dtab[i]==nullptr){
+    if(histNdtab[i]==nullptr){
         printf("Trying to get TThreadedObject<THnSparseD> for non-THnSparseD object. A reference to nullptr address will be returned\n");
     }
     return *histNdtab[i];
