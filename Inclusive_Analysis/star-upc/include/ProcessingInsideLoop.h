@@ -44,12 +44,15 @@ void ProcessingInsideLoop::GetLocalHistograms(ProcessingOutsideLoop *outsideloop
         hist1dtabLocal.push_back(nullptr);
         hist2dtabLocal.push_back(nullptr);
         hist3dtabLocal.push_back(nullptr);
+        histNdtabLocal.push_back(nullptr);
         if(outsideloop->hist1dtab[i]!=nullptr){
             hist1dtabLocal[i] = outsideloop->hist1dtab[i]->Get();
         } else if(outsideloop->hist2dtab[i]!=nullptr){
             hist2dtabLocal[i] = outsideloop->hist2dtab[i]->Get();
         } else if(outsideloop->hist3dtab[i]!=nullptr){
             hist3dtabLocal[i] = outsideloop->hist3dtab[i]->Get();
+        } else if(outsideloop->histNdtab[i]!=nullptr){
+            histNdtabLocal[i] = outsideloop->histNdtab[i]->Get();
         }
     }
 

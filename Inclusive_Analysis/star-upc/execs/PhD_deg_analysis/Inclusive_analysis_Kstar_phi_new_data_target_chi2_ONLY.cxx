@@ -421,25 +421,27 @@ int main(int argc, char** argv){
 
             //calculating corrections
             std::pair<PARTICLES, PARTICLES> id_both = getPairPID(pairNameWithUnderscore);
+            const double data_first[] = {pt1, eta1, Vz};
+            const double data_second[] = {pt2, eta2, Vz};
             double eff_first, eff_second;
             //positive
             switch(id_both.first){
             case Pion:
                 eff_first = totalEfficiencyCorrector[positive][id_both.first]->getCombinedEfficiency(eta1, pt1, Vz, 1, StEfficiencyCorrector3D::PION);
                 if(eff_first==0){
-                    insideprocessing.Fill("failedPionPositive", pt1, eta1, Vz);
+                    insideprocessing.Fill("failedPionPositive", data_first, 1.);
                 }
                 break;
             case Kaon:
                 eff_first = totalEfficiencyCorrector[positive][id_both.first]->getCombinedEfficiency(eta1, pt1, Vz, 1, StEfficiencyCorrector3D::KAON);
                 if(eff_first==0){
-                    insideprocessing.Fill("failedKaonPositive", pt1, eta1, Vz);
+                    insideprocessing.Fill("failedKaonPositive", data_first, 1.);
                 }
                 break;
             case Proton:
                 eff_first = totalEfficiencyCorrector[positive][id_both.first]->getCombinedEfficiency(eta1, pt1, Vz, 1, StEfficiencyCorrector3D::PROTON);
                 if(eff_first==0){
-                    insideprocessing.Fill("failedProtonPositive", pt1, eta1, Vz);
+                    insideprocessing.Fill("failedProtonPositive", data_first, 1.);
                 }
                 break;
             default:
@@ -451,19 +453,19 @@ int main(int argc, char** argv){
             case Pion:
                 eff_second = totalEfficiencyCorrector[negative][id_both.second]->getCombinedEfficiency(eta2, pt2, Vz, -1, StEfficiencyCorrector3D::PION);
                 if(eff_second==0){
-                    insideprocessing.Fill("failedPionNegative", pt2, eta2, Vz);
+                    insideprocessing.Fill("failedPionNegative", data_second, 1.);
                 }
                 break;
             case Kaon:
                 eff_second = totalEfficiencyCorrector[negative][id_both.second]->getCombinedEfficiency(eta2, pt2, Vz, -1, StEfficiencyCorrector3D::KAON);
                 if(eff_second==0){
-                    insideprocessing.Fill("failedKaonNegative", pt2, eta2, Vz);
+                    insideprocessing.Fill("failedKaonNegative", data_second, 1.);
                 }
                 break;
             case Proton:
                 eff_second = totalEfficiencyCorrector[negative][id_both.second]->getCombinedEfficiency(eta2, pt2, Vz, -1, StEfficiencyCorrector3D::PROTON);
                 if(eff_second==0){
-                    insideprocessing.Fill("failedProtonNegative", pt2, eta2, Vz);
+                    insideprocessing.Fill("failedProtonNegative", data_second, 1.);
                 }
                 break;
             default:
