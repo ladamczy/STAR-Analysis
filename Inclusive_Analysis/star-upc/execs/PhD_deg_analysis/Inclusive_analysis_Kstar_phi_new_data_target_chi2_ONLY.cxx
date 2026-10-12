@@ -238,12 +238,15 @@ int main(int argc, char** argv){
     outsideprocessing.AddHistogram(TH1D("efficiency3", "Particle reconstruction efficiency (0.0-10^{-4}), taken from all pairs (double-counting of the tracks possible!);efficiency;particles", 100, 0., 1e-4));
     outsideprocessing.AddHistogram(TH1D("efficiency4", "Particle reconstruction efficiency (0.0-10^{-6}), taken from all pairs (double-counting of the tracks possible!);efficiency;particles", 100, 0., 1e-6));
 
-    outsideprocessing.AddHistogram(TH3D("failedPionPositive", "Reconstructed #pi^{+} with 0. efficiency;p_{T} [GeV/c];#eta;V_{z} [cm]", 300, 0., 3., 300, -1.5, 1.5, 600, -300., 300.));
-    outsideprocessing.AddHistogram(TH3D("failedKaonPositive", "Reconstructed K^{+} with 0. efficiency;p_{T} [GeV/c];#eta;V_{z} [cm]", 300, 0., 3., 300, -1.5, 1.5, 600, -300., 300.));
-    outsideprocessing.AddHistogram(TH3D("failedProtonPositive", "Reconstructed p^{+} with 0. efficiency;p_{T} [GeV/c];#eta;V_{z} [cm]", 300, 0., 3., 300, -1.5, 1.5, 600, -300., 300.));
-    outsideprocessing.AddHistogram(TH3D("failedPionNegative", "Reconstructed #pi^{-} with 0. efficiency;p_{T} [GeV/c];#eta;V_{z} [cm]", 300, 0., 3., 300, -1.5, 1.5, 600, -300., 300.));
-    outsideprocessing.AddHistogram(TH3D("failedKaonNegative", "Reconstructed K^{-} with 0. efficiency;p_{T} [GeV/c];#eta;V_{z} [cm]", 300, 0., 3., 300, -1.5, 1.5, 600, -300., 300.));
-    outsideprocessing.AddHistogram(TH3D("failedProtonNegative", "Reconstructed p^{-} with 0. efficiency;p_{T} [GeV/c];#eta;V_{z} [cm]", 300, 0., 3., 300, -1.5, 1.5, 600, -300., 300.));
+    int nbins[] = { 300, 300, 600 };
+    double nbinslow[] = { 0., -1.5, -300. };
+    double nbinshigh[] = { 3., 1.5, 300. };
+    outsideprocessing.AddHistogram(THnSparseD("failedPionPositive", "Reconstructed #pi^{+} with 0. efficiency;p_{T} [GeV/c];#eta;V_{z} [cm]", 3, nbins, nbinslow, nbinshigh));
+    outsideprocessing.AddHistogram(THnSparseD("failedKaonPositive", "Reconstructed K^{+} with 0. efficiency;p_{T} [GeV/c];#eta;V_{z} [cm]", 3, nbins, nbinslow, nbinshigh));
+    outsideprocessing.AddHistogram(THnSparseD("failedProtonPositive", "Reconstructed p^{+} with 0. efficiency;p_{T} [GeV/c];#eta;V_{z} [cm]", 3, nbins, nbinslow, nbinshigh));
+    outsideprocessing.AddHistogram(THnSparseD("failedPionNegative", "Reconstructed #pi^{-} with 0. efficiency;p_{T} [GeV/c];#eta;V_{z} [cm]", 3, nbins, nbinslow, nbinshigh));
+    outsideprocessing.AddHistogram(THnSparseD("failedKaonNegative", "Reconstructed K^{-} with 0. efficiency;p_{T} [GeV/c];#eta;V_{z} [cm]", 3, nbins, nbinslow, nbinshigh));
+    outsideprocessing.AddHistogram(THnSparseD("failedProtonNegative", "Reconstructed p^{-} with 0. efficiency;p_{T} [GeV/c];#eta;V_{z} [cm]", 3, nbins, nbinslow, nbinshigh));
 
 
     //mass histograms (signal)
@@ -371,6 +374,8 @@ int main(int argc, char** argv){
             printf("%s\n", outsideprocessing.GetPointer2D(i)->GetName());
         } else if(&outsideprocessing.GetPointer3D(i)!=nullptr){
             printf("%s\n", outsideprocessing.GetPointer3D(i)->GetName());
+        } else if(&outsideprocessing.GetPointerND(i)!=nullptr){
+            printf("%s\n", outsideprocessing.GetPointerND(i)->GetName());
         } else{
             printf("What.\n");
         }
