@@ -8,6 +8,7 @@ private:
     std::vector<std::shared_ptr<TH1D>> hist1dtabLocal;
     std::vector<std::shared_ptr<TH2D>> hist2dtabLocal;
     std::vector<std::shared_ptr<TH3D>> hist3dtabLocal;
+    std::vector<std::shared_ptr<THnSparseD>> histNdtabLocal;
 public:
     ProcessingInsideLoop(/* args */);
     ~ProcessingInsideLoop();
@@ -28,6 +29,8 @@ public:
     void Fill(const char*, const char*, const char*, double);
     void Fill(int, const char*, double, double, double);
     void Fill(const char*, const char*, double, double, double);
+    void Fill(int, const double*, double);
+    void Fill(const char*, const double*, double);
 };
 
 ProcessingInsideLoop::ProcessingInsideLoop(/* args */) {
@@ -214,6 +217,25 @@ void ProcessingInsideLoop::Fill(const char* hist_name, const char* key, double y
     for(long unsigned int i = 0; i<hist3dtabLocal.size(); i++){
         if(hist3dtabLocal[i]!=nullptr&&strcmp(hist_name, hist3dtabLocal[i]->GetName())==0){
             ProcessingInsideLoop::Fill(i, key, y, z, w);
+            return;
+        }
+    }
+    throw std::invalid_argument("Histogram with name \""+std::string(hist_name)+"\" could not be found.");
+}
+
+//Nd histograms, using THnSparseD and a template
+void ProcessingInsideLoop::Fill(int hist_number, const double* data, double w){
+    if(histNdtabLocal[hist_number]!=nullptr){
+        histNdtabLocal[hist_number]->Fill(data, w);
+    } else{
+        throw std::invalid_argument("ND histogram with number \""+std::to_string(hist_number)+"\" does not exist.");
+    }
+}
+void ProcessingInsideLoop::Fill(const char* hist_name, const double* data, double w){
+    //looking through 1d histograms
+    for(long unsigned int i = 0; i<histNdtabLocal.size(); i++){
+        if(histNdtabLocal[i]!=nullptr&&strcmp(hist_name, histNdtabLocal[i]->GetName())==0){
+            ProcessingInsideLoop::Fill(i, data, w);
             return;
         }
     }

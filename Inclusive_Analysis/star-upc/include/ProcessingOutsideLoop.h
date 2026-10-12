@@ -5,6 +5,7 @@
 #include "TH1.h"
 #include "TH2.h"
 #include "TH3.h"
+#include "THnSparse.h"
 #include "TObject.h"
 #include <stdio.h>
 #include <string>
@@ -21,9 +22,11 @@ private:
     std::vector<ROOT::TThreadedObject<TH1D> *> hist1dtab;
     std::vector<ROOT::TThreadedObject<TH2D> *> hist2dtab;
     std::vector<ROOT::TThreadedObject<TH3D> *> hist3dtab;
+    std::vector<ROOT::TThreadedObject<THnSparseD>*> histNdtab;
     std::vector<std::shared_ptr<TH1D>> hist1dtabFinal;
     std::vector<std::shared_ptr<TH2D>> hist2dtabFinal;
     std::vector<std::shared_ptr<TH3D>> hist3dtabFinal;
+    std::vector<std::shared_ptr<THnSparseD>> histNdtabFinal;
 
 public:
     ProcessingOutsideLoop(/* args */);
@@ -31,6 +34,7 @@ public:
     void AddHistogram(TH1D);
     void AddHistogram(TH2D);
     void AddHistogram(TH3D);
+    void AddHistogram(THnSparseD);
     void Merge();
     void SaveToFile(TFile *);
     int GetNumberOfHistograms();
@@ -38,15 +42,19 @@ public:
     ROOT::TThreadedObject<TH1D>& GetPointer1D(int);
     ROOT::TThreadedObject<TH2D>& GetPointer2D(int);
     ROOT::TThreadedObject<TH3D>& GetPointer3D(int);
+    ROOT::TThreadedObject<THnSparseD>& GetPointerND(int);
     ROOT::TThreadedObject<TH1D>& GetPointer1D(const char*);
     ROOT::TThreadedObject<TH2D>& GetPointer2D(const char*);
     ROOT::TThreadedObject<TH3D>& GetPointer3D(const char*);
+    ROOT::TThreadedObject<THnSparseD>& GetPointerND(const char*);
     std::shared_ptr<TH1D> GetPointerAfterMerge1D(int);
     std::shared_ptr<TH2D> GetPointerAfterMerge2D(int);
     std::shared_ptr<TH3D> GetPointerAfterMerge3D(int);
+    std::shared_ptr<THnSparseD> GetPointerAfterMergeND(int);
     std::shared_ptr<TH1D> GetPointerAfterMerge1D(const char*);
     std::shared_ptr<TH2D> GetPointerAfterMerge2D(const char*);
     std::shared_ptr<TH3D> GetPointerAfterMerge3D(const char*);
+    std::shared_ptr<THnSparseD> GetPointerAfterMergeND(const char*);
 };
 
 ProcessingOutsideLoop::ProcessingOutsideLoop(/* args */){
@@ -60,6 +68,7 @@ void ProcessingOutsideLoop::AddHistogram(TH1D hist){
     hist1dtab.push_back(new ROOT::TThreadedObject<TH1D>(hist));
     hist2dtab.push_back(nullptr);
     hist3dtab.push_back(nullptr);
+    histNdtab.push_back(nullptr);
 }
 
 void ProcessingOutsideLoop::AddHistogram(TH2D hist){
@@ -67,6 +76,7 @@ void ProcessingOutsideLoop::AddHistogram(TH2D hist){
     hist1dtab.push_back(nullptr);
     hist2dtab.push_back(new ROOT::TThreadedObject<TH2D>(hist));
     hist3dtab.push_back(nullptr);
+    histNdtab.push_back(nullptr);
 }
 
 void ProcessingOutsideLoop::AddHistogram(TH3D hist){
@@ -74,6 +84,15 @@ void ProcessingOutsideLoop::AddHistogram(TH3D hist){
     hist1dtab.push_back(nullptr);
     hist2dtab.push_back(nullptr);
     hist3dtab.push_back(new ROOT::TThreadedObject<TH3D>(hist));
+    histNdtab.push_back(nullptr);
+}
+
+void ProcessingOutsideLoop::AddHistogram(THnSparseD hist){
+    hist.Sumw2();
+    hist1dtab.push_back(nullptr);
+    hist2dtab.push_back(nullptr);
+    hist3dtab.push_back(nullptr);
+    histNdtab.push_back(new ROOT::TThreadedObject<THnSparseD>(hist));
 }
 
 void ProcessingOutsideLoop::Merge(){
@@ -81,12 +100,15 @@ void ProcessingOutsideLoop::Merge(){
         hist1dtabFinal.push_back(nullptr);
         hist2dtabFinal.push_back(nullptr);
         hist3dtabFinal.push_back(nullptr);
+        histNdtabFinal.push_back(nullptr);
         if(hist1dtab[i]!=nullptr){
             hist1dtabFinal[i] = hist1dtab[i]->Merge();
         } else if(hist2dtab[i]!=nullptr){
             hist2dtabFinal[i] = hist2dtab[i]->Merge();
         } else if(hist3dtab[i]!=nullptr){
             hist3dtabFinal[i] = hist3dtab[i]->Merge();
+        } else if(histNdtab[i]!=nullptr){
+            histNdtabFinal[i] = histNdtab[i]->Merge();
         }
     }
 }
@@ -105,6 +127,8 @@ void ProcessingOutsideLoop::SaveToFile(TFile *file){
             hist2dtabFinal[i]->Write();
         } else if(hist3dtabFinal[i]!=nullptr){
             hist3dtabFinal[i]->Write();
+        } else if(histNdtabFinal[i]!=nullptr){
+            histNdtabFinal[i]->Write();
         }
     }
 }
@@ -125,6 +149,12 @@ ROOT::TThreadedObject<TH3D>& ProcessingOutsideLoop::GetPointer3D(int i){
         printf("Trying to get TThreadedObject<TH3D> for non-TH3D object. A reference to nullptr address will be returned\n");
     }
     return *hist3dtab[i];
+}
+ROOT::TThreadedObject<THnSparseD>& ProcessingOutsideLoop::GetPointerND(int i){
+    if(hist3dtab[i]==nullptr){
+        printf("Trying to get TThreadedObject<THnSparseD> for non-THnSparseD object. A reference to nullptr address will be returned\n");
+    }
+    return *histNdtab[i];
 }
 
 ROOT::TThreadedObject<TH1D>& ProcessingOutsideLoop::GetPointer1D(const char* hist_name){
@@ -151,6 +181,14 @@ ROOT::TThreadedObject<TH3D>& ProcessingOutsideLoop::GetPointer3D(const char* his
     }
     throw std::invalid_argument("Histogram with name \""+std::string(hist_name)+"\" could not be found.");
 }
+ROOT::TThreadedObject<THnSparseD>& ProcessingOutsideLoop::GetPointerND(const char* hist_name){
+    for(long unsigned int i = 0; i<hist1dtab.size(); i++){
+        if(histNdtab[i]!=nullptr&&strcmp(hist_name, histNdtab[i]->Get()->GetName())==0){
+            return *histNdtab[i];
+        }
+    }
+    throw std::invalid_argument("Histogram with name \""+std::string(hist_name)+"\" could not be found.");
+}
 
 std::shared_ptr<TH1D> ProcessingOutsideLoop::GetPointerAfterMerge1D(int i){
     if(hist1dtabFinal[i]==nullptr){
@@ -169,6 +207,12 @@ std::shared_ptr<TH3D> ProcessingOutsideLoop::GetPointerAfterMerge3D(int i){
         printf("Trying to get pointer to TH3D for non-TH3D object. A nullptr will be returned\n");
     }
     return hist3dtabFinal[i];
+}
+std::shared_ptr<THnSparseD> ProcessingOutsideLoop::GetPointerAfterMergeND(int i){
+    if(histNdtabFinal[i]==nullptr){
+        printf("Trying to get pointer to THnSparseD for non-THnSparseD object. A nullptr will be returned\n");
+    }
+    return histNdtabFinal[i];
 }
 
 std::shared_ptr<TH1D> ProcessingOutsideLoop::GetPointerAfterMerge1D(const char* hist_name){
@@ -191,6 +235,14 @@ std::shared_ptr<TH3D> ProcessingOutsideLoop::GetPointerAfterMerge3D(const char* 
     for(long unsigned int i = 0; i<hist1dtabFinal.size(); i++){
         if(hist3dtabFinal[i]!=nullptr&&strcmp(hist_name, hist3dtabFinal[i]->GetName())==0){
             return hist3dtabFinal[i];
+        }
+    }
+    throw std::invalid_argument("Histogram with name \""+std::string(hist_name)+"\" could not be found.");
+}
+std::shared_ptr<THnSparseD> ProcessingOutsideLoop::GetPointerAfterMergeND(const char* hist_name){
+    for(long unsigned int i = 0; i<hist1dtabFinal.size(); i++){
+        if(histNdtabFinal[i]!=nullptr&&strcmp(hist_name, histNdtabFinal[i]->GetName())==0){
+            return histNdtabFinal[i];
         }
     }
     throw std::invalid_argument("Histogram with name \""+std::string(hist_name)+"\" could not be found.");
