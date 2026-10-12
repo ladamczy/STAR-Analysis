@@ -103,8 +103,43 @@ int main(int argc, char** argv){
     //because number of events includes the current one, we need to add 1
     total_events_in_queue++;
 
+    ROOT::EnableThreadSafety();
+    //actually i'm not sure if it's needed here
+    ROOT::EnableImplicitMT(nthreads); //turn on multicore processing
+
+    //preparing input & output
+    TChain* upcChain = new TChain("mUPCTree");
+    if(ConnectInput(argc, argv, upcChain)){
+        cout<<"All files connected"<<endl;
+    }
+    const string& outputFolder = argv[2];
+
+    //adding chi2 histograms
+    //file with sigma values:
+    ifstream sigmaFile;
+    string line;
+    char sigmaName[10];
+    double sigmaValue;
+    map<string, double> sigmaMap;
+    sigmaFile.open("STAR-Analysis/Inclusive_Analysis/star-upc/AnaOutput_Inclusive_analysis_Kstar_phi_new_data_TOF_tests_sigmaValues.txt");
+    while(getline(sigmaFile, line)){
+        sscanf(line.c_str(), "%s\t\t%lf", sigmaName, &sigmaValue);
+        sigmaMap.insert({ string(sigmaName), sigmaValue });
+    }
+    sigmaFile.close();
+
+    //pairs that are actively looked for
+    std::vector<std::string> pairTabWithUnderscores = { "K_pi", "pi_K", "p_pi", "pi_p", "K_K", "pi_pi", "p_p" };
+    std::vector<std::string> pairTab;
+    std::vector<std::pair<PARTICLES, PARTICLES>> pairTabPID;
+    for(auto&& temp_pair:pairTabWithUnderscores){
+        std::string temp_pair_copy = temp_pair;
+        temp_pair_copy.erase(std::remove(temp_pair_copy.begin(), temp_pair_copy.end(), '_'), temp_pair_copy.end());
+        pairTab.push_back(temp_pair_copy);
+        pairTabPID.push_back(getPairPID(temp_pair));
+    }
+
     //setting up efficiency correction
-    double min_efficiency = 1e-4;
     StEfficiencyCorrector3D* totalEfficiencyCorrector[nCharge][nParticles];
     bool loadedCorrectorCorrectly = true;
     for(size_t i = 0; i<nCharge; i++){
@@ -119,12 +154,8 @@ int main(int argc, char** argv){
             break;
     }
     printf("Corrections initialised %s\n", loadedCorrectorCorrectly ? "successfully!" : "unsuccessfully! Falling back to default weight of 1.");
-    //efficiency histograms
-    TH1D efficiency1("efficiency1", "Particle reconstruction efficiency (0.0-1.0);efficiency;particles", 100, 0., 1.);
-    TH1D efficiency2("efficiency2", "Particle reconstruction efficiency (10^{-2}-10^{-4});efficiency;particles", 100, 1e-2, 1e-4);
-    TH1D efficiency3("efficiency3", "Particle reconstruction efficiency (10^{-4}-10^{-6});efficiency;particles", 100, 1e-4, 1e-6);
     //a nice wrapper
-    auto correction_coefficient = [&](int total_pair_charge, PARTICLES positive_id, PARTICLES negative_id, StUPCTrack* positive_track, StUPCTrack* negative_track, double Vz_positive, double Vz_negative){
+    auto efficiency_coefficient = [&](int total_pair_charge, PARTICLES positive_id, PARTICLES negative_id, StUPCTrack* positive_track, StUPCTrack* negative_track, double Vz_positive, double Vz_negative){
         //fallback if something broke
         if(!loadedCorrectorCorrectly)
             return 1.;
@@ -189,60 +220,31 @@ int main(int argc, char** argv){
             break;
         }
 
-        efficiency1.Fill(efficiency);
-        efficiency2.Fill(efficiency);
-        efficiency3.Fill(efficiency);
-
-        if(efficiency<min_efficiency)
-            return 1./min_efficiency;
-        return 1./efficiency;
+        return efficiency;
     };
-
-    ROOT::EnableThreadSafety();
-    //actually i'm not sure if it's needed here
-    ROOT::EnableImplicitMT(nthreads); //turn on multicore processing
-
-    //preparing input & output
-    TChain* upcChain = new TChain("mUPCTree");
-    if(ConnectInput(argc, argv, upcChain)){
-        cout<<"All files connected"<<endl;
-    }
-    const string& outputFolder = argv[2];
-
-    //adding chi2 histograms
-    //file with sigma values:
-    ifstream sigmaFile;
-    string line;
-    char sigmaName[10];
-    double sigmaValue;
-    map<string, double> sigmaMap;
-    sigmaFile.open("STAR-Analysis/Inclusive_Analysis/star-upc/AnaOutput_Inclusive_analysis_Kstar_phi_new_data_TOF_tests_sigmaValues.txt");
-    while(getline(sigmaFile, line)){
-        sscanf(line.c_str(), "%s\t\t%lf", sigmaName, &sigmaValue);
-        sigmaMap.insert({ string(sigmaName), sigmaValue });
-    }
-    sigmaFile.close();
-
-    //pairs that are actively looked for
-    std::vector<std::string> pairTabWithUnderscores = { "K_pi", "pi_K", "p_pi", "pi_p", "K_K", "pi_pi", "p_p" };
-    std::vector<std::string> pairTab;
-    std::vector<std::pair<PARTICLES, PARTICLES>> pairTabPID;
-    for(auto&& temp_pair:pairTabWithUnderscores){
-        std::string temp_pair_copy = temp_pair;
-        temp_pair_copy.erase(std::remove(temp_pair_copy.begin(), temp_pair_copy.end(), '_'), temp_pair_copy.end());
-        pairTab.push_back(temp_pair_copy);
-        pairTabPID.push_back(getPairPID(temp_pair));
-    }
-
 
     //histograms
     ProcessingOutsideLoop outsideprocessing;
+    //diagnostic histograms
     outsideprocessing.AddHistogram(TH1D("pairInfoSignal", "", 1, 0, 1));
     outsideprocessing.AddHistogram(TH1D("pairInfoBackgroundSameSign", "", 1, 0, 1));
     outsideprocessing.AddHistogram(TH1D("pairInfoBackgroundTrackRotation", "", 1, 0, 1));
     outsideprocessing.AddHistogram(TH1D("pairInfoBackgroundRandomTrackRotation", "", 1, 0, 1));
 
     outsideprocessing.AddHistogram(TH1D("Flowchart", "", 1, 0, 1));
+
+    outsideprocessing.AddHistogram(TH1D("efficiency1", "Particle reconstruction efficiency (0.0-1.0), taken from all pairs (double-counting of the tracks possible!);efficiency;particles", 100, 0., 1.));
+    outsideprocessing.AddHistogram(TH1D("efficiency2", "Particle reconstruction efficiency (0.0-10^{-2}), taken from all pairs (double-counting of the tracks possible!);efficiency;particles", 100, 0., 1e-2));
+    outsideprocessing.AddHistogram(TH1D("efficiency3", "Particle reconstruction efficiency (0.0-10^{-4}), taken from all pairs (double-counting of the tracks possible!);efficiency;particles", 100, 0., 1e-4));
+    outsideprocessing.AddHistogram(TH1D("efficiency4", "Particle reconstruction efficiency (0.0-10^{-6}), taken from all pairs (double-counting of the tracks possible!);efficiency;particles", 100, 0., 1e-6));
+
+    outsideprocessing.AddHistogram(TH3D("failedPionPositive", "Reconstructed #pi^{+} with 0. efficiency;p_{T} [GeV/c];#eta;V_{z} [cm]", 300, 0., 3., 300, -1.5, 1.5, 600, -300., 300.));
+    outsideprocessing.AddHistogram(TH3D("failedKaonPositive", "Reconstructed K^{+} with 0. efficiency;p_{T} [GeV/c];#eta;V_{z} [cm]", 300, 0., 3., 300, -1.5, 1.5, 600, -300., 300.));
+    outsideprocessing.AddHistogram(TH3D("failedProtonPositive", "Reconstructed p^{+} with 0. efficiency;p_{T} [GeV/c];#eta;V_{z} [cm]", 300, 0., 3., 300, -1.5, 1.5, 600, -300., 300.));
+    outsideprocessing.AddHistogram(TH3D("failedPionNegative", "Reconstructed #pi^{-} with 0. efficiency;p_{T} [GeV/c];#eta;V_{z} [cm]", 300, 0., 3., 300, -1.5, 1.5, 600, -300., 300.));
+    outsideprocessing.AddHistogram(TH3D("failedKaonNegative", "Reconstructed K^{-} with 0. efficiency;p_{T} [GeV/c];#eta;V_{z} [cm]", 300, 0., 3., 300, -1.5, 1.5, 600, -300., 300.));
+    outsideprocessing.AddHistogram(TH3D("failedProtonNegative", "Reconstructed p^{-} with 0. efficiency;p_{T} [GeV/c];#eta;V_{z} [cm]", 300, 0., 3., 300, -1.5, 1.5, 600, -300., 300.));
+
 
     //mass histograms (signal)
     outsideprocessing.AddHistogram(TH1D("MKpiChi2", ";m_{K^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 200, 0.5, 2.0));
@@ -401,6 +403,77 @@ int main(int argc, char** argv){
             insideprocessing.Fill((histfirstname+histlastname).c_str(), "Both wrong", 0.0);
         }
 
+        //lambda for testing which tracks gave 0 efficiency (only for signal, so we can skip some checks)
+        auto efficiency_testing = [&](std::string pairNameWithUnderscore, StUPCTrack* positive_track, StUPCTrack* negative_track, double Vz){
+            //fallback if something broke
+            if(!loadedCorrectorCorrectly)
+                return 1;
+            //if success, we gotta load all the variables
+            double pt1 = positive_track->getPt();
+            double pt2 = negative_track->getPt();
+            double eta1 = positive_track->getEta();
+            double eta2 = negative_track->getEta();
+
+            //calculating corrections
+            std::pair<PARTICLES, PARTICLES> id_both = getPairPID(pairNameWithUnderscore);
+            double eff_first, eff_second;
+            //positive
+            switch(id_both.first){
+            case Pion:
+                eff_first = totalEfficiencyCorrector[positive][id_both.first]->getCombinedEfficiency(eta1, pt1, Vz, 1, StEfficiencyCorrector3D::PION);
+                if(eff_first==0){
+                    insideprocessing.Fill("failedPionPositive", pt1, eta1, Vz);
+                }
+                break;
+            case Kaon:
+                eff_first = totalEfficiencyCorrector[positive][id_both.first]->getCombinedEfficiency(eta1, pt1, Vz, 1, StEfficiencyCorrector3D::KAON);
+                if(eff_first==0){
+                    insideprocessing.Fill("failedKaonPositive", pt1, eta1, Vz);
+                }
+                break;
+            case Proton:
+                eff_first = totalEfficiencyCorrector[positive][id_both.first]->getCombinedEfficiency(eta1, pt1, Vz, 1, StEfficiencyCorrector3D::PROTON);
+                if(eff_first==0){
+                    insideprocessing.Fill("failedProtonPositive", pt1, eta1, Vz);
+                }
+                break;
+            default:
+                return 1;
+                break;
+            }
+            //negative
+            switch(id_both.second){
+            case Pion:
+                eff_second = totalEfficiencyCorrector[negative][id_both.second]->getCombinedEfficiency(eta2, pt2, Vz, -1, StEfficiencyCorrector3D::PION);
+                if(eff_second==0){
+                    insideprocessing.Fill("failedPionNegative", pt2, eta2, Vz);
+                }
+                break;
+            case Kaon:
+                eff_second = totalEfficiencyCorrector[negative][id_both.second]->getCombinedEfficiency(eta2, pt2, Vz, -1, StEfficiencyCorrector3D::KAON);
+                if(eff_second==0){
+                    insideprocessing.Fill("failedKaonNegative", pt2, eta2, Vz);
+                }
+                break;
+            case Proton:
+                eff_second = totalEfficiencyCorrector[negative][id_both.second]->getCombinedEfficiency(eta2, pt2, Vz, -1, StEfficiencyCorrector3D::PROTON);
+                if(eff_second==0){
+                    insideprocessing.Fill("failedProtonNegative", pt2, eta2, Vz);
+                }
+                break;
+            default:
+                return 1;
+                break;
+            }
+
+            insideprocessing.Fill("efficiency1", eff_first*eff_second);
+            insideprocessing.Fill("efficiency2", eff_first*eff_second);
+            insideprocessing.Fill("efficiency3", eff_first*eff_second);
+            insideprocessing.Fill("efficiency4", eff_first*eff_second);
+
+            return 0;
+        };
+
         //helpful variables
         std::vector<StUPCTrack*> vector_Track_positive;
         std::vector<StUPCTrack*> vector_Track_negative;
@@ -409,7 +482,7 @@ int main(int argc, char** argv){
         TLorentzVector negative_track;
         TLorentzVector positive_track2;
         TLorentzVector negative_track2;
-        double mass, chi2pipi, chi2Kpi, eta, pT, phi, correction;
+        double mass, chi2pipi, chi2Kpi, eta, pT, phi, efficiency;
         map<string, double> chi2Map;
         bool isdEdxOk, isTOFOk;
         string tempPairName;
@@ -569,41 +642,44 @@ int main(int argc, char** argv){
                             std::pair<PARTICLES, PARTICLES> pairPID = pairTabPID[pair_number];
                             std::string temp_pair = pairTab[pair_number];
 
+                            //efficiency testing
+                            efficiency_testing(pairTabWithUnderscores[pair_number], vector_Track_positive[i], vector_Track_negative[j], PV_position.Z());
+
                             //calculating physics (general)
                             vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[pairPID.first]);
                             vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[pairPID.second]);
                             mass = (positive_track+negative_track).M();
                             eta = (positive_track+negative_track).Eta();
                             pT = (positive_track+negative_track).Pt();
-                            correction = correction_coefficient(0, pairPID.first, pairPID.second, vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
-                            insideprocessing.Fill(("M"+temp_pair+"Chi2").c_str(), mass, correction);
-                            insideprocessing.Fill(("M"+temp_pair+"Chi2eta").c_str(), mass, eta, correction);
-                            insideprocessing.Fill(("M"+temp_pair+"Chi2pT").c_str(), mass, pT, correction);
+                            efficiency = efficiency_coefficient(0, pairPID.first, pairPID.second, vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2").c_str(), mass, 1./efficiency);
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2eta").c_str(), mass, eta, 1./efficiency);
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2pT").c_str(), mass, pT, 1./efficiency);
 
                             //calculating physics (specific)
                             if(temp_pair=="Kpi"||temp_pair=="piK"||temp_pair=="KK"){
-                                insideprocessing.Fill(("M"+temp_pair+"Chi2Close").c_str(), mass, correction);
+                                insideprocessing.Fill(("M"+temp_pair+"Chi2Close").c_str(), mass, 1./efficiency);
                             }
                             if(temp_pair=="KK"){
                                 //test of suspicious peak and its neighbourhood
                                 if(chi2Map["K_K"]<3){
-                                    insideprocessing.Fill("MKKSuspiciousPeakTestedWithStrictChi2LessThan3", mass, correction);
+                                    insideprocessing.Fill("MKKSuspiciousPeakTestedWithStrictChi2LessThan3", mass, 1./efficiency);
                                 }
                                 if(chi2Map["K_K"]<1){
-                                    insideprocessing.Fill("MKKSuspiciousPeakTestedWithStrictChi2LessThan1", mass, correction);
+                                    insideprocessing.Fill("MKKSuspiciousPeakTestedWithStrictChi2LessThan1", mass, 1./efficiency);
                                 }
                                 //!!!!!!!!!!
                                 //CORRECTION CHANGE!!!!!!!!
                                 //!!!!!!!!!!
-                                correction = correction_coefficient(0, Pion, Pion, vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
+                                efficiency = efficiency_coefficient(0, Pion, Pion, vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
                                 if(1.06<mass&&mass<1.08){
                                     vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
                                     vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
-                                    insideprocessing.Fill("MKKSuspiciousPeakTestedAsPionPair", (positive_track+negative_track).M(), correction);
+                                    insideprocessing.Fill("MKKSuspiciousPeakTestedAsPionPair", (positive_track+negative_track).M(), 1./efficiency);
                                 } else if(1.05<mass&&mass<1.09){
                                     vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
                                     vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
-                                    insideprocessing.Fill("MKKSuspiciousPeakTestedAsPionPairNeighbourhood", (positive_track+negative_track).M(), correction);
+                                    insideprocessing.Fill("MKKSuspiciousPeakTestedAsPionPairNeighbourhood", (positive_track+negative_track).M(), 1./efficiency);
                                 }
                             }
                             //end of chi2 test
@@ -654,14 +730,14 @@ int main(int argc, char** argv){
                             mass = (positive_track+positive_track2).M();
                             eta = (positive_track+positive_track2).Eta();
                             pT = (positive_track+positive_track2).Pt();
-                            correction = correction_coefficient(2, pairPID.first, pairPID.second, vector_Track_positive[i], vector_Track_positive[j], PV_position.Z(), PV_position.Z());
-                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgSameSign").c_str(), mass, correction);
-                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgSameSigneta").c_str(), mass, eta, correction);
-                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgSameSignpT").c_str(), mass, pT, correction);
+                            efficiency = efficiency_coefficient(2, pairPID.first, pairPID.second, vector_Track_positive[i], vector_Track_positive[j], PV_position.Z(), PV_position.Z());
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgSameSign").c_str(), mass, 1./efficiency);
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgSameSigneta").c_str(), mass, eta, 1./efficiency);
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgSameSignpT").c_str(), mass, pT, 1./efficiency);
 
                             //calculating physics (specific)
                             if(temp_pair=="Kpi"||temp_pair=="piK"||temp_pair=="KK"){
-                                insideprocessing.Fill(("M"+temp_pair+"Chi2BcgSameSignClose").c_str(), mass, correction);
+                                insideprocessing.Fill(("M"+temp_pair+"Chi2BcgSameSignClose").c_str(), mass, 1./efficiency);
                             }
                             //end of chi2 test
                         }
@@ -708,14 +784,14 @@ int main(int argc, char** argv){
                             mass = (negative_track+negative_track2).M();
                             eta = (negative_track+negative_track2).Eta();
                             pT = (negative_track+negative_track2).Pt();
-                            correction = correction_coefficient(2, pairPID.first, pairPID.second, vector_Track_negative[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
-                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgSameSign").c_str(), mass, correction);
-                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgSameSigneta").c_str(), mass, eta, correction);
-                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgSameSignpT").c_str(), mass, pT, correction);
+                            efficiency = efficiency_coefficient(2, pairPID.first, pairPID.second, vector_Track_negative[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgSameSign").c_str(), mass, 1./efficiency);
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgSameSigneta").c_str(), mass, eta, 1./efficiency);
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgSameSignpT").c_str(), mass, pT, 1./efficiency);
 
                             //calculating physics (specific)
                             if(temp_pair=="Kpi"||temp_pair=="piK"||temp_pair=="KK"){
-                                insideprocessing.Fill(("M"+temp_pair+"Chi2BcgSameSignClose").c_str(), mass, correction);
+                                insideprocessing.Fill(("M"+temp_pair+"Chi2BcgSameSignClose").c_str(), mass, 1./efficiency);
                             }
                             //end of chi2 test
                         }
@@ -768,14 +844,14 @@ int main(int argc, char** argv){
                             mass = (positive_track+negative_track).M();
                             eta = (positive_track+negative_track).Eta();
                             pT = (positive_track+negative_track).Pt();
-                            correction = correction_coefficient(0, pairPID.first, pairPID.second, vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
-                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgTrackRotation").c_str(), mass, correction);
-                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgTrackRotationeta").c_str(), mass, eta, correction);
-                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgTrackRotationpT").c_str(), mass, pT, correction);
+                            efficiency = efficiency_coefficient(0, pairPID.first, pairPID.second, vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgTrackRotation").c_str(), mass, 1./efficiency);
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgTrackRotationeta").c_str(), mass, eta, 1./efficiency);
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgTrackRotationpT").c_str(), mass, pT, 1./efficiency);
 
                             //calculating physics (specific)
                             if(temp_pair=="Kpi"||temp_pair=="piK"||temp_pair=="KK"){
-                                insideprocessing.Fill(("M"+temp_pair+"Chi2BcgTrackRotationClose").c_str(), mass, correction);
+                                insideprocessing.Fill(("M"+temp_pair+"Chi2BcgTrackRotationClose").c_str(), mass, 1./efficiency);
                             }
                             //end of chi2 test
                         }
@@ -829,14 +905,14 @@ int main(int argc, char** argv){
                             mass = (positive_track+negative_track).M();
                             eta = (positive_track+negative_track).Eta();
                             pT = (positive_track+negative_track).Pt();
-                            correction = correction_coefficient(0, pairPID.first, pairPID.second, vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
-                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgRandomTrackRotation").c_str(), mass, correction);
-                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgRandomTrackRotationeta").c_str(), mass, eta, correction);
-                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgRandomTrackRotationpT").c_str(), mass, pT, correction);
+                            efficiency = efficiency_coefficient(0, pairPID.first, pairPID.second, vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgRandomTrackRotation").c_str(), mass, 1./efficiency);
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgRandomTrackRotationeta").c_str(), mass, eta, 1./efficiency);
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgRandomTrackRotationpT").c_str(), mass, pT, 1./efficiency);
 
                             //calculating physics (specific)
                             if(temp_pair=="Kpi"||temp_pair=="piK"||temp_pair=="KK"){
-                                insideprocessing.Fill(("M"+temp_pair+"Chi2BcgRandomTrackRotationClose").c_str(), mass, correction);
+                                insideprocessing.Fill(("M"+temp_pair+"Chi2BcgRandomTrackRotationClose").c_str(), mass, 1./efficiency);
                             }
                             //end of chi2 test
                         }
@@ -973,14 +1049,14 @@ int main(int argc, char** argv){
                             mass = (positive_track+negative_track).M();
                             eta = (positive_track+negative_track).Eta();
                             pT = (positive_track+negative_track).Pt();
-                            correction = correction_coefficient(0, pairPID.first, pairPID.second, map_of_queue_of_previous_vector_Tracks_positive[temp_pair].back()[i], map_of_queue_of_previous_vector_Tracks_negative[temp_pair][evt][j], queue_of_previous_PV_positions.back().Z(), queue_of_previous_PV_positions[evt].Z());
+                            efficiency = efficiency_coefficient(0, pairPID.first, pairPID.second, map_of_queue_of_previous_vector_Tracks_positive[temp_pair].back()[i], map_of_queue_of_previous_vector_Tracks_negative[temp_pair][evt][j], queue_of_previous_PV_positions.back().Z(), queue_of_previous_PV_positions[evt].Z());
                             //filling (general)
-                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEvent").c_str(), mass, correction);
-                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventeta").c_str(), mass, eta, correction);
-                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventpT").c_str(), mass, pT, correction);
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEvent").c_str(), mass, 1./efficiency);
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventeta").c_str(), mass, eta, 1./efficiency);
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventpT").c_str(), mass, pT, 1./efficiency);
                             //filling (specific)
                             if(temp_pair=="Kpi"||temp_pair=="piK"||temp_pair=="KK"){
-                                insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventClose").c_str(), mass, correction);
+                                insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventClose").c_str(), mass, 1./efficiency);
                             }
                             //end of pairing
                         }
@@ -993,14 +1069,14 @@ int main(int argc, char** argv){
                             mass = (positive_track+negative_track).M();
                             eta = (positive_track+negative_track).Eta();
                             pT = (positive_track+negative_track).Pt();
-                            correction = correction_coefficient(0, pairPID.first, pairPID.second, map_of_queue_of_previous_vector_Tracks_positive[temp_pair][evt][i], map_of_queue_of_previous_vector_Tracks_negative[temp_pair].back()[j], queue_of_previous_PV_positions[evt].Z(), queue_of_previous_PV_positions.back().Z());
+                            efficiency = efficiency_coefficient(0, pairPID.first, pairPID.second, map_of_queue_of_previous_vector_Tracks_positive[temp_pair][evt][i], map_of_queue_of_previous_vector_Tracks_negative[temp_pair].back()[j], queue_of_previous_PV_positions[evt].Z(), queue_of_previous_PV_positions.back().Z());
                             //filling (general)
-                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEvent").c_str(), mass, correction);
-                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventeta").c_str(), mass, eta, correction);
-                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventpT").c_str(), mass, pT, correction);
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEvent").c_str(), mass, 1./efficiency);
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventeta").c_str(), mass, eta, 1./efficiency);
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventpT").c_str(), mass, pT, 1./efficiency);
                             //filling (specific)
                             if(temp_pair=="Kpi"||temp_pair=="piK"||temp_pair=="KK"){
-                                insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventClose").c_str(), mass, correction);
+                                insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventClose").c_str(), mass, 1./efficiency);
                             }
                             //end of pairing
                         }
@@ -1025,14 +1101,14 @@ int main(int argc, char** argv){
                             mass = (positive_track+positive_track2).M();
                             eta = (positive_track+positive_track2).Eta();
                             pT = (positive_track+positive_track2).Pt();
-                            correction = correction_coefficient(2, pairPID.first, pairPID.second, map_of_queue_of_previous_vector_Tracks_positive[temp_pair][evt][i], map_of_queue_of_previous_vector_Tracks_positive[reverse_temp_pair].back()[j], queue_of_previous_PV_positions[evt].Z(), queue_of_previous_PV_positions.back().Z());
+                            efficiency = efficiency_coefficient(2, pairPID.first, pairPID.second, map_of_queue_of_previous_vector_Tracks_positive[temp_pair][evt][i], map_of_queue_of_previous_vector_Tracks_positive[reverse_temp_pair].back()[j], queue_of_previous_PV_positions[evt].Z(), queue_of_previous_PV_positions.back().Z());
                             //filling (general)
-                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSign").c_str(), mass, correction);
-                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSigneta").c_str(), mass, eta, correction);
-                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSignpT").c_str(), mass, pT, correction);
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSign").c_str(), mass, 1./efficiency);
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSigneta").c_str(), mass, eta, 1./efficiency);
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSignpT").c_str(), mass, pT, 1./efficiency);
                             //filling (specific)
                             if(temp_pair=="Kpi"||temp_pair=="piK"||temp_pair=="KK"){
-                                insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSignClose").c_str(), mass, correction);
+                                insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSignClose").c_str(), mass, 1./efficiency);
                             }
                             //end of pairing
                         }
@@ -1045,14 +1121,14 @@ int main(int argc, char** argv){
                             mass = (negative_track+negative_track2).M();
                             eta = (negative_track+negative_track2).Eta();
                             pT = (negative_track+negative_track2).Pt();
-                            correction = correction_coefficient(-2, pairPID.first, pairPID.second, map_of_queue_of_previous_vector_Tracks_negative[temp_pair][evt][i], map_of_queue_of_previous_vector_Tracks_negative[reverse_temp_pair].back()[j], queue_of_previous_PV_positions[evt].Z(), queue_of_previous_PV_positions.back().Z());
+                            efficiency = efficiency_coefficient(-2, pairPID.first, pairPID.second, map_of_queue_of_previous_vector_Tracks_negative[temp_pair][evt][i], map_of_queue_of_previous_vector_Tracks_negative[reverse_temp_pair].back()[j], queue_of_previous_PV_positions[evt].Z(), queue_of_previous_PV_positions.back().Z());
                             //filling (general)
-                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSign").c_str(), mass, correction);
-                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSigneta").c_str(), mass, eta, correction);
-                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSignpT").c_str(), mass, pT, correction);
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSign").c_str(), mass, 1./efficiency);
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSigneta").c_str(), mass, eta, 1./efficiency);
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSignpT").c_str(), mass, pT, 1./efficiency);
                             //filling (specific)
                             if(temp_pair=="Kpi"||temp_pair=="piK"||temp_pair=="KK"){
-                                insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSignClose").c_str(), mass, correction);
+                                insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSignClose").c_str(), mass, 1./efficiency);
                             }
                             //end of pairing
                         }
@@ -1063,7 +1139,7 @@ int main(int argc, char** argv){
                     //current pi+  previous K+
                     //while for same pairs it would be:
                     //current K+   previous K+
-                    //current K+  previous K+
+                    //current K+   previous K+
                     //which obviously does not make sense
                     if(temp_pair==reverse_temp_pair){
                         continue;
@@ -1076,14 +1152,14 @@ int main(int argc, char** argv){
                             mass = (positive_track+positive_track2).M();
                             eta = (positive_track+positive_track2).Eta();
                             pT = (positive_track+positive_track2).Pt();
-                            correction = correction_coefficient(2, pairPID.first, pairPID.second, map_of_queue_of_previous_vector_Tracks_positive[temp_pair].back()[i], map_of_queue_of_previous_vector_Tracks_positive[reverse_temp_pair][evt][j], queue_of_previous_PV_positions.back().Z(), queue_of_previous_PV_positions[evt].Z());
+                            efficiency = efficiency_coefficient(2, pairPID.first, pairPID.second, map_of_queue_of_previous_vector_Tracks_positive[temp_pair].back()[i], map_of_queue_of_previous_vector_Tracks_positive[reverse_temp_pair][evt][j], queue_of_previous_PV_positions.back().Z(), queue_of_previous_PV_positions[evt].Z());
                             //filling (general)
-                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSign").c_str(), mass, correction);
-                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSigneta").c_str(), mass, eta, correction);
-                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSignpT").c_str(), mass, pT, correction);
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSign").c_str(), mass, 1./efficiency);
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSigneta").c_str(), mass, eta, 1./efficiency);
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSignpT").c_str(), mass, pT, 1./efficiency);
                             //filling (specific)
                             if(temp_pair=="Kpi"||temp_pair=="piK"||temp_pair=="KK"){
-                                insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSignClose").c_str(), mass, correction);
+                                insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSignClose").c_str(), mass, 1./efficiency);
                             }
                             //end of pairing
                         }
@@ -1096,14 +1172,14 @@ int main(int argc, char** argv){
                             mass = (negative_track+negative_track2).M();
                             eta = (negative_track+negative_track2).Eta();
                             pT = (negative_track+negative_track2).Pt();
-                            correction = correction_coefficient(-2, pairPID.first, pairPID.second, map_of_queue_of_previous_vector_Tracks_negative[temp_pair].back()[i], map_of_queue_of_previous_vector_Tracks_negative[reverse_temp_pair][evt][j], queue_of_previous_PV_positions.back().Z(), queue_of_previous_PV_positions[evt].Z());
+                            efficiency = efficiency_coefficient(-2, pairPID.first, pairPID.second, map_of_queue_of_previous_vector_Tracks_negative[temp_pair].back()[i], map_of_queue_of_previous_vector_Tracks_negative[reverse_temp_pair][evt][j], queue_of_previous_PV_positions.back().Z(), queue_of_previous_PV_positions[evt].Z());
                             //filling (general)
-                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSign").c_str(), mass, correction);
-                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSigneta").c_str(), mass, eta, correction);
-                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSignpT").c_str(), mass, pT, correction);
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSign").c_str(), mass, 1./efficiency);
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSigneta").c_str(), mass, eta, 1./efficiency);
+                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSignpT").c_str(), mass, pT, 1./efficiency);
                             //filling (specific)
                             if(temp_pair=="Kpi"||temp_pair=="piK"||temp_pair=="KK"){
-                                insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSignClose").c_str(), mass, correction);
+                                insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSignClose").c_str(), mass, 1./efficiency);
                             }
                             //end of pairing
                         }
@@ -1149,11 +1225,7 @@ int main(int argc, char** argv){
     }
     cout<<"Created output file "<<outfileName<<endl;
     TFile* outputFileHist = TFile::Open(outfileName.c_str(), "recreate");
-    //saving multicore histgrams and a special one
-    outputFileHist->cd();
-    efficiency1.Write();
-    efficiency2.Write();
-    efficiency3.Write();
+    //saving multicore histgrams
     outsideprocessing.SaveToFile(outputFileHist);
 
     outputFileHist->Close();
