@@ -76,22 +76,26 @@ int main(int argc, char* argv[]){
     TF1 fit_func_sig_template("fit_func_sig_template", "[0]*TMath::Voigt(x-[1], [3], [2])");
     //vector of potential signals, filled with functions
     std::vector<TF1> signal_function_vector;
-    signal_function_vector.push_back(*static_cast<TF1*>(fit_func_sig_template.Clone("Kstar700")));
-    signal_function_vector.push_back(*static_cast<TF1*>(fit_func_sig_template.Clone("Kstar892")));
-    signal_function_vector.push_back(*static_cast<TF1*>(fit_func_sig_template.Clone("Kstar1430")));
-    //naming parameters
-    signal_function_vector[0].SetParNames("N_{K^{*}(700)}", "m_{K^{*}(700)}", "#Gamma_{K^{*}(700)}", "#sigma_{K^{*}(700)}");
-    signal_function_vector[1].SetParNames("N_{K^{*}(892)}", "m_{K^{*}(892)}", "#Gamma_{K^{*}(892)}", "#sigma_{K^{*}(892)}");
-    signal_function_vector[2].SetParNames("N_{K^{*}(1430)}", "m_{K^{*}(1430)}", "#Gamma_{K^{*}(1430)}", "#sigma_{K^{*}(1430)}");
-    //setting PDG values of mass and width
+    //vector of PDG values of mass and width
     std::vector<std::pair<double, double>> PDG_data;
+
+    //setting up signal particles, in order
+    //K*(700)
+    signal_function_vector.push_back(*static_cast<TF1*>(fit_func_sig_template.Clone("Kstar700")));
+    signal_function_vector.back().SetParNames("N_{K^{*}(700)}", "m_{K^{*}(700)}", "#Gamma_{K^{*}(700)}", "#sigma_{K^{*}(700)}");
     PDG_data.emplace_back(0.838, 0.463);
+    signal_function_vector.back().SetParameters(10., 0.838, 0.463, 0.006);
+    //K*(892)
+    signal_function_vector.push_back(*static_cast<TF1*>(fit_func_sig_template.Clone("Kstar892")));
+    signal_function_vector.back().SetParNames("N_{K^{*}(892)}", "m_{K^{*}(892)}", "#Gamma_{K^{*}(892)}", "#sigma_{K^{*}(892)}");
     PDG_data.emplace_back(fitMaximum, fitWidth);
+    signal_function_vector.back().SetParameters(10., fitMaximum, fitWidth, 0.006);
+    //K*(1430)
+    signal_function_vector.push_back(*static_cast<TF1*>(fit_func_sig_template.Clone("Kstar1430")));
+    signal_function_vector.back().SetParNames("N_{K^{*}(1430)}", "m_{K^{*}(1430)}", "#Gamma_{K^{*}(1430)}", "#sigma_{K^{*}(1430)}");
     PDG_data.emplace_back(1.425, 0.27);
-    //setting parameters (//N_sig, m0, gamma0, sigma_Gauss)
-    signal_function_vector[0].SetParameters(10., 0.838, 0.463, 0.006);
-    signal_function_vector[1].SetParameters(10., fitMaximum, fitWidth, 0.006);
-    signal_function_vector[2].SetParameters(10., 1.425, 0.270, 0.006);
+    signal_function_vector.back().SetParameters(10., 1.425, 0.270, 0.006);
+
     //setting parameter limits
     for(size_t i = 0; i<signal_function_vector.size(); i++){
         //getting
@@ -100,7 +104,7 @@ int main(int argc, char* argv[]){
         //setting
         signal_function_vector[i].SetParLimits(0, 0., 1e3);
         signal_function_vector[i].SetParLimits(1, currentfitMaximum-currentfitWidth, currentfitMaximum+currentfitWidth);
-        signal_function_vector[i].SetParLimits(2, 0., 2*currentfitWidth);
+        signal_function_vector[i].SetParLimits(2, currentfitWidth/3., 2*currentfitWidth);
         signal_function_vector[i].SetParLimits(3, 0., 1.);
     }
 
@@ -200,17 +204,17 @@ int main(int argc, char* argv[]){
                     }
                     return result;
                 };
-                int total_number_of_parameters = 0;
+                int total_number_of_signal_parameters = 0;
                 for(auto&& sig_func_partial:signal_function_vector){
-                    total_number_of_parameters += sig_func_partial.GetNpar();
+                    total_number_of_signal_parameters += sig_func_partial.GetNpar();
                 }
-                TF1 fit_func_sig("fit_func_sig", signal_sum_function, lower_range, upper_range, total_number_of_parameters, 1);
+                TF1 fit_func_sig("fit_func_sig", signal_sum_function, lower_range, upper_range, total_number_of_signal_parameters, 1);
                 int temp_par_number = 0;
                 for(auto&& sig_func_partial:signal_function_vector){
                     for(size_t n_par = 0; n_par<sig_func_partial.GetNpar(); n_par++){
                         fit_func_sig.SetParName(temp_par_number, sig_func_partial.GetParName(n_par));
                         double min_limit, max_limit;
-                        sig_func_partial.GetParLimits(temp_par_number, min_limit, max_limit);
+                        sig_func_partial.GetParLimits(n_par, min_limit, max_limit);
                         fit_func_sig.SetParLimits(temp_par_number, min_limit, max_limit);
                         temp_par_number++;
                     }
@@ -266,7 +270,7 @@ int main(int argc, char* argv[]){
                     //result
                     double bin_width = result_vector[pair][category][i]->GetBinWidth(k+1);
                     //TODO: check later if taking constant bin width does not mess things up
-                    //TOFO: change i*fit_func_sig_template.GetNpar() into proper values
+                    //TODO: change i*fit_func_sig_template.GetNpar() into proper values
                     par_value = fabs(tempResult.Parameter(i*fit_func_sig_template.GetNpar()+0)/sig_slice->GetXaxis()->GetBinWidth(1)*bin_width);
                     par_error = tempResult.ParError(i*fit_func_sig_template.GetNpar()+0)/sig_slice->GetXaxis()->GetBinWidth(1)*bin_width;
                     result_vector[pair][category][i]->SetBinContent(k+1, par_value);
@@ -282,10 +286,12 @@ int main(int argc, char* argv[]){
                     resolution_vector[pair][category][i]->SetBinError(k+1, tempResult.Error(i*fit_func_sig_template.GetNpar()+3));
                 }
                 //background normalisation
-                background_normalisation_vector[pair][category]->SetBinContent(k+1, tempResult.Parameter(4));
-                background_normalisation_vector[pair][category]->SetBinError(k+1, tempResult.Error(4));
+                //TODO: change that when introducing multiple backgrounds
+                background_normalisation_vector[pair][category]->SetBinContent(k+1, tempResult.Parameter(total_number_of_signal_parameters));
+                background_normalisation_vector[pair][category]->SetBinError(k+1, tempResult.Error(total_number_of_signal_parameters));
                 //background additional parameters
                 int total_signal_parameters = fit_func_sig.GetNpar();
+                //TODO: change that when introducing multiple backgrounds
                 int total_mixed_event_background_parameters = 1;
                 for(size_t par = total_signal_parameters+total_mixed_event_background_parameters; par<tempResult.NTotalParameters(); par++){
                     //this way we start fit_func_bcg parameters from after signal and after mixed background
