@@ -195,6 +195,7 @@ int main(int argc, char* argv[]){
 
 
                 //creating signal function - a sum of all the signals
+                //TODO make function histogram-like instead of smooth
                 auto signal_sum_function = [&](double* x, double* p){
                     double result = 0;
                     int starting_parameter = 0;
@@ -423,7 +424,7 @@ TFitResult fit_and_draw_and_save(TH1D* data, TF1* signal, TF1* background, std::
     data->SetMarkerStyle(kFullCircle);
     data->SetMarkerColor(kBlue);
     //drawing data and function
-    TFitResultPtr fitPointer = data->Fit(fitting_function_total, "BRSWL");
+    TFitResultPtr fitPointer = data->Fit(fitting_function_total, "B R S I");
     data->Draw(options.c_str());
     //drawing legend
     double width = 0.3;
