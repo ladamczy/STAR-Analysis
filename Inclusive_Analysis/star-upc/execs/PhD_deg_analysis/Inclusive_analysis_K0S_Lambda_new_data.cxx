@@ -374,9 +374,9 @@ int main(int argc, char** argv){
 
     //merging and tidying up
     outsideprocessing.Merge();
-    outsideprocessing.GetPointerAfterMerge1D("pairInfo")->LabelsDeflate();
-    outsideprocessing.GetPointerAfterMerge2D("trackInfo")->LabelsDeflate("X");
-    outsideprocessing.GetPointerAfterMerge2D("trackInfo")->LabelsDeflate("Y");
+    outsideprocessing.GetPointerAfterMerge<TH1D>("pairInfo")->LabelsDeflate();
+    outsideprocessing.GetPointerAfterMerge<TH2D>("trackInfo")->LabelsDeflate("X");
+    outsideprocessing.GetPointerAfterMerge<TH2D>("trackInfo")->LabelsDeflate("Y");
 
     //setting up a tree & output file
     string path = string(argv[0]);

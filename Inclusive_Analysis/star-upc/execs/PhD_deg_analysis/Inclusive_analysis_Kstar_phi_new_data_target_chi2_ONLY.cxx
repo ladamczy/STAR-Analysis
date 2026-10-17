@@ -12,6 +12,7 @@
 #include <THashList.h>
 #include <TFileInfo.h>
 #include <TSystem.h>
+#include <THnSparse.h>
 
 // picoDst headers
 #include "StRPEvent.h"
@@ -368,14 +369,14 @@ int main(int argc, char** argv){
     outsideprocessing.AddHistogram(TH2D("XiBothDifference", ";#Delta #xi_{W};#Delta #xi_{E}", 400, -0.1, 0.1, 400, -0.1, 0.1));
 
     for(size_t i = 0; i<outsideprocessing.GetNumberOfHistograms(); i++){
-        if(&outsideprocessing.GetPointer1D(i)!=nullptr){
-            printf("%s\n", outsideprocessing.GetPointer1D(i)->GetName());
-        } else if(&outsideprocessing.GetPointer2D(i)!=nullptr){
-            printf("%s\n", outsideprocessing.GetPointer2D(i)->GetName());
-        } else if(&outsideprocessing.GetPointer3D(i)!=nullptr){
-            printf("%s\n", outsideprocessing.GetPointer3D(i)->GetName());
-        } else if(&outsideprocessing.GetPointerND(i)!=nullptr){
-            printf("%s\n", outsideprocessing.GetPointerND(i)->GetName());
+        if(outsideprocessing.GetPointer<TH1D>(i)!=nullptr){
+            printf("%s\n", outsideprocessing.GetPointer<TH1D>(i)->GetName());
+        } else if(outsideprocessing.GetPointer<TH2D>(i)!=nullptr){
+            printf("%s\n", outsideprocessing.GetPointer<TH2D>(i)->GetName());
+        } else if(outsideprocessing.GetPointer<TH3D>(i)!=nullptr){
+            printf("%s\n", outsideprocessing.GetPointer<TH3D>(i)->GetName());
+        } else if(outsideprocessing.GetPointer<THnSparseD>(i)!=nullptr){
+            printf("%s\n", outsideprocessing.GetPointer<THnSparseD>(i)->GetName());
         } else{
             printf("What.\n");
         }

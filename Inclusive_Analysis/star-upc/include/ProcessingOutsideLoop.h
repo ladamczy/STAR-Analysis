@@ -5,12 +5,15 @@
 #include "TH1.h"
 #include "TH2.h"
 #include "TH3.h"
-#include "THnSparse.h"
+#include "THnBase.h"
+#include "TEfficiency.h"
 #include "TObject.h"
 #include <stdio.h>
 #include <string>
 #include <ROOT/TThreadedObject.hxx>
 #include "TFile.h"
+
+#include <memory>
 
 //to avoid circular reference we "dummy define" class here i guess? like with functions
 class ProcessingInsideLoop;
@@ -19,233 +22,208 @@ class ProcessingOutsideLoop {
 private:
     //so that Inside loop instances would have access to these things
     friend ProcessingInsideLoop;
-    std::vector<ROOT::TThreadedObject<TH1D> *> hist1dtab;
-    std::vector<ROOT::TThreadedObject<TH2D> *> hist2dtab;
-    std::vector<ROOT::TThreadedObject<TH3D> *> hist3dtab;
-    std::vector<ROOT::TThreadedObject<THnSparseD>*> histNdtab;
-    std::vector<std::shared_ptr<TH1D>> hist1dtabFinal;
-    std::vector<std::shared_ptr<TH2D>> hist2dtabFinal;
-    std::vector<std::shared_ptr<TH3D>> hist3dtabFinal;
-    std::vector<std::shared_ptr<THnSparseD>> histNdtabFinal;
+    //wrappers for abstract classes for TThreadedObject (needs to be a descendant of TObject)
+    template<class T>
+    class Wrapper : public TObject{
+        //so that Inside loop instances would have access to these things
+        T* inside_hist = nullptr;
+    public:
+        //constructors
+        Wrapper(): inside_hist(nullptr){}
+        Wrapper(T* h): inside_hist(h){}
+        Wrapper(const TObject& h){
+            this->inside_hist = static_cast<T*>(h.Clone());
+        }
 
+        //copy constructor - for TThreadedObject
+        Wrapper(const Wrapper& other){
+            if(other.inside_hist!=nullptr){
+                this->inside_hist = static_cast<T*>(other.inside_hist->Clone());
+            } else{
+                this->inside_hist = nullptr;
+            }
+        }
+
+        //move constructor
+        Wrapper(Wrapper&& other) noexcept: inside_hist(other.inside_hist){
+            other.inside_hist = nullptr;
+        }
+
+        //destructor
+        ~Wrapper(){
+            delete inside_hist;
+        }
+
+        //method needed for TList to be overwritten
+        Bool_t IsFolder() const override{ return kFALSE; }
+
+        //for getting pointer to the object this wrapper contains
+        T* GetInternalHist(){ return inside_hist; }
+
+        //Merge method
+        Long64_t Merge(TCollection* list){
+            if(!inside_hist||!list) return -1;
+
+            //we need to strip elements from their Wrappers
+            TList rawList;
+            TIter next(list);
+            while(TObject* obj = next()){
+                Wrapper<T>* processed_wrapper = dynamic_cast<Wrapper<T>*>(obj);
+                //the part that does the stripping
+                if(processed_wrapper&&processed_wrapper->GetInternalHist()){
+                    rawList.Add(processed_wrapper->GetInternalHist());
+                }
+            }
+
+            //merging of actual histograms
+            return inside_hist->Merge(&rawList);
+        }
+    };
+    //internal memory of objects from main three classes of histograms
+    std::vector<ROOT::TThreadedObject<Wrapper<TH1>>*> histTH1tab;
+    std::vector<ROOT::TThreadedObject<Wrapper<THnBase>>*> histTHnBasetab;
+    std::vector<ROOT::TThreadedObject<TEfficiency>*> histTEfficiencytab;
+    std::vector<std::shared_ptr<TH1>> histTH1tabFinal;
+    std::vector<std::shared_ptr<THnBase>> histTHnBasetabFinal;
+    std::vector<std::shared_ptr<TEfficiency>> histTEfficiencytabFinal;
+    //map where each histogram is, for faster lookup
+    std::map<std::string, int> histogramMap;
 public:
-    ProcessingOutsideLoop(/* args */);
-    ~ProcessingOutsideLoop();
-    void AddHistogram(TH1D);
-    void AddHistogram(TH2D);
-    void AddHistogram(TH3D);
-    void AddHistogram(THnSparseD);
+    //constructors
+    ProcessingOutsideLoop(){};
+    ~ProcessingOutsideLoop(){};
+
+    //functions
+    // void AddHistogram(const TObject&);
+    void AddHistogram(const TH1&);
+    void AddHistogram(const THnBase&);
+    void AddHistogram(const TEfficiency&);
     void Merge();
-    void SaveToFile(TFile *);
+    void SaveToFile(TFile*);
     int GetNumberOfHistograms();
-    // auto &operator [](int);
-    ROOT::TThreadedObject<TH1D>& GetPointer1D(int);
-    ROOT::TThreadedObject<TH2D>& GetPointer2D(int);
-    ROOT::TThreadedObject<TH3D>& GetPointer3D(int);
-    ROOT::TThreadedObject<THnSparseD>& GetPointerND(int);
-    ROOT::TThreadedObject<TH1D>& GetPointer1D(const char*);
-    ROOT::TThreadedObject<TH2D>& GetPointer2D(const char*);
-    ROOT::TThreadedObject<TH3D>& GetPointer3D(const char*);
-    ROOT::TThreadedObject<THnSparseD>& GetPointerND(const char*);
-    std::shared_ptr<TH1D> GetPointerAfterMerge1D(int);
-    std::shared_ptr<TH2D> GetPointerAfterMerge2D(int);
-    std::shared_ptr<TH3D> GetPointerAfterMerge3D(int);
-    std::shared_ptr<THnSparseD> GetPointerAfterMergeND(int);
-    std::shared_ptr<TH1D> GetPointerAfterMerge1D(const char*);
-    std::shared_ptr<TH2D> GetPointerAfterMerge2D(const char*);
-    std::shared_ptr<TH3D> GetPointerAfterMerge3D(const char*);
-    std::shared_ptr<THnSparseD> GetPointerAfterMergeND(const char*);
+
+    //members
+    template<class T>
+    T* GetPointer(int);
+    template<class T>
+    T* GetPointer(const char*);
+    template<class T>
+    std::shared_ptr<T> GetPointerAfterMerge(int);
+    template<class T>
+    std::shared_ptr<T> GetPointerAfterMerge(const char*);
 };
 
-ProcessingOutsideLoop::ProcessingOutsideLoop(/* args */){
+void ProcessingOutsideLoop::AddHistogram(const TH1& hist){
+    //filling vectors with dummy pointers
+    histTH1tab.push_back(nullptr);
+    histTHnBasetab.push_back(nullptr);
+    histTEfficiencytab.push_back(nullptr);
+    //replacing pointers and invoking Sumw2 for correct error calculation
+    histTH1tab.back() = new ROOT::TThreadedObject<Wrapper<TH1>>(hist);
+    //lone Get() needed to populate histograms first
+    histTH1tab.back()->Get();
+    histTH1tab.back()->Get()->GetInternalHist()->Sumw2();
+    histogramMap.emplace(hist.GetName(), histTH1tab.size()-1);
 }
-
-ProcessingOutsideLoop::~ProcessingOutsideLoop() {
+void ProcessingOutsideLoop::AddHistogram(const THnBase& hist){
+    //filling vectors with dummy pointers
+    histTH1tab.push_back(nullptr);
+    histTHnBasetab.push_back(nullptr);
+    histTEfficiencytab.push_back(nullptr);
+    //replacing pointers and invoking Sumw2 for correct error calculation
+    histTHnBasetab.back() = new ROOT::TThreadedObject<Wrapper<THnBase>>(hist);
+    //lone Get() needed to populate histograms first
+    histTHnBasetab.back()->Get();
+    histTHnBasetab.back()->Get()->GetInternalHist()->Sumw2();
+    histogramMap.emplace(hist.GetName(), histTHnBasetab.size()-1);
 }
-
-void ProcessingOutsideLoop::AddHistogram(TH1D hist){
-    hist.Sumw2();
-    hist1dtab.push_back(new ROOT::TThreadedObject<TH1D>(hist));
-    hist2dtab.push_back(nullptr);
-    hist3dtab.push_back(nullptr);
-    histNdtab.push_back(nullptr);
-}
-
-void ProcessingOutsideLoop::AddHistogram(TH2D hist){
-    hist.Sumw2();
-    hist1dtab.push_back(nullptr);
-    hist2dtab.push_back(new ROOT::TThreadedObject<TH2D>(hist));
-    hist3dtab.push_back(nullptr);
-    histNdtab.push_back(nullptr);
-}
-
-void ProcessingOutsideLoop::AddHistogram(TH3D hist){
-    hist.Sumw2();
-    hist1dtab.push_back(nullptr);
-    hist2dtab.push_back(nullptr);
-    hist3dtab.push_back(new ROOT::TThreadedObject<TH3D>(hist));
-    histNdtab.push_back(nullptr);
-}
-
-void ProcessingOutsideLoop::AddHistogram(THnSparseD hist){
-    hist.Sumw2();
-    hist1dtab.push_back(nullptr);
-    hist2dtab.push_back(nullptr);
-    hist3dtab.push_back(nullptr);
-    histNdtab.push_back(new ROOT::TThreadedObject<THnSparseD>(hist));
+void ProcessingOutsideLoop::AddHistogram(const TEfficiency& hist){
+    //filling vectors with dummy pointers
+    histTH1tab.push_back(nullptr);
+    histTHnBasetab.push_back(nullptr);
+    histTEfficiencytab.push_back(nullptr);
+    //replacing pointers and invoking Sumw2 for correct error calculation
+    histTEfficiencytab.back() = new ROOT::TThreadedObject<TEfficiency>(hist);
+    //lone Get() needed to populate histograms first
+    histTEfficiencytab.back()->Get();
+    histogramMap.emplace(hist.GetName(), histTEfficiencytab.size()-1);
 }
 
 void ProcessingOutsideLoop::Merge(){
-    for(long unsigned int i = 0; i<hist1dtab.size(); i++){
-        hist1dtabFinal.push_back(nullptr);
-        hist2dtabFinal.push_back(nullptr);
-        hist3dtabFinal.push_back(nullptr);
-        histNdtabFinal.push_back(nullptr);
-        if(hist1dtab[i]!=nullptr){
-            hist1dtabFinal[i] = hist1dtab[i]->Merge();
-        } else if(hist2dtab[i]!=nullptr){
-            hist2dtabFinal[i] = hist2dtab[i]->Merge();
-        } else if(hist3dtab[i]!=nullptr){
-            hist3dtabFinal[i] = hist3dtab[i]->Merge();
-        } else if(histNdtab[i]!=nullptr){
-            histNdtabFinal[i] = histNdtab[i]->Merge();
+    //using the first one for counting, as they all are the same size
+    for(long unsigned int i = 0; i<histTH1tab.size(); i++){
+        //filling vectors with dummy pointers
+        histTH1tabFinal.push_back(nullptr);
+        histTHnBasetabFinal.push_back(nullptr);
+        histTEfficiencytabFinal.push_back(nullptr);
+        //we use so-called "aliasing constructor" to get TH1 out of its wrapper while still having it be a shared pointer
+        if(histTH1tab[i]!=nullptr){
+            std::shared_ptr<Wrapper<TH1>> temp_wrapper_TH1 = histTH1tab[i]->Merge();
+            histTH1tabFinal[i] = std::shared_ptr<TH1>(temp_wrapper_TH1, temp_wrapper_TH1->GetInternalHist());
         }
+        if(histTHnBasetab[i]!=nullptr){
+            std::shared_ptr<Wrapper<THnBase>> temp_wrapper_THnBase = histTHnBasetab[i]->Merge();
+            histTHnBasetabFinal[i] = std::shared_ptr<THnBase>(temp_wrapper_THnBase, temp_wrapper_THnBase->GetInternalHist());
+        }
+        histTEfficiencytabFinal[i] = histTEfficiencytab[i]!=nullptr ? histTEfficiencytab[i]->Merge() : nullptr;
     }
 }
 
 int ProcessingOutsideLoop::GetNumberOfHistograms(){
-    return hist1dtab.size();
+    return histTH1tab.size();
 }
 
-
-void ProcessingOutsideLoop::SaveToFile(TFile *file){
+void ProcessingOutsideLoop::SaveToFile(TFile* file){
     file->cd();
-    for(long unsigned int i = 0; i<hist1dtabFinal.size(); i++){
-        if(hist1dtabFinal[i]!=nullptr){
-            hist1dtabFinal[i]->Write();
-        } else if(hist2dtabFinal[i]!=nullptr){
-            hist2dtabFinal[i]->Write();
-        } else if(hist3dtabFinal[i]!=nullptr){
-            hist3dtabFinal[i]->Write();
-        } else if(histNdtabFinal[i]!=nullptr){
-            histNdtabFinal[i]->Write();
-        }
+    //using the first one for counting, as they all are the same size
+    for(long unsigned int i = 0; i<histTH1tabFinal.size(); i++){
+        if(histTH1tabFinal[i]!=nullptr)
+            histTH1tabFinal[i]->Write();
+        if(histTHnBasetabFinal[i]!=nullptr)
+            histTHnBasetabFinal[i]->Write();
+        if(histTEfficiencytabFinal[i]!=nullptr)
+            histTEfficiencytabFinal[i]->Write();
     }
 }
 
-ROOT::TThreadedObject<TH1D>& ProcessingOutsideLoop::GetPointer1D(int i){
-    if(hist1dtab[i]==nullptr){
-        printf("Trying to get TThreadedObject<TH1D> for non-TH1D object. A reference to nullptr address will be returned\n");
-    }
-    return *hist1dtab[i];
+template<class T>
+T* ProcessingOutsideLoop::GetPointer(int i){
+    //dynamic_cast gives back nullptr if trying to cast uncastable type
+    //hence why I'm using it everywhere despite inability to cast TEff. into TH1D
+    if(histTH1tab[i]!=nullptr)
+        return dynamic_cast<T*>(histTH1tab[i]->Get()->GetInternalHist());
+    if(histTHnBasetab[i]!=nullptr)
+        return dynamic_cast<T*>(histTHnBasetab[i]->Get()->GetInternalHist());
+    if(histTEfficiencytab[i]!=nullptr)
+        return dynamic_cast<T*>(histTEfficiencytab[i]->Get().get());
+
+    //in case nothing worked
+    return nullptr;
 }
-ROOT::TThreadedObject<TH2D>& ProcessingOutsideLoop::GetPointer2D(int i){
-    if(hist2dtab[i]==nullptr){
-        printf("Trying to get TThreadedObject<TH2D> for non-TH2D object. A reference to nullptr address will be returned\n");
-    } return *hist2dtab[i];
-}
-ROOT::TThreadedObject<TH3D>& ProcessingOutsideLoop::GetPointer3D(int i){
-    if(hist3dtab[i]==nullptr){
-        printf("Trying to get TThreadedObject<TH3D> for non-TH3D object. A reference to nullptr address will be returned\n");
-    }
-    return *hist3dtab[i];
-}
-ROOT::TThreadedObject<THnSparseD>& ProcessingOutsideLoop::GetPointerND(int i){
-    if(histNdtab[i]==nullptr){
-        printf("Trying to get TThreadedObject<THnSparseD> for non-THnSparseD object. A reference to nullptr address will be returned\n");
-    }
-    return *histNdtab[i];
+template<class T>
+T* ProcessingOutsideLoop::GetPointer(const char* hist_name){
+    if(histogramMap.find(hist_name)!=histogramMap.end())
+        return GetPointer<T>(histogramMap[hist_name]);
+    throw std::invalid_argument("Object with name \""+std::string(hist_name)+"\" could not be found.");
 }
 
-ROOT::TThreadedObject<TH1D>& ProcessingOutsideLoop::GetPointer1D(const char* hist_name){
-    for(long unsigned int i = 0; i<hist1dtab.size(); i++){
-        if(hist1dtab[i]!=nullptr&&strcmp(hist_name, hist1dtab[i]->Get()->GetName())==0){
-            return *hist1dtab[i];
-        }
-    }
-    throw std::invalid_argument("Histogram with name \""+std::string(hist_name)+"\" could not be found.");
-}
-ROOT::TThreadedObject<TH2D>& ProcessingOutsideLoop::GetPointer2D(const char* hist_name){
-    for(long unsigned int i = 0; i<hist1dtab.size(); i++){
-        if(hist2dtab[i]!=nullptr&&strcmp(hist_name, hist2dtab[i]->Get()->GetName())==0){
-            return *hist2dtab[i];
-        }
-    }
-    throw std::invalid_argument("Histogram with name \""+std::string(hist_name)+"\" could not be found.");
-}
-ROOT::TThreadedObject<TH3D>& ProcessingOutsideLoop::GetPointer3D(const char* hist_name){
-    for(long unsigned int i = 0; i<hist1dtab.size(); i++){
-        if(hist3dtab[i]!=nullptr&&strcmp(hist_name, hist3dtab[i]->Get()->GetName())==0){
-            return *hist3dtab[i];
-        }
-    }
-    throw std::invalid_argument("Histogram with name \""+std::string(hist_name)+"\" could not be found.");
-}
-ROOT::TThreadedObject<THnSparseD>& ProcessingOutsideLoop::GetPointerND(const char* hist_name){
-    for(long unsigned int i = 0; i<hist1dtab.size(); i++){
-        if(histNdtab[i]!=nullptr&&strcmp(hist_name, histNdtab[i]->Get()->GetName())==0){
-            return *histNdtab[i];
-        }
-    }
-    throw std::invalid_argument("Histogram with name \""+std::string(hist_name)+"\" could not be found.");
-}
+template<class T>
+std::shared_ptr<T> ProcessingOutsideLoop::GetPointerAfterMerge(int i){
+    if(histTH1tabFinal[i]!=nullptr)
+        return dynamic_pointer_cast<T>(histTH1tabFinal[i]);
+    if(histTHnBasetabFinal[i]!=nullptr)
+        return dynamic_pointer_cast<T>(histTHnBasetabFinal[i]);
+    if(histTEfficiencytabFinal[i]!=nullptr)
+        return dynamic_pointer_cast<T>(histTEfficiencytabFinal[i]);
 
-std::shared_ptr<TH1D> ProcessingOutsideLoop::GetPointerAfterMerge1D(int i){
-    if(hist1dtabFinal[i]==nullptr){
-        printf("Trying to get pointer to TH1D for non-TH1D object. A nullptr will be returned\n");
-    }
-    return hist1dtabFinal[i];
+    //if something goes wrong
+    return nullptr;
 }
-std::shared_ptr<TH2D> ProcessingOutsideLoop::GetPointerAfterMerge2D(int i){
-    if(hist2dtabFinal[i]==nullptr){
-        printf("Trying to get pointer to TH2D for non-TH2D object. A nullptr will be returned\n");
-    }
-    return hist2dtabFinal[i];
-}
-std::shared_ptr<TH3D> ProcessingOutsideLoop::GetPointerAfterMerge3D(int i){
-    if(hist3dtabFinal[i]==nullptr){
-        printf("Trying to get pointer to TH3D for non-TH3D object. A nullptr will be returned\n");
-    }
-    return hist3dtabFinal[i];
-}
-std::shared_ptr<THnSparseD> ProcessingOutsideLoop::GetPointerAfterMergeND(int i){
-    if(histNdtabFinal[i]==nullptr){
-        printf("Trying to get pointer to THnSparseD for non-THnSparseD object. A nullptr will be returned\n");
-    }
-    return histNdtabFinal[i];
-}
-
-std::shared_ptr<TH1D> ProcessingOutsideLoop::GetPointerAfterMerge1D(const char* hist_name){
-    for(long unsigned int i = 0; i<hist1dtabFinal.size(); i++){
-        if(hist1dtabFinal[i]!=nullptr&&strcmp(hist_name, hist1dtabFinal[i]->GetName())==0){
-            return hist1dtabFinal[i];
-        }
-    }
-    throw std::invalid_argument("Histogram with name \""+std::string(hist_name)+"\" could not be found.");
-}
-std::shared_ptr<TH2D> ProcessingOutsideLoop::GetPointerAfterMerge2D(const char* hist_name){
-    for(long unsigned int i = 0; i<hist1dtabFinal.size(); i++){
-        if(hist2dtabFinal[i]!=nullptr&&strcmp(hist_name, hist2dtabFinal[i]->GetName())==0){
-            return hist2dtabFinal[i];
-        }
-    }
-    throw std::invalid_argument("Histogram with name \""+std::string(hist_name)+"\" could not be found.");
-}
-std::shared_ptr<TH3D> ProcessingOutsideLoop::GetPointerAfterMerge3D(const char* hist_name){
-    for(long unsigned int i = 0; i<hist1dtabFinal.size(); i++){
-        if(hist3dtabFinal[i]!=nullptr&&strcmp(hist_name, hist3dtabFinal[i]->GetName())==0){
-            return hist3dtabFinal[i];
-        }
-    }
-    throw std::invalid_argument("Histogram with name \""+std::string(hist_name)+"\" could not be found.");
-}
-std::shared_ptr<THnSparseD> ProcessingOutsideLoop::GetPointerAfterMergeND(const char* hist_name){
-    for(long unsigned int i = 0; i<hist1dtabFinal.size(); i++){
-        if(histNdtabFinal[i]!=nullptr&&strcmp(hist_name, histNdtabFinal[i]->GetName())==0){
-            return histNdtabFinal[i];
-        }
-    }
-    throw std::invalid_argument("Histogram with name \""+std::string(hist_name)+"\" could not be found.");
+template<class T>
+std::shared_ptr<T> ProcessingOutsideLoop::GetPointerAfterMerge(const char* hist_name){
+    if(histogramMap.find(hist_name)!=histogramMap.end())
+        return GetPointerAfterMerge<T>(histogramMap[hist_name]);
+    throw std::invalid_argument("Object with name \""+std::string(hist_name)+"\" could not be found.");
 }
 
 #endif

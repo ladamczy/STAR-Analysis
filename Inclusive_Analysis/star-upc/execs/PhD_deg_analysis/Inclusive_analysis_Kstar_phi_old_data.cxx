@@ -355,14 +355,14 @@ int main(int argc, char** argv){
 
     //merging and tidying up
     outsideprocessing.Merge();
-    outsideprocessing.GetPointerAfterMerge3D("Sector_pipiChi2plus")->LabelsDeflate();
-    outsideprocessing.GetPointerAfterMerge3D("Sector_pipiChi2minus")->LabelsDeflate();
-    outsideprocessing.GetPointerAfterMerge1D("Sector_run_tracks_number")->LabelsDeflate();
+    outsideprocessing.GetPointerAfterMerge<TH3D>("Sector_pipiChi2plus")->LabelsDeflate();
+    outsideprocessing.GetPointerAfterMerge<TH3D>("Sector_pipiChi2minus")->LabelsDeflate();
+    outsideprocessing.GetPointerAfterMerge<TH1D>("Sector_run_tracks_number")->LabelsDeflate();
 
     //histogram of track numbers
     TH1D Sector_track_number_histogram("Sector_track_number_histogram", ";# of tracks;# of runs", 100, 0, 10000);
-    for(int k = 1; k<=outsideprocessing.GetPointerAfterMerge1D("Sector_run_tracks_number")->GetXaxis()->GetNbins(); k++){
-        double number_of_tracks = outsideprocessing.GetPointerAfterMerge1D("Sector_run_tracks_number")->GetBinContent(k);
+    for(int k = 1; k<=outsideprocessing.GetPointerAfterMerge<TH1D>("Sector_run_tracks_number")->GetXaxis()->GetNbins(); k++){
+        double number_of_tracks = outsideprocessing.GetPointerAfterMerge<TH1D>("Sector_run_tracks_number")->GetBinContent(k);
         Sector_track_number_histogram.Fill(number_of_tracks);
     }
 
@@ -373,11 +373,11 @@ int main(int argc, char** argv){
     TH1D Sector_filling_negative_bigger_runs("Sector_filling_negative_bigger_runs", ";fill;# of sectors", 100, 0, 1.0000000001);
     TH1D Sector_max_tracks_with_empty_sector("Sector_max_tracks_with_empty_sector", ";max track number;runs", 100, 0, 100);
     int minimal_tracks_by_charge = 48; //so far chosen arbitrarily
-    for(int k = 1; k<=outsideprocessing.GetPointerAfterMerge3D("Sector_pipiChi2plus")->GetXaxis()->GetNbins(); k++){
-        outsideprocessing.GetPointerAfterMerge3D("Sector_pipiChi2plus")->GetXaxis()->SetRange(k, k);
-        outsideprocessing.GetPointerAfterMerge3D("Sector_pipiChi2minus")->GetXaxis()->SetRange(k, k);
-        TH1* sig_slice_positive = outsideprocessing.GetPointerAfterMerge3D("Sector_pipiChi2plus")->Project3D("yz");
-        TH1* sig_slice_negative = outsideprocessing.GetPointerAfterMerge3D("Sector_pipiChi2minus")->Project3D("yz");
+    for(int k = 1; k<=outsideprocessing.GetPointerAfterMerge<TH3D>("Sector_pipiChi2plus")->GetXaxis()->GetNbins(); k++){
+        outsideprocessing.GetPointerAfterMerge<TH3D>("Sector_pipiChi2plus")->GetXaxis()->SetRange(k, k);
+        outsideprocessing.GetPointerAfterMerge<TH3D>("Sector_pipiChi2minus")->GetXaxis()->SetRange(k, k);
+        TH1* sig_slice_positive = outsideprocessing.GetPointerAfterMerge<TH3D>("Sector_pipiChi2plus")->Project3D("yz");
+        TH1* sig_slice_negative = outsideprocessing.GetPointerAfterMerge<TH3D>("Sector_pipiChi2minus")->Project3D("yz");
         double temp_max_positive = sig_slice_positive->GetMaximum();
         double temp_max_negative = sig_slice_negative->GetMaximum();
         if(temp_max_positive*temp_max_negative==0){

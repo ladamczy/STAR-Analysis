@@ -193,7 +193,7 @@ int main(int argc, char **argv){
     // int triggers[] = { 570701, 570705, 570711, 590701, 590705, 590708 };
     // outsideprocessing.AddHistogram(TH1D("triggerHist", "Data triggers;Trigger ID;Number of events", 6, 0, 6));
     // for(int i = 0;i<6;i++){
-    //     outsideprocessing.GetPointer1D(1)->GetXaxis()->SetBinLabel(i+1, to_string(triggers[i]).c_str());
+    //     outsideprocessing.GetPointer<TH1D>(1)->GetXaxis()->SetBinLabel(i+1, to_string(triggers[i]).c_str());
     // }
 
     //processing

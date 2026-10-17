@@ -379,12 +379,12 @@ int main(int argc, char** argv){
             temptitle = "#Delta t_{0}: "+((i==1) ? "#pi" : particleNicks[i])+"^{+}"+((j==1) ? "#pi" : particleNicks[j])+"^{-}";
             tempname = "deltaT0_total_"+particleNicks[i]+"_"+particleNicks[j]+"_Narrow";
             //getting the sigma
-            tempsigma = drawFit(outsideprocessing.GetPointerAfterMerge1D(tempname.c_str()).get(), outfileFolder, outfileName, lower_fitting_edge, upper_fitting_edge, nullptr, temptitle);
+            tempsigma = drawFit(outsideprocessing.GetPointerAfterMerge<TH1D>(tempname.c_str()).get(), outfileFolder, outfileName, lower_fitting_edge, upper_fitting_edge, nullptr, temptitle);
             sigmaNames.push_back(particleNicks[i]+"_"+particleNicks[j]);
             sigmaValues.push_back(tempsigma);
         }
     }
-    drawFit(outsideprocessing.GetPointerAfterMerge1D("deltaT0p0Narrow").get(), outfileFolder, outfileName, lower_fitting_edge, upper_fitting_edge, nullptr, "#Delta t_{0}: p\"#gamma\"");
+    drawFit(outsideprocessing.GetPointerAfterMerge<TH1D>("deltaT0p0Narrow").get(), outfileFolder, outfileName, lower_fitting_edge, upper_fitting_edge, nullptr, "#Delta t_{0}: p\"#gamma\"");
     //fitting the same, but not drawing - only taking data
     std::vector<double> sigmaValuesOld, sigmaValuesNew;
     for(size_t i = 0; i<nParticlesExtended; i++){
@@ -392,13 +392,13 @@ int main(int argc, char** argv){
             //old
             tempname = "deltaT0_old_"+particleNicks[i]+"_"+particleNicks[j]+"_Narrow";
             //getting the sigma
-            tempsigma = drawFit(outsideprocessing.GetPointerAfterMerge1D(tempname.c_str()).get(), "", "", lower_fitting_edge, upper_fitting_edge, nullptr, "");
+            tempsigma = drawFit(outsideprocessing.GetPointerAfterMerge<TH1D>(tempname.c_str()).get(), "", "", lower_fitting_edge, upper_fitting_edge, nullptr, "");
             sigmaValuesOld.push_back(tempsigma);
 
             //new
             tempname = "deltaT0_new_"+particleNicks[i]+"_"+particleNicks[j]+"_Narrow";
             //getting the sigma
-            tempsigma = drawFit(outsideprocessing.GetPointerAfterMerge1D(tempname.c_str()).get(), "", "", lower_fitting_edge, upper_fitting_edge, nullptr, "");
+            tempsigma = drawFit(outsideprocessing.GetPointerAfterMerge<TH1D>(tempname.c_str()).get(), "", "", lower_fitting_edge, upper_fitting_edge, nullptr, "");
             sigmaValuesNew.push_back(tempsigma);
         }
     }

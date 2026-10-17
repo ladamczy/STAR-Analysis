@@ -3,34 +3,24 @@
 
 #include "ProcessingOutsideLoop.h"
 
+#include <utility>
+
+#include <type_traits>
+
 class ProcessingInsideLoop {
 private:
-    std::vector<std::shared_ptr<TH1D>> hist1dtabLocal;
-    std::vector<std::shared_ptr<TH2D>> hist2dtabLocal;
-    std::vector<std::shared_ptr<TH3D>> hist3dtabLocal;
-    std::vector<std::shared_ptr<THnSparseD>> histNdtabLocal;
+    std::vector<std::shared_ptr<ProcessingOutsideLoop::Wrapper<TH1>>> histTH1tabLocal;
+    std::vector<std::shared_ptr<ProcessingOutsideLoop::Wrapper<THnBase>>> histTHnBasetabLocal;
+    std::vector<std::shared_ptr<TEfficiency>> histTEfficiencytabLocal;
+    std::map<std::string, int> histogramMap;
 public:
     ProcessingInsideLoop(/* args */);
     ~ProcessingInsideLoop();
     void GetLocalHistograms(ProcessingOutsideLoop *);
-    void Fill(int, double);
-    void Fill(const char *, double);
-    void Fill(int, double, double);
-    void Fill(const char *, double, double);
-    void Fill(int, const char*, double);
-    void Fill(const char*, const char*, double);
-    void Fill(int, double, double, double);
-    void Fill(const char*, double, double, double);
-    void Fill(int, const char*, double, double);
-    void Fill(const char*, const char*, double, double);
-    void Fill(int, double, const char*, double);
-    void Fill(const char*, double, const char*, double);
-    void Fill(int, const char*, const char*, double);
-    void Fill(const char*, const char*, const char*, double);
-    void Fill(int, const char*, double, double, double);
-    void Fill(const char*, const char*, double, double, double);
-    void Fill(int, const double*, double);
-    void Fill(const char*, const double*, double);
+    template<typename... Args>
+    void Fill(int, Args...);
+    template<typename... Args>
+    void Fill(const char*, Args...);
 };
 
 ProcessingInsideLoop::ProcessingInsideLoop(/* args */) {
@@ -40,209 +30,72 @@ ProcessingInsideLoop::~ProcessingInsideLoop() {
 }
 
 void ProcessingInsideLoop::GetLocalHistograms(ProcessingOutsideLoop *outsideloop){
-    for(long unsigned int i = 0; i<outsideloop->hist1dtab.size(); i++){
-        hist1dtabLocal.push_back(nullptr);
-        hist2dtabLocal.push_back(nullptr);
-        hist3dtabLocal.push_back(nullptr);
-        histNdtabLocal.push_back(nullptr);
-        if(outsideloop->hist1dtab[i]!=nullptr){
-            hist1dtabLocal[i] = outsideloop->hist1dtab[i]->Get();
-        } else if(outsideloop->hist2dtab[i]!=nullptr){
-            hist2dtabLocal[i] = outsideloop->hist2dtab[i]->Get();
-        } else if(outsideloop->hist3dtab[i]!=nullptr){
-            hist3dtabLocal[i] = outsideloop->hist3dtab[i]->Get();
-        } else if(outsideloop->histNdtab[i]!=nullptr){
-            histNdtabLocal[i] = outsideloop->histNdtab[i]->Get();
-        }
+    //using the first one for counting, as they all are the same size
+    for(long unsigned int i = 0; i<outsideloop->histTH1tab.size(); i++){
+        histTH1tabLocal.push_back(outsideloop->histTH1tab[i]!=nullptr ? outsideloop->histTH1tab[i]->Get() : nullptr);
+        histTHnBasetabLocal.push_back(outsideloop->histTHnBasetab[i]!=nullptr ? outsideloop->histTHnBasetab[i]->Get() : nullptr);
+        histTEfficiencytabLocal.push_back(outsideloop->histTEfficiencytab[i]!=nullptr ? outsideloop->histTEfficiencytab[i]->Get() : nullptr);
     }
-
+    //getting the map too
+    histogramMap = outsideloop->histogramMap;
 }
 
-//1d histogram, no weight
-void ProcessingInsideLoop::Fill(int hist_number, double x){
-    if(hist1dtabLocal[hist_number]!=nullptr){
-        hist1dtabLocal[hist_number]->Fill(x);
-    } else{
-        throw std::invalid_argument("1D histogram with number \""+std::to_string(hist_number)+"\" does not exist.");
-    }
-}
-void ProcessingInsideLoop::Fill(const char *hist_name, double x){
-    for(long unsigned int i = 0; i<hist1dtabLocal.size(); i++){
-        if(hist1dtabLocal[i]!=nullptr&&strcmp(hist_name, hist1dtabLocal[i]->GetName())==0){
-            ProcessingInsideLoop::Fill(i, x);
-            return;
+//helpers to check if Fill function will work properly
+//first one - default false
+template <typename T, typename, typename... Args>
+struct can_call_fill : std::false_type{};
+//second one - the one that actually checks
+template <typename T, typename... Args>
+struct can_call_fill<T, std::void_t<decltype(std::declval<T*>()->Fill(std::declval<Args>()...))>, Args...>
+    : std::true_type{};
+//wrapper for those two above
+template <typename T, typename... Args>
+inline constexpr bool can_call_fill_v = can_call_fill<T, void, Args...>::value;
+
+//helper to check if there is any text in the args
+template <typename... Args>
+inline constexpr bool has_string_arg_v = (
+    std::is_convertible_v<Args, std::string>||...
+    );
+
+template<typename ...Args>
+void ProcessingInsideLoop::Fill(int hist_number, Args ...args){
+    //TH1 and derivative classes, with TH2 and TH3 the encompass all things stemming from TH1
+    //TH3 was needed for some particular filling method with many arguments
+    if(histTH1tabLocal[hist_number]!=nullptr){
+        if constexpr(can_call_fill_v<TH1, Args...>){
+            dynamic_cast<TH1*>(histTH1tabLocal[hist_number]->GetInternalHist())->Fill(std::forward<Args>(args)...);
+        } else if constexpr(can_call_fill_v<TH2, Args...>){
+            dynamic_cast<TH2*>(histTH1tabLocal[hist_number]->GetInternalHist())->Fill(std::forward<Args>(args)...);
+        } else if constexpr(can_call_fill_v<TH3, Args...>){
+            dynamic_cast<TH3*>(histTH1tabLocal[hist_number]->GetInternalHist())->Fill(std::forward<Args>(args)...);
         }
+        return;
     }
-    throw std::invalid_argument("1D histogram with name \""+std::string(hist_name)+"\" could not be found.");
+    //THnBase - here check was needed whether it has words (const char*) - Fill method here does not
+    //So it would try to convert an array of doubles (double*) and cause problems
+    if(histTHnBasetabLocal[hist_number]!=nullptr){
+        //compiler was complaining, so here is a safeguard against trying to fill THnBase with something weird
+        if constexpr(can_call_fill_v<THnBase, Args...>&&!has_string_arg_v<Args...>)
+            histTHnBasetabLocal[hist_number]->GetInternalHist()->Fill(std::forward<Args>(args)...);
+        return;
+    }
+    //TEfficiency - everything is straightforward here
+    if(histTEfficiencytabLocal[hist_number]!=nullptr){
+        //compiler was complaining, so here is a safeguard against trying to fill TEff. with one parameter only
+        if constexpr(can_call_fill_v<TEfficiency, Args...>)
+            histTEfficiencytabLocal[hist_number]->Fill(std::forward<Args>(args)...);
+        return;
+    }
 }
 
-//1d histogram, weight, or 2d histogram, no weight
-void ProcessingInsideLoop::Fill(int hist_number, double x, double y_or_w){
-    if(hist1dtabLocal[hist_number]!=nullptr){
-        hist1dtabLocal[hist_number]->Fill(x, y_or_w);
-    } else if(hist2dtabLocal[hist_number]!=nullptr){
-        hist2dtabLocal[hist_number]->Fill(x, y_or_w);
-    } else{
-        throw std::invalid_argument("1D nor 2D histogram with number \""+std::to_string(hist_number)+"\" does not exist.");
+template<typename ...Args>
+void ProcessingInsideLoop::Fill(const char* hist_name, Args ...args){
+    if(histogramMap.find(hist_name)!=histogramMap.end()){
+        Fill(histogramMap[hist_name], std::forward<Args>(args)...);
+        return;
     }
-}
-void ProcessingInsideLoop::Fill(const char *hist_name, double x, double y_or_w){
-    //looking through 1d histograms
-    for(long unsigned int i = 0; i<hist1dtabLocal.size(); i++){
-        if(hist1dtabLocal[i]!=nullptr&&strcmp(hist_name, hist1dtabLocal[i]->GetName())==0){
-            ProcessingInsideLoop::Fill(i, x, y_or_w);
-            return;
-        }
-    }
-    //looking through 2d histograms
-    for(long unsigned int i = 0; i<hist2dtabLocal.size(); i++){
-        if(hist2dtabLocal[i]!=nullptr&&strcmp(hist_name, hist2dtabLocal[i]->GetName())==0){
-            ProcessingInsideLoop::Fill(i, x, y_or_w);
-            return;
-        }
-    }
-    throw std::invalid_argument("1D/2D histogram with name \""+std::string(hist_name)+"\" could not be found.");
-}
-
-//1d histogram, alphanumeric, with weight
-void ProcessingInsideLoop::Fill(int hist_number, const char* key, double w){
-    if(hist1dtabLocal[hist_number]!=nullptr){
-        hist1dtabLocal[hist_number]->Fill(key, w);
-    } else{
-        throw std::invalid_argument("1D histogram with number \""+std::to_string(hist_number)+"\" does not exist.");
-    }
-}
-void ProcessingInsideLoop::Fill(const char* hist_name, const char* key, double w){
-    //looking through 1d histograms
-    for(long unsigned int i = 0; i<hist1dtabLocal.size(); i++){
-        if(hist1dtabLocal[i]!=nullptr&&strcmp(hist_name, hist1dtabLocal[i]->GetName())==0){
-            ProcessingInsideLoop::Fill(i, key, w);
-            return;
-        }
-    }
-    throw std::invalid_argument("1D histogram with name \""+std::string(hist_name)+"\" could not be found.");
-}
-
-//2d histogram, weight, or 3d histogram, no weight
-void ProcessingInsideLoop::Fill(int hist_number, double x, double y, double z_or_w){
-    if(hist2dtabLocal[hist_number]!=nullptr){
-        hist2dtabLocal[hist_number]->Fill(x, y, z_or_w);
-    } else if(hist3dtabLocal[hist_number]!=nullptr){
-        hist3dtabLocal[hist_number]->Fill(x, y, z_or_w);
-    } else{
-        throw std::invalid_argument("2D nor 3D histogram with number \""+std::to_string(hist_number)+"\" does not exist.");
-    }
-}
-void ProcessingInsideLoop::Fill(const char* hist_name, double x, double y, double z_or_w){
-    //looking through 2d histograms
-    for(long unsigned int i = 0; i<hist2dtabLocal.size(); i++){
-        if(hist2dtabLocal[i]!=nullptr&&strcmp(hist_name, hist2dtabLocal[i]->GetName())==0){
-            ProcessingInsideLoop::Fill(i, x, y, z_or_w);
-            return;
-        }
-    }
-    //looking through 3d histograms
-    for(long unsigned int i = 0; i<hist3dtabLocal.size(); i++){
-        if(hist3dtabLocal[i]!=nullptr&&strcmp(hist_name, hist3dtabLocal[i]->GetName())==0){
-            ProcessingInsideLoop::Fill(i, x, y, z_or_w);
-            return;
-        }
-    }
-    throw std::invalid_argument("2D/3D histogram with name \""+std::string(hist_name)+"\" could not be found.");
-}
-
-//2d histogram, alphanumeric, with weight
-void ProcessingInsideLoop::Fill(int hist_number, const char* key, double y, double w){
-    if(hist2dtabLocal[hist_number]!=nullptr){
-        hist2dtabLocal[hist_number]->Fill(key, y, w);
-    } else{
-        throw std::invalid_argument("2D histogram with number \""+std::to_string(hist_number)+"\" does not exist.");
-    }
-}
-void ProcessingInsideLoop::Fill(const char* hist_name, const char* key, double y, double w){
-    //looking through 2d histograms
-    for(long unsigned int i = 0; i<hist2dtabLocal.size(); i++){
-        if(hist2dtabLocal[i]!=nullptr&&strcmp(hist_name, hist2dtabLocal[i]->GetName())==0){
-            ProcessingInsideLoop::Fill(i, key, y, w);
-            return;
-        }
-    }
-    throw std::invalid_argument("2D histogram with name \""+std::string(hist_name)+"\" could not be found.");
-}
-void ProcessingInsideLoop::Fill(int hist_number, double x, const char* value, double w){
-    if(hist2dtabLocal[hist_number]!=nullptr){
-        hist2dtabLocal[hist_number]->Fill(x, value, w);
-    } else{
-        throw std::invalid_argument("2D histogram with number \""+std::to_string(hist_number)+"\" does not exist.");
-    }
-}
-void ProcessingInsideLoop::Fill(const char* hist_name, double x, const char* value, double w){
-    //looking through 2d histograms
-    for(long unsigned int i = 0; i<hist2dtabLocal.size(); i++){
-        if(hist2dtabLocal[i]!=nullptr&&strcmp(hist_name, hist2dtabLocal[i]->GetName())==0){
-            ProcessingInsideLoop::Fill(i, x, value, w);
-            return;
-        }
-    }
-    throw std::invalid_argument("2D histogram with name \""+std::string(hist_name)+"\" could not be found.");
-}
-
-//2d histogram, 2xalphanumeric, with weight
-void ProcessingInsideLoop::Fill(int hist_number, const char* key_x, const char* key_y, double w){
-    if(hist2dtabLocal[hist_number]!=nullptr){
-        hist2dtabLocal[hist_number]->Fill(key_x, key_y, w);
-    } else{
-        throw std::invalid_argument("2D histogram with number \""+std::to_string(hist_number)+"\" does not exist.");
-    }
-}
-void ProcessingInsideLoop::Fill(const char* hist_name, const char* key_x, const char* key_y, double w){
-    //looking through 2d histograms
-    for(long unsigned int i = 0; i<hist2dtabLocal.size(); i++){
-        if(hist2dtabLocal[i]!=nullptr&&strcmp(hist_name, hist2dtabLocal[i]->GetName())==0){
-            ProcessingInsideLoop::Fill(i, key_x, key_y, w);
-            return;
-        }
-    }
-    throw std::invalid_argument("2D histogram with name \""+std::string(hist_name)+"\" could not be found.");
-}
-
-//3d histogram, alphanumeric, with weight
-//TODO: expand
-void ProcessingInsideLoop::Fill(int hist_number, const char* key, double y, double z, double w){
-    if(hist3dtabLocal[hist_number]!=nullptr){
-        hist3dtabLocal[hist_number]->Fill(key, y, z, w);
-    } else{
-        throw std::invalid_argument("3D histogram with number \""+std::to_string(hist_number)+"\" does not exist.");
-    }
-}
-void ProcessingInsideLoop::Fill(const char* hist_name, const char* key, double y, double z, double w){
-    //looking through 3d histograms
-    for(long unsigned int i = 0; i<hist3dtabLocal.size(); i++){
-        if(hist3dtabLocal[i]!=nullptr&&strcmp(hist_name, hist3dtabLocal[i]->GetName())==0){
-            ProcessingInsideLoop::Fill(i, key, y, z, w);
-            return;
-        }
-    }
-    throw std::invalid_argument("3D histogram with name \""+std::string(hist_name)+"\" could not be found.");
-}
-
-//Nd histograms, using THnSparseD and a template
-void ProcessingInsideLoop::Fill(int hist_number, const double* data, double w){
-    if(histNdtabLocal[hist_number]!=nullptr){
-        histNdtabLocal[hist_number]->Fill(data, w);
-    } else{
-        throw std::invalid_argument("ND histogram with number \""+std::to_string(hist_number)+"\" does not exist.");
-    }
-}
-void ProcessingInsideLoop::Fill(const char* hist_name, const double* data, double w){
-    //looking through ND histograms
-    for(long unsigned int i = 0; i<histNdtabLocal.size(); i++){
-        if(histNdtabLocal[i]!=nullptr&&strcmp(hist_name, histNdtabLocal[i]->GetName())==0){
-            ProcessingInsideLoop::Fill(i, data, w);
-            return;
-        }
-    }
-    throw std::invalid_argument("ND histogram with name \""+std::string(hist_name)+"\" could not be found.");
+    throw std::invalid_argument("Object with name \""+std::string(hist_name)+"\" could not be found.");
 }
 
 #endif

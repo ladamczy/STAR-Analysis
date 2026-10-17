@@ -128,9 +128,9 @@ int main(int argc, char* argv[]){
     TreeProc.Process(myFunction);
 
     outsideprocessing.Merge();
-    outsideprocessing.GetPointerAfterMerge1D("Name")->LabelsDeflate();
-    outsideprocessing.GetPointerAfterMerge1D("Name")->SetMinimum(0);
-    outsideprocessing.GetPointerAfterMerge1D("Name")->LabelsOption("a", "X");
+    outsideprocessing.GetPointerAfterMerge<TH1D>("Name")->LabelsDeflate();
+    outsideprocessing.GetPointerAfterMerge<TH1D>("Name")->SetMinimum(0);
+    outsideprocessing.GetPointerAfterMerge<TH1D>("Name")->LabelsOption("a", "X");
 
     //setting up a tree & output file
     string path = string(argv[0]);

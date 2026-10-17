@@ -4,6 +4,7 @@
 #include <ROOT/TThreadedObject.hxx>
 #include <TTreeReader.h>
 #include <ROOT/TTreeProcessorMT.hxx>
+#include "TH2D.h"
 
 // picoDst headers
 #include "StRPEvent.h"

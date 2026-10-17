@@ -6,13 +6,16 @@
 #include <string>
 #include <fstream>
 
-//ROOT & picoDST
-#include "StUPCEvent.h"
-#include "StUPCTrack.h"
+//ROOT
 #include "TChain.h"
 #include "TFile.h"
 #include "TParticle.h"
 #include "TParticlePDG.h"
+#include "TH2.h"
+
+//picoDST
+#include "StUPCEvent.h"
+#include "StUPCTrack.h"
 #include "StRPEvent.h"
 
 //my stuff
@@ -292,10 +295,10 @@ void getCategoryHistograms(ProcessingOutsideLoop& out, vector<string> pairs, std
 
     //creating histograms corresponding to the categories
     for(size_t i = 0; i<pairs.size(); i++){
-        double binMin = out.GetPointer1D(("M"+pairs[i]+"Chi2"+nameAfterChi2).c_str())->GetXaxis()->GetXmin();
-        double binMax = out.GetPointer1D(("M"+pairs[i]+"Chi2"+nameAfterChi2).c_str())->GetXaxis()->GetXmax();
-        int binNumber = out.GetPointer1D(("M"+pairs[i]+"Chi2"+nameAfterChi2).c_str())->GetXaxis()->GetNbins();
-        string axisTitle = out.GetPointer1D(("M"+pairs[i]+"Chi2"+nameAfterChi2).c_str())->GetXaxis()->GetTitle();
+        double binMin = out.GetPointer<TH1D>(("M"+pairs[i]+"Chi2"+nameAfterChi2).c_str())->GetXaxis()->GetXmin();
+        double binMax = out.GetPointer<TH1D>(("M"+pairs[i]+"Chi2"+nameAfterChi2).c_str())->GetXaxis()->GetXmax();
+        int binNumber = out.GetPointer<TH1D>(("M"+pairs[i]+"Chi2"+nameAfterChi2).c_str())->GetXaxis()->GetNbins();
+        string axisTitle = out.GetPointer<TH1D>(("M"+pairs[i]+"Chi2"+nameAfterChi2).c_str())->GetXaxis()->GetTitle();
         for(size_t j = 0; j<allCategories.size(); j++){
             //creating the name
             string name = "M"+pairs[i]+"Chi2"+nameAfterChi2+allCategories[j].first;

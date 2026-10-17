@@ -262,10 +262,10 @@ int main(int argc, char* argv[]){
     outsideprocessing.AddHistogram(TH2D("TracksEtaPhiNormal", "#eta vs #phi of detected products;#eta;#phi", 40, -1.0, 1.0, 40, -TMath::Pi(), TMath::Pi()));
     outsideprocessing.AddHistogram(TH1D("MatchingAbnormal", "Matching of tracks using #eta-#phi space distance;;tracks", 1, 0, 1));
     outsideprocessing.AddHistogram(TH1D("MatchingNormal", "Matching of tracks using #eta-#phi space distance;;tracks", 1, 0, 1));
-    outsideprocessing.GetPointer1D("MatchingAbnormal")->Fill("Correct", 0.0);
-    outsideprocessing.GetPointer1D("MatchingAbnormal")->Fill("Incorrect", 0.0);
-    outsideprocessing.GetPointer1D("MatchingNormal")->Fill("Correct", 0.0);
-    outsideprocessing.GetPointer1D("MatchingNormal")->Fill("Incorrect", 0.0);
+    outsideprocessing.GetPointer<TH1D>("MatchingAbnormal")->Fill("Correct", 0.0);
+    outsideprocessing.GetPointer<TH1D>("MatchingAbnormal")->Fill("Incorrect", 0.0);
+    outsideprocessing.GetPointer<TH1D>("MatchingNormal")->Fill("Correct", 0.0);
+    outsideprocessing.GetPointer<TH1D>("MatchingNormal")->Fill("Incorrect", 0.0);
     outsideprocessing.AddHistogram(TH1D("MpipiDeltaTAllTPCTracks", "Time between pion decay;#Delta t_{0} [ns];events", 100, -5, 5));
     //TODO add tof cluster finding
 
@@ -871,16 +871,16 @@ int main(int argc, char* argv[]){
 
     //merging and tidying up
     outsideprocessing.Merge();
-    outsideprocessing.GetPointerAfterMerge1D("FlowOfEvents")->LabelsDeflate();
-    outsideprocessing.GetPointerAfterMerge1D("K0Sdetectability")->LabelsDeflate();
-    outsideprocessing.GetPointerAfterMerge1D("MpipiMCExtremelyWideParticlesNames")->LabelsDeflate();
-    outsideprocessing.GetPointerAfterMerge1D("MpipiFlow")->LabelsDeflate();
-    outsideprocessing.GetPointerAfterMerge2D("MpipiPairs")->LabelsDeflate("X");
-    outsideprocessing.GetPointerAfterMerge2D("MpipiPairs")->LabelsDeflate("Y");
-    outsideprocessing.GetPointerAfterMerge1D("MpipiMotherName")->LabelsDeflate();
-    outsideprocessing.GetPointerAfterMerge2D("MpipiDeltaTvsEvent")->LabelsDeflate("Y");
-    outsideprocessing.GetPointerAfterMerge1D("MatchingAbnormal")->LabelsDeflate();
-    outsideprocessing.GetPointerAfterMerge1D("MatchingNormal")->LabelsDeflate();
+    outsideprocessing.GetPointerAfterMerge<TH1D>("FlowOfEvents")->LabelsDeflate();
+    outsideprocessing.GetPointerAfterMerge<TH1D>("K0Sdetectability")->LabelsDeflate();
+    outsideprocessing.GetPointerAfterMerge<TH1D>("MpipiMCExtremelyWideParticlesNames")->LabelsDeflate();
+    outsideprocessing.GetPointerAfterMerge<TH1D>("MpipiFlow")->LabelsDeflate();
+    outsideprocessing.GetPointerAfterMerge<TH2D>("MpipiPairs")->LabelsDeflate("X");
+    outsideprocessing.GetPointerAfterMerge<TH2D>("MpipiPairs")->LabelsDeflate("Y");
+    outsideprocessing.GetPointerAfterMerge<TH1D>("MpipiMotherName")->LabelsDeflate();
+    outsideprocessing.GetPointerAfterMerge<TH2D>("MpipiDeltaTvsEvent")->LabelsDeflate("Y");
+    outsideprocessing.GetPointerAfterMerge<TH1D>("MatchingAbnormal")->LabelsDeflate();
+    outsideprocessing.GetPointerAfterMerge<TH1D>("MatchingNormal")->LabelsDeflate();
 
     //setting up a tree & output file
     string path = string(argv[0]);
@@ -895,11 +895,11 @@ int main(int argc, char* argv[]){
     //saving histograms
     TFile* outputFileHist = TFile::Open(outfileName.c_str(), "recreate");
     //first, custom ones (efficiency)
-    TEfficiency K0SMCEfficiency(*outsideprocessing.GetPointerAfterMerge2D("K0SAfterMCpionCuts"), *outsideprocessing.GetPointerAfterMerge2D("K0STotal"));
+    TEfficiency K0SMCEfficiency(*outsideprocessing.GetPointerAfterMerge<TH2D>("K0SAfterMCpionCuts"), *outsideprocessing.GetPointerAfterMerge<TH2D>("K0STotal"));
     K0SMCEfficiency.SetNameTitle("K0SMCEfficiency", "K^{0}_{S} MC detection efficiency (judged by pions inside fiducial region)");
-    TEfficiency K0STPCEfficiency(*outsideprocessing.GetPointerAfterMerge2D("K0SAfterTPCpionCuts"), *outsideprocessing.GetPointerAfterMerge2D("K0SAfterMCpionCuts"));
+    TEfficiency K0STPCEfficiency(*outsideprocessing.GetPointerAfterMerge<TH2D>("K0SAfterTPCpionCuts"), *outsideprocessing.GetPointerAfterMerge<TH2D>("K0SAfterMCpionCuts"));
     K0STPCEfficiency.SetNameTitle("K0STPCEfficiency", "K^{0}_{S} TPC detection efficiency (judged by TPC reconstruction of pions already in fiducial cuts)");
-    TEfficiency K0STotalEfficiency(*outsideprocessing.GetPointerAfterMerge2D("K0SAfterTPCpionCuts"), *outsideprocessing.GetPointerAfterMerge2D("K0STotal"));
+    TEfficiency K0STotalEfficiency(*outsideprocessing.GetPointerAfterMerge<TH2D>("K0SAfterTPCpionCuts"), *outsideprocessing.GetPointerAfterMerge<TH2D>("K0STotal"));
     K0STotalEfficiency.SetNameTitle("K0STotalEfficiency", "K^{0}_{S} total detection efficiency (judged by MC pions inside fiducial region, properly reconstructed)");
     K0SMCEfficiency.Write();
     K0STPCEfficiency.Write();
