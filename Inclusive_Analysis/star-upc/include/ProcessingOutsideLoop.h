@@ -94,10 +94,10 @@ public:
     ~ProcessingOutsideLoop(){};
 
     //functions
-    // void AddHistogram(const TObject&);
     void AddHistogram(const TH1&);
     void AddHistogram(const THnBase&);
     void AddHistogram(const TEfficiency&);
+    void PrintHistograms();
     void Merge();
     void SaveToFile(TFile*);
     int GetNumberOfHistograms();
@@ -123,7 +123,15 @@ void ProcessingOutsideLoop::AddHistogram(const TH1& hist){
     //lone Get() needed to populate histograms first
     histTH1tab.back()->Get();
     histTH1tab.back()->Get()->GetInternalHist()->Sumw2();
-    histogramMap.emplace(hist.GetName(), histTH1tab.size()-1);
+    //returns whether insertion was successful (e.g. the key provided does not exist in the map)
+    bool insertion_result = histogramMap.emplace(hist.GetName(), histTH1tab.size()-1).second;
+
+    //making sure that name was correct
+    if(std::string(hist.GetName()).length()==0){
+        throw std::invalid_argument("Histogram added "+std::string(histTH1tab.size()==0 ? "as the first one" : "after \""+histogramMap.rbegin()->first+"\"")+" has an empty name!");
+    } else if(!insertion_result){
+        throw std::invalid_argument("Histogram of name \""+std::string(hist.GetName())+"\" already exists!");
+    }
 }
 void ProcessingOutsideLoop::AddHistogram(const THnBase& hist){
     //filling vectors with dummy pointers
@@ -135,7 +143,15 @@ void ProcessingOutsideLoop::AddHistogram(const THnBase& hist){
     //lone Get() needed to populate histograms first
     histTHnBasetab.back()->Get();
     histTHnBasetab.back()->Get()->GetInternalHist()->Sumw2();
-    histogramMap.emplace(hist.GetName(), histTHnBasetab.size()-1);
+    //returns whether insertion was successful (e.g. the key provided does not exist in the map)
+    bool insertion_result = histogramMap.emplace(hist.GetName(), histTHnBasetab.size()-1).second;
+
+    //making sure that name was correct
+    if(std::string(hist.GetName()).length()==0){
+        throw std::invalid_argument("Histogram added "+std::string(histTH1tab.size()==0 ? "as the first one" : "after \""+histogramMap.rbegin()->first+"\"")+" has an empty name!");
+    } else if(!insertion_result){
+        throw std::invalid_argument("Histogram of name \""+std::string(hist.GetName())+"\" already exists!");
+    }
 }
 void ProcessingOutsideLoop::AddHistogram(const TEfficiency& hist){
     //filling vectors with dummy pointers
@@ -146,12 +162,57 @@ void ProcessingOutsideLoop::AddHistogram(const TEfficiency& hist){
     histTEfficiencytab.back() = new ROOT::TThreadedObject<TEfficiency>(hist);
     //lone Get() needed to populate histograms first
     histTEfficiencytab.back()->Get();
-    histogramMap.emplace(hist.GetName(), histTEfficiencytab.size()-1);
+    //returns whether insertion was successful (e.g. the key provided does not exist in the map)
+    bool insertion_result = histogramMap.emplace(hist.GetName(), histTEfficiencytab.size()-1).second;
+
+    //making sure that name was correct
+    if(std::string(hist.GetName()).length()==0){
+        throw std::invalid_argument("Histogram added "+std::string(histTH1tab.size()==0 ? "as the first one" : "after \""+histogramMap.rbegin()->first+"\"")+" has an empty name!");
+    } else if(!insertion_result){
+        throw std::invalid_argument("Histogram of name \""+std::string(hist.GetName())+"\" already exists!");
+    }
+}
+
+void ProcessingOutsideLoop::PrintHistograms(){
+    std::vector<std::string> types, names;
+    for(long unsigned int i = 0; i<histTH1tab.size(); i++){
+        if(histTH1tab[i]!=nullptr){
+            types.push_back(histTH1tab[i]->Get()->GetInternalHist()->ClassName());
+            names.push_back(histTH1tab[i]->Get()->GetInternalHist()->GetName());
+        } else if(histTHnBasetab[i]!=nullptr){
+            types.push_back(histTHnBasetab[i]->Get()->GetInternalHist()->ClassName());
+            names.push_back(histTHnBasetab[i]->Get()->GetInternalHist()->GetName());
+        } else if(histTEfficiencytab[i]!=nullptr){
+            types.push_back(histTEfficiencytab[i]->Get().get()->ClassName());
+            names.push_back(histTEfficiencytab[i]->Get().get()->GetName());
+        } else{
+            throw std::invalid_argument("Histogram #"+to_string(i)+" is somehow represented by the wrong amount of pointers (should be exactly one)!");
+        }
+    }
+    int max_len_number = ceil(log10(histTH1tab.size()-1));
+    int max_len_type = std::max_element(types.begin(), types.end(), [](const std::string& a, const std::string& b){return a.length()<b.length();})->length();
+    int max_len_name = std::max_element(names.begin(), names.end(), [](const std::string& a, const std::string& b){return a.length()<b.length();})->length();
+
+    //printf with the - option allows for padding to the left; | will provide nice column divider; example: "%-9s|%-9s|%-9s\n"
+    //2,4,4 are lengths of names of columns - "ID", "Type", "Name"
+    std::string printf_options = "%-"+to_string(std::max(max_len_number, 2)+3)+"s%-"+to_string(std::max(max_len_type, 4)+2)+"s%-"+to_string(std::max(max_len_name, 4)+2)+"s\n";
+    int total_length = std::max(max_len_number, 2)+3+std::max(max_len_type, 4)+2+std::max(max_len_name, 4)+2;
+
+    //actual printing
+    printf(printf_options.c_str(), "ID", "Type", "Name");
+    for(size_t i = 0; i<total_length; i++) putchar('-'); printf("\n");
+    for(size_t i = 0; i<types.size(); i++){
+        printf(printf_options.c_str(), to_string(i).c_str(), types[i].c_str(), names[i].c_str());
+    };
 }
 
 void ProcessingOutsideLoop::Merge(){
     //using the first one for counting, as they all are the same size
     for(long unsigned int i = 0; i<histTH1tab.size(); i++){
+        //checking that exactly one pointer is not a nullptr
+        if((histTH1tab[i]!=nullptr)+(histTHnBasetab[i]!=nullptr)+(histTEfficiencytab[i]!=nullptr)!=1){
+            throw std::invalid_argument("Histogram #"+to_string(i)+" is somehow represented by the wrong amount of pointers (should be exactly one)!");
+        }
         //filling vectors with dummy pointers
         histTH1tabFinal.push_back(nullptr);
         histTHnBasetabFinal.push_back(nullptr);
@@ -166,6 +227,10 @@ void ProcessingOutsideLoop::Merge(){
             histTHnBasetabFinal[i] = std::shared_ptr<THnBase>(temp_wrapper_THnBase, temp_wrapper_THnBase->GetInternalHist());
         }
         histTEfficiencytabFinal[i] = histTEfficiencytab[i]!=nullptr ? histTEfficiencytab[i]->Merge() : nullptr;
+        //checking that exactly one pointer is not a nullptr
+        if((histTH1tabFinal[i]!=nullptr)+(histTHnBasetabFinal[i]!=nullptr)+(histTEfficiencytabFinal[i]!=nullptr)!=1){
+            throw std::invalid_argument("Histogram #"+to_string(i)+" after calling Merge() is somehow represented by the wrong amount of pointers (should be exactly one)!");
+        }
     }
 }
 
@@ -174,6 +239,11 @@ int ProcessingOutsideLoop::GetNumberOfHistograms(){
 }
 
 void ProcessingOutsideLoop::SaveToFile(TFile* file){
+    //checking the file opening
+    if(!file->IsOpen()||file->IsZombie()){
+        throw std::invalid_argument("File \""+std::string(file->GetName())+"\" is wrongly opened or something!");
+    }
+
     file->cd();
     //using the first one for counting, as they all are the same size
     for(long unsigned int i = 0; i<histTH1tabFinal.size(); i++){
@@ -188,6 +258,11 @@ void ProcessingOutsideLoop::SaveToFile(TFile* file){
 
 template<class T>
 T* ProcessingOutsideLoop::GetPointer(int i){
+    //checking that exactly one pointer is not a nullptr
+    if((histTH1tab[i]!=nullptr)+(histTHnBasetab[i]!=nullptr)+(histTEfficiencytab[i]!=nullptr)!=1){
+        throw std::invalid_argument("Histogram #"+to_string(i)+" after calling GetPointer() is somehow represented by the wrong amount of pointers (should be exactly one)!");
+    }
+
     //dynamic_cast gives back nullptr if trying to cast uncastable type
     //hence why I'm using it everywhere despite inability to cast TEff. into TH1D
     if(histTH1tab[i]!=nullptr)
@@ -209,6 +284,11 @@ T* ProcessingOutsideLoop::GetPointer(const char* hist_name){
 
 template<class T>
 std::shared_ptr<T> ProcessingOutsideLoop::GetPointerAfterMerge(int i){
+    //checking that exactly one pointer is not a nullptr
+    if((histTH1tabFinal[i]!=nullptr)+(histTHnBasetabFinal[i]!=nullptr)+(histTEfficiencytabFinal[i]!=nullptr)!=1){
+        throw std::invalid_argument("Histogram #"+to_string(i)+" after calling GetPointerAfterMerge() is somehow represented by the wrong amount of pointers (should be exactly one)!");
+    }
+
     if(histTH1tabFinal[i]!=nullptr)
         return dynamic_pointer_cast<T>(histTH1tabFinal[i]);
     if(histTHnBasetabFinal[i]!=nullptr)

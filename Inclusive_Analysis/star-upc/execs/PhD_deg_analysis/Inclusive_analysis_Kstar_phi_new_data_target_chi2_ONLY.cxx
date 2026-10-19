@@ -368,20 +368,7 @@ int main(int argc, char** argv){
     outsideprocessing.AddHistogram(TH1D("XiEDifference", ";#Delta #xi_{E};Number of event pairs", 400, -0.1, 0.1));
     outsideprocessing.AddHistogram(TH2D("XiBothDifference", ";#Delta #xi_{W};#Delta #xi_{E}", 400, -0.1, 0.1, 400, -0.1, 0.1));
 
-    for(size_t i = 0; i<outsideprocessing.GetNumberOfHistograms(); i++){
-        if(outsideprocessing.GetPointer<TH1D>(i)!=nullptr){
-            printf("%s\n", outsideprocessing.GetPointer<TH1D>(i)->GetName());
-        } else if(outsideprocessing.GetPointer<TH2D>(i)!=nullptr){
-            printf("%s\n", outsideprocessing.GetPointer<TH2D>(i)->GetName());
-        } else if(outsideprocessing.GetPointer<TH3D>(i)!=nullptr){
-            printf("%s\n", outsideprocessing.GetPointer<TH3D>(i)->GetName());
-        } else if(outsideprocessing.GetPointer<THnSparseD>(i)!=nullptr){
-            printf("%s\n", outsideprocessing.GetPointer<THnSparseD>(i)->GetName());
-        } else{
-            printf("What.\n");
-        }
-    }
-
+    outsideprocessing.PrintHistograms();
 
     //processing
     //defining TreeProcessor
