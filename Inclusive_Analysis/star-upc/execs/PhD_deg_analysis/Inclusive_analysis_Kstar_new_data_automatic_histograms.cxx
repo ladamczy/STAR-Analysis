@@ -27,6 +27,7 @@ std::string rountToNSignificantFigures(double input, int n = 2);
 int GetFirstNonzeroBinNumber(TH1* input);
 TFitResult fit_and_draw_and_save(TH1D* data, TF1* signal, TF1* background, std::string folderWithDiagonal, std::string name, std::string title, std::string options, TH1D* only_mixed_background = nullptr);
 void custom_draw_and_save(TH1D* data, double expected_value, std::string folderWithDiagonal, std::string name, std::string title, std::string options);
+void custom_draw_and_save_status(TH2D* data, std::string folderWithDiagonal, std::string name, std::string title, std::string options);
 std::string remove_bad_characters(std::string input);
 
 int main(int argc, char* argv[]){
@@ -122,8 +123,9 @@ int main(int argc, char* argv[]){
     //this scary nested map exists so I can do map[pair][category] = histogram
     //data
     std::map<std::string, std::map<std::string, TH2D*>> background_vector, signal_vector;
-    //total chi2
+    //total chi2 and fit status
     std::map<std::string, std::map<std::string, TH1D*>> Chi2withbcg_vector;
+    std::map<std::string, std::map<std::string, TH2D*>> Status_vector;
     //separate histograms for each signal
     std::map<std::string, std::map<std::string, std::vector<TH1D*>>> result_vector;
     std::map<std::string, std::map<std::string, std::vector<TH1D*>>> mass_vector;
@@ -148,6 +150,7 @@ int main(int argc, char* argv[]){
             std::string axis_title = signal_vector[pair][category]->GetYaxis()->GetTitle();
             //creating histograms
             Chi2withbcg_vector[pair][category] = new TH1D((tempHistName+"_"+category+"_Chi2").c_str(), (histogram_title+"-dependent #chi2/NDF;"+axis_title+";#chi^{2}/NDF").c_str(), signal_vector[pair][category]->GetNbinsY(), signal_vector[pair][category]->GetYaxis()->GetXmin(), signal_vector[pair][category]->GetYaxis()->GetXmax());
+            Status_vector[pair][category] = new TH2D((tempHistName+"_"+category+"_Fit_status").c_str(), (histogram_title+" fit status;"+axis_title+";").c_str(), signal_vector[pair][category]->GetNbinsY(), signal_vector[pair][category]->GetYaxis()->GetXmin(), signal_vector[pair][category]->GetYaxis()->GetXmax(), 1, 0, 1);
             background_normalisation_vector[pair][category] = new TH1D((tempHistName+"_"+category+"_Bcgnorm").c_str(), (histogram_title+"-dependent background normalization;"+axis_title+";Bcg normalization").c_str(), signal_vector[pair][category]->GetNbinsY(), signal_vector[pair][category]->GetYaxis()->GetXmin(), signal_vector[pair][category]->GetYaxis()->GetXmax());
             for(size_t i = 0; i<signal_function_vector.size(); i++){
                 //name of particle (takes N_{XYZ} and removes first 3 and last characters, leaving XYZ)
@@ -266,6 +269,8 @@ int main(int argc, char* argv[]){
                 //saving fit results for further analysys
                 //Chi2
                 Chi2withbcg_vector[pair][category]->SetBinContent(k+1, tempResult.Chi2()/tempResult.Ndf());
+                //Status - careful, this is 2D histogram
+                Status_vector[pair][category]->SetBinContent(k+1, 1, tempResult.Status());
                 for(size_t i = 0; i<signal_function_vector.size(); i++){
                     //result
                     double bin_width = result_vector[pair][category][i]->GetBinWidth(k+1);
@@ -312,6 +317,7 @@ int main(int argc, char* argv[]){
             std::string folderToSave = folderWithDiagonal+pair+"/"+category+"/";
             //always present
             custom_draw_and_save(Chi2withbcg_vector[pair][category], 1., folderToSave, "", "", "hist min0");
+            custom_draw_and_save_status(Status_vector[pair][category], folderToSave, "", "", "col text min0");
             for(size_t i = 0; i<signal_function_vector.size(); i++){
                 custom_draw_and_save(result_vector[pair][category][i], 0., folderToSave, "", "", "e1 min0");
                 custom_draw_and_save(mass_vector[pair][category][i], PDG_data[i].first, folderToSave, "", "", "e1");
@@ -555,6 +561,51 @@ void custom_draw_and_save(TH1D* data, double expected_value, std::string folderW
     resultCanvas->RedrawAxis();
     resultCanvas->SaveAs((folderWithDiagonal+std::string(data->GetName())+".pdf").c_str());
     resultCanvas->Clear();
+    delete resultCanvas;
+}
+
+void custom_draw_and_save_status(TH2D* data, std::string folderWithDiagonal, std::string name, std::string title, std::string options){
+    //failsave in case nullptr was passed
+    if(data==nullptr){
+        printf("WARNING!!! A (data) nullptr has been passed to custom_draw_and_save_status function!\n");
+    }
+    //normal proceeding
+    TStyle tempStyle = MyStyles::Hist2DNormalSize(true);
+    //setting to align middle of text over middle of bin in "text0 e1" histograms
+    tempStyle.SetTextAlign(kHAlignCenter+kVAlignBottom);
+    tempStyle.cd();
+    gROOT->ForceStyle();
+    TCanvas* resultCanvas = MyStyles::DefaultCanvas("resultCanvas");
+    resultCanvas->UseCurrentStyle();
+    data->UseCurrentStyle();
+    //setting name and title
+    if(name.length()!=0){
+        data->SetName(name.c_str());
+    }
+    if(title.length()!=0){
+        data->SetTitle(title.c_str());
+    }
+    //creating custom red-green palete and applying it to gStyle
+    int palette[] = { kGreen, kRed };
+    gStyle->SetPalette(2, palette);
+    resultCanvas->SetFrameFillColor(TColor::GetColorPalette(0));
+    //drawing data (with removed Y axis and stats)
+    data->GetYaxis()->SetLabelSize(0);
+    data->GetYaxis()->SetTickLength(0);
+    data->SetStats(false);
+    data->SetMinimum(0.);
+    data->SetMaximum(1.);
+    data->SetMarkerSize(4);
+    data->SetMarkerColor(kBlack);
+    resultCanvas->SetLeftMargin(0.05);
+    resultCanvas->SetGrid(1, 0);
+    data->Draw(options.c_str());
+    //saving
+    resultCanvas->SaveAs((folderWithDiagonal+std::string(data->GetName())+".pdf").c_str());
+    resultCanvas->Clear();
+    //restoring the default palette
+    gStyle->SetPalette();
+    resultCanvas->SetGrid(0, 0);
     delete resultCanvas;
 }
 
