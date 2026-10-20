@@ -14,7 +14,6 @@
 #include "TCanvas.h"
 #include "TStyle.h"
 #include "TF1.h"
-#include "TF1Convolution.h"
 #include "TApplication.h"
 #include "TFitResult.h"
 #include "THStack.h"

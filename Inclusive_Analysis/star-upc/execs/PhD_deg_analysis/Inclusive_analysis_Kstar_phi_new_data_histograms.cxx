@@ -14,7 +14,6 @@
 #include "TCanvas.h"
 #include "TStyle.h"
 #include "TF1.h"
-#include "TF1Convolution.h"
 #include "TApplication.h"
 #include "TFitResult.h"
 #include "THStack.h"
@@ -185,9 +184,9 @@ int main(int argc, char* argv[]){
     result->UseCurrentStyle();
     // gROOT->ForceStyle();
     //fitting ONCE the total m_KK
-    TF1Convolution conv_sig("breitwigner", "gausn", 0.5, 1.5); //extra range for all your convolution needs
-    conv_sig.SetNofPointsFFT(10000);
-    TF1 fit_func_custom_sig("fit_func_custom_sig", conv_sig, 0.99, 1.05, 6);
+    //convolution of BW and gauss (default range [0. 1.] will be changed later anyway)
+    //!!! GAMMA AND GAUSS STD ARE SWAPPED TO PRESERVE m, gamma, std ORDER !!!
+    TF1 fit_func_custom_sig("fit_func_custom_sig", "[0]*TMath::Voigt(x-[1], [3], [2])", 0.99, 1.05);
     TF1 fit_func_custom_bcg("fit_func_custom_bcg", "pol2", 0.99, 1.05);
     printf("If you want to skip the fitting of one-time things, write \"yes\"\n");
     std::getline(std::cin, wannaSkip);
@@ -197,10 +196,8 @@ int main(int argc, char* argv[]){
     fit_func_custom_sig.SetParameter(0, 9);
     fit_func_custom_sig.SetParameter(1, 1.02);
     fit_func_custom_sig.FixParameter(2, 0.00443);
-    fit_func_custom_sig.FixParameter(3, 1.);
-    fit_func_custom_sig.FixParameter(4, 0.);
-    fit_func_custom_sig.SetParameter(5, 0.0013);
-    fit_func_custom_sig.SetParNames("N_{BW}", "m_{0}", "#Gamma_{0,BW}", "N_{Gauss}", "m_{0,Gauss}", "#sigma_{Gauss}");
+    fit_func_custom_sig.SetParameter(3, 0.0013);
+    fit_func_custom_sig.SetParNames("N_{BW}", "m_{0}", "#Gamma_{0,BW}", "#sigma_{Gauss}");
     fit_func_custom_bcg.SetParNames("a_{0}", "a_{1}", "a_{2}");
     differential_crossection_fit(result, MKKChi2Close, &fit_func_custom_sig, &fit_func_custom_bcg, folderWithDiagonal+"MKKwhole.pdf");
     //fitting ONCE the total m_Kpi
@@ -209,9 +206,7 @@ int main(int argc, char* argv[]){
     fit_func_custom_sig.SetParameter(0, 9);
     fit_func_custom_sig.SetParameter(1, 0.892);
     fit_func_custom_sig.FixParameter(2, 0.0514);
-    fit_func_custom_sig.FixParameter(3, 1.);
-    fit_func_custom_sig.FixParameter(4, 0.);
-    fit_func_custom_sig.SetParameter(5, 0.0013);
+    fit_func_custom_sig.SetParameter(3, 0.0013);
     differential_crossection_fit(result, MKpiChi2Close, &fit_func_custom_sig, &fit_func_custom_bcg, folderWithDiagonal+"MKpiwhole.pdf");
     //fitting ONCE the total m_piK
     fit_func_custom_sig.SetRange(0.7, 1.1);
@@ -219,9 +214,7 @@ int main(int argc, char* argv[]){
     fit_func_custom_sig.SetParameter(0, 9);
     fit_func_custom_sig.SetParameter(1, 0.892);
     fit_func_custom_sig.FixParameter(2, 0.0514);
-    fit_func_custom_sig.FixParameter(3, 1.);
-    fit_func_custom_sig.FixParameter(4, 0.);
-    fit_func_custom_sig.SetParameter(5, 0.0013);
+    fit_func_custom_sig.SetParameter(3, 0.0013);
     differential_crossection_fit(result, MpiKChi2Close, &fit_func_custom_sig, &fit_func_custom_bcg, folderWithDiagonal+"MpiKwhole.pdf");
 skipOneTimeFitting:
 

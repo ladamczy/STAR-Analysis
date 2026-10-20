@@ -666,7 +666,7 @@ int main(int argc, char* argv[]){
     double min_fit = massmap[PDGmain]-3*widthmap[PDGmain];
     double max_fit = massmap[PDGmain]+3*widthmap[PDGmain];
     gStyle->SetOptFit(1);
-    TF1 MassBWFit("MassBWFit", [](double* x, double* p){return p[0]*TMath::BreitWigner(x[0], p[1], p[2]);}, min_fit, max_fit, 3, 1);
+    TF1 MassBWFit("MassBWFit", "breitwigner", min_fit, max_fit);
     MassBWFit.SetParameters(1., massmap[PDGmain], widthmap[PDGmain]);
     MassBWFit.SetParNames("N", "m_{0}", "#Gamma_{0}");
     MassBWFit.SetNpx(1000);
