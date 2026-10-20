@@ -670,17 +670,14 @@ int main(int argc, char* argv[]){
     MassBWFit.SetParameters(1., massmap[PDGmain], widthmap[PDGmain]);
     MassBWFit.SetParNames("N", "m_{0}", "#Gamma_{0}");
     MassBWFit.SetNpx(1000);
-    TF1Convolution conv_sig("breitwigner", "gausn", min_fit-5., max_fit+5.); //extra range for all your convolution needs
-    conv_sig.SetNofPointsFFT(10000);
-    TF1 MassConvolutionFit("MassConvolutionFit", conv_sig, min_fit, max_fit, 6);
+    //!!! GAMMA AND GAUSS STD ARE SWAPPED TO PRESERVE m, gamma, std ORDER !!!
+    TF1 MassConvolutionFit("MassConvolutionFit", "[0]*TMath::Voigt(x-[1], [3], [2])", min_fit, max_fit);
     MassConvolutionFit.SetNpx(1000);
     MassConvolutionFit.SetParameter(0, 1.);                   //N_sig
     MassConvolutionFit.SetParameter(1, massmap[PDGmain]);     //m0
     MassConvolutionFit.SetParameter(2, widthmap[PDGmain]);    //gamma0
-    MassConvolutionFit.FixParameter(3, 1.);                   //N_Gauss  (fixed to 1)
-    MassConvolutionFit.FixParameter(4, 0.);                   //mu_Gauss (fixed to 0)
-    MassConvolutionFit.SetParameter(5, 0.0013);               //sigma_Gauss
-    MassConvolutionFit.SetParNames("N_{sig}", "m_{0}", "#Gamma_{BW}", "N_{Gauss}", "#mu_{Gauss}", "#sigma_{Gauss}");
+    MassConvolutionFit.SetParameter(3, 0.0013);               //sigma_Gauss
+    MassConvolutionFit.SetParNames("N_{sig}", "m_{0}", "#Gamma_{BW}", "#sigma_{Gauss}");
     //fitting
     MCmassBWfit.Fit(&MassBWFit, "RS+");
     gPad->Update();
