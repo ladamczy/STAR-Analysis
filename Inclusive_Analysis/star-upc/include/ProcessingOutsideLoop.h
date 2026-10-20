@@ -186,7 +186,7 @@ void ProcessingOutsideLoop::PrintHistograms(){
             types.push_back(histTEfficiencytab[i]->Get().get()->ClassName());
             names.push_back(histTEfficiencytab[i]->Get().get()->GetName());
         } else{
-            throw std::invalid_argument("Histogram #"+to_string(i)+" is somehow represented by the wrong amount of pointers (should be exactly one)!");
+            throw std::invalid_argument("Histogram #"+std::to_string(i)+" is somehow represented by the wrong amount of pointers (should be exactly one)!");
         }
     }
     int max_len_number = ceil(log10(histTH1tab.size()-1));
@@ -195,14 +195,14 @@ void ProcessingOutsideLoop::PrintHistograms(){
 
     //printf with the - option allows for padding to the left; | will provide nice column divider; example: "%-9s|%-9s|%-9s\n"
     //2,4,4 are lengths of names of columns - "ID", "Type", "Name"
-    std::string printf_options = "%-"+to_string(std::max(max_len_number, 2)+3)+"s%-"+to_string(std::max(max_len_type, 4)+2)+"s%-"+to_string(std::max(max_len_name, 4)+2)+"s\n";
+    std::string printf_options = "%-"+std::to_string(std::max(max_len_number, 2)+3)+"s%-"+std::to_string(std::max(max_len_type, 4)+2)+"s%-"+std::to_string(std::max(max_len_name, 4)+2)+"s\n";
     int total_length = std::max(max_len_number, 2)+3+std::max(max_len_type, 4)+2+std::max(max_len_name, 4)+2;
 
     //actual printing
     printf(printf_options.c_str(), "ID", "Type", "Name");
     for(size_t i = 0; i<total_length; i++) putchar('-'); printf("\n");
     for(size_t i = 0; i<types.size(); i++){
-        printf(printf_options.c_str(), to_string(i).c_str(), types[i].c_str(), names[i].c_str());
+        printf(printf_options.c_str(), std::to_string(i).c_str(), types[i].c_str(), names[i].c_str());
     };
 }
 
@@ -211,7 +211,7 @@ void ProcessingOutsideLoop::Merge(){
     for(long unsigned int i = 0; i<histTH1tab.size(); i++){
         //checking that exactly one pointer is not a nullptr
         if((histTH1tab[i]!=nullptr)+(histTHnBasetab[i]!=nullptr)+(histTEfficiencytab[i]!=nullptr)!=1){
-            throw std::invalid_argument("Histogram #"+to_string(i)+" is somehow represented by the wrong amount of pointers (should be exactly one)!");
+            throw std::invalid_argument("Histogram #"+std::to_string(i)+" is somehow represented by the wrong amount of pointers (should be exactly one)!");
         }
         //filling vectors with dummy pointers
         histTH1tabFinal.push_back(nullptr);
@@ -229,7 +229,7 @@ void ProcessingOutsideLoop::Merge(){
         histTEfficiencytabFinal[i] = histTEfficiencytab[i]!=nullptr ? histTEfficiencytab[i]->Merge() : nullptr;
         //checking that exactly one pointer is not a nullptr
         if((histTH1tabFinal[i]!=nullptr)+(histTHnBasetabFinal[i]!=nullptr)+(histTEfficiencytabFinal[i]!=nullptr)!=1){
-            throw std::invalid_argument("Histogram #"+to_string(i)+" after calling Merge() is somehow represented by the wrong amount of pointers (should be exactly one)!");
+            throw std::invalid_argument("Histogram #"+std::to_string(i)+" after calling Merge() is somehow represented by the wrong amount of pointers (should be exactly one)!");
         }
     }
 }
@@ -260,7 +260,7 @@ template<class T>
 T* ProcessingOutsideLoop::GetPointer(int i){
     //checking that exactly one pointer is not a nullptr
     if((histTH1tab[i]!=nullptr)+(histTHnBasetab[i]!=nullptr)+(histTEfficiencytab[i]!=nullptr)!=1){
-        throw std::invalid_argument("Histogram #"+to_string(i)+" after calling GetPointer() is somehow represented by the wrong amount of pointers (should be exactly one)!");
+        throw std::invalid_argument("Histogram #"+std::to_string(i)+" after calling GetPointer() is somehow represented by the wrong amount of pointers (should be exactly one)!");
     }
 
     //dynamic_cast gives back nullptr if trying to cast uncastable type
@@ -286,7 +286,7 @@ template<class T>
 std::shared_ptr<T> ProcessingOutsideLoop::GetPointerAfterMerge(int i){
     //checking that exactly one pointer is not a nullptr
     if((histTH1tabFinal[i]!=nullptr)+(histTHnBasetabFinal[i]!=nullptr)+(histTEfficiencytabFinal[i]!=nullptr)!=1){
-        throw std::invalid_argument("Histogram #"+to_string(i)+" after calling GetPointerAfterMerge() is somehow represented by the wrong amount of pointers (should be exactly one)!");
+        throw std::invalid_argument("Histogram #"+std::to_string(i)+" after calling GetPointerAfterMerge() is somehow represented by the wrong amount of pointers (should be exactly one)!");
     }
 
     if(histTH1tabFinal[i]!=nullptr)
