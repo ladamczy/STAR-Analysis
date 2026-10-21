@@ -20,15 +20,17 @@
 #include "TLine.h"
 #include "TLegend.h"
 #include "TSystem.h"
+#include "TRootCanvas.h"
 
 #include "MyStyles.h"
 
 std::string rountToNSignificantFigures(double input, int n = 2);
 int GetFirstNonzeroBinNumber(TH1* input);
-TFitResult fit_and_draw_and_save(TH1D* data, TF1* signal, TF1* background, std::string folderWithDiagonal, std::string name, std::string title, std::string options, TH1D* only_mixed_background = nullptr);
-void custom_draw_and_save(TH1D* data, double expected_value, std::string folderWithDiagonal, std::string name, std::string title, std::string options);
-void custom_draw_and_save_status(TH2D* data, std::string folderWithDiagonal, std::string name, std::string title, std::string options);
+TFitResult fit_and_draw_and_save(TH1D* data, TF1* signal, TF1* background, std::string folderWithDiagonal, std::string name, std::string title, std::string options, TH1D* only_mixed_background = nullptr, std::string total_pdf_file_title = "");
+void custom_draw_and_save(TH1D* data, double expected_value, std::string folderWithDiagonal, std::string name, std::string title, std::string options, std::string total_pdf_file_title);
+void custom_draw_and_save_status(TH2D* data, std::string folderWithDiagonal, std::string name, std::string title, std::string options, std::string total_pdf_file_title);
 std::string remove_bad_characters(std::string input);
+void writing_to_one_pdf(TCanvas* input, std::string full_path);
 
 int main(int argc, char* argv[]){
     //something used so that the histograms would draw
@@ -116,6 +118,7 @@ int main(int argc, char* argv[]){
     for(auto&& pair:pairTab){
         for(auto&& category:allCategories){
             gSystem->mkdir((folderWithDiagonal+pair+"/"+category).c_str(), true);
+            gSystem->mkdir((folderWithDiagonal+pair+"/"+category+"/whole_background").c_str(), true);
         }
     }
 
@@ -150,7 +153,7 @@ int main(int argc, char* argv[]){
             std::string axis_title = signal_vector[pair][category]->GetYaxis()->GetTitle();
             //creating histograms
             Chi2withbcg_vector[pair][category] = new TH1D((tempHistName+"_"+category+"_Chi2").c_str(), (histogram_title+"-dependent #chi2/NDF;"+axis_title+";#chi^{2}/NDF").c_str(), signal_vector[pair][category]->GetNbinsY(), signal_vector[pair][category]->GetYaxis()->GetXmin(), signal_vector[pair][category]->GetYaxis()->GetXmax());
-            Status_vector[pair][category] = new TH2D((tempHistName+"_"+category+"_Fit_status").c_str(), (histogram_title+" fit status;"+axis_title+";").c_str(), signal_vector[pair][category]->GetNbinsY(), signal_vector[pair][category]->GetYaxis()->GetXmin(), signal_vector[pair][category]->GetYaxis()->GetXmax(), 1, 0, 1);
+            Status_vector[pair][category] = new TH2D((tempHistName+"_"+category+"_Fit_status").c_str(), (histogram_title+" fit status;"+axis_title+";Fit error code").c_str(), signal_vector[pair][category]->GetNbinsY(), signal_vector[pair][category]->GetYaxis()->GetXmin(), signal_vector[pair][category]->GetYaxis()->GetXmax(), 1, 0, 1);
             background_normalisation_vector[pair][category] = new TH1D((tempHistName+"_"+category+"_Bcgnorm").c_str(), (histogram_title+"-dependent background normalization;"+axis_title+";Bcg normalization").c_str(), signal_vector[pair][category]->GetNbinsY(), signal_vector[pair][category]->GetYaxis()->GetXmin(), signal_vector[pair][category]->GetYaxis()->GetXmax());
             for(size_t i = 0; i<signal_function_vector.size(); i++){
                 //name of particle (takes N_{XYZ} and removes first 3 and last characters, leaving XYZ)
@@ -180,11 +183,16 @@ int main(int argc, char* argv[]){
     //fitting loop
     for(auto&& pair:pairTab){
         for(auto&& category:allCategories){
+            //opening pdf files
+            std::string folderToSave = folderWithDiagonal+pair+"/"+category+"/";
+            writing_to_one_pdf(nullptr, folderToSave+pair+"_"+category+"_TOTAL.pdf");
+            writing_to_one_pdf(nullptr, folderToSave+pair+"_"+category+"_TOTAL_whole_background.pdf");
             //copying total histogram for given pair and cathegory
             TH2D* sig_pointer = (TH2D*)signal_vector[pair][category]->Clone();
             TH2D* bcg_pointer = (TH2D*)background_vector[pair][category]->Clone();
             //for keeping title
             std::string baseOfTitle = std::string(sig_pointer->GetTitle())+" #in ";
+            //fitting loop
             for(Int_t k = 0; k<sig_pointer->GetNbinsY(); k++){
                 //slices of signal and background
                 TH1D* sig_slice = sig_pointer->ProjectionX("_sig", k+1, k+1, "e1");
@@ -255,7 +263,6 @@ int main(int argc, char* argv[]){
                 std::string boundaries = "("+rountToNSignificantFigures(sig_pointer->GetYaxis()->GetBinLowEdge(k+1))+", ";
                 boundaries += rountToNSignificantFigures(sig_pointer->GetYaxis()->GetBinUpEdge(k+1))+")";
                 sig_slice->SetTitle(newTitle.c_str());
-                std::string folderToSave = folderWithDiagonal+pair+"/"+category+"/";
                 //replacing title fragments
                 //title is in format:
                 //"pair_name category #in (lower_bound, upper_bound)"
@@ -264,8 +271,7 @@ int main(int argc, char* argv[]){
                 newTitle.replace(newTitle.find(" "), 1, " pair mass, ");
                 newTitle += boundaries;
                 newName += " "+boundaries;
-
-                TFitResult tempResult = fit_and_draw_and_save(sig_slice, &fit_func_sig, &fit_func_bcg, folderToSave, newName, newTitle, "e1", bcg_slice);
+                TFitResult tempResult = fit_and_draw_and_save(sig_slice, &fit_func_sig, &fit_func_bcg, folderToSave, newName, newTitle, "e1", bcg_slice, pair+"_"+category+"_TOTAL");
                 //saving fit results for further analysys
                 //Chi2
                 Chi2withbcg_vector[pair][category]->SetBinContent(k+1, tempResult.Chi2()/tempResult.Ndf());
@@ -316,15 +322,15 @@ int main(int argc, char* argv[]){
         for(auto&& category:allCategories){
             std::string folderToSave = folderWithDiagonal+pair+"/"+category+"/";
             //always present
-            custom_draw_and_save(Chi2withbcg_vector[pair][category], 1., folderToSave, "", "", "hist min0");
-            custom_draw_and_save_status(Status_vector[pair][category], folderToSave, "", "", "col text min0");
+            custom_draw_and_save(Chi2withbcg_vector[pair][category], 1., folderToSave, "", "", "hist min0", pair+"_"+category+"_TOTAL");
+            custom_draw_and_save_status(Status_vector[pair][category], folderToSave, "", "", "col text min0", pair+"_"+category+"_TOTAL");
             for(size_t i = 0; i<signal_function_vector.size(); i++){
-                custom_draw_and_save(result_vector[pair][category][i], 0., folderToSave, "", "", "e1 min0");
-                custom_draw_and_save(mass_vector[pair][category][i], PDG_data[i].first, folderToSave, "", "", "e1");
-                custom_draw_and_save(width_vector[pair][category][i], PDG_data[i].second, folderToSave, "", "", "e1 min0");
-                custom_draw_and_save(resolution_vector[pair][category][i], 0., folderToSave, "", "", "e1 min0");
+                custom_draw_and_save(result_vector[pair][category][i], 0., folderToSave, "", "", "e1 min0", pair+"_"+category+"_TOTAL");
+                custom_draw_and_save(mass_vector[pair][category][i], PDG_data[i].first, folderToSave, "", "", "e1", pair+"_"+category+"_TOTAL");
+                custom_draw_and_save(width_vector[pair][category][i], PDG_data[i].second, folderToSave, "", "", "e1 min0", pair+"_"+category+"_TOTAL");
+                custom_draw_and_save(resolution_vector[pair][category][i], 0., folderToSave, "", "", "e1 min0", pair+"_"+category+"_TOTAL");
             }
-            custom_draw_and_save(background_normalisation_vector[pair][category], 0., folderToSave, "", "", "e1 min0");
+            custom_draw_and_save(background_normalisation_vector[pair][category], 0., folderToSave, "", "", "e1 min0", pair+"_"+category+"_TOTAL");
             //custom parameters (including those from linear background)
             TH2D* hist_pointer = background_additional_parameters_vector[pair][category];
             hist_pointer->LabelsDeflate("X");
@@ -342,8 +348,11 @@ int main(int argc, char* argv[]){
                 temp_title += hist_pointer->GetYaxis()->GetTitle();
                 temp_title += ";Value";
                 //drawing
-                custom_draw_and_save(hist_pointer->ProjectionY("_parameter", bin_number+1, bin_number+1), 0., folderToSave, temp_name, temp_title, "e1 text0");
+                custom_draw_and_save(hist_pointer->ProjectionY("_parameter", bin_number+1, bin_number+1), 0., folderToSave, temp_name, temp_title, "e1 text0", pair+"_"+category+"_TOTAL");
             }
+            //end of drawing
+            writing_to_one_pdf(nullptr, folderToSave+pair+"_"+category+"_TOTAL.pdf");
+            writing_to_one_pdf(nullptr, folderToSave+pair+"_"+category+"_TOTAL_whole_background.pdf");
         }
     }
 
@@ -366,7 +375,7 @@ int GetFirstNonzeroBinNumber(TH1* input){
     return -1;
 }
 
-TFitResult fit_and_draw_and_save(TH1D* data, TF1* signal, TF1* background, std::string folderWithDiagonal, std::string name, std::string title, std::string options, TH1D* only_mixed_background){
+TFitResult fit_and_draw_and_save(TH1D* data, TF1* signal, TF1* background, std::string folderWithDiagonal, std::string name, std::string title, std::string options, TH1D* only_mixed_background, std::string total_pdf_file_title){
     //failsave in case nullptr was passed
     if(data==nullptr){
         printf("WARNING!!! A (data) nullptr has been passed to fit_and_draw_and_save function!\n");
@@ -454,6 +463,7 @@ TFitResult fit_and_draw_and_save(TH1D* data, TF1* signal, TF1* background, std::
     gPad->ModifiedUpdate();
     //saving
     resultCanvas->SaveAs((folderWithDiagonal+name+".pdf").c_str());
+    writing_to_one_pdf(resultCanvas, folderWithDiagonal+total_pdf_file_title+".pdf");
     if(only_mixed_background!=nullptr){
         //drawing two lines at proper coordinates
         double lower_limit, upper_limit;
@@ -514,6 +524,7 @@ TFitResult fit_and_draw_and_save(TH1D* data, TF1* signal, TF1* background, std::
         gPad->ModifiedUpdate();
         gSystem->mkdir((folderWithDiagonal+"whole_background").c_str(), true);
         resultCanvas->SaveAs((folderWithDiagonal+"whole_background/"+name+".pdf").c_str());
+        writing_to_one_pdf(resultCanvas, folderWithDiagonal+total_pdf_file_title+"_whole_background.pdf");
     }
     resultCanvas->Clear();
     delete resultCanvas;
@@ -522,7 +533,7 @@ TFitResult fit_and_draw_and_save(TH1D* data, TF1* signal, TF1* background, std::
     return *(fitPointer.Get());
 }
 
-void custom_draw_and_save(TH1D* data, double expected_value, std::string folderWithDiagonal, std::string name, std::string title, std::string options){
+void custom_draw_and_save(TH1D* data, double expected_value, std::string folderWithDiagonal, std::string name, std::string title, std::string options, std::string total_pdf_file_title){
     //failsave in case nullptr was passed
     if(data==nullptr){
         printf("WARNING!!! A (data) nullptr has been passed to custom_draw_and_save function!\n");
@@ -560,11 +571,13 @@ void custom_draw_and_save(TH1D* data, double expected_value, std::string folderW
     resultCanvas->ModifiedUpdate();
     resultCanvas->RedrawAxis();
     resultCanvas->SaveAs((folderWithDiagonal+std::string(data->GetName())+".pdf").c_str());
+    writing_to_one_pdf(resultCanvas, folderWithDiagonal+total_pdf_file_title+".pdf");
+    writing_to_one_pdf(resultCanvas, folderWithDiagonal+total_pdf_file_title+"_whole_background.pdf");
     resultCanvas->Clear();
     delete resultCanvas;
 }
 
-void custom_draw_and_save_status(TH2D* data, std::string folderWithDiagonal, std::string name, std::string title, std::string options){
+void custom_draw_and_save_status(TH2D* data, std::string folderWithDiagonal, std::string name, std::string title, std::string options, std::string total_pdf_file_title){
     //failsave in case nullptr was passed
     if(data==nullptr){
         printf("WARNING!!! A (data) nullptr has been passed to custom_draw_and_save_status function!\n");
@@ -589,7 +602,8 @@ void custom_draw_and_save_status(TH2D* data, std::string folderWithDiagonal, std
     int palette[] = { kGreen, kRed };
     gStyle->SetPalette(2, palette);
     resultCanvas->SetFrameFillColor(TColor::GetColorPalette(0));
-    //drawing data (with removed Y axis and stats)
+    //drawing data (with removed Y axis, but left the description so that the width will visually correspond to the bins)
+    data->GetYaxis()->CenterTitle(true);
     data->GetYaxis()->SetLabelSize(0);
     data->GetYaxis()->SetTickLength(0);
     data->SetStats(false);
@@ -597,11 +611,12 @@ void custom_draw_and_save_status(TH2D* data, std::string folderWithDiagonal, std
     data->SetMaximum(1.);
     data->SetMarkerSize(4);
     data->SetMarkerColor(kBlack);
-    resultCanvas->SetLeftMargin(0.05);
     resultCanvas->SetGrid(1, 0);
     data->Draw(options.c_str());
     //saving
     resultCanvas->SaveAs((folderWithDiagonal+std::string(data->GetName())+".pdf").c_str());
+    writing_to_one_pdf(resultCanvas, folderWithDiagonal+total_pdf_file_title+".pdf");
+    writing_to_one_pdf(resultCanvas, folderWithDiagonal+total_pdf_file_title+"_whole_background.pdf");
     resultCanvas->Clear();
     //restoring the default palette
     gStyle->SetPalette();
@@ -623,4 +638,22 @@ std::string remove_bad_characters(std::string input){
         }
     }
     return input;
+}
+
+void writing_to_one_pdf(TCanvas* input, std::string full_path){
+    static std::map<std::string, int> page_numbers;
+    static TCanvas* temp = MyStyles::DefaultCanvas("temp");
+    //to hide the window
+    ((TRootCanvas*)temp->GetCanvasImp())->UnmapWindow();
+    //emplacing successful means it is the first call of a given file
+    if(page_numbers.emplace(full_path, 0).second&&input==nullptr){
+        temp->SaveAs((full_path+"[").c_str());
+    } else if(input==nullptr){
+        temp->SaveAs((full_path+"]").c_str());
+        printf("Saved multipage pdf file %s with %d pages\n", full_path.c_str(), page_numbers[full_path]);
+        page_numbers.erase(full_path);
+    } else{
+        input->SaveAs(full_path.c_str());
+        page_numbers[full_path]++;
+    }
 }
