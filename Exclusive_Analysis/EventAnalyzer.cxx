@@ -1,7 +1,6 @@
 #include "ExclusiveCode.h"
 #include "SystematicCuts.h"
 #include <deque>
-
 using namespace std;
 
 // Struct to store tracks for event mixing
@@ -17,6 +16,8 @@ string MakeHistName(const char* base, const string& suffix) {
 
 int main(int argc, char** argv)  
 {
+    const bool primaryOnly = false;  // false: current analysis; true: primary only
+
     // argv[1] = input file list
     // argv[2] = output file
     // argv[3] = (optional) 0 = nominal only (default), 1 = all systematics
@@ -60,8 +61,8 @@ int main(int argc, char** argv)
     //if (upcEvt->getRunNumber() == 1) isMC = 1;
     cout << "Running on " << (isMC ? "MC" : "Real Data") << endl;
     cout << "Total entries: " << chain->GetEntries() << endl;
-    int nEntries = chain->GetEntries();
-    //int nEntries = 100000; // for testing
+    //int nEntries = chain->GetEntries();
+    int nEntries = 500000; // for testing
     if (nEntries < chain->GetEntries()){
          cout << " ⚠️ Running on low statistics, testing for :" << nEntries << " entries" << endl;
     }
@@ -83,12 +84,10 @@ int main(int argc, char** argv)
 
     TFile *outfile = TFile::Open(argv[2], "recreate");
 
-    // Define the 22 edges for 21 bins
-    double edges[22];
-    edges[0] = 0.995; // Kinematic threshold
-    for (int i = 1; i < 22; ++i) {
-        edges[i] = 1.0 + (i - 1) * 0.1; 
-    }
+    double mK0 = 0.497611; // PDG K0_S mass in GeV/c^2
+    double threshold = 2.0 * mK0; // 0.995222 GeV/c^2
+    int nBins = 20; 
+    double maxMass = threshold + (nBins * 0.1); // 2.995222 GeV/c^2
 
     // =========================================================
     // LOOP OVER SYSTEMATIC CONFIGURATIONS
@@ -137,12 +136,12 @@ int main(int argc, char** argv)
         vector<TH1D*> HistMassLS;
 
         for (int i = 2; i < 6; i++) {
-            HistPtMissBefore.push_back(          new TH1D(MakeHistName(Form("histPtMissBefore%d",i),sf).c_str(),"",20,0,1));
+            HistPtMissBefore.push_back(          new TH1D(MakeHistName(Form("histPtMissBefore%d",i),sf).c_str(),"",100,0,1));
             HistNTOFClusterBefore.push_back(     new TH1D(MakeHistName(Form("histNTOFClusterBefore%d",i),sf).c_str(),"",40,-0.5,40.5));
             HistDCABeamlineBefore.push_back(     new TH1D(MakeHistName(Form("histDCABeamlineBefore%d",i),sf).c_str(),"",25,0,5.0));
             HistDCADaughtersBefore.push_back(    new TH1D(MakeHistName(Form("histDCADaughtersBefore%d",i),sf).c_str(),"",25,0,5.0));
             HistCosBefore.push_back(             new TH1D(MakeHistName(Form("histCosBefore%d",i),sf).c_str(),"",100,-1,1.0));
-            HistDecayBefore.push_back(           new TH1D(MakeHistName(Form("histDecayBefore%d",i),sf).c_str(),"",50,0,10));
+            HistDecayBefore.push_back(           new TH1D(MakeHistName(Form("histDecayBefore%d",i),sf).c_str(),"",100, 0, 20));
             HistCorrEBefore.push_back(           new TH1D(MakeHistName(Form("histCorrEBefore%d",i),sf).c_str(),"",51,-0.05,0.05));
             HistCorrWBefore.push_back(           new TH1D(MakeHistName(Form("histCorrWBefore%d",i),sf).c_str(),"",51,-0.05,0.05));
             HistCorrKsiBefore.push_back(         new TH1D(MakeHistName(Form("histCorrKsiBefore%d",i),sf).c_str(),"",51,-0.05,0.05));
@@ -154,7 +153,7 @@ int main(int argc, char** argv)
             HistZDiffBefore.push_back(           new TH1D(MakeHistName(Form("histZDiffBefore%d",i),sf).c_str(),"",101,-200,200));
             HistZMeanBefore.push_back(           new TH1D(MakeHistName(Form("histZMeanBefore%d",i),sf).c_str(),"",51,-200,200));
             HistCosThetaStarBefore.push_back(    new TH1D(MakeHistName(Form("histCosThetaStarBefore%d",i),sf).c_str(),"",50,-1.0,1.0));
-            HistInvMassPiPi2D.push_back(         new TH2D(MakeHistName(Form("histInvMassPiPi2D%d",i),sf).c_str(),"",30,0.44,0.56,30,0.44,0.56));
+            HistInvMassPiPi2D.push_back(         new TH2D(MakeHistName(Form("histInvMassPiPi2D%d",i),sf).c_str(),"",60, 0.44, 0.56,60, 0.44, 0.56));
             HistArmenterosBefore.push_back(      new TH2D(MakeHistName(Form("histArmenterosBefore%d",i),sf).c_str(),";#alpha;p_{T}^{AP} [GeV/c]",100,-1.0,1.0,100,0.0,0.3)); 
             HistArmenterosCore.push_back(        new TH2D(MakeHistName(Form("histArmenterosCore%d",i),sf).c_str(),";#alpha;p_{T}^{AP} [GeV/c]",100,-1.0,1.0,100,0.0,0.3)); 
             HistArmenterosFringe.push_back(      new TH2D(MakeHistName(Form("histArmenterosFringe%d",i),sf).c_str(),";#alpha;p_{T}^{AP} [GeV/c]",100,-1.0,1.0,100,0.0,0.3));
@@ -173,15 +172,14 @@ int main(int argc, char** argv)
         vector<TH1D*> HistSumProtonMomentaXN1, HistSumProtonMomentaYN1;
         vector<TH1D*> HistZDiffN1, HistZMeanN1, HistCosThetaStarN1;
         vector<TH2D*> HistInvMassPiPi2DN1;
-        vector<TH2D*> HistInvMassPiPi2D_BgTail;
         for (int i = 2; i < 6; i++) {
-            HistInvMassPiPiN1.push_back(         new TH1D(MakeHistName(Form("histInvMassPiPiN1%d",i),sf).c_str(),"",30,0.44,0.56));
-            HistPtMissN1.push_back(              new TH1D(MakeHistName(Form("histPtMissN1%d",i),sf).c_str(),"",20,0,1));
+            HistInvMassPiPiN1.push_back(         new TH1D(MakeHistName(Form("histInvMassPiPiN1%d",i),sf).c_str(),"",60, 0.44, 0.56));
+            HistPtMissN1.push_back(              new TH1D(MakeHistName(Form("histPtMissN1%d",i),sf).c_str(),"",100,0,1));
             HistNTOFClusterN1.push_back(         new TH1D(MakeHistName(Form("histNTOFClusterN1%d",i),sf).c_str(),"",40,-0.5,40.5));
             HistDCABeamlineN1.push_back(         new TH1D(MakeHistName(Form("histDCABeamlineN1%d",i),sf).c_str(),"",25,0,5.0));
             HistDCADaughtersN1.push_back(        new TH1D(MakeHistName(Form("histDCADaughtersN1%d",i),sf).c_str(),"",25,0,5.0));
             HistCosN1.push_back(                 new TH1D(MakeHistName(Form("histCosN1%d",i),sf).c_str(),"",100,-1,1.0));
-            HistDecayN1.push_back(               new TH1D(MakeHistName(Form("histDecayN1%d",i),sf).c_str(),"",50,0,10));
+            HistDecayN1.push_back(               new TH1D(MakeHistName(Form("histDecayN1%d",i),sf).c_str(),"",100, 0, 20));
             HistCorrEN1.push_back(               new TH1D(MakeHistName(Form("histCorrEN1%d",i),sf).c_str(),"",51,-0.05,0.05));
             HistCorrWN1.push_back(               new TH1D(MakeHistName(Form("histCorrWN1%d",i),sf).c_str(),"",51,-0.05,0.05));
             HistCorrKsiN1.push_back(             new TH1D(MakeHistName(Form("histCorrKsiN1%d",i),sf).c_str(),"",51,-0.05,0.05));
@@ -193,11 +191,10 @@ int main(int argc, char** argv)
             HistZDiffN1.push_back(               new TH1D(MakeHistName(Form("histZDiffN1%d",i),sf).c_str(),"",101,-200,200));
             HistZMeanN1.push_back(               new TH1D(MakeHistName(Form("histZMeanN1%d",i),sf).c_str(),"",51,-200,200));
             HistCosThetaStarN1.push_back(        new TH1D(MakeHistName(Form("histCosThetaStarN1%d",i),sf).c_str(),"",50,-1.0,1.0));
-            HistInvMassPiPi2DN1.push_back(       new TH2D(MakeHistName(Form("histInvMassPiPi2DN1%d",i),sf).c_str(),";m_{lead} [GeV];m_{sublead} [GeV]",30,0.44,0.56,30,0.44,0.56));
-            HistInvMassPiPi2D_BgTail.push_back(  new TH2D(MakeHistName(Form("histInvMassPiPi2D_BgTail%d",i),sf).c_str(),";m_{lead} [GeV];m_{sublead} [GeV]",30,0.44,0.56,30,0.44,0.56));
+            HistInvMassPiPi2DN1.push_back(       new TH2D(MakeHistName(Form("histInvMassPiPi2DN1%d",i),sf).c_str(),";m_{lead} [GeV];m_{sublead} [GeV]",60, 0.44, 0.56,60, 0.44, 0.56));
         }
 
-        TH1D* HistMassK0K0 = new TH1D(MakeHistName("HistMassK0K0",sf).c_str(), ";m_{K^{0}K^{0}} [GeV];events", 21, edges);
+        TH1D* HistMassK0K0 = new TH1D(MakeHistName("HistMassK0K0",sf).c_str(), ";m_{K^{0}K^{0}} [GeV];events", nBins, threshold, maxMass);
 
         // N-1 track quality plots
         vector<TH1D*> HistPtPionWithTofN1, HistPtPionWithoutTofN1;
@@ -217,9 +214,9 @@ int main(int argc, char** argv)
         for (int i = 2; i < 6; i++) {
             vector<TH1D*> vPt, vMass, vKK;
             for (int j = 0; j < 11; j++) {
-                vPt.push_back(  new TH1D(MakeHistName(Form("histPtMissCF%d%d",i,j),   sf).c_str(),"",20,0,1));
-                vMass.push_back(new TH1D(MakeHistName(Form("histInvMassPiPiCF%d%d",i,j),sf).c_str(),"",30,0.44,0.56));
-                vKK.push_back(  new TH1D(MakeHistName(Form("histInvMassKKCF%d%d",i,j),sf).c_str(),"", 21, edges));
+                vPt.push_back(  new TH1D(MakeHistName(Form("histPtMissCF%d%d",i,j),   sf).c_str(),"",100,0,1));
+                vMass.push_back(new TH1D(MakeHistName(Form("histInvMassPiPiCF%d%d",i,j),sf).c_str(),"",60, 0.44, 0.56));
+                vKK.push_back(  new TH1D(MakeHistName(Form("histInvMassKKCF%d%d",i,j),sf).c_str(),"",nBins, threshold, maxMass));
             }
             HistPtMissCF.push_back(vPt);
             HistInvMassPiPiCF.push_back(vMass);
@@ -298,6 +295,21 @@ int main(int argc, char** argv)
             vector<StUPCTrack const*> tracksWithoutTofHit;
             SeparateTracks(upcEvt, tracksWithTofHit, tracksWithoutTofHit, isMC,
                            HistNumWithTofTrakcs, HistNumWithoutTofTrakcs);
+            
+            if (primaryOnly) {
+                tracksWithTofHit.clear();
+                tracksWithoutTofHit.clear();
+
+                for (int i = 0; i < upcEvt->getNumberOfTracks(); ++i) {
+                    const auto* track = upcEvt->getTrack(i);
+                    if (!track->getFlag(StUPCTrack::kPrimary)) continue;
+
+                    if (track->getFlag(StUPCTrack::kTof))
+                        tracksWithTofHit.push_back(track);
+                    else
+                        tracksWithoutTofHit.push_back(track);
+                }
+            }
 
             vector<int> vNumberOfTofMatched = N_TOF_SELECTED;
             bool isValidNumberOfTracks = ValidNumberOfTofTracks(
@@ -319,18 +331,29 @@ int main(int argc, char** argv)
             GetBeamPar(upcEvt, beamPar, isMC);
 
             // =========================================================
-            /*if (isMC == 0 && i < 20) { // Print for the first 20 real data events
+            // TEMPORARY DIAGNOSTIC: CHECK BEAM PARAMETER SCALES
+            // =========================================================
+            /*if (isMC == 0 && i < 10) { // Print for the first 20 real data events
                 cout << "\n--- Event " << i << " Beam Parameters ---" << endl;
                 cout << "  X Position : " << upcEvt->getBeamXPosition() << " cm" << endl;
                 cout << "  X Slope    : " << upcEvt->getBeamXSlope()    << " rad" << endl;
                 cout << "  Y Position : " << upcEvt->getBeamYPosition() << " cm" << endl;
                 cout << "  Y Slope    : " << upcEvt->getBeamYSlope()    << " rad" << endl;
+                //cout << "  >> BUG EFFECT: StUPCV0 receives Y Position = " 
+                //     << upcEvt->getBeamXSlope() << " cm (should be " << upcEvt->getBeamYPosition() << ")" << endl;
+                //cout << "  >> BUG EFFECT: StUPCV0 receives X Slope = " 
+                //     << upcEvt->getBeamYPosition() << " rad (should be " << upcEvt->getBeamXSlope() << ")" << endl;
             }*/
+            // =========================================================
 
             vector<StUPCTrack const*> vPosNegPionLeadingKaon;
             vector<StUPCTrack const*> vPosNegPionSubLeadingKaon;
+            //if (!FindPions(upcEvt, tracksWithTofHit, tracksWithoutTofHit, goodTracksWithoutTofHit,
+            //               vPosNegPionLeadingKaon, vPosNegPionSubLeadingKaon, beamPar)) continue;
             if (!FindPions(upcEvt, tracksWithTofHit, tracksWithoutTofHit, goodTracksWithoutTofHit,
-                           vPosNegPionLeadingKaon, vPosNegPionSubLeadingKaon, beamPar)) continue;
+                           vPosNegPionLeadingKaon, vPosNegPionSubLeadingKaon, beamPar, config)) continue;
+            
+            
             cPionsFound++;
 
             int iH = tracksWithTofHit.size() - 2;
@@ -606,7 +629,7 @@ int main(int argc, char** argv)
 
                 HistMassRaw[iH]->Fill(leadingKaonMass);
                 
-                // --- ARMENTEROS-PODOLANSKY CALCULATION  ---
+                // --- ARMENTEROS-PODOLANSKY CALCULATION DONE FOR LEADING ONLY ---
                 // Extract momentum vectors for the leading kaon daughters
                 TVector3 pPlusL;
                 pPlusL.SetPtEtaPhi(vPosNegPionLeadingKaon[0]->getPt(), 
@@ -688,24 +711,6 @@ int main(int argc, char** argv)
                 // ------------------------------------------
             }
             
-            //Background Tail 2D Mass Plot
-            bool passedOtherCuts = true;
-            for (int c = 0; c < vCuts.size(); c++) {
-                // Ignore the mass window (we are plotting mass) 
-                // AND ignore the nominal ptMiss cut (we are defining a new tail region)
-                if (vCuts[c] == &areKaonsInNarrowMassWindow || vCuts[c] == &isPtMissingSmall) continue;
-                
-                if (*(vCuts[c]) == false) {
-                    passedOtherCuts = false;
-                    break;
-                }
-            }
-            
-            // "Veto exclusive cut": Require the tail region instead of the signal region
-            if (passedOtherCuts && pTmiss >= 0.2 && pTmiss <= 0.8) {
-                HistInvMassPiPi2D_BgTail[iH]->Fill(leadingKaonMass, subleadingKaonMass);
-            }
-
             bool N1_ptmiss = true; CheckN1(vCuts, isPtMissingSmall, N1_ptmiss);
             if (N1_ptmiss) {
                 HistPtMissN1[iH]->Fill(pTmiss);
@@ -857,7 +862,7 @@ int main(int argc, char** argv)
         cout << "║    SC2.2  Exactly 1 RP track per side (E+W)                              ║" << endl;
         cout << "║    SC2.3  >=3/4 RP planes used per trackpoint                            ║" << endl;
         cout << "║    SC2.4  Proton in fiducial region                                      ║" << endl;
-        cout << "║    SC2.5  >=2 TOF class-A tracks                                         ║" << endl;
+        cout << "║    SC2.5  >=2 TOF class-A or B tracks                                         ║" << endl;
         cout << "║    SC3.0 (1 primary vertex, |z|<80 cm) applied here in EventAnalyzer.    ║" << endl;
         cout << "╠══════════════════════════════════════════════════════════════════════════╣" << endl;
         cout << Form("║  %-42s  %10lld  (100.00%%)  ║", "Input after preselection (SC2)", cInput)                                       << endl;
@@ -939,8 +944,6 @@ int main(int argc, char** argv)
             HistCosThetaStarBefore[i]->Write();
 
             HistInvMassPiPi2DN1[i]->Write();
-            HistInvMassPiPi2D_BgTail[i]->Write();
-
             HistArmenterosBefore[i]->Write();
             HistArmenterosCore[i]->Write();
             HistArmenterosFringe[i]->Write();
@@ -961,7 +964,7 @@ int main(int argc, char** argv)
         }
         HistMassK0K0->Write();
 
-    } // end systematic loop 
+    } // end systematic loop
 
     outfile->Close();
     cout << "\n ✅ All done. Output: " << argv[2] << endl;

@@ -62,6 +62,7 @@
 #include "StUPCTofHit.h"
 #include "StUPCV0.h"
 #include "BeamPosition.h"
+#include "SystematicCuts.h"
 #include <StRPEvent.h>
 
 
@@ -104,7 +105,17 @@ bool FindTracks( vector <StUPCTrack const*> &tracksWithTofHit, vector <StUPCTrac
 bool CheckNumberOfClusters(  StUPCEvent *upcEvt,      vector <StUPCTrack const*> &tracksWithTofHit, int &  totalCluster);
 void GetBeamPar(StUPCEvent *upcEvt, double *beamPar, bool isMC);
 bool FindProtonsAndPions(  StUPCEvent *upcEvt, vector <StUPCTrack const*> &tracksWithTofHit, vector <StUPCTrack const*> &goodTracksWithoutTofHit,vector <StUPCTrack const*> &  v1, vector <StUPCTrack const*> & v2, double * beamPar);
-bool FindPions(  StUPCEvent *upcEvt, vector <StUPCTrack const*> &tracksWithTofHit, vector <StUPCTrack const*> &tracksWithoutTofHit, vector <StUPCTrack const*> &goodTracksWithoutTofHit,vector <StUPCTrack const*> &PosNegPionLeadingKaon, vector <StUPCTrack const*> & vPosNegPionSubLeadingKaon, double * beamPar);
+//bool FindPions(  StUPCEvent *upcEvt, vector <StUPCTrack const*> &tracksWithTofHit, vector <StUPCTrack const*> &tracksWithoutTofHit, vector <StUPCTrack const*> &goodTracksWithoutTofHit,vector <StUPCTrack const*> &PosNegPionLeadingKaon, vector <StUPCTrack const*> & vPosNegPionSubLeadingKaon, double * beamPar);
+//new
+bool FindPions(StUPCEvent* upcEvt,
+               vector<StUPCTrack const*>& tracksWithTofHit,
+               vector<StUPCTrack const*>& tracksWithoutTofHit,
+               vector<StUPCTrack const*>& goodTracksWithoutTofHit,
+               vector<StUPCTrack const*>& vPosNegPionLeadingKaon,
+               vector<StUPCTrack const*>& vPosNegPionSubLeadingKaon,
+               double* beamPar,
+               const CutConfig& config = CutConfig());
+
 bool CheckPtMiss(StUPCV0 &leadingKaon, StUPCV0 &subLeadingKaon, TLorentzVector proton1, TLorentzVector proton2, double & pTmiss);
 
 

@@ -753,12 +753,12 @@ bool FindProtonsAndPions(StUPCEvent *upcEvt, vector <StUPCTrack const*> &tracksW
         {
        
         
-            if (vPions3Sigma_TOF.size() != 2) {flag = false; return flag;} // jeżeli nie ma dwóch pionów z TOF - odrzucam przypadek
-            if (vPions3Sigma_TOF[0]->getCharge() + vPions3Sigma_TOF[1]->getCharge() != 0 ) {flag = false; return flag;} // odrzucam przypadek jeżeli te piony nie są przecwincyh znaków
-            //jednoznaczne dopasowanie na podstawie ładunnku
+            if (vPions3Sigma_TOF.size() != 2) {flag = false; return flag;} 
+            if (vPions3Sigma_TOF[0]->getCharge() + vPions3Sigma_TOF[1]->getCharge() != 0 ) {flag = false; return flag;} 
+            //
             int indexOtherPion;
 
-            if (vProtons2Sigma_TOF[0]->getCharge() != vPions3Sigma_TOF[0]->getCharge()) // jeżeli proton i pion mają przeciwne znaki to tworzą lambdę
+            if (vProtons2Sigma_TOF[0]->getCharge() != vPions3Sigma_TOF[0]->getCharge()) 
             {
                 vFinalProtons.push_back(vProtons2Sigma_TOF[0]);
                 vFinalPions.push_back(vPions3Sigma_TOF[0]);
@@ -780,13 +780,13 @@ bool FindProtonsAndPions(StUPCEvent *upcEvt, vector <StUPCTrack const*> &tracksW
             for (int i = 0; i < vProtons2Sigma_NOTOF.size(); i++ )
             {
                 StUPCTrack const * track = vProtons2Sigma_NOTOF[i];
-                if (track->getCharge()!=chargeOtherPion ) // jeżeli mają przeciwne ładunki 
+                if (track->getCharge()!=chargeOtherPion ) 
                 {
                     protonsOppoisteToPion_NOTOF.push_back(track);
                 }
             }
 
-            if (protonsOppoisteToPion_NOTOF.size() == 0 )  {flag = false; return flag;} // jeżeli isteniją protony bez TOF które mają przeciny ładunek do pionu
+            if (protonsOppoisteToPion_NOTOF.size() == 0 )  {flag = false; return flag;} 
             vector <double> masses;
             TVector3 const tryVec(0,0,0);
             for (int i = 0; i < protonsOppoisteToPion_NOTOF.size(); i++)
@@ -806,10 +806,10 @@ bool FindProtonsAndPions(StUPCEvent *upcEvt, vector <StUPCTrack const*> &tracksW
         {
             int sumProtonCharge = vProtons2Sigma_TOF[0]->getCharge() + vProtons2Sigma_TOF[1]->getCharge();
 
-            // PODZIAŁ NA PRZYPADKI SUMY ŁADUNKU PROTONÓW
+            // 
             if (sumProtonCharge == 0)
             {
-                if (vPions3Sigma_TOF.size() == 0)  {flag = false; return flag;} //czy istnieje trzeci ślad który jest pionem
+                if (vPions3Sigma_TOF.size() == 0)  {flag = false; return flag;} //
                 int chargePion = vPions3Sigma_TOF[0]->getCharge();
                 int indexOtherProton;
                 if (chargePion != vProtons2Sigma_TOF[0]->getCharge())
@@ -836,7 +836,7 @@ bool FindProtonsAndPions(StUPCEvent *upcEvt, vector <StUPCTrack const*> &tracksW
                     }
                 }
 
-                if (pionsOppositeToProton_NOTOF.size() == 0 ) {flag = false; return flag;} // jeżeli nie ma pionów o znaku przeciwnym do pozostałego protnu  - opóść
+                if (pionsOppositeToProton_NOTOF.size() == 0 ) {flag = false; return flag;} 
 
                 vector <double> masses;
                 TVector3 const tryVec(0,0,0);
@@ -853,19 +853,19 @@ bool FindProtonsAndPions(StUPCEvent *upcEvt, vector <StUPCTrack const*> &tracksW
                 vFinalProtons.push_back(otherProton);           
             }
             
-            else  // protony maja ten sam znak - ale można zachowa przypadek gdy przynajmniej jeden z nich jest pionem
+            else  // p
             {   
-                if (vProtons2SigmaThatCanBePions_TOF.size() == 0) {flag = false; return flag;} // odzucam przypadek gdy żaden z protonów nie może być pionem
-                else if (vProtons2SigmaThatCanBePions_TOF.size() == 1) // przypadek gdy jest dokładnie jeden proton który może być pionem       
+                if (vProtons2SigmaThatCanBePions_TOF.size() == 0) {flag = false; return flag;} // 
+                else if (vProtons2SigmaThatCanBePions_TOF.size() == 1) // 
                 {
                     StUPCTrack const * protonThatCanBePion = vProtons2SigmaThatCanBePions_TOF[0];
                     StUPCTrack const * protonThatCanNOTBePion = vProtons2SigmaThatCanNOTBePions_TOF[0];        
-                    if (vPions3Sigma_TOF.size() == 0)  {flag = false; return flag;}  // jeżeli nie ma pionu odrzucam przypadek
+                    if (vPions3Sigma_TOF.size() == 0)  {flag = false; return flag;}  // 
                     StUPCTrack const * pion = vPions3Sigma_TOF[0];
                     vFinalPions.push_back(pion); 
-                    vFinalProtons.push_back(protonThatCanNOTBePion); //ONE MUSZĄ Z ZAŁOŻENIA MIEĆ PRZECIWNY ŁADUNEK MAM -1 LUB 1 sumaryczny
+                    vFinalProtons.push_back(protonThatCanNOTBePion); 
                     
-                    if (vProtons2Sigma_NOTOF.size() == 0)   {flag = false; return flag;}         // jeżeli nie ma kandydatów na proton bez TOF opóść  - opóść
+                    if (vProtons2Sigma_NOTOF.size() == 0)   {flag = false; return flag;}       
 
                     vector <StUPCTrack const *> protonsOppositeSignToPPion;
                     for (int i = 0; i <vProtons2Sigma_NOTOF.size(); i++)
@@ -877,7 +877,7 @@ bool FindProtonsAndPions(StUPCEvent *upcEvt, vector <StUPCTrack const*> &tracksW
                         }
                     }
 
-                    if (protonsOppositeSignToPPion.size() == 0) {flag = false; return flag;} // jeżeli nie ma kandydatów na proton o dobrym ładunku to opóść
+                    if (protonsOppositeSignToPPion.size() == 0) {flag = false; return flag;} // 
                     vector <double> masses;
                     TVector3 const tryVec(0,0,0);
                     for (int i = 0; i < protonsOppositeSignToPPion.size(); i++)
@@ -892,11 +892,11 @@ bool FindProtonsAndPions(StUPCEvent *upcEvt, vector <StUPCTrack const*> &tracksW
                     vFinalProtons.push_back(protonsOppositeSignToPPion[minIndex]);                    
                 }   
 
-                else if (vProtons2SigmaThatCanBePions_TOF.size() == 2) // przypadek gdy jest dokładnie jeden proton który może być pionem       
+                else if (vProtons2SigmaThatCanBePions_TOF.size() == 2) //        
                 {
                     
           
-                    if (vPions3Sigma_TOF.size() == 0)  {flag = false; return flag;} // jeżeli nie ma pionu prawdziewgo to bye bye.
+                    if (vPions3Sigma_TOF.size() == 0)  {flag = false; return flag;} // 
 
                     StUPCTrack const * pion = vPions3Sigma_TOF[0];
                     TVector3 const tryVec(0,0,0);
@@ -939,7 +939,7 @@ bool FindProtonsAndPions(StUPCEvent *upcEvt, vector <StUPCTrack const*> &tracksW
                     }
 
                  
-                    if (vOtherProtons.size() == 0 and vOtherPions.size() == 0)   {flag = false; return flag;}// nie ma komplemenatracyh pionow ani protonow
+                    if (vOtherProtons.size() == 0 and vOtherPions.size() == 0)   {flag = false; return flag;}// 
 
                     if (vOtherProtons.size() != 0 and vOtherPions.size() != 0)
                     {
@@ -1010,14 +1010,14 @@ bool FindProtonsAndPions(StUPCEvent *upcEvt, vector <StUPCTrack const*> &tracksW
                     
                 }
                 
-            } // nieparzysty ładunek dla 2 protonów mogących być pioniami
+            } // 
         }
 
         else if (vProtons2Sigma_TOF.size() == 3)
         {   
            
         
-            // wszystkie TOF są protnami, czyli potzebuję przynajmniej jedneo pionu
+            //
             if (vProtons2SigmaThatCanBePions_TOF.size() == 0) {flag = false; return flag;}
             int sumCharge = vProtons2Sigma_TOF[0]->getCharge() +  vProtons2Sigma_TOF[1]->getCharge() +  vProtons2Sigma_TOF[2]->getCharge();
             if (vProtons2SigmaThatCanBePions_TOF.size() == 0) {flag = false; return flag;}
@@ -1031,7 +1031,7 @@ bool FindProtonsAndPions(StUPCEvent *upcEvt, vector <StUPCTrack const*> &tracksW
                 int sumCharge = pion->getCharge() + proton1->getCharge() + proton2->getCharge();
 
 
-                 if (pion->getCharge() == sumCharge) // 1 1 -1 np. pion ma 1, to jest parowany z protonem -1,  czyli szukamy pionu bez tof o ładunku przeciwnym do sumarycznego! do pionu z TOF o ładu sum
+                 if (pion->getCharge() == sumCharge) // 
                 {
                         int ind;
                         if (proton1->getCharge() == sumCharge)
@@ -1044,7 +1044,7 @@ bool FindProtonsAndPions(StUPCEvent *upcEvt, vector <StUPCTrack const*> &tracksW
                             ind = 1;
                         }
                         StUPCTrack const * protonOfPionCharge = vProtons2SigmaThatCanNOTBePions_TOF[ind];
-                        if (vPions3Sigma_NOTOF.size() == 0) {flag = false; return flag;} // brak śladów bez TOF kótre mogłybyb być pionami 
+                        if (vPions3Sigma_NOTOF.size() == 0) {flag = false; return flag;} // 
                         vector <StUPCTrack const *> vPions3Sigma_NOTOF_GOODcharge;
                         
                         for (int i = 0; i < vPions3Sigma_NOTOF.size(); i++)
@@ -1055,7 +1055,7 @@ bool FindProtonsAndPions(StUPCEvent *upcEvt, vector <StUPCTrack const*> &tracksW
                                 vPions3Sigma_NOTOF_GOODcharge.push_back(track);
                             }
                         }    
-                        if (vPions3Sigma_NOTOF_GOODcharge.size() == 0) {flag = false; return flag;}  // jeżeli brak pionów bez TOF mających dobry ładunek                   
+                        if (vPions3Sigma_NOTOF_GOODcharge.size() == 0) {flag = false; return flag;}  //                    
 
                         vector <double> masses;
                         TVector3 const tryVec(0,0,0);
@@ -1102,7 +1102,7 @@ bool FindProtonsAndPions(StUPCEvent *upcEvt, vector <StUPCTrack const*> &tracksW
                         }
 
                         StUPCTrack const * otherPion = vProtons2SigmaThatCanBePions_TOF[ind];
-                        if (vProtons2Sigma_NOTOF.size() == 0) {flag = false; return flag;} // brak śladów bez TOF kótre mogłybyb być pionami 
+                        if (vProtons2Sigma_NOTOF.size() == 0) {flag = false; return flag;} 
                         vector <StUPCTrack const *> vProtons2Sigma_NOTOF_GOODcharge;
                         
                         for (int i = 0; i < vProtons2Sigma_NOTOF.size(); i++)
@@ -1113,7 +1113,7 @@ bool FindProtonsAndPions(StUPCEvent *upcEvt, vector <StUPCTrack const*> &tracksW
                                 vProtons2Sigma_NOTOF_GOODcharge.push_back(track);
                             }
                         } 
-                        if (vProtons2Sigma_NOTOF_GOODcharge.size() == 0) {flag = false; return flag;}  // jeżeli brak pionów bez TOF mających dobry ładunek                   
+                        if (vProtons2Sigma_NOTOF_GOODcharge.size() == 0) {flag = false; return flag;}                  
 
                         vector <double> masses;
                         TVector3 const tryVec(0,0,0);
@@ -1327,7 +1327,7 @@ bool FindProtonsAndPions(StUPCEvent *upcEvt, vector <StUPCTrack const*> &tracksW
     return flag;
 }
 
-
+/*
 bool  FindPions(  StUPCEvent *upcEvt, vector <StUPCTrack const*> &tracksWithTofHit, vector <StUPCTrack const*> &tracksWithoutTofHit, vector <StUPCTrack const*> &goodTracksWithoutTofHit,vector <StUPCTrack const*> &  vPosNegPionLeadingKaon, vector <StUPCTrack const*> & vPosNegPionSubLeadingKaon, double * beamPar)
 {
     bool flag = true;
@@ -1652,6 +1652,238 @@ bool  FindPions(  StUPCEvent *upcEvt, vector <StUPCTrack const*> &tracksWithTofH
     }
 
     return flag;
+}
+*/
+
+
+bool FindPions(
+    StUPCEvent* upcEvt,
+    std::vector<StUPCTrack const*>& tracksWithTofHit,
+    std::vector<StUPCTrack const*>& tracksWithoutTofHit,
+    std::vector<StUPCTrack const*>& goodTracksWithoutTofHit,
+    std::vector<StUPCTrack const*>& vPosNegPionLeadingKaon,
+    std::vector<StUPCTrack const*>& vPosNegPionSubLeadingKaon,
+    double* beamPar,
+    const CutConfig& config)
+{
+    
+    vPosNegPionLeadingKaon.clear();
+    vPosNegPionSubLeadingKaon.clear();
+
+   
+    (void)tracksWithoutTofHit;
+
+    const std::size_t nTof = tracksWithTofHit.size();
+    if (!upcEvt || !beamPar || nTof < 2 || nTof > 5)
+        return false;
+
+    // The number of TOF tracks is part of the event category. Reject a
+    // malformed TOF list rather than silently changing that category by
+    // removing nulls, duplicate pointers, or non-pion charge values.
+    for (std::size_t i = 0; i < nTof; ++i)
+    {
+        StUPCTrack const* track = tracksWithTofHit[i];
+        if (!track || (track->getCharge() != 1 && track->getCharge() != -1))
+            return false;
+        if (std::find(tracksWithTofHit.begin(), tracksWithTofHit.begin() + i,
+                      track) != tracksWithTofHit.begin() + i)
+            return false;
+    }
+
+    // For 2/3 TOF, make a clean, unique list of complementary tracks.
+    // Vector membership defines TOF status here, as in SeparateTracks.
+    // A track already in the TOF list cannot also be its own complement.
+    // For 4/5 TOF no non-TOF tracks are needed or considered.
+    std::vector<StUPCTrack const*> complementaryTracks;
+    if (nTof <= 3)
+    {
+        for (StUPCTrack const* track : goodTracksWithoutTofHit)
+        {
+            if (!track || (track->getCharge() != 1 && track->getCharge() != -1))
+                continue;
+            if (std::find(tracksWithTofHit.begin(), tracksWithTofHit.end(),
+                          track) != tracksWithTofHit.end())
+                continue;
+            if (std::find(complementaryTracks.begin(), complementaryTracks.end(),
+                          track) == complementaryTracks.end())
+                complementaryTracks.push_back(track);
+        }
+    }
+
+    // Cache only the information needed to combine surviving kaons.
+    // Construct each StUPCV0 once; it stays on the stack. Keeping scalar
+    // results also avoids copying StUPCV0, whose copy constructor is private.
+    struct KaonCandidate
+    {
+        StUPCTrack const* positive;
+        StUPCTrack const* negative;
+        double massDistanceSquared;
+        double pt;
+    };
+    std::vector<KaonCandidate> twoTofCandidates; // TOF + TOF daughters
+    std::vector<KaonCandidate> oneTofCandidates; // TOF + non-TOF daughters
+    const TVector3 origin(0, 0, 0);
+
+    // Build and topology-test ONE possible kaon.
+    // nTofDaughters is the TOF content of this kaon, not the whole event.
+    const auto addCandidate = [&](StUPCTrack const* first,
+                                  StUPCTrack const* second,
+                                  int nTofDaughters)
+    {
+        if (first == second || first->getCharge() + second->getCharge() != 0)
+            return;
+
+        // Always construct in [pi+, pi-] order
+        StUPCTrack const* positive = first->getCharge() > 0 ? first : second;
+        StUPCTrack const* negative = first->getCharge() < 0 ? first : second;
+        StUPCV0 kaon(positive, negative,
+                     ExclusiveK0K0::MASS_PION, ExclusiveK0K0::MASS_PION,
+                     1, 1, origin, beamPar, upcEvt->getMagneticField(), true);
+
+        const double dcaDaughters = kaon.dcaDaughters();
+        const double dcaBeam = kaon.DCABeamLine();
+        const double cosPA = kaon.pointingAngleHypo();
+        const bool bothDaughtersHaveTof = nTofDaughters == 2;
+
+        // The names ending in "4" refer to the fully TOF-matched kaon
+        // cuts. They also apply to the two-TOF-daughter kaon in 3-TOF
+        // events and to both kaons in 5-TOF events.
+        const double dcaDaughtersCut = bothDaughtersHaveTof
+            ? config.dcaDaughters4 : config.dcaDaughters23;
+        const double dcaBeamCut = bothDaughtersHaveTof
+            ? config.dcaBeamline4 : config.dcaBeamline23;
+
+        // Reject non-finite reconstruction results 
+        if (!std::isfinite(dcaDaughters) || !std::isfinite(dcaBeam) ||
+            !std::isfinite(cosPA) ||
+            !(dcaDaughters <= dcaDaughtersCut) || !(dcaBeam <= dcaBeamCut))
+            return;
+
+        if (bothDaughtersHaveTof)
+        {
+            // Two TOF daughters: a short decay OR good pointing is enough.
+            // Nominal values: decay length <= 3 cm OR cosine >= 0.925.
+            const double decayLength = kaon.decayLengthHypo();
+            if (!std::isfinite(decayLength) ||
+                !(decayLength <= config.decayLength || cosPA >= config.cosPA))
+                return;
+        }
+        else
+        {
+            // One TOF daughter: require the tighter pointing cosine.
+            // There is NO short-decay exception for this category.
+            // Nominal value: cosine >= 0.95.
+            if (!(cosPA >= config.cosPA23))
+                return;
+        }
+
+        // Only topology-passing pairs enter mass ranking. 
+        const double mass = kaon.m();
+        const double pt = kaon.pt();
+        if (!std::isfinite(mass) || !std::isfinite(pt))
+            return;
+        const double deltaMass = mass - ExclusiveK0K0::MASS_KAON;
+        const double massDistanceSquared = deltaMass * deltaMass;
+        if (!std::isfinite(massDistanceSquared))
+            return;
+
+        const KaonCandidate candidate = {positive, negative, massDistanceSquared, pt};
+        if (bothDaughtersHaveTof)
+            twoTofCandidates.push_back(candidate);
+        else
+            oneTofCandidates.push_back(candidate);
+    };
+
+    // Allowed daughter compositions, 
+    //
+    //   Event TOF count    Kaon 1 daughters    Kaon 2 daughters
+    //          5              TOF + TOF         TOF + TOF
+    //          4              TOF + TOF         TOF + TOF
+    //          3              TOF + TOF         TOF + non-TOF
+    //          2              TOF + non-TOF     TOF + non-TOF
+    //
+    // Thus 5-TOF selects four of the five tracks; 2/3/4-TOF uses every
+    // supplied TOF track. A (TOF+TOF, non-TOF+non-TOF) combination is NOT
+    // introduced in the 2-TOF sample.
+    if (nTof >= 3)
+    {
+        for (std::size_t i = 0; i < nTof; ++i)
+            for (std::size_t j = i + 1; j < nTof; ++j)
+                addCandidate(tracksWithTofHit[i], tracksWithTofHit[j], 2);
+    }
+    if (nTof <= 3)
+    {
+        for (StUPCTrack const* tofTrack : tracksWithTofHit)
+            for (StUPCTrack const* nonTofTrack : complementaryTracks)
+                addCandidate(tofTrack, nonTofTrack, 1);
+    }
+
+    bool found = false;
+    double bestScore = std::numeric_limits<double>::infinity();
+    KaonCandidate bestFirst = {nullptr, nullptr, 0.0, 0.0};
+    KaonCandidate bestSecond = {nullptr, nullptr, 0.0, 0.0};
+
+    // Both candidates have ALREADY passed topology. Now require disjoint
+    // daughters, then compare their combined squared mass distance.
+    // With [positive, negative] ordering, checking the two positive pointers
+    // and the two negative pointers suffices to exclude any shared track.
+    const auto considerCombination = [&](const KaonCandidate& first,
+                                         const KaonCandidate& second)
+    {
+        if (first.positive == second.positive || first.negative == second.negative)
+            return;
+        const double score = first.massDistanceSquared + second.massDistanceSquared;
+        if (!std::isfinite(score))
+            return;
+
+       
+        if (!found || score < bestScore)
+        {
+            found = true;
+            bestScore = score;
+            bestFirst = first;
+            bestSecond = second;
+        }
+    };
+
+    if (nTof >= 4)
+    {
+        // 4/5 TOF: try every unordered pair of fully matched kaons.
+        // Disjoint daughters enforce the required two pi+ and two pi-.
+        for (std::size_t i = 0; i < twoTofCandidates.size(); ++i)
+            for (std::size_t j = i + 1; j < twoTofCandidates.size(); ++j)
+                considerCombination(twoTofCandidates[i], twoTofCandidates[j]);
+    }
+    else if (nTof == 3)
+    {
+        // 3 TOF: one fully matched kaon and one partially matched kaon.
+        // Disjointness ensures all three TOF tracks are used exactly once.
+        // This includes BOTH possible pairings and every allowed complement.
+        for (const KaonCandidate& fullyMatched : twoTofCandidates)
+            for (const KaonCandidate& partiallyMatched : oneTofCandidates)
+                considerCombination(fullyMatched, partiallyMatched);
+    }
+    else
+    {
+        // 2 TOF: each kaon must contain one TOF track. This single search
+        // handles both same-sign and opposite-sign TOF inputs. Disjointness
+        // prevents reusing either a TOF track or a non-TOF complement.
+        for (std::size_t i = 0; i < oneTofCandidates.size(); ++i)
+            for (std::size_t j = i + 1; j < oneTofCandidates.size(); ++j)
+                considerCombination(oneTofCandidates[i], oneTofCandidates[j]);
+    }
+
+    
+    if (!found)
+        return false;
+
+   
+    if (nTof != 3 && bestSecond.pt > bestFirst.pt)
+        std::swap(bestFirst, bestSecond);
+
+    vPosNegPionLeadingKaon = {bestFirst.positive, bestFirst.negative};
+    vPosNegPionSubLeadingKaon = {bestSecond.positive, bestSecond.negative};
+    return true;
 }
 
 
