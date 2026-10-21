@@ -8,7 +8,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 include(GNUInstallDirs)
 
 #outside libraries
-find_package(ROOT REQUIRED COMPONENTS EG)
+find_package(ROOT REQUIRED COMPONENTS Core Graf Gpad Gui EG)
 # find_package(Pythia8)
 
 #folder with shared code
