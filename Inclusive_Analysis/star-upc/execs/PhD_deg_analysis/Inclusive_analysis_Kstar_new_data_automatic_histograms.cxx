@@ -21,6 +21,7 @@
 #include "TLegend.h"
 #include "TSystem.h"
 #include "TRootCanvas.h"
+#include "TVirtualX.h"
 
 #include "MyStyles.h"
 
@@ -33,14 +34,75 @@ std::string remove_bad_characters(std::string input);
 void writing_to_one_pdf(TCanvas* input, std::string full_path);
 
 int main(int argc, char* argv[]){
+    //argv:
+    //1 - .root file or .list list
+    //2 - output folder
+    //3 - (optional) batch mode (default no, accepts case insensitive yes/y/true/batch/-b)
+
+    bool batch = false;
+    //checking the number of arguments and setting up batch mode if needed
+    switch(argc){
+    case 4:
+        //needs to set up the batch mode
+        //brackets needed to initialize the batch_mode
+    {
+        std::string batch_mode(argv[3]);
+
+        std::transform(batch_mode.begin(), batch_mode.end(),
+            batch_mode.begin(),
+            [](unsigned char c){
+            return static_cast<char>(std::tolower(c));
+        });
+
+        if(batch_mode=="yes"||batch_mode=="y"||
+            batch_mode=="true"||batch_mode=="batch"||
+            batch_mode=="-b"){
+            batch = true;
+        }
+    }
+    case 3:
+        //nothing happens (batch mode false), but still valid number of arguments
+        break;
+    default:
+        printf("Invalid number of arguments (%d). Proper argument usage:\n", argc-1);
+        printf("argv[1] - .root file or .list list\n");
+        printf("argv[2] - output folder\n");
+        printf("argv[3] - (optional) batch mode (default no, accepts case insensitive yes/y/true/batch/-b))\n");
+        return 1;
+        break;
+    }
+
+    // saving arguments before ROOT processes -b flag for batch mode
+    std::string input_file(argv[1]);
+    std::string output_folder(argv[2]);
+
+    //creating argv for TApplication
+    //arrays are here because with direct initialization warnings arise
+    char app_name[] = "App";
+    char batch_option[] = "-b";
+    std::vector<char*> new_argv;
+    new_argv.push_back(app_name);
+    if(batch)
+        new_argv.push_back(batch_option);
+    int new_argc = static_cast<int>(new_argv.size());
+
     //something used so that the histograms would draw
     //https://stackoverflow.com/questions/30932725/painting-a-tcanvas-to-the-screen-in-a-compiled-root-cern-application
-    TApplication theApp("App", &argc, argv);
-    argv = theApp.Argv();
-    argc = theApp.Argc();
+    TApplication theApp("App", &new_argc, new_argv.data());
+    //just in case, setting batch mode explicitly
+    if(batch)
+        gROOT->SetBatch(kTRUE);
+    printf("Batch mode set to %s\n", gROOT->IsBatch() ? "true" : "false");
+    printf("Display is set to %s\n", gVirtualX->GetName());
 
     //input file
-    TFile* input = TFile::Open(static_cast<const char*>(argv[1]));
+    TFile* input = TFile::Open(input_file.c_str());
+
+    //directory manipulation
+    std::string folderWithDiagonal = output_folder;
+    if(folderWithDiagonal[folderWithDiagonal.size()-1]!='/'){
+        folderWithDiagonal += "/";
+    }
 
     //getting diffractive background and signal
     std::vector<std::string> pairTab = { "Kpi", "piK" };
@@ -60,12 +122,6 @@ int main(int argc, char* argv[]){
             buf.erase(buf.end()-1);
         }
         allCategories.push_back(buf);
-    }
-
-    //directory manipulation
-    std::string folderWithDiagonal = std::string(static_cast<const char*>(argv[2]));
-    if(folderWithDiagonal[folderWithDiagonal.size()-1]!='/'){
-        folderWithDiagonal += "/";
     }
 
     //###########################################################
@@ -643,8 +699,10 @@ std::string remove_bad_characters(std::string input){
 void writing_to_one_pdf(TCanvas* input, std::string full_path){
     static std::map<std::string, int> page_numbers;
     static TCanvas* temp = MyStyles::DefaultCanvas("temp");
-    //to hide the window
-    ((TRootCanvas*)temp->GetCanvasImp())->UnmapWindow();
+    //to hide the temporary window when not in batch mode
+    if(!gROOT->IsBatch()){
+        ((TRootCanvas*)temp->GetCanvasImp())->UnmapWindow();
+    }
     //emplacing successful means it is the first call of a given file
     if(page_numbers.emplace(full_path, 0).second&&input==nullptr){
         temp->SaveAs((full_path+"[").c_str());
