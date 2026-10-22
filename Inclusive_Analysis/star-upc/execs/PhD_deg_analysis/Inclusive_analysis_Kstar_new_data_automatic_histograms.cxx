@@ -22,6 +22,7 @@
 #include "TSystem.h"
 #include "TRootCanvas.h"
 #include "TVirtualX.h"
+#include "Math/MinimizerOptions.h"
 
 #include "MyStyles.h"
 
@@ -143,27 +144,63 @@ int main(int argc, char* argv[]){
     signal_function_vector.back().SetParNames("N_{K^{*}(700)}", "m_{K^{*}(700)}", "#Gamma_{K^{*}(700)}", "#sigma_{K^{*}(700)}");
     PDG_data.emplace_back(0.838, 0.463);
     signal_function_vector.back().SetParameters(10., 0.838, 0.463, 0.006);
+    //custom limits
+    signal_function_vector.back().SetParLimits(1, 0.7, 0.89);
+    signal_function_vector.back().SetParLimits(2, 0.2, 0.6);
+
     //K*(892)
     signal_function_vector.push_back(*static_cast<TF1*>(fit_func_sig_template.Clone("Kstar892")));
     signal_function_vector.back().SetParNames("N_{K^{*}(892)}", "m_{K^{*}(892)}", "#Gamma_{K^{*}(892)}", "#sigma_{K^{*}(892)}");
     PDG_data.emplace_back(fitMaximum, fitWidth);
     signal_function_vector.back().SetParameters(10., fitMaximum, fitWidth, 0.006);
+
     //K*(1430)
     signal_function_vector.push_back(*static_cast<TF1*>(fit_func_sig_template.Clone("Kstar1430")));
     signal_function_vector.back().SetParNames("N_{K^{*}(1430)}", "m_{K^{*}(1430)}", "#Gamma_{K^{*}(1430)}", "#sigma_{K^{*}(1430)}");
     PDG_data.emplace_back(1.425, 0.27);
-    signal_function_vector.back().SetParameters(10., 1.425, 0.270, 0.006);
+    signal_function_vector.back().SetParameters(10., 1.425, 0.15, 0.006);
+    //custom limits
+    signal_function_vector.back().SetParLimits(1, 1.35, 1.5);
+    signal_function_vector.back().SetParLimits(2, 0.08, 0.3);
 
-    //setting parameter limits
-    for(size_t i = 0; i<signal_function_vector.size(); i++){
-        //getting
-        double currentfitMaximum = signal_function_vector[i].GetParameter(1);
-        double currentfitWidth = signal_function_vector[i].GetParameter(2);
-        //setting
-        signal_function_vector[i].SetParLimits(0, 0., 1e3);
-        signal_function_vector[i].SetParLimits(1, currentfitMaximum-currentfitWidth, currentfitMaximum+currentfitWidth);
-        signal_function_vector[i].SetParLimits(2, currentfitWidth/3., 2*currentfitWidth);
-        signal_function_vector[i].SetParLimits(3, 0., 1.);
+    //setting default parameter limits
+    for(auto&& function:signal_function_vector){
+        //made especially for current template, will have to be changed upon signal template change
+        for(size_t i = 0; i<4; i++){
+            double low, high;
+            function.GetParLimits(i, low, high);
+            if(low==0.&&high==0.){
+                double currentfitMaximum = function.GetParameter(1);
+                double currentfitWidth = function.GetParameter(2);
+                switch(i){
+                case 0:
+                    function.SetParLimits(0, 0., 1e9);
+                    break;
+                case 1:
+                    function.SetParLimits(1, currentfitMaximum-currentfitWidth, currentfitMaximum+currentfitWidth);
+                    break;
+                case 2:
+                    function.SetParLimits(2, currentfitWidth/3., 2*currentfitWidth);
+                    break;
+                case 3:
+                    function.SetParLimits(3, 0., 1.);
+                    break;
+                default:
+                    break;
+                }
+            }
+        }
+    }
+
+    //summary
+    std::string printf_pattern = "%-20s%-30s%-20s%-20s%-20s\n";
+    printf(printf_pattern.c_str(), "Function name", "Parameter name", "Min limit", "Value", "Max limit");
+    for(auto&& function:signal_function_vector){
+        for(size_t i = 0; i<function.GetNpar(); i++){
+            double a, b;
+            function.GetParLimits(i, a, b);
+            printf(printf_pattern.c_str(), function.GetName(), function.GetParName(i), std::to_string(a).c_str(), std::to_string(function.GetParameter(i)).c_str(), std::to_string(b).c_str());
+        }
     }
 
     //###########################################################
@@ -208,7 +245,7 @@ int main(int argc, char* argv[]){
             std::string histogram_title = signal_vector[pair][category]->GetTitle();
             std::string axis_title = signal_vector[pair][category]->GetYaxis()->GetTitle();
             //creating histograms
-            Chi2withbcg_vector[pair][category] = new TH1D((tempHistName+"_"+category+"_Chi2").c_str(), (histogram_title+"-dependent #chi2/NDF;"+axis_title+";#chi^{2}/NDF").c_str(), signal_vector[pair][category]->GetNbinsY(), signal_vector[pair][category]->GetYaxis()->GetXmin(), signal_vector[pair][category]->GetYaxis()->GetXmax());
+            Chi2withbcg_vector[pair][category] = new TH1D((tempHistName+"_"+category+"_Chi2").c_str(), (histogram_title+"-dependent  #chi^{2}/NDF;"+axis_title+";#chi^{2}/NDF").c_str(), signal_vector[pair][category]->GetNbinsY(), signal_vector[pair][category]->GetYaxis()->GetXmin(), signal_vector[pair][category]->GetYaxis()->GetXmax());
             Status_vector[pair][category] = new TH2D((tempHistName+"_"+category+"_Fit_status").c_str(), (histogram_title+" fit status;"+axis_title+";Fit error code").c_str(), signal_vector[pair][category]->GetNbinsY(), signal_vector[pair][category]->GetYaxis()->GetXmin(), signal_vector[pair][category]->GetYaxis()->GetXmax(), 1, 0, 1);
             background_normalisation_vector[pair][category] = new TH1D((tempHistName+"_"+category+"_Bcgnorm").c_str(), (histogram_title+"-dependent background normalization;"+axis_title+";Bcg normalization").c_str(), signal_vector[pair][category]->GetNbinsY(), signal_vector[pair][category]->GetYaxis()->GetXmin(), signal_vector[pair][category]->GetYaxis()->GetXmax());
             for(size_t i = 0; i<signal_function_vector.size(); i++){
@@ -236,6 +273,12 @@ int main(int argc, char* argv[]){
     //                FITTING
     //###########################################################
 
+    //parameters
+    ROOT::Math::MinimizerOptions::SetDefaultMaxFunctionCalls(500000);
+    ROOT::Math::MinimizerOptions::SetDefaultMaxIterations(50000);
+    ROOT::Math::MinimizerOptions::SetDefaultTolerance(1.0e-5);
+    ROOT::Math::MinimizerOptions::SetDefaultStrategy(2);
+
     //fitting loop
     for(auto&& pair:pairTab){
         for(auto&& category:allCategories){
@@ -260,13 +303,29 @@ int main(int argc, char* argv[]){
                 double upper_range = 1.6;
 
 
+                //creating background function - a scaled slice of mixed event background
+                auto mixed_event_background = [&](double* x, double* p){
+                    return p[0]*bcg_slice->GetBinContent(bcg_slice->FindBin(x[0]));
+                };
+                TF1 fit_func_bcg("fit_func_bcg", mixed_event_background, lower_range, upper_range, 1, 1);
+                fit_func_bcg.SetParNames("N_{bcg}");
+                //setting initial fitting values for background
+                double initial_bcg_scale = sig_slice->GetBinContent(sig_slice->FindBin(fitMaximum+fitWidth))/bcg_slice->GetBinContent(bcg_slice->FindBin(fitMaximum+fitWidth));
+                fit_func_bcg.SetParameters(initial_bcg_scale);
+                fit_func_bcg.SetParLimits(0, 0., 10.);
+
+
                 //creating signal function - a sum of all the signals
-                //TODO make function histogram-like instead of smooth
                 auto signal_sum_function = [&](double* x, double* p){
                     double result = 0;
                     int starting_parameter = 0;
+                    double lower_edge = bcg_slice->GetBinLowEdge(bcg_slice->FindBin(x[0]));
+                    double upper_edge = bcg_slice->GetBinLowEdge(bcg_slice->FindBin(x[0])+1);
                     for(auto&& sig_func_partial:signal_function_vector){
-                        result += sig_func_partial.EvalPar(x, p+starting_parameter);
+                        sig_func_partial.SetParameters(p+starting_parameter);
+                        //relaxed eps from 1e-12 to 1e-6, as it is more than enough for our purposes
+                        //and tight constraints cause errors because of Voigt function implementation I guess
+                        result += sig_func_partial.Integral(lower_edge, upper_edge, 1e-6)/(upper_edge-lower_edge);
                         starting_parameter += sig_func_partial.GetNpar();
                     }
                     return result;
@@ -298,18 +357,6 @@ int main(int argc, char* argv[]){
                         temp_par_number++;
                     }
                 }
-
-
-                //creating background function - a scaled slice of mixed event background
-                auto mixed_event_background = [&](double* x, double* p){
-                    return p[0]*bcg_slice->GetBinContent(bcg_slice->FindBin(x[0]));
-                };
-                TF1 fit_func_bcg("fit_func_bcg", mixed_event_background, lower_range, upper_range, 1, 1);
-                fit_func_bcg.SetParNames("N_{bcg}");
-                //setting initial fitting values for background
-                double initial_bcg_scale = sig_slice->GetBinContent(sig_slice->FindBin(fitMaximum+fitWidth))/bcg_slice->GetBinContent(bcg_slice->FindBin(fitMaximum+fitWidth));
-                fit_func_bcg.SetParameters(initial_bcg_scale);
-                fit_func_bcg.SetParLimits(0, 0., 10.);
 
 
                 //fitting singular slice
@@ -494,7 +541,7 @@ TFitResult fit_and_draw_and_save(TH1D* data, TF1* signal, TF1* background, std::
     data->SetMarkerStyle(kFullCircle);
     data->SetMarkerColor(kBlue);
     //drawing data and function
-    TFitResultPtr fitPointer = data->Fit(fitting_function_total, "B R S I");
+    TFitResultPtr fitPointer = data->Fit(fitting_function_total, "B R S");
     data->Draw(options.c_str());
     //drawing legend
     double width = 0.3;
