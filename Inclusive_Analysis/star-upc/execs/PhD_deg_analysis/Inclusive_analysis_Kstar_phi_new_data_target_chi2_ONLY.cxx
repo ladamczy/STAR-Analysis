@@ -657,6 +657,7 @@ int main(int argc, char** argv){
                             //getting all the indentificators out
                             std::pair<PARTICLES, PARTICLES> pairPID = pairTabPID[pair_number];
                             std::string temp_pair = pairTab[pair_number];
+                            std::string reverse_temp_pair = reversePairAndRemoveUnderscore(pairTabWithUnderscores[pair_number]);
 
                             //calculating physics (general)
                             vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[pairPID.first]);
@@ -669,10 +670,18 @@ int main(int argc, char** argv){
                             insideprocessing.Fill(("M"+temp_pair+"Chi2BcgSameSign").c_str(), mass, 1./efficiency);
                             insideprocessing.Fill(("M"+temp_pair+"Chi2BcgSameSigneta").c_str(), mass, eta, 1./efficiency);
                             insideprocessing.Fill(("M"+temp_pair+"Chi2BcgSameSignpT").c_str(), mass, pT, 1./efficiency);
+                            if(temp_pair!=reverse_temp_pair){
+                                insideprocessing.Fill(("M"+reverse_temp_pair+"Chi2BcgSameSign").c_str(), mass, 1./efficiency);
+                                insideprocessing.Fill(("M"+reverse_temp_pair+"Chi2BcgSameSigneta").c_str(), mass, eta, 1./efficiency);
+                                insideprocessing.Fill(("M"+reverse_temp_pair+"Chi2BcgSameSignpT").c_str(), mass, pT, 1./efficiency);
+                            }
 
                             //calculating physics (specific)
                             if(temp_pair=="Kpi"||temp_pair=="piK"||temp_pair=="KK"){
                                 insideprocessing.Fill(("M"+temp_pair+"Chi2BcgSameSignClose").c_str(), mass, 1./efficiency);
+                                if(temp_pair!=reverse_temp_pair){
+                                    insideprocessing.Fill(("M"+reverse_temp_pair+"Chi2BcgSameSignClose").c_str(), mass, 1./efficiency);
+                                }
                             }
                             //end of chi2 test
                         }
@@ -712,6 +721,7 @@ int main(int argc, char** argv){
                             //getting all the indentificators out
                             std::pair<PARTICLES, PARTICLES> pairPID = pairTabPID[pair_number];
                             std::string temp_pair = pairTab[pair_number];
+                            std::string reverse_temp_pair = reversePairAndRemoveUnderscore(pairTabWithUnderscores[pair_number]);
 
                             //calculating physics (general)
                             vector_Track_negative[i]->getLorentzVector(negative_track, particleMass[pairPID.first]);
@@ -724,10 +734,18 @@ int main(int argc, char** argv){
                             insideprocessing.Fill(("M"+temp_pair+"Chi2BcgSameSign").c_str(), mass, 1./efficiency);
                             insideprocessing.Fill(("M"+temp_pair+"Chi2BcgSameSigneta").c_str(), mass, eta, 1./efficiency);
                             insideprocessing.Fill(("M"+temp_pair+"Chi2BcgSameSignpT").c_str(), mass, pT, 1./efficiency);
+                            if(temp_pair!=reverse_temp_pair){
+                                insideprocessing.Fill(("M"+reverse_temp_pair+"Chi2BcgSameSign").c_str(), mass, 1./efficiency);
+                                insideprocessing.Fill(("M"+reverse_temp_pair+"Chi2BcgSameSigneta").c_str(), mass, eta, 1./efficiency);
+                                insideprocessing.Fill(("M"+reverse_temp_pair+"Chi2BcgSameSignpT").c_str(), mass, pT, 1./efficiency);
+                            }
 
                             //calculating physics (specific)
                             if(temp_pair=="Kpi"||temp_pair=="piK"||temp_pair=="KK"){
                                 insideprocessing.Fill(("M"+temp_pair+"Chi2BcgSameSignClose").c_str(), mass, 1./efficiency);
+                                if(temp_pair!=reverse_temp_pair){
+                                    insideprocessing.Fill(("M"+reverse_temp_pair+"Chi2BcgSameSignClose").c_str(), mass, 1./efficiency);
+                                }
                             }
                             //end of chi2 test
                         }
@@ -1031,6 +1049,26 @@ int main(int argc, char** argv){
                     std::pair<PARTICLES, PARTICLES> pairPID = pairTabPID[pair_number];
                     std::string temp_pair = pairTab[pair_number];
                     std::string reverse_temp_pair = reversePairAndRemoveUnderscore(pairTabWithUnderscores[pair_number]);
+                    //if both particles are different, then we need to have crossover in both directions
+                    //i.e. for K+pi+, we need:
+                    //current K+   previous pi+
+                    //current pi+  previous K+
+                    //while for same pairs it would be:
+                    //current K+   previous K+
+                    //current K+   previous K+
+                    //which obviously does not make sense
+                    //HOWEVER
+                    //this crossover is already handled by having both Kpi and piK pairs to go through:
+                    //          [temp_pair][evt]
+                    //          [reverse_temp_pair].back()
+                    //we switch Kpi -> piK
+                    //          [reverse_temp_pair][evt]
+                    //          [temp_pair].back()
+                    //which is THE SAME as:
+                    //          [temp_pair].back()
+                    //          [reverse_temp_pair][evt]
+                    //because it ultimately does not matter which loop is the inside one and which is the outside one
+                    //so the only thing that needs to happen is filling BOTH Kpi and piK histograms
 
                     //LOOPS
                     //both positive
@@ -1047,9 +1085,17 @@ int main(int argc, char** argv){
                             insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSign").c_str(), mass, 1./efficiency);
                             insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSigneta").c_str(), mass, eta, 1./efficiency);
                             insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSignpT").c_str(), mass, pT, 1./efficiency);
+                            if(temp_pair!=reverse_temp_pair){
+                                insideprocessing.Fill(("M"+reverse_temp_pair+"Chi2BcgMixedEventSameSign").c_str(), mass, 1./efficiency);
+                                insideprocessing.Fill(("M"+reverse_temp_pair+"Chi2BcgMixedEventSameSigneta").c_str(), mass, eta, 1./efficiency);
+                                insideprocessing.Fill(("M"+reverse_temp_pair+"Chi2BcgMixedEventSameSignpT").c_str(), mass, pT, 1./efficiency);
+                            }
                             //filling (specific)
                             if(temp_pair=="Kpi"||temp_pair=="piK"||temp_pair=="KK"){
                                 insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSignClose").c_str(), mass, 1./efficiency);
+                                if(temp_pair!=reverse_temp_pair){
+                                    insideprocessing.Fill(("M"+reverse_temp_pair+"Chi2BcgMixedEventSameSignClose").c_str(), mass, 1./efficiency);
+                                }
                             }
                             //end of pairing
                         }
@@ -1068,62 +1114,17 @@ int main(int argc, char** argv){
                             insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSign").c_str(), mass, 1./efficiency);
                             insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSigneta").c_str(), mass, eta, 1./efficiency);
                             insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSignpT").c_str(), mass, pT, 1./efficiency);
-                            //filling (specific)
-                            if(temp_pair=="Kpi"||temp_pair=="piK"||temp_pair=="KK"){
-                                insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSignClose").c_str(), mass, 1./efficiency);
+                            if(temp_pair!=reverse_temp_pair){
+                                insideprocessing.Fill(("M"+reverse_temp_pair+"Chi2BcgMixedEventSameSign").c_str(), mass, 1./efficiency);
+                                insideprocessing.Fill(("M"+reverse_temp_pair+"Chi2BcgMixedEventSameSigneta").c_str(), mass, eta, 1./efficiency);
+                                insideprocessing.Fill(("M"+reverse_temp_pair+"Chi2BcgMixedEventSameSignpT").c_str(), mass, pT, 1./efficiency);
                             }
-                            //end of pairing
-                        }
-                    }
-                    //if both particles are different, then we need to have crossover in both directions
-                    //i.e. for K+pi+, we need:
-                    //current K+   previous pi+
-                    //current pi+  previous K+
-                    //while for same pairs it would be:
-                    //current K+   previous K+
-                    //current K+   previous K+
-                    //which obviously does not make sense
-                    if(temp_pair==reverse_temp_pair){
-                        continue;
-                    }
-                    //both positive
-                    for(long unsigned int i = 0; i<map_of_queue_of_previous_vector_Tracks_positive[temp_pair].back().size(); i++){
-                        for(long unsigned int j = 0; j<map_of_queue_of_previous_vector_Tracks_positive[reverse_temp_pair][evt].size(); j++){
-                            map_of_queue_of_previous_vector_Tracks_positive[temp_pair].back()[i]->getLorentzVector(positive_track, particleMass[pairPID.first]);
-                            map_of_queue_of_previous_vector_Tracks_positive[reverse_temp_pair][evt][j]->getLorentzVector(positive_track2, particleMass[pairPID.second]);
-                            mass = (positive_track+positive_track2).M();
-                            eta = (positive_track+positive_track2).Eta();
-                            pT = (positive_track+positive_track2).Pt();
-                            efficiency = efficiency_coefficient(2, pairTabWithUnderscores[pair_number], map_of_queue_of_previous_vector_Tracks_positive[temp_pair].back()[i], map_of_queue_of_previous_vector_Tracks_positive[reverse_temp_pair][evt][j], queue_of_previous_PV_positions.back().Z(), queue_of_previous_PV_positions[evt].Z());
-                            efficiency_testing(efficiency, 2, pairTabWithUnderscores[pair_number], map_of_queue_of_previous_vector_Tracks_positive[temp_pair].back()[i], map_of_queue_of_previous_vector_Tracks_positive[reverse_temp_pair][evt][j], queue_of_previous_PV_positions.back().Z(), queue_of_previous_PV_positions[evt].Z(), "Mixed-event same-sign background (positive, reverse)");
-                            //filling (general)
-                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSign").c_str(), mass, 1./efficiency);
-                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSigneta").c_str(), mass, eta, 1./efficiency);
-                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSignpT").c_str(), mass, pT, 1./efficiency);
                             //filling (specific)
                             if(temp_pair=="Kpi"||temp_pair=="piK"||temp_pair=="KK"){
                                 insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSignClose").c_str(), mass, 1./efficiency);
-                            }
-                            //end of pairing
-                        }
-                    }
-                    //both negative
-                    for(long unsigned int i = 0; i<map_of_queue_of_previous_vector_Tracks_negative[temp_pair].back().size(); i++){
-                        for(long unsigned int j = 0; j<map_of_queue_of_previous_vector_Tracks_negative[reverse_temp_pair][evt].size(); j++){
-                            map_of_queue_of_previous_vector_Tracks_negative[temp_pair].back()[i]->getLorentzVector(negative_track, particleMass[pairPID.first]);
-                            map_of_queue_of_previous_vector_Tracks_negative[reverse_temp_pair][evt][j]->getLorentzVector(negative_track2, particleMass[pairPID.second]);
-                            mass = (negative_track+negative_track2).M();
-                            eta = (negative_track+negative_track2).Eta();
-                            pT = (negative_track+negative_track2).Pt();
-                            efficiency = efficiency_coefficient(-2, pairTabWithUnderscores[pair_number], map_of_queue_of_previous_vector_Tracks_negative[temp_pair].back()[i], map_of_queue_of_previous_vector_Tracks_negative[reverse_temp_pair][evt][j], queue_of_previous_PV_positions.back().Z(), queue_of_previous_PV_positions[evt].Z());
-                            efficiency_testing(efficiency, -2, pairTabWithUnderscores[pair_number], map_of_queue_of_previous_vector_Tracks_negative[temp_pair].back()[i], map_of_queue_of_previous_vector_Tracks_negative[reverse_temp_pair][evt][j], queue_of_previous_PV_positions.back().Z(), queue_of_previous_PV_positions[evt].Z(), "Mixed-event same-sign background (negative, reverse)");
-                            //filling (general)
-                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSign").c_str(), mass, 1./efficiency);
-                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSigneta").c_str(), mass, eta, 1./efficiency);
-                            insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSignpT").c_str(), mass, pT, 1./efficiency);
-                            //filling (specific)
-                            if(temp_pair=="Kpi"||temp_pair=="piK"||temp_pair=="KK"){
-                                insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSignClose").c_str(), mass, 1./efficiency);
+                                if(temp_pair!=reverse_temp_pair){
+                                    insideprocessing.Fill(("M"+reverse_temp_pair+"Chi2BcgMixedEventSameSignClose").c_str(), mass, 1./efficiency);
+                                }
                             }
                             //end of pairing
                         }
