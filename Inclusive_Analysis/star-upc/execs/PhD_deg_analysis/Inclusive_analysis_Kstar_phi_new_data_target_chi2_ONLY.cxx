@@ -13,6 +13,7 @@
 #include <TFileInfo.h>
 #include <TSystem.h>
 #include <THnSparse.h>
+#include <THStack.h>
 
 // picoDst headers
 #include "StRPEvent.h"
@@ -303,6 +304,10 @@ int main(int argc, char** argv){
     outsideprocessing.AddHistogram(TH1D("MKKSuspiciousPeakTestedAsPionPairNeighbourhood", ";m_{#pi^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 400, 0.25, 0.65));
     outsideprocessing.AddHistogram(TH1D("MKKSuspiciousPeakTestedWithStrictChi2LessThan3", ";m_{K^{+}K^{-}} [GeV/c^{2}];Number of pairs", 500, 0.9, 2.4));
     outsideprocessing.AddHistogram(TH1D("MKKSuspiciousPeakTestedWithStrictChi2LessThan1", ";m_{K^{+}K^{-}} [GeV/c^{2}];Number of pairs", 500, 0.9, 2.4));
+    outsideprocessing.AddHistogram(TH1D("MKpiChi2NotPions", "#chi^{2}_{K^{+}#pi^{-}}<9 && #chi^{2}_{#pi^{+}#pi^{-}}#geq9;m_{K^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 200, 0.5, 2.0));
+    outsideprocessing.AddHistogram(TH1D("MpiKChi2NotPions", "#chi^{2}_{K^{-}#pi^{+}}<9 && #chi^{2}_{#pi^{+}#pi^{-}}#geq9;m_{K^{-}#pi^{+}} [GeV/c^{2}];Number of pairs", 200, 0.5, 2.0));
+    outsideprocessing.AddHistogram(TH1D("MKpiChi2YesPions", "#chi^{2}_{K^{+}#pi^{-}}<9 && #chi^{2}_{#pi^{+}#pi^{-}}<9;m_{K^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 200, 0.5, 2.0));
+    outsideprocessing.AddHistogram(TH1D("MpiKChi2YesPions", "#chi^{2}_{K^{-}#pi^{+}}<9 && #chi^{2}_{#pi^{+}#pi^{-}}<9;m_{K^{-}#pi^{+}} [GeV/c^{2}];Number of pairs", 200, 0.5, 2.0));
 
     //other *other* histograms
     outsideprocessing.AddHistogram(TH2D("dEdxTPCEnergyLoss", "dE/dx TPC Energy loss distribution;pq [GeV/c];dE/dx [keV/cm]", 300, -3, 3, 100, 0, 40));
@@ -591,9 +596,19 @@ int main(int argc, char** argv){
                             insideprocessing.Fill(("M"+temp_pair+"Chi2pT").c_str(), mass, pT, 1./efficiency);
 
                             //calculating physics (specific)
+                            //filling smaller ranges
                             if(temp_pair=="Kpi"||temp_pair=="piK"||temp_pair=="KK"){
                                 insideprocessing.Fill(("M"+temp_pair+"Chi2Close").c_str(), mass, 1./efficiency);
                             }
+                            //checking the share of pipi pairs (and so, K0S) in Kpi/piK pairs
+                            if((temp_pair=="Kpi"||temp_pair=="piK")){
+                                if(chi2Map["pi_pi"]<9){
+                                    insideprocessing.Fill(("M"+temp_pair+"Chi2YesPions").c_str(), mass, 1./efficiency);
+                                } else{
+                                    insideprocessing.Fill(("M"+temp_pair+"Chi2NotPions").c_str(), mass, 1./efficiency);
+                                }
+                            }
+                            //checking the share of pipi pairs (and so, K0S) in KK pairs
                             if(temp_pair=="KK"){
                                 //test of suspicious peak and its neighbourhood
                                 if(chi2Map["K_K"]<3){
@@ -1173,6 +1188,24 @@ int main(int argc, char** argv){
     //saving multicore histgrams
     outsideprocessing.SaveToFile(outputFileHist);
 
+    //saving custom THStacks
+    TH1D* MKpiChi2NotPions = outsideprocessing.GetPointerAfterMerge<TH1D>("MKpiChi2NotPions").get();
+    TH1D* MpiKChi2NotPions = outsideprocessing.GetPointerAfterMerge<TH1D>("MpiKChi2NotPions").get();
+    TH1D* MKpiChi2YesPions = outsideprocessing.GetPointerAfterMerge<TH1D>("MKpiChi2YesPions").get();
+    TH1D* MpiKChi2YesPions = outsideprocessing.GetPointerAfterMerge<TH1D>("MpiKChi2YesPions").get();
+    THStack* PionPairInKpiTest = new THStack("PionPairInKpiTest", (std::string(MKpiChi2NotPions->GetTitle())+";"+std::string(MKpiChi2NotPions->GetXaxis()->GetTitle())+";"+std::string(MKpiChi2NotPions->GetYaxis()->GetTitle())).c_str());
+    THStack* PionPairInpiKTest = new THStack("PionPairInpiKTest", (std::string(MpiKChi2NotPions->GetTitle())+";"+std::string(MpiKChi2NotPions->GetXaxis()->GetTitle())+";"+std::string(MpiKChi2NotPions->GetYaxis()->GetTitle())).c_str());
+    MKpiChi2NotPions->SetFillColor(kGreen);
+    MpiKChi2NotPions->SetFillColor(kGreen);
+    MKpiChi2YesPions->SetFillColor(kRed);
+    MpiKChi2YesPions->SetFillColor(kRed);
+    PionPairInKpiTest->Add(MKpiChi2NotPions);
+    PionPairInKpiTest->Add(MKpiChi2YesPions);
+    PionPairInpiKTest->Add(MpiKChi2NotPions);
+    PionPairInpiKTest->Add(MpiKChi2YesPions);
+    PionPairInKpiTest->Write();
+    PionPairInpiKTest->Write();
+    
     outputFileHist->Close();
 
     return 0;
