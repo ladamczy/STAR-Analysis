@@ -354,10 +354,20 @@ int main(int argc, char** argv){
         }
 
         //lambda for testing which tracks gave 0 efficiency (only for signal, so we can skip some checks)
-        auto efficiency_testing = [&](std::string pairNameWithUnderscore, StUPCTrack* positive_track, StUPCTrack* negative_track, double Vz){
+        auto efficiency_testing = [&](double pair_efficiency, int total_pair_charge, std::string pairNameWithUnderscore, StUPCTrack* positive_track, StUPCTrack* negative_track, double Vz_positive, double Vz_negative, std::string loop_type, bool fill_histograms = false){
             //fallback if something broke
             if(!loadedCorrectorCorrectly)
                 return 1;
+            //work only if efficiency 0
+            if(pair_efficiency!=0)
+                return 1;
+            //initialsation of maps for enum->string conversion
+            static std::map<PARTICLES, std::string> enum_name_map = { { PARTICLES::Pion, "Pion" },
+                                                                      { PARTICLES::Kaon, "Kaon" } ,
+                                                                      { PARTICLES::Proton, "Proton" } };
+            static std::map<PARTICLES, std::string> enum_name_map_short = { { PARTICLES::Pion, "pi" },
+                                                                            { PARTICLES::Kaon, "K" } ,
+                                                                            { PARTICLES::Proton, "p" } };
             //if success, we gotta load all the variables
             double pt1 = positive_track->getPt();
             double pt2 = negative_track->getPt();
@@ -366,62 +376,36 @@ int main(int argc, char** argv){
 
             //calculating corrections
             std::pair<PARTICLES, PARTICLES> id_both = getPairPID(pairNameWithUnderscore);
-            const double data_first[] = {pt1, eta1, Vz};
-            const double data_second[] = {pt2, eta2, Vz};
+            const double data_first[] = { pt1, eta1, Vz_positive };
+            const double data_second[] = { pt2, eta2, Vz_negative };
             double eff_first, eff_second;
+
             //positive
-            switch(id_both.first){
-            case Pion:
-                eff_first = totalEfficiencyCorrector[positive][id_both.first]->getCombinedEfficiency(eta1, pt1, Vz, 1, StEfficiencyCorrector3D::PION);
-                if(eff_first==0){
-                    insideprocessing.Fill("failedPionPositive", data_first, 1.);
-                }
-                break;
-            case Kaon:
-                eff_first = totalEfficiencyCorrector[positive][id_both.first]->getCombinedEfficiency(eta1, pt1, Vz, 1, StEfficiencyCorrector3D::KAON);
-                if(eff_first==0){
-                    insideprocessing.Fill("failedKaonPositive", data_first, 1.);
-                }
-                break;
-            case Proton:
-                eff_first = totalEfficiencyCorrector[positive][id_both.first]->getCombinedEfficiency(eta1, pt1, Vz, 1, StEfficiencyCorrector3D::PROTON);
-                if(eff_first==0){
-                    insideprocessing.Fill("failedProtonPositive", data_first, 1.);
-                }
-                break;
-            default:
-                return 1;
-                break;
+            eff_first = totalEfficiencyCorrector[total_pair_charge>=0 ? positive : negative][id_both.first]->getCombinedEfficiency(eta1, pt1, Vz_positive, total_pair_charge>=0 ? 1 : -1, enumPIDTranslator(id_both.first));
+            if(eff_first==0){
+                insideprocessing.Fill(("failed"+enum_name_map[id_both.first]+(total_pair_charge>=0 ? "Positive" : "Negative")).c_str(), data_first, 1.);
             }
             //negative
-            switch(id_both.second){
-            case Pion:
-                eff_second = totalEfficiencyCorrector[negative][id_both.second]->getCombinedEfficiency(eta2, pt2, Vz, -1, StEfficiencyCorrector3D::PION);
-                if(eff_second==0){
-                    insideprocessing.Fill("failedPionNegative", data_second, 1.);
-                }
-                break;
-            case Kaon:
-                eff_second = totalEfficiencyCorrector[negative][id_both.second]->getCombinedEfficiency(eta2, pt2, Vz, -1, StEfficiencyCorrector3D::KAON);
-                if(eff_second==0){
-                    insideprocessing.Fill("failedKaonNegative", data_second, 1.);
-                }
-                break;
-            case Proton:
-                eff_second = totalEfficiencyCorrector[negative][id_both.second]->getCombinedEfficiency(eta2, pt2, Vz, -1, StEfficiencyCorrector3D::PROTON);
-                if(eff_second==0){
-                    insideprocessing.Fill("failedProtonNegative", data_second, 1.);
-                }
-                break;
-            default:
-                return 1;
-                break;
+            eff_second = totalEfficiencyCorrector[total_pair_charge<=0 ? negative : positive][id_both.second]->getCombinedEfficiency(eta2, pt2, Vz_negative, total_pair_charge<=0 ? -1 : 1, enumPIDTranslator(id_both.second));
+            if(eff_second==0){
+                insideprocessing.Fill(("failed"+enum_name_map[id_both.second]+(total_pair_charge<=0 ? "Negative" : "Positive")).c_str(), data_second, 1.);
             }
 
-            insideprocessing.Fill("efficiency1", eff_first*eff_second);
-            insideprocessing.Fill("efficiency2", eff_first*eff_second);
-            insideprocessing.Fill("efficiency3", eff_first*eff_second);
-            insideprocessing.Fill("efficiency4", eff_first*eff_second);
+            if(fill_histograms){
+                insideprocessing.Fill("efficiency1", eff_first*eff_second);
+                insideprocessing.Fill("efficiency2", eff_first*eff_second);
+                insideprocessing.Fill("efficiency3", eff_first*eff_second);
+                insideprocessing.Fill("efficiency4", eff_first*eff_second);
+            }
+
+            if(eff_first*eff_second==0){
+                printf("########################################\n");
+                printf("Type: %s\n", loop_type.c_str());
+                printf("Track ID    efficiency  pT          eta         Vz          \n");
+                printf("%-12s%-12lf%-12lf%-12lf%-12lf\n", (enum_name_map_short[id_both.first]+(total_pair_charge>=0 ? "+" : "-")).c_str(), eff_first, pt1, eta1, Vz_positive);
+                printf("%-12s%-12lf%-12lf%-12lf%-12lf\n", (enum_name_map_short[id_both.second]+(total_pair_charge<=0 ? "-" : "+")).c_str(), eff_second, pt2, eta2, Vz_negative);
+                printf("########################################\n");
+            }
 
             return 0;
         };
@@ -594,9 +578,6 @@ int main(int argc, char** argv){
                             std::pair<PARTICLES, PARTICLES> pairPID = pairTabPID[pair_number];
                             std::string temp_pair = pairTab[pair_number];
 
-                            //efficiency testing
-                            efficiency_testing(pairTabWithUnderscores[pair_number], vector_Track_positive[i], vector_Track_negative[j], PV_position.Z());
-
                             //calculating physics (general)
                             vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[pairPID.first]);
                             vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[pairPID.second]);
@@ -604,6 +585,7 @@ int main(int argc, char** argv){
                             eta = (positive_track+negative_track).Eta();
                             pT = (positive_track+negative_track).Pt();
                             efficiency = efficiency_coefficient(0, pairTabWithUnderscores[pair_number], vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
+                            efficiency_testing(efficiency, 0, pairTabWithUnderscores[pair_number], vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z(), "Signal", true);
                             insideprocessing.Fill(("M"+temp_pair+"Chi2").c_str(), mass, 1./efficiency);
                             insideprocessing.Fill(("M"+temp_pair+"Chi2eta").c_str(), mass, eta, 1./efficiency);
                             insideprocessing.Fill(("M"+temp_pair+"Chi2pT").c_str(), mass, pT, 1./efficiency);
@@ -683,6 +665,7 @@ int main(int argc, char** argv){
                             eta = (positive_track+positive_track2).Eta();
                             pT = (positive_track+positive_track2).Pt();
                             efficiency = efficiency_coefficient(2, pairTabWithUnderscores[pair_number], vector_Track_positive[i], vector_Track_positive[j], PV_position.Z(), PV_position.Z());
+                            efficiency_testing(efficiency, 2, pairTabWithUnderscores[pair_number], vector_Track_positive[i], vector_Track_positive[j], PV_position.Z(), PV_position.Z(), "Same-sign background (positive)");
                             insideprocessing.Fill(("M"+temp_pair+"Chi2BcgSameSign").c_str(), mass, 1./efficiency);
                             insideprocessing.Fill(("M"+temp_pair+"Chi2BcgSameSigneta").c_str(), mass, eta, 1./efficiency);
                             insideprocessing.Fill(("M"+temp_pair+"Chi2BcgSameSignpT").c_str(), mass, pT, 1./efficiency);
@@ -736,7 +719,8 @@ int main(int argc, char** argv){
                             mass = (negative_track+negative_track2).M();
                             eta = (negative_track+negative_track2).Eta();
                             pT = (negative_track+negative_track2).Pt();
-                            efficiency = efficiency_coefficient(2, pairTabWithUnderscores[pair_number], vector_Track_negative[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
+                            efficiency = efficiency_coefficient(-2, pairTabWithUnderscores[pair_number], vector_Track_negative[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
+                            efficiency_testing(efficiency, -2, pairTabWithUnderscores[pair_number], vector_Track_negative[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z(), "Same-sign background (negative)");
                             insideprocessing.Fill(("M"+temp_pair+"Chi2BcgSameSign").c_str(), mass, 1./efficiency);
                             insideprocessing.Fill(("M"+temp_pair+"Chi2BcgSameSigneta").c_str(), mass, eta, 1./efficiency);
                             insideprocessing.Fill(("M"+temp_pair+"Chi2BcgSameSignpT").c_str(), mass, pT, 1./efficiency);
@@ -797,6 +781,7 @@ int main(int argc, char** argv){
                             eta = (positive_track+negative_track).Eta();
                             pT = (positive_track+negative_track).Pt();
                             efficiency = efficiency_coefficient(0, pairTabWithUnderscores[pair_number], vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
+                            efficiency_testing(efficiency, 0, pairTabWithUnderscores[pair_number], vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z(), "Track rotation background");
                             insideprocessing.Fill(("M"+temp_pair+"Chi2BcgTrackRotation").c_str(), mass, 1./efficiency);
                             insideprocessing.Fill(("M"+temp_pair+"Chi2BcgTrackRotationeta").c_str(), mass, eta, 1./efficiency);
                             insideprocessing.Fill(("M"+temp_pair+"Chi2BcgTrackRotationpT").c_str(), mass, pT, 1./efficiency);
@@ -858,6 +843,7 @@ int main(int argc, char** argv){
                             eta = (positive_track+negative_track).Eta();
                             pT = (positive_track+negative_track).Pt();
                             efficiency = efficiency_coefficient(0, pairTabWithUnderscores[pair_number], vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
+                            efficiency_testing(efficiency, 0, pairTabWithUnderscores[pair_number], vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z(), "Random track rotation background");
                             insideprocessing.Fill(("M"+temp_pair+"Chi2BcgRandomTrackRotation").c_str(), mass, 1./efficiency);
                             insideprocessing.Fill(("M"+temp_pair+"Chi2BcgRandomTrackRotationeta").c_str(), mass, eta, 1./efficiency);
                             insideprocessing.Fill(("M"+temp_pair+"Chi2BcgRandomTrackRotationpT").c_str(), mass, pT, 1./efficiency);
@@ -1002,6 +988,7 @@ int main(int argc, char** argv){
                             eta = (positive_track+negative_track).Eta();
                             pT = (positive_track+negative_track).Pt();
                             efficiency = efficiency_coefficient(0, pairTabWithUnderscores[pair_number], map_of_queue_of_previous_vector_Tracks_positive[temp_pair].back()[i], map_of_queue_of_previous_vector_Tracks_negative[temp_pair][evt][j], queue_of_previous_PV_positions.back().Z(), queue_of_previous_PV_positions[evt].Z());
+                            efficiency_testing(efficiency, 0, pairTabWithUnderscores[pair_number], map_of_queue_of_previous_vector_Tracks_positive[temp_pair].back()[i], map_of_queue_of_previous_vector_Tracks_negative[temp_pair][evt][j], queue_of_previous_PV_positions.back().Z(), queue_of_previous_PV_positions[evt].Z(), "Mixed-event background (current positive)");
                             //filling (general)
                             insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEvent").c_str(), mass, 1./efficiency);
                             insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventeta").c_str(), mass, eta, 1./efficiency);
@@ -1022,6 +1009,7 @@ int main(int argc, char** argv){
                             eta = (positive_track+negative_track).Eta();
                             pT = (positive_track+negative_track).Pt();
                             efficiency = efficiency_coefficient(0, pairTabWithUnderscores[pair_number], map_of_queue_of_previous_vector_Tracks_positive[temp_pair][evt][i], map_of_queue_of_previous_vector_Tracks_negative[temp_pair].back()[j], queue_of_previous_PV_positions[evt].Z(), queue_of_previous_PV_positions.back().Z());
+                            efficiency_testing(efficiency, 0, pairTabWithUnderscores[pair_number], map_of_queue_of_previous_vector_Tracks_positive[temp_pair][evt][i], map_of_queue_of_previous_vector_Tracks_negative[temp_pair].back()[j], queue_of_previous_PV_positions[evt].Z(), queue_of_previous_PV_positions.back().Z(), "Mixed-event background (current negative)");
                             //filling (general)
                             insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEvent").c_str(), mass, 1./efficiency);
                             insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventeta").c_str(), mass, eta, 1./efficiency);
@@ -1054,6 +1042,7 @@ int main(int argc, char** argv){
                             eta = (positive_track+positive_track2).Eta();
                             pT = (positive_track+positive_track2).Pt();
                             efficiency = efficiency_coefficient(2, pairTabWithUnderscores[pair_number], map_of_queue_of_previous_vector_Tracks_positive[temp_pair][evt][i], map_of_queue_of_previous_vector_Tracks_positive[reverse_temp_pair].back()[j], queue_of_previous_PV_positions[evt].Z(), queue_of_previous_PV_positions.back().Z());
+                            efficiency_testing(efficiency, 2, pairTabWithUnderscores[pair_number], map_of_queue_of_previous_vector_Tracks_positive[temp_pair][evt][i], map_of_queue_of_previous_vector_Tracks_positive[reverse_temp_pair].back()[j], queue_of_previous_PV_positions[evt].Z(), queue_of_previous_PV_positions.back().Z(), "Mixed-event same-sign background (positive)");
                             //filling (general)
                             insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSign").c_str(), mass, 1./efficiency);
                             insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSigneta").c_str(), mass, eta, 1./efficiency);
@@ -1074,6 +1063,7 @@ int main(int argc, char** argv){
                             eta = (negative_track+negative_track2).Eta();
                             pT = (negative_track+negative_track2).Pt();
                             efficiency = efficiency_coefficient(-2, pairTabWithUnderscores[pair_number], map_of_queue_of_previous_vector_Tracks_negative[temp_pair][evt][i], map_of_queue_of_previous_vector_Tracks_negative[reverse_temp_pair].back()[j], queue_of_previous_PV_positions[evt].Z(), queue_of_previous_PV_positions.back().Z());
+                            efficiency_testing(efficiency, -2, pairTabWithUnderscores[pair_number], map_of_queue_of_previous_vector_Tracks_negative[temp_pair][evt][i], map_of_queue_of_previous_vector_Tracks_negative[reverse_temp_pair].back()[j], queue_of_previous_PV_positions[evt].Z(), queue_of_previous_PV_positions.back().Z(), "Mixed-event same-sign background (negative)");
                             //filling (general)
                             insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSign").c_str(), mass, 1./efficiency);
                             insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSigneta").c_str(), mass, eta, 1./efficiency);
@@ -1105,6 +1095,7 @@ int main(int argc, char** argv){
                             eta = (positive_track+positive_track2).Eta();
                             pT = (positive_track+positive_track2).Pt();
                             efficiency = efficiency_coefficient(2, pairTabWithUnderscores[pair_number], map_of_queue_of_previous_vector_Tracks_positive[temp_pair].back()[i], map_of_queue_of_previous_vector_Tracks_positive[reverse_temp_pair][evt][j], queue_of_previous_PV_positions.back().Z(), queue_of_previous_PV_positions[evt].Z());
+                            efficiency_testing(efficiency, 2, pairTabWithUnderscores[pair_number], map_of_queue_of_previous_vector_Tracks_positive[temp_pair].back()[i], map_of_queue_of_previous_vector_Tracks_positive[reverse_temp_pair][evt][j], queue_of_previous_PV_positions.back().Z(), queue_of_previous_PV_positions[evt].Z(), "Mixed-event same-sign background (positive, reverse)");
                             //filling (general)
                             insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSign").c_str(), mass, 1./efficiency);
                             insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSigneta").c_str(), mass, eta, 1./efficiency);
@@ -1125,6 +1116,7 @@ int main(int argc, char** argv){
                             eta = (negative_track+negative_track2).Eta();
                             pT = (negative_track+negative_track2).Pt();
                             efficiency = efficiency_coefficient(-2, pairTabWithUnderscores[pair_number], map_of_queue_of_previous_vector_Tracks_negative[temp_pair].back()[i], map_of_queue_of_previous_vector_Tracks_negative[reverse_temp_pair][evt][j], queue_of_previous_PV_positions.back().Z(), queue_of_previous_PV_positions[evt].Z());
+                            efficiency_testing(efficiency, -2, pairTabWithUnderscores[pair_number], map_of_queue_of_previous_vector_Tracks_negative[temp_pair].back()[i], map_of_queue_of_previous_vector_Tracks_negative[reverse_temp_pair][evt][j], queue_of_previous_PV_positions.back().Z(), queue_of_previous_PV_positions[evt].Z(), "Mixed-event same-sign background (negative, reverse)");
                             //filling (general)
                             insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSign").c_str(), mass, 1./efficiency);
                             insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSigneta").c_str(), mass, eta, 1./efficiency);
@@ -1367,7 +1359,7 @@ StEfficiencyCorrector3D::ParticleType enumPIDTranslator(PARTICLES pid){
         return StEfficiencyCorrector3D::PROTON;
         break;
     default:
-        StEfficiencyCorrector3D::N_PARTICLES;
+        return StEfficiencyCorrector3D::N_PARTICLES;
         break;
     }
 }
