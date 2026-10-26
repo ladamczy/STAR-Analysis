@@ -47,6 +47,7 @@ enum CHARGE{ positive = 0, negative = 1, nCharge = 2 };
 TFile* getNewestFile(std::string folder, std::string filename);
 StEfficiencyCorrector3D* getInitialisedEfficiencyCorrector(std::string folder, CHARGE charge, PARTICLES particle);
 std::pair<PARTICLES, PARTICLES> getPairPID(std::string pair_with_underscore);
+StEfficiencyCorrector3D::ParticleType enumPIDTranslator(PARTICLES pid);
 std::string reversePairAndRemoveUnderscore(std::string pair_with_underscore);
 
 int main(int argc, char** argv){
@@ -156,7 +157,7 @@ int main(int argc, char** argv){
     }
     printf("Corrections initialised %s\n", loadedCorrectorCorrectly ? "successfully!" : "unsuccessfully! Falling back to default weight of 1.");
     //a nice wrapper
-    auto efficiency_coefficient = [&](int total_pair_charge, PARTICLES positive_id, PARTICLES negative_id, StUPCTrack* positive_track, StUPCTrack* negative_track, double Vz_positive, double Vz_negative){
+    auto efficiency_coefficient = [&](int total_pair_charge, std::string pairNameWithUnderscore, StUPCTrack* positive_track, StUPCTrack* negative_track, double Vz_positive, double Vz_negative){
         //fallback if something broke
         if(!loadedCorrectorCorrectly)
             return 1.;
@@ -166,60 +167,16 @@ int main(int argc, char** argv){
         double eta1 = positive_track->getEta();
         double eta2 = negative_track->getEta();
 
-        //choosing correct signs for detected tracks
-        CHARGE first_track_charge_enum, second_track_charge_enum;
-        int first_track_charge, second_track_charge;
-        if(total_pair_charge==0){
-            first_track_charge_enum = positive;
-            first_track_charge = 1;
-            second_track_charge_enum = negative;
-            second_track_charge = -1;
-        } else if(total_pair_charge>0){
-            first_track_charge_enum = positive;
-            first_track_charge = 1;
-            second_track_charge_enum = positive;
-            second_track_charge = 1;
-        } else if(total_pair_charge<0){
-            first_track_charge_enum = negative;
-            first_track_charge = -1;
-            second_track_charge_enum = negative;
-            second_track_charge = -1;
-        } else{
-            return 1.;
-        }
+        //choosing correct ID for detected tracks
+        std::pair<PARTICLES, PARTICLES> id_both = getPairPID(pairNameWithUnderscore);
+        StEfficiencyCorrector3D::ParticleType id_singular;
 
         //calculating correction
         double efficiency = 1.;
         //positive
-        switch(positive_id){
-        case Pion:
-            efficiency *= totalEfficiencyCorrector[first_track_charge_enum][positive_id]->getCombinedEfficiency(eta1, pt1, Vz_positive, first_track_charge, StEfficiencyCorrector3D::PION);
-            break;
-        case Kaon:
-            efficiency *= totalEfficiencyCorrector[first_track_charge_enum][positive_id]->getCombinedEfficiency(eta1, pt1, Vz_positive, first_track_charge, StEfficiencyCorrector3D::KAON);
-            break;
-        case Proton:
-            efficiency *= totalEfficiencyCorrector[first_track_charge_enum][positive_id]->getCombinedEfficiency(eta1, pt1, Vz_positive, first_track_charge, StEfficiencyCorrector3D::PROTON);
-            break;
-        default:
-            return 1.;
-            break;
-        }
+        efficiency *= totalEfficiencyCorrector[total_pair_charge>=0 ? positive : negative][id_both.first]->getCombinedEfficiency(eta1, pt1, Vz_positive, total_pair_charge>=0 ? 1 : -1, enumPIDTranslator(id_both.first));
         //negative
-        switch(negative_id){
-        case Pion:
-            efficiency *= totalEfficiencyCorrector[second_track_charge_enum][negative_id]->getCombinedEfficiency(eta2, pt2, Vz_negative, second_track_charge, StEfficiencyCorrector3D::PION);
-            break;
-        case Kaon:
-            efficiency *= totalEfficiencyCorrector[second_track_charge_enum][negative_id]->getCombinedEfficiency(eta2, pt2, Vz_negative, second_track_charge, StEfficiencyCorrector3D::KAON);
-            break;
-        case Proton:
-            efficiency *= totalEfficiencyCorrector[second_track_charge_enum][negative_id]->getCombinedEfficiency(eta2, pt2, Vz_negative, second_track_charge, StEfficiencyCorrector3D::PROTON);
-            break;
-        default:
-            return 1.;
-            break;
-        }
+        efficiency *= totalEfficiencyCorrector[total_pair_charge<=0 ? negative : positive][id_both.second]->getCombinedEfficiency(eta2, pt2, Vz_negative, total_pair_charge<=0 ? -1 : 1, enumPIDTranslator(id_both.second));
 
         return efficiency;
     };
@@ -646,7 +603,7 @@ int main(int argc, char** argv){
                             mass = (positive_track+negative_track).M();
                             eta = (positive_track+negative_track).Eta();
                             pT = (positive_track+negative_track).Pt();
-                            efficiency = efficiency_coefficient(0, pairPID.first, pairPID.second, vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
+                            efficiency = efficiency_coefficient(0, pairTabWithUnderscores[pair_number], vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
                             insideprocessing.Fill(("M"+temp_pair+"Chi2").c_str(), mass, 1./efficiency);
                             insideprocessing.Fill(("M"+temp_pair+"Chi2eta").c_str(), mass, eta, 1./efficiency);
                             insideprocessing.Fill(("M"+temp_pair+"Chi2pT").c_str(), mass, pT, 1./efficiency);
@@ -666,7 +623,7 @@ int main(int argc, char** argv){
                                 //!!!!!!!!!!
                                 //CORRECTION CHANGE!!!!!!!!
                                 //!!!!!!!!!!
-                                efficiency = efficiency_coefficient(0, Pion, Pion, vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
+                                efficiency = efficiency_coefficient(0, "pi_pi", vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
                                 if(1.06<mass&&mass<1.08){
                                     vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
                                     vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
@@ -725,7 +682,7 @@ int main(int argc, char** argv){
                             mass = (positive_track+positive_track2).M();
                             eta = (positive_track+positive_track2).Eta();
                             pT = (positive_track+positive_track2).Pt();
-                            efficiency = efficiency_coefficient(2, pairPID.first, pairPID.second, vector_Track_positive[i], vector_Track_positive[j], PV_position.Z(), PV_position.Z());
+                            efficiency = efficiency_coefficient(2, pairTabWithUnderscores[pair_number], vector_Track_positive[i], vector_Track_positive[j], PV_position.Z(), PV_position.Z());
                             insideprocessing.Fill(("M"+temp_pair+"Chi2BcgSameSign").c_str(), mass, 1./efficiency);
                             insideprocessing.Fill(("M"+temp_pair+"Chi2BcgSameSigneta").c_str(), mass, eta, 1./efficiency);
                             insideprocessing.Fill(("M"+temp_pair+"Chi2BcgSameSignpT").c_str(), mass, pT, 1./efficiency);
@@ -779,7 +736,7 @@ int main(int argc, char** argv){
                             mass = (negative_track+negative_track2).M();
                             eta = (negative_track+negative_track2).Eta();
                             pT = (negative_track+negative_track2).Pt();
-                            efficiency = efficiency_coefficient(2, pairPID.first, pairPID.second, vector_Track_negative[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
+                            efficiency = efficiency_coefficient(2, pairTabWithUnderscores[pair_number], vector_Track_negative[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
                             insideprocessing.Fill(("M"+temp_pair+"Chi2BcgSameSign").c_str(), mass, 1./efficiency);
                             insideprocessing.Fill(("M"+temp_pair+"Chi2BcgSameSigneta").c_str(), mass, eta, 1./efficiency);
                             insideprocessing.Fill(("M"+temp_pair+"Chi2BcgSameSignpT").c_str(), mass, pT, 1./efficiency);
@@ -839,7 +796,7 @@ int main(int argc, char** argv){
                             mass = (positive_track+negative_track).M();
                             eta = (positive_track+negative_track).Eta();
                             pT = (positive_track+negative_track).Pt();
-                            efficiency = efficiency_coefficient(0, pairPID.first, pairPID.second, vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
+                            efficiency = efficiency_coefficient(0, pairTabWithUnderscores[pair_number], vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
                             insideprocessing.Fill(("M"+temp_pair+"Chi2BcgTrackRotation").c_str(), mass, 1./efficiency);
                             insideprocessing.Fill(("M"+temp_pair+"Chi2BcgTrackRotationeta").c_str(), mass, eta, 1./efficiency);
                             insideprocessing.Fill(("M"+temp_pair+"Chi2BcgTrackRotationpT").c_str(), mass, pT, 1./efficiency);
@@ -900,7 +857,7 @@ int main(int argc, char** argv){
                             mass = (positive_track+negative_track).M();
                             eta = (positive_track+negative_track).Eta();
                             pT = (positive_track+negative_track).Pt();
-                            efficiency = efficiency_coefficient(0, pairPID.first, pairPID.second, vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
+                            efficiency = efficiency_coefficient(0, pairTabWithUnderscores[pair_number], vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
                             insideprocessing.Fill(("M"+temp_pair+"Chi2BcgRandomTrackRotation").c_str(), mass, 1./efficiency);
                             insideprocessing.Fill(("M"+temp_pair+"Chi2BcgRandomTrackRotationeta").c_str(), mass, eta, 1./efficiency);
                             insideprocessing.Fill(("M"+temp_pair+"Chi2BcgRandomTrackRotationpT").c_str(), mass, pT, 1./efficiency);
@@ -1044,7 +1001,7 @@ int main(int argc, char** argv){
                             mass = (positive_track+negative_track).M();
                             eta = (positive_track+negative_track).Eta();
                             pT = (positive_track+negative_track).Pt();
-                            efficiency = efficiency_coefficient(0, pairPID.first, pairPID.second, map_of_queue_of_previous_vector_Tracks_positive[temp_pair].back()[i], map_of_queue_of_previous_vector_Tracks_negative[temp_pair][evt][j], queue_of_previous_PV_positions.back().Z(), queue_of_previous_PV_positions[evt].Z());
+                            efficiency = efficiency_coefficient(0, pairTabWithUnderscores[pair_number], map_of_queue_of_previous_vector_Tracks_positive[temp_pair].back()[i], map_of_queue_of_previous_vector_Tracks_negative[temp_pair][evt][j], queue_of_previous_PV_positions.back().Z(), queue_of_previous_PV_positions[evt].Z());
                             //filling (general)
                             insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEvent").c_str(), mass, 1./efficiency);
                             insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventeta").c_str(), mass, eta, 1./efficiency);
@@ -1064,7 +1021,7 @@ int main(int argc, char** argv){
                             mass = (positive_track+negative_track).M();
                             eta = (positive_track+negative_track).Eta();
                             pT = (positive_track+negative_track).Pt();
-                            efficiency = efficiency_coefficient(0, pairPID.first, pairPID.second, map_of_queue_of_previous_vector_Tracks_positive[temp_pair][evt][i], map_of_queue_of_previous_vector_Tracks_negative[temp_pair].back()[j], queue_of_previous_PV_positions[evt].Z(), queue_of_previous_PV_positions.back().Z());
+                            efficiency = efficiency_coefficient(0, pairTabWithUnderscores[pair_number], map_of_queue_of_previous_vector_Tracks_positive[temp_pair][evt][i], map_of_queue_of_previous_vector_Tracks_negative[temp_pair].back()[j], queue_of_previous_PV_positions[evt].Z(), queue_of_previous_PV_positions.back().Z());
                             //filling (general)
                             insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEvent").c_str(), mass, 1./efficiency);
                             insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventeta").c_str(), mass, eta, 1./efficiency);
@@ -1096,7 +1053,7 @@ int main(int argc, char** argv){
                             mass = (positive_track+positive_track2).M();
                             eta = (positive_track+positive_track2).Eta();
                             pT = (positive_track+positive_track2).Pt();
-                            efficiency = efficiency_coefficient(2, pairPID.first, pairPID.second, map_of_queue_of_previous_vector_Tracks_positive[temp_pair][evt][i], map_of_queue_of_previous_vector_Tracks_positive[reverse_temp_pair].back()[j], queue_of_previous_PV_positions[evt].Z(), queue_of_previous_PV_positions.back().Z());
+                            efficiency = efficiency_coefficient(2, pairTabWithUnderscores[pair_number], map_of_queue_of_previous_vector_Tracks_positive[temp_pair][evt][i], map_of_queue_of_previous_vector_Tracks_positive[reverse_temp_pair].back()[j], queue_of_previous_PV_positions[evt].Z(), queue_of_previous_PV_positions.back().Z());
                             //filling (general)
                             insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSign").c_str(), mass, 1./efficiency);
                             insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSigneta").c_str(), mass, eta, 1./efficiency);
@@ -1116,7 +1073,7 @@ int main(int argc, char** argv){
                             mass = (negative_track+negative_track2).M();
                             eta = (negative_track+negative_track2).Eta();
                             pT = (negative_track+negative_track2).Pt();
-                            efficiency = efficiency_coefficient(-2, pairPID.first, pairPID.second, map_of_queue_of_previous_vector_Tracks_negative[temp_pair][evt][i], map_of_queue_of_previous_vector_Tracks_negative[reverse_temp_pair].back()[j], queue_of_previous_PV_positions[evt].Z(), queue_of_previous_PV_positions.back().Z());
+                            efficiency = efficiency_coefficient(-2, pairTabWithUnderscores[pair_number], map_of_queue_of_previous_vector_Tracks_negative[temp_pair][evt][i], map_of_queue_of_previous_vector_Tracks_negative[reverse_temp_pair].back()[j], queue_of_previous_PV_positions[evt].Z(), queue_of_previous_PV_positions.back().Z());
                             //filling (general)
                             insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSign").c_str(), mass, 1./efficiency);
                             insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSigneta").c_str(), mass, eta, 1./efficiency);
@@ -1147,7 +1104,7 @@ int main(int argc, char** argv){
                             mass = (positive_track+positive_track2).M();
                             eta = (positive_track+positive_track2).Eta();
                             pT = (positive_track+positive_track2).Pt();
-                            efficiency = efficiency_coefficient(2, pairPID.first, pairPID.second, map_of_queue_of_previous_vector_Tracks_positive[temp_pair].back()[i], map_of_queue_of_previous_vector_Tracks_positive[reverse_temp_pair][evt][j], queue_of_previous_PV_positions.back().Z(), queue_of_previous_PV_positions[evt].Z());
+                            efficiency = efficiency_coefficient(2, pairTabWithUnderscores[pair_number], map_of_queue_of_previous_vector_Tracks_positive[temp_pair].back()[i], map_of_queue_of_previous_vector_Tracks_positive[reverse_temp_pair][evt][j], queue_of_previous_PV_positions.back().Z(), queue_of_previous_PV_positions[evt].Z());
                             //filling (general)
                             insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSign").c_str(), mass, 1./efficiency);
                             insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSigneta").c_str(), mass, eta, 1./efficiency);
@@ -1167,7 +1124,7 @@ int main(int argc, char** argv){
                             mass = (negative_track+negative_track2).M();
                             eta = (negative_track+negative_track2).Eta();
                             pT = (negative_track+negative_track2).Pt();
-                            efficiency = efficiency_coefficient(-2, pairPID.first, pairPID.second, map_of_queue_of_previous_vector_Tracks_negative[temp_pair].back()[i], map_of_queue_of_previous_vector_Tracks_negative[reverse_temp_pair][evt][j], queue_of_previous_PV_positions.back().Z(), queue_of_previous_PV_positions[evt].Z());
+                            efficiency = efficiency_coefficient(-2, pairTabWithUnderscores[pair_number], map_of_queue_of_previous_vector_Tracks_negative[temp_pair].back()[i], map_of_queue_of_previous_vector_Tracks_negative[reverse_temp_pair][evt][j], queue_of_previous_PV_positions.back().Z(), queue_of_previous_PV_positions[evt].Z());
                             //filling (general)
                             insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSign").c_str(), mass, 1./efficiency);
                             insideprocessing.Fill(("M"+temp_pair+"Chi2BcgMixedEventSameSigneta").c_str(), mass, eta, 1./efficiency);
@@ -1396,6 +1353,23 @@ std::pair<PARTICLES, PARTICLES> getPairPID(std::string pair_with_underscore){
         output.second = nParticles;
     }
     return output;
+}
+
+StEfficiencyCorrector3D::ParticleType enumPIDTranslator(PARTICLES pid){
+    switch(pid){
+    case Pion:
+        return StEfficiencyCorrector3D::PION;
+        break;
+    case Kaon:
+        return StEfficiencyCorrector3D::KAON;
+        break;
+    case Proton:
+        return StEfficiencyCorrector3D::PROTON;
+        break;
+    default:
+        StEfficiencyCorrector3D::N_PARTICLES;
+        break;
+    }
 }
 
 std::string reversePairAndRemoveUnderscore(std::string pair_with_underscore){
