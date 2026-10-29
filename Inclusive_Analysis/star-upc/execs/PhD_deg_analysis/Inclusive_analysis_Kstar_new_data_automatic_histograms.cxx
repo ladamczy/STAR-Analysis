@@ -11,6 +11,8 @@
 #include "TFile.h"
 #include "TEfficiency.h"
 #include "THStack.h"
+#include "TH2Poly.h"
+#include "TGaxis.h"
 #include "TCanvas.h"
 #include "TStyle.h"
 #include "TF1.h"
@@ -32,7 +34,7 @@ double SignalNormalizationEstimation(TH1D* signal, double x0, double gamma);
 double BackgroundNormalizationEstimation(TH1D* signal, TH1D* background, std::vector<std::pair<double, double>> peak_positions_widths);
 TFitResult fit_and_draw_and_save(TH1D* data, TF1* signal, TF1* background, std::string folderWithDiagonal, std::string name, std::string title, std::string options, TH1D* only_mixed_background = nullptr, std::string total_pdf_file_title = "");
 void custom_draw_and_save(TH1D* data, double expected_value, std::string folderWithDiagonal, std::string name, std::string title, std::string options, std::string total_pdf_file_title);
-void custom_draw_and_save_status(TH2D* data, std::string folderWithDiagonal, std::string name, std::string title, std::string options, std::string total_pdf_file_title);
+void custom_draw_and_save_status(TH2Poly* data, std::string folderWithDiagonal, std::string name, std::string title, std::string options, std::string total_pdf_file_title);
 std::string remove_bad_characters(std::string input);
 void writing_to_one_pdf(TCanvas* input, std::string full_path);
 
@@ -171,9 +173,10 @@ int main(int argc, char* argv[]){
     signal_function_vector.back().SetParLimits(2, 0.08, 0.3);
 
     //setting default parameter limits
+    double max_yield = 1e5;
     for(auto&& function:signal_function_vector){
         //made especially for current template, will have to be changed upon signal template change
-        function.SetParLimits(0, 0., 1e5);
+        function.SetParLimits(0, 0., max_yield);
         function.SetParLimits(3, 0., 0.1);
     }
 
@@ -191,12 +194,13 @@ int main(int argc, char* argv[]){
     }
 
     //filling vectors of background and signal and Chi2 with and without the background
-    //this scary nested map exists so I can do map[pair][category] = histogram
+    //this scary nested map exists so I can do map[pair][category] = histogram / map[pair] = histogram
     //data
     std::map<std::string, std::map<std::string, TH2D*>> background_vector, signal_vector;
+    std::map<std::string, TH1D*> whole_background_vector, whole_signal_vector;
     //total chi2 and fit status
     std::map<std::string, std::map<std::string, TH1D*>> Chi2withbcg_vector;
-    std::map<std::string, std::map<std::string, TH2D*>> Status_vector;
+    std::map<std::string, std::map<std::string, TH2Poly*>> Status_vector;
     //separate histograms for each signal
     std::map<std::string, std::map<std::string, std::vector<TH1D*>>> result_vector;
     std::map<std::string, std::map<std::string, std::vector<TH1D*>>> mass_vector;
@@ -211,6 +215,15 @@ int main(int argc, char* argv[]){
     std::string tempBackgroundName = "M$Chi2BcgMixedEvent";
     std::string tempHistName;
     for(auto&& pair:pairTab){
+        //whole signal
+        tempHistName = tempSignalName;
+        tempHistName.replace(find(tempHistName.begin(), tempHistName.end(), '$')-tempHistName.begin(), 1, pair);
+        whole_signal_vector[pair] = (TH1D*)input->Get(tempHistName.c_str());
+        //whole background
+        tempHistName = tempBackgroundName;
+        tempHistName.replace(find(tempHistName.begin(), tempHistName.end(), '$')-tempHistName.begin(), 1, pair);
+        whole_background_vector[pair] = ((TH1D*)input->Get(tempHistName.c_str()));
+        //diffractive categories
         for(auto&& category:allCategories){
             //signal
             tempHistName = tempSignalName;
@@ -221,7 +234,11 @@ int main(int argc, char* argv[]){
             std::string axis_title = signal_vector[pair][category]->GetYaxis()->GetTitle();
             //creating histograms
             Chi2withbcg_vector[pair][category] = new TH1D((tempHistName+"_"+category+"_Chi2").c_str(), (histogram_title+"-dependent  #chi^{2}/NDF;"+axis_title+";#chi^{2}/NDF").c_str(), signal_vector[pair][category]->GetNbinsY(), signal_vector[pair][category]->GetYaxis()->GetXmin(), signal_vector[pair][category]->GetYaxis()->GetXmax());
-            Status_vector[pair][category] = new TH2D((tempHistName+"_"+category+"_Fit_status").c_str(), (histogram_title+" fit status;"+axis_title+";Fit error code").c_str(), signal_vector[pair][category]->GetNbinsY(), signal_vector[pair][category]->GetYaxis()->GetXmin(), signal_vector[pair][category]->GetYaxis()->GetXmax(), 1, 0, 1);
+            Status_vector[pair][category] = new TH2Poly((tempHistName+"_"+category+"_Fit_status").c_str(), (histogram_title+" fit status;"+axis_title+";").c_str(), signal_vector[pair][category]->GetYaxis()->GetXmin(), signal_vector[pair][category]->GetYaxis()->GetXmax(), 0, 2);
+            for(size_t i = 0; i<signal_vector[pair][category]->GetNbinsY(); i++){
+                Status_vector[pair][category]->AddBin(signal_vector[pair][category]->GetYaxis()->GetBinLowEdge(i+1), 0., signal_vector[pair][category]->GetYaxis()->GetBinUpEdge(i+1), 1.);
+            }
+            Status_vector[pair][category]->AddBin(signal_vector[pair][category]->GetYaxis()->GetXmin(), 1., signal_vector[pair][category]->GetYaxis()->GetXmax(), 2.);
             background_normalisation_vector[pair][category] = new TH1D((tempHistName+"_"+category+"_Bcgnorm").c_str(), (histogram_title+"-dependent background normalization;"+axis_title+";Bcg normalization").c_str(), signal_vector[pair][category]->GetNbinsY(), signal_vector[pair][category]->GetYaxis()->GetXmin(), signal_vector[pair][category]->GetYaxis()->GetXmax());
             for(size_t i = 0; i<signal_function_vector.size(); i++){
                 //name of particle (takes N_{XYZ} and removes first 3 and last characters, leaving XYZ)
@@ -343,6 +360,9 @@ int main(int argc, char* argv[]){
                         default:
                             break;
                         }
+                        //parameter errors, as a starting point for minimizer step size
+                        fit_func_sig.SetParError(temp_par_number, fit_func_sig.GetParameter(temp_par_number)*0.001);
+
                         //the end - increment number of total parameter in full function
                         temp_par_number++;
                     }
@@ -368,8 +388,9 @@ int main(int argc, char* argv[]){
                 //saving fit results for further analysys
                 //Chi2
                 Chi2withbcg_vector[pair][category]->SetBinContent(k+1, tempResult.Chi2()/tempResult.Ndf());
-                //Status - careful, this is 2D histogram
-                Status_vector[pair][category]->SetBinContent(k+1, 1, tempResult.Status());
+                //Status - careful, this is TH2Poly histogram
+                Status_vector[pair][category]->SetBinContent(k+1, tempResult.Status());
+                //the rest of parameters
                 for(size_t i = 0; i<signal_function_vector.size(); i++){
                     //result
                     double bin_width = result_vector[pair][category][i]->GetBinWidth(k+1);
@@ -405,6 +426,68 @@ int main(int argc, char* argv[]){
                     background_additional_parameters_vector[pair][category]->Fill(parameter_name.c_str(), bin_center, tempResult.Parameter(par));
                     int parameter_bin_number = background_additional_parameters_vector[pair][category]->GetXaxis()->FindFixBin(parameter_name.c_str());
                     background_additional_parameters_vector[pair][category]->SetBinError(parameter_bin_number, k+1, tempResult.Error(par));
+                }
+
+
+                //fitting one total histogram at the very end of all differential histogams
+                if(k+1==sig_pointer->GetNbinsY()){
+                    //creating custom background function
+                    auto mixed_event_whole_background = [&](double* x, double* p){
+                        return p[0]*whole_background_vector[pair]->GetBinContent(whole_background_vector[pair]->FindBin(x[0]));
+                    };
+                    TF1 fit_func_whole_bcg("fit_func_whole_bcg", mixed_event_whole_background, lower_range, upper_range, 1, 1);
+                    fit_func_whole_bcg.SetParNames("N_{bcg}");
+                    //setting initial fitting values for background
+                    //TODO change for multiple backgrounds
+                    fit_func_whole_bcg.SetParameters(BackgroundNormalizationEstimation(whole_signal_vector[pair], whole_background_vector[pair], start_values));
+                    fit_func_whole_bcg.SetParLimits(0, 0., 1.);
+
+                    //setting initial values for the function
+                    int temp_par_number = 0;
+                    for(size_t n_func = 0; n_func<signal_function_vector.size(); n_func++){
+                        for(size_t n_par = 0; n_par<signal_function_vector[n_func].GetNpar(); n_par++){
+                            //names
+                            fit_func_sig.SetParName(temp_par_number, signal_function_vector[n_func].GetParName(n_par));
+                            //limits
+                            double min_limit, max_limit;
+                            signal_function_vector[n_func].GetParLimits(n_par, min_limit, max_limit);
+                            fit_func_sig.SetParLimits(temp_par_number, min_limit, max_limit);
+
+                            //parameters
+                            switch(n_par){
+                            case 0:
+                                //normalisation (limits change because this is a total)
+                                fit_func_sig.SetParLimits(temp_par_number, 0., 1e9);
+                                fit_func_sig.SetParameter(temp_par_number, SignalNormalizationEstimation(whole_signal_vector[pair], start_values[n_func].first, start_values[n_func].second));
+                                break;
+                            case 1:
+                                //mass
+                                fit_func_sig.SetParameter(temp_par_number, start_values[n_func].first);
+                                break;
+                            case 2:
+                                //gamma
+                                fit_func_sig.SetParameter(temp_par_number, start_values[n_func].second);
+                                break;
+                            case 3:
+                                //sigma
+                                fit_func_sig.SetParameter(temp_par_number, 0.006);
+                                break;
+                            default:
+                                break;
+                            }
+                            //parameter errors, as a starting point for minimizer step size
+                            fit_func_sig.SetParError(temp_par_number, fit_func_sig.GetParameter(temp_par_number)*0.001);
+
+                            //the end - increment number of total parameter in full function
+                            temp_par_number++;
+                        }
+                    }
+
+                    //fitting
+                    TFitResult tempResult = fit_and_draw_and_save(whole_signal_vector[pair], &fit_func_sig, &fit_func_whole_bcg, folderToSave, pair, whole_signal_vector[pair]->GetTitle(), "e1", whole_background_vector[pair], pair+"_"+category+"_TOTAL");
+                    Status_vector[pair][category]->SetBinContent(sig_pointer->GetNbinsY()+1, tempResult.Status());
+                    //back to normal limits
+                    fit_func_sig.SetParLimits(temp_par_number, 0., max_yield);
                 }
             }
         }
@@ -729,7 +812,7 @@ void custom_draw_and_save(TH1D* data, double expected_value, std::string folderW
     delete resultCanvas;
 }
 
-void custom_draw_and_save_status(TH2D* data, std::string folderWithDiagonal, std::string name, std::string title, std::string options, std::string total_pdf_file_title){
+void custom_draw_and_save_status(TH2Poly* data, std::string folderWithDiagonal, std::string name, std::string title, std::string options, std::string total_pdf_file_title){
     //failsave in case nullptr was passed
     if(data==nullptr){
         printf("WARNING!!! A (data) nullptr has been passed to custom_draw_and_save_status function!\n");
@@ -754,17 +837,25 @@ void custom_draw_and_save_status(TH2D* data, std::string folderWithDiagonal, std
     int palette[] = { kGreen, kRed };
     gStyle->SetPalette(2, palette);
     resultCanvas->SetFrameFillColor(TColor::GetColorPalette(0));
-    //drawing data (with removed Y axis, but left the description so that the width will visually correspond to the bins)
-    data->GetYaxis()->CenterTitle(true);
+    //removing Y axis
     data->GetYaxis()->SetLabelSize(0);
     data->GetYaxis()->SetTickLength(0);
+    //all the settings to make axis look nice before drawing
     data->SetStats(false);
     data->SetMinimum(0.);
     data->SetMaximum(1.);
     data->SetMarkerSize(4);
     data->SetMarkerColor(kBlack);
-    resultCanvas->SetGrid(1, 0);
     data->Draw(options.c_str());
+    //recreating the Y axis
+    double x_min = gPad->GetUxmin();
+    TGaxis* new_axis = new TGaxis(x_min, 0., x_min, 2., 0., 2., 2, "SL-");
+    new_axis->SetTickSize(0);
+    new_axis->SetLabelOffset(0.04);
+    new_axis->ChangeLabel(1, 90., -1, kVAlignBottom, -1, -1, "#splitline{Fit error code}{(differential)}");
+    new_axis->ChangeLabel(2, 90., -1, kVAlignBottom, -1, -1, "#splitline{Fit error code}{(total)}");
+    new_axis->ChangeLabel(3, 90., -1, kVAlignBottom, -1, -1, " ");
+    new_axis->Draw();
     //saving
     resultCanvas->SaveAs((folderWithDiagonal+std::string(data->GetName())+".pdf").c_str());
     writing_to_one_pdf(resultCanvas, folderWithDiagonal+total_pdf_file_title+".pdf");
@@ -772,7 +863,6 @@ void custom_draw_and_save_status(TH2D* data, std::string folderWithDiagonal, std
     resultCanvas->Clear();
     //restoring the default palette
     gStyle->SetPalette();
-    resultCanvas->SetGrid(0, 0);
     delete resultCanvas;
 }
 
