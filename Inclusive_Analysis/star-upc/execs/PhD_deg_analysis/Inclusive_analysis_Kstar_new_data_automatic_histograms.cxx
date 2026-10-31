@@ -232,14 +232,23 @@ int main(int argc, char* argv[]){
             //getting the common part of the title
             std::string histogram_title = signal_vector[pair][category]->GetTitle();
             std::string axis_title = signal_vector[pair][category]->GetYaxis()->GetTitle();
-            //creating histograms
+
+            //signal histograms
+            //chi2
             Chi2withbcg_vector[pair][category] = new TH1D((tempHistName+"_"+category+"_Chi2").c_str(), (histogram_title+"-dependent  #chi^{2}/NDF;"+axis_title+";#chi^{2}/NDF").c_str(), signal_vector[pair][category]->GetNbinsY(), signal_vector[pair][category]->GetYaxis()->GetXmin(), signal_vector[pair][category]->GetYaxis()->GetXmax());
-            Status_vector[pair][category] = new TH2Poly((tempHistName+"_"+category+"_Fit_status").c_str(), (histogram_title+" fit status;"+axis_title+";").c_str(), signal_vector[pair][category]->GetYaxis()->GetXmin(), signal_vector[pair][category]->GetYaxis()->GetXmax(), 0, 2);
+            //status
+            Status_vector[pair][category] = new TH2Poly((tempHistName+"_"+category+"_Fit_status").c_str(), (histogram_title+" fit status;"+axis_title+";").c_str(), signal_vector[pair][category]->GetYaxis()->GetXmin(), signal_vector[pair][category]->GetYaxis()->GetXmax(), 0, 4);
+            //status: first bins for fitting status of each bin of the signal histogram, second bin for the whole range
             for(size_t i = 0; i<signal_vector[pair][category]->GetNbinsY(); i++){
                 Status_vector[pair][category]->AddBin(signal_vector[pair][category]->GetYaxis()->GetBinLowEdge(i+1), 0., signal_vector[pair][category]->GetYaxis()->GetBinUpEdge(i+1), 1.);
             }
-            Status_vector[pair][category]->AddBin(signal_vector[pair][category]->GetYaxis()->GetXmin(), 1., signal_vector[pair][category]->GetYaxis()->GetXmax(), 2.);
-            background_normalisation_vector[pair][category] = new TH1D((tempHistName+"_"+category+"_Bcgnorm").c_str(), (histogram_title+"-dependent background normalization;"+axis_title+";Bcg normalization").c_str(), signal_vector[pair][category]->GetNbinsY(), signal_vector[pair][category]->GetYaxis()->GetXmin(), signal_vector[pair][category]->GetYaxis()->GetXmax());
+            Status_vector[pair][category]->AddBin(signal_vector[pair][category]->GetYaxis()->GetXmin(), 2., signal_vector[pair][category]->GetYaxis()->GetXmax(), 3.);
+            //status: first bins for checking validity of fit of every parameter for each bin of the signal histogram, second bin for the whole range
+            for(size_t i = 0; i<signal_vector[pair][category]->GetNbinsY(); i++){
+                Status_vector[pair][category]->AddBin(signal_vector[pair][category]->GetYaxis()->GetBinLowEdge(i+1), 1., signal_vector[pair][category]->GetYaxis()->GetBinUpEdge(i+1), 2.);
+            }
+            Status_vector[pair][category]->AddBin(signal_vector[pair][category]->GetYaxis()->GetXmin(), 3., signal_vector[pair][category]->GetYaxis()->GetXmax(), 4.);
+            //result, mass, width and resolution histograms for each signal
             for(size_t i = 0; i<signal_function_vector.size(); i++){
                 //name of particle (takes N_{XYZ} and removes first 3 and last characters, leaving XYZ)
                 std::string particle_name = std::string(signal_function_vector[i].GetParName(0)).substr(3, std::string(signal_function_vector[i].GetParName(0)).length()-4);
@@ -251,10 +260,15 @@ int main(int argc, char* argv[]){
                 width_vector[pair][category].push_back(new TH1D((tempHistName+"_"+category+"_Width_"+title_part).c_str(), (histogram_title+"-dependent B-W width of "+particle_name+";"+axis_title+";#Gamma_{0} [GeV/c^{2}]").c_str(), signal_vector[pair][category]->GetNbinsY(), signal_vector[pair][category]->GetYaxis()->GetXmin(), signal_vector[pair][category]->GetYaxis()->GetXmax()));
                 resolution_vector[pair][category].push_back(new TH1D((tempHistName+"_"+category+"_Resolution_"+title_part).c_str(), (histogram_title+"-dependent Gaussian width of "+particle_name+";"+axis_title+";#sigma [GeV/c^{2}]").c_str(), signal_vector[pair][category]->GetNbinsY(), signal_vector[pair][category]->GetYaxis()->GetXmin(), signal_vector[pair][category]->GetYaxis()->GetXmax()));
             }
+            //background normalization
+            background_normalisation_vector[pair][category] = new TH1D((tempHistName+"_"+category+"_Bcgnorm").c_str(), (histogram_title+"-dependent background normalization;"+axis_title+";Bcg normalization").c_str(), signal_vector[pair][category]->GetNbinsY(), signal_vector[pair][category]->GetYaxis()->GetXmin(), signal_vector[pair][category]->GetYaxis()->GetXmax());
+
             //background
             tempHistName = tempBackgroundName;
             tempHistName.replace(find(tempHistName.begin(), tempHistName.end(), '$')-tempHistName.begin(), 1, pair);
             background_vector[pair][category] = ((TH2D*)input->Get((tempHistName+category).c_str()));
+
+            //background histograms
             //creating histograms for additional background parameters
             //additional "  _{}" after ": " is because there were problems with lower index (and a space immediately after)
             background_additional_parameters_vector[pair][category] = new TH2D((tempHistName+"_"+category+"_").c_str(), (histogram_title+"-dependent background extra parameter:   _{};;"+axis_title).c_str(), 1, 0, 1, signal_vector[pair][category]->GetNbinsY(), signal_vector[pair][category]->GetYaxis()->GetXmin(), signal_vector[pair][category]->GetYaxis()->GetXmax());
@@ -270,6 +284,9 @@ int main(int argc, char* argv[]){
     ROOT::Math::MinimizerOptions::SetDefaultMaxIterations(50000);
     ROOT::Math::MinimizerOptions::SetDefaultTolerance(1.0e-5);
     ROOT::Math::MinimizerOptions::SetDefaultStrategy(2);
+
+    //tolerance for parameter being too close to the limit (in relative width of the limit interval)
+    double limit_tolerance = 1e-4;
 
     //fitting loop
     for(auto&& pair:pairTab){
@@ -390,6 +407,23 @@ int main(int argc, char* argv[]){
                 Chi2withbcg_vector[pair][category]->SetBinContent(k+1, tempResult.Chi2()/tempResult.Ndf());
                 //Status - careful, this is TH2Poly histogram
                 Status_vector[pair][category]->SetBinContent(k+1, tempResult.Status());
+                //if nth parameter hits its bounding limit, we add it as a 2^n to the current status (by shifting 1 n times to the left)
+                //according to IEEE754 standards, double (which TH2Poly uses) has 52 bits for mantissa, 11 for exponent, and 1 for sign
+                //so it can store 52 flags - so I'll add an error if it gets close
+                if(total_number_of_signal_parameters>50){
+                    throw std::invalid_argument("Too many parameters in the signal function! Rewrite the program");
+                }
+                for(size_t sig_param = 0; sig_param<total_number_of_signal_parameters; sig_param++){
+                    double min_limit, max_limit, limit_width;
+                    fit_func_sig.GetParLimits(sig_param, min_limit, max_limit);
+                    limit_width = fabs(max_limit-min_limit)*limit_tolerance;
+                    //adding 2^sig_param
+                    int starting_point = signal_vector[pair][category]->GetNbinsY()+1;//GetNbinsY diff. bins + 1 total bin, and we number bins FROM 1 !!!
+                    if(fabs(tempResult.Parameter(sig_param)-min_limit)<limit_tolerance||fabs(tempResult.Parameter(sig_param)-max_limit)<limit_tolerance){
+                        unsigned long long current_bin_fill = Status_vector[pair][category]->GetBinContent(starting_point+k+1);
+                        Status_vector[pair][category]->SetBinContent(starting_point+k+1, current_bin_fill+(1<<sig_param));
+                    }
+                }
                 //the rest of parameters
                 for(size_t i = 0; i<signal_function_vector.size(); i++){
                     //result
@@ -486,6 +520,24 @@ int main(int argc, char* argv[]){
                     //fitting
                     TFitResult tempResult = fit_and_draw_and_save(whole_signal_vector[pair], &fit_func_sig, &fit_func_whole_bcg, folderToSave, pair, whole_signal_vector[pair]->GetTitle(), "e1", whole_background_vector[pair], pair+"_"+category+"_TOTAL");
                     Status_vector[pair][category]->SetBinContent(sig_pointer->GetNbinsY()+1, tempResult.Status());
+                    //if nth parameter hits its bounding limit, we add it as a 2^n to the current status (by shifting 1 n times to the left)
+                    //according to IEEE754 standards, double (which TH2Poly uses) has 52 bits for mantissa, 11 for exponent, and 1 for sign
+                    //so it can store 52 flags - so I'll add an error if it gets close
+                    if(total_number_of_signal_parameters>50){
+                        throw std::invalid_argument("Too many parameters in the signal function! Rewrite the program");
+                    }
+                    for(size_t sig_param = 0; sig_param<total_number_of_signal_parameters; sig_param++){
+                        double min_limit, max_limit, limit_width;
+                        fit_func_sig.GetParLimits(sig_param, min_limit, max_limit);
+                        limit_width = fabs(max_limit-min_limit)*limit_tolerance;
+                        //GetNbinsY diff. bins + 1 total bin, times two, and we number bins FROM 1 !!!
+                        int bin_number = signal_vector[pair][category]->GetNbinsY()*2+2;
+                        //adding 2^sig_param
+                        if(fabs(tempResult.Parameter(sig_param)-min_limit)<limit_tolerance||fabs(tempResult.Parameter(sig_param)-max_limit)<limit_tolerance){
+                            unsigned long long current_bin_fill = Status_vector[pair][category]->GetBinContent(bin_number);
+                            Status_vector[pair][category]->SetBinContent(bin_number, current_bin_fill+(1<<sig_param));
+                        }
+                    }
                     //back to normal limits
                     fit_func_sig.SetParLimits(temp_par_number, 0., max_yield);
                 }
@@ -817,6 +869,43 @@ void custom_draw_and_save_status(TH2Poly* data, std::string folderWithDiagonal, 
     if(data==nullptr){
         printf("WARNING!!! A (data) nullptr has been passed to custom_draw_and_save_status function!\n");
     }
+
+    //transforming the data back to proper form instead of binary flags
+    //and writing down the problematic parameters
+    std::vector<std::string> problem_param_ids;
+    int num_of_diff_bins = (data->GetNumberOfBins()-2)/2;
+    for(size_t i = 0; i<num_of_diff_bins+1; i++){
+        int problem_param_count = 0;
+        unsigned long long parameter_binary_flags = data->GetBinContent((num_of_diff_bins+1)+i+1);
+        //filling with empty string if no problems (bin content already at 0, no need to modify it)
+        if(parameter_binary_flags==0){
+            problem_param_ids.push_back("None");
+            continue;
+        }
+        //first problematic parameter
+        int problem_param_id = 0;
+        while(parameter_binary_flags%2==0){
+            parameter_binary_flags = parameter_binary_flags>>1;
+            problem_param_id++;
+        }
+        std::string problem_param_string = std::to_string(problem_param_id);
+        parameter_binary_flags = parameter_binary_flags>>1;
+        problem_param_id++;
+        problem_param_count = 1;
+        //each next problematic parameter is written down as ",X" and added to the string
+        while(parameter_binary_flags!=0){
+            if(parameter_binary_flags%2){
+                problem_param_string += (","+std::to_string(problem_param_id));
+                problem_param_count++;
+            }
+            parameter_binary_flags = parameter_binary_flags>>1;
+            problem_param_id++;
+        }
+        //bin content gets set to number of parameters too close to the limits and the string is saved
+        data->SetBinContent((num_of_diff_bins+1)+i+1, problem_param_count);
+        problem_param_ids.push_back(problem_param_string);
+    }
+
     //normal proceeding
     TStyle tempStyle = MyStyles::Hist2DNormalSize(true);
     //setting to align middle of text over middle of bin in "text0 e1" histograms
@@ -847,15 +936,40 @@ void custom_draw_and_save_status(TH2Poly* data, std::string folderWithDiagonal, 
     data->SetMarkerSize(4);
     data->SetMarkerColor(kBlack);
     data->Draw(options.c_str());
+
     //recreating the Y axis
-    double x_min = gPad->GetUxmin();
-    TGaxis* new_axis = new TGaxis(x_min, 0., x_min, 2., 0., 2., 2, "SL-");
+    double x_min = data->GetXaxis()->GetXmin();
+    TGaxis* new_axis = new TGaxis(x_min, 0., x_min, 4., 0., 4., 4, "SL-");
     new_axis->SetTickSize(0);
-    new_axis->SetLabelOffset(0.04);
-    new_axis->ChangeLabel(1, 90., -1, kVAlignBottom, -1, -1, "#splitline{Fit error code}{(differential)}");
-    new_axis->ChangeLabel(2, 90., -1, kVAlignBottom, -1, -1, "#splitline{Fit error code}{(total)}");
-    new_axis->ChangeLabel(3, 90., -1, kVAlignBottom, -1, -1, " ");
+    new_axis->SetLabelOffset(0.03);
+    double label_size = new_axis->GetLabelSize();
+    new_axis->ChangeLabel(1, 90., label_size*0.75, kVAlignBottom, -1, -1, "#splitline{Fit error code}{(differential)}");
+    new_axis->ChangeLabel(2, 90., label_size*0.75, kVAlignBottom, -1, -1, "#splitline{Parameters}{#splitline{with errors}{(differential)}}");
+    new_axis->ChangeLabel(3, 90., label_size*0.75, kVAlignBottom, -1, -1, "#splitline{Fit error code}{(total)}");
+    new_axis->ChangeLabel(4, 90., label_size*0.75, kVAlignBottom, -1, -1, "#splitline{Parameters}{#splitline{with errors}{(total)}}");
+    new_axis->ChangeLabel(5, 90., label_size*0.75, kVAlignBottom, -1, -1, " ");
     new_axis->Draw();
+
+    //drawing the text indicating problematic parameters
+    //there is 2*num_of_diff_bins+2, in TList numbered from 0
+    //so the bins containing the parameters are from num_of_diff_bins+1 to 2*num_of_diff_bins+1, inclusive
+    for(size_t i = 0; i<num_of_diff_bins+1; i++){
+        //getting coordinates of lower-left corner for TText object
+        TH2PolyBin* current_bin = static_cast<TH2PolyBin*>(data->GetBins()->At(num_of_diff_bins+1+i));
+        double xpos = current_bin->GetXMin();
+        double ypos = current_bin->GetYMin();
+        //drawing the TText object with numbers of parameters close to the limit
+        TText* text = new TText(xpos, ypos, problem_param_ids[i].c_str());
+        text->SetTextSize(0.03);
+        text->SetTextAlign(kHAlignLeft+kVAlignBottom);
+        text->Draw();
+        //drawing the TText object with the explanation:
+        TText* text2 = new TText(xpos, ypos+text->GetTextSize()*1.1*(data->GetYaxis()->GetXmax()-data->GetYaxis()->GetXmin()), "Par. close to limits:");
+        text2->SetTextSize(0.015);
+        text2->SetTextAlign(kHAlignLeft+kVAlignBottom);
+        text2->Draw();
+    }
+
     //saving
     resultCanvas->SaveAs((folderWithDiagonal+std::string(data->GetName())+".pdf").c_str());
     writing_to_one_pdf(resultCanvas, folderWithDiagonal+total_pdf_file_title+".pdf");
