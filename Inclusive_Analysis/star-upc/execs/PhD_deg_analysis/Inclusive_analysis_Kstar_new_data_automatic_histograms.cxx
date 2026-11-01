@@ -150,7 +150,7 @@ int main(int argc, char* argv[]){
     signal_function_vector.back().SetParNames("N_{K^{*}(700)}", "m_{K^{*}(700)}", "#Gamma_{K^{*}(700)}", "#sigma_{K^{*}(700)}");
     PDG_data.emplace_back(0.838, 0.463);
     start_values.emplace_back(0.838, 0.463);
-    //custom limits
+    //custom limits/parameter fixing
     signal_function_vector.back().SetParLimits(1, 0.7, 0.89);
     signal_function_vector.back().SetParLimits(2, 0.2, 0.6);
 
@@ -159,18 +159,18 @@ int main(int argc, char* argv[]){
     signal_function_vector.back().SetParNames("N_{K^{*}(892)}", "m_{K^{*}(892)}", "#Gamma_{K^{*}(892)}", "#sigma_{K^{*}(892)}");
     PDG_data.emplace_back(0.89556, 0.0471);
     start_values.emplace_back(0.89556, 0.0471);
-    //custom limits
-    signal_function_vector.back().SetParLimits(1, 0.85, 0.95);
-    signal_function_vector.back().SetParLimits(2, 0.02, 0.06);
+    //custom limits/parameter fixing
+    signal_function_vector.back().FixParameter(1, start_values.back().first);
+    signal_function_vector.back().FixParameter(2, start_values.back().second);
 
-    //K*(1430)
+    //K*2(1430) (neutral decay)
     signal_function_vector.push_back(*static_cast<TF1*>(fit_func_sig_template.Clone("Kstar1430")));
     signal_function_vector.back().SetParNames("N_{K^{*}(1430)}", "m_{K^{*}(1430)}", "#Gamma_{K^{*}(1430)}", "#sigma_{K^{*}(1430)}");
-    PDG_data.emplace_back(1.425, 0.27);
-    start_values.emplace_back(1.425, 0.15);
-    //custom limits
-    signal_function_vector.back().SetParLimits(1, 1.35, 1.5);
-    signal_function_vector.back().SetParLimits(2, 0.08, 0.3);
+    PDG_data.emplace_back(1.4324, 0.109);
+    start_values.emplace_back(1.4324, 0.109);
+    //custom limits/parameter fixing
+    signal_function_vector.back().FixParameter(1, start_values.back().first);
+    signal_function_vector.back().FixParameter(2, start_values.back().second);
 
     //setting default parameter limits
     double max_yield = 1e5;
