@@ -414,14 +414,16 @@ int main(int argc, char* argv[]){
                     throw std::invalid_argument("Too many parameters in the signal function! Rewrite the program");
                 }
                 for(size_t sig_param = 0; sig_param<total_number_of_signal_parameters; sig_param++){
-                    double min_limit, max_limit, limit_width;
+                    double min_limit, max_limit, limit_test_width;
                     fit_func_sig.GetParLimits(sig_param, min_limit, max_limit);
-                    limit_width = fabs(max_limit-min_limit)*limit_tolerance;
-                    //adding 2^sig_param
-                    int starting_point = signal_vector[pair][category]->GetNbinsY()+1;//GetNbinsY diff. bins + 1 total bin, and we number bins FROM 1 !!!
-                    if(fabs(tempResult.Parameter(sig_param)-min_limit)<limit_tolerance||fabs(tempResult.Parameter(sig_param)-max_limit)<limit_tolerance){
-                        unsigned long long current_bin_fill = Status_vector[pair][category]->GetBinContent(starting_point+k+1);
-                        Status_vector[pair][category]->SetBinContent(starting_point+k+1, current_bin_fill+(1<<sig_param));
+                    limit_test_width = fabs(max_limit-min_limit)*limit_tolerance;
+                    //adding 2^sig_param if parameter not fixed
+                    if(max_limit!=min_limit){
+                        int starting_point = signal_vector[pair][category]->GetNbinsY()+1;//GetNbinsY diff. bins + 1 total bin, and we number bins FROM 1 !!!
+                        if(fabs(tempResult.Parameter(sig_param)-min_limit)<limit_test_width||fabs(tempResult.Parameter(sig_param)-max_limit)<limit_test_width){
+                            unsigned long long current_bin_fill = Status_vector[pair][category]->GetBinContent(starting_point+k+1);
+                            Status_vector[pair][category]->SetBinContent(starting_point+k+1, current_bin_fill+(1<<sig_param));
+                        }
                     }
                 }
                 //the rest of parameters
@@ -527,15 +529,17 @@ int main(int argc, char* argv[]){
                         throw std::invalid_argument("Too many parameters in the signal function! Rewrite the program");
                     }
                     for(size_t sig_param = 0; sig_param<total_number_of_signal_parameters; sig_param++){
-                        double min_limit, max_limit, limit_width;
+                        double min_limit, max_limit, limit_test_width;
                         fit_func_sig.GetParLimits(sig_param, min_limit, max_limit);
-                        limit_width = fabs(max_limit-min_limit)*limit_tolerance;
+                        limit_test_width = fabs(max_limit-min_limit)*limit_tolerance;
                         //GetNbinsY diff. bins + 1 total bin, times two, and we number bins FROM 1 !!!
                         int bin_number = signal_vector[pair][category]->GetNbinsY()*2+2;
-                        //adding 2^sig_param
-                        if(fabs(tempResult.Parameter(sig_param)-min_limit)<limit_tolerance||fabs(tempResult.Parameter(sig_param)-max_limit)<limit_tolerance){
-                            unsigned long long current_bin_fill = Status_vector[pair][category]->GetBinContent(bin_number);
-                            Status_vector[pair][category]->SetBinContent(bin_number, current_bin_fill+(1<<sig_param));
+                        //adding 2^sig_param if parameter not fixed
+                        if(max_limit!=min_limit){
+                            if(fabs(tempResult.Parameter(sig_param)-min_limit)<limit_test_width||fabs(tempResult.Parameter(sig_param)-max_limit)<limit_test_width){
+                                unsigned long long current_bin_fill = Status_vector[pair][category]->GetBinContent(bin_number);
+                                Status_vector[pair][category]->SetBinContent(bin_number, current_bin_fill+(1<<sig_param));
+                            }
                         }
                     }
                     //back to normal limits
