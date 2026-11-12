@@ -194,6 +194,9 @@ int main(int argc, char* argv[]){
         }
     }
 
+    //fitting range
+    double lower_range = 0.65;
+    double upper_range = 1.6025;
 
     //###########################################################
     //                 SETTING UP HISTOGRAMS
@@ -323,9 +326,18 @@ int main(int argc, char* argv[]){
                 //normalising background to the signal, so that fitting can be done in [0,1) range
                 bcg_slice->Scale(sig_slice->Integral()/bcg_slice->Integral());
 
-                //setting fitting range
-                double lower_range = 0.65;
-                double upper_range = 1.6;
+                //making sure fitting range falls on edges of bins
+                if(sig_slice->GetBinLowEdge(sig_slice->FindBin(lower_range))!=lower_range){
+                    double lower_range_down = sig_slice->GetBinLowEdge(sig_slice->FindBin(lower_range));
+                    double lower_range_up = sig_slice->GetBinLowEdge(sig_slice->FindBin(lower_range)+1);
+                    lower_range = abs(lower_range_down-lower_range)<abs(lower_range_up-lower_range) ? lower_range_down : lower_range_up;
+                }
+                if(sig_slice->GetBinLowEdge(sig_slice->FindBin(upper_range))!=upper_range){
+                    double upper_range_down = sig_slice->GetBinLowEdge(sig_slice->FindBin(upper_range));
+                    double upper_range_up = sig_slice->GetBinLowEdge(sig_slice->FindBin(upper_range)+1);
+                    upper_range = abs(upper_range_down-upper_range)<abs(upper_range_up-upper_range) ? upper_range_down : upper_range_up;
+                }
+                printf("Fitting in range: %lf, %lf\n", lower_range, upper_range);
 
 
                 //creating background function - a scaled slice of mixed event background
