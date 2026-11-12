@@ -145,6 +145,7 @@ int main(int argc, char* argv[]){
     std::vector<std::pair<double, double>> PDG_data;
     //map of starting values for fits (might be different from PDG ones)
     std::vector<std::pair<double, double>> start_values;
+    std::vector<double> sigma_values;
 
     //setting up signal particles, in order
     //K*(700)
@@ -152,6 +153,7 @@ int main(int argc, char* argv[]){
     signal_function_vector.back().SetParNames("N_{K^{*}(700)}", "m_{K^{*}(700)}", "#Gamma_{K^{*}(700)}", "#sigma_{K^{*}(700)}");
     PDG_data.emplace_back(0.838, 0.463);
     start_values.emplace_back(0.838, 0.463);
+    sigma_values.emplace_back(0.);
     //custom limits/parameter fixing
     signal_function_vector.back().SetParLimits(1, 0.7, 0.89);
     signal_function_vector.back().SetParLimits(2, 0.2, 0.6);
@@ -161,6 +163,7 @@ int main(int argc, char* argv[]){
     signal_function_vector.back().SetParNames("N_{K^{*}(892)}", "m_{K^{*}(892)}", "#Gamma_{K^{*}(892)}", "#sigma_{K^{*}(892)}");
     PDG_data.emplace_back(0.89188, 0.0485);
     start_values.emplace_back(0.89188, 0.0485);
+    sigma_values.emplace_back(0.);
     //custom limits/parameter fixing
     signal_function_vector.back().FixParameter(1, start_values.back().first);
     signal_function_vector.back().FixParameter(2, start_values.back().second);
@@ -170,6 +173,7 @@ int main(int argc, char* argv[]){
     signal_function_vector.back().SetParNames("N_{K^{*}(1430)}", "m_{K^{*}(1430)}", "#Gamma_{K^{*}(1430)}", "#sigma_{K^{*}(1430)}");
     PDG_data.emplace_back(1.4273, 0.1000);
     start_values.emplace_back(1.4273, 0.1000);
+    sigma_values.emplace_back(0.);
     //custom limits/parameter fixing
     signal_function_vector.back().FixParameter(1, start_values.back().first);
     signal_function_vector.back().FixParameter(2, start_values.back().second);
@@ -178,8 +182,16 @@ int main(int argc, char* argv[]){
     double max_yield = 1e5;
     for(auto&& function:signal_function_vector){
         //made especially for current template, will have to be changed upon signal template change
+
+        //normalization
         function.SetParLimits(0, 0., max_yield);
-        function.SetParLimits(3, 0., 0.1);
+
+        //sigma (works only when parameter limits not set by hand)
+        double up, down;
+        function.GetParLimits(3, up, down);
+        if(up==down&&down==0.){
+            function.SetParLimits(3, 0., 0.1);
+        }
     }
 
 
@@ -374,7 +386,7 @@ int main(int argc, char* argv[]){
                             break;
                         case 3:
                             //sigma
-                            fit_func_sig.SetParameter(temp_par_number, 0.006);
+                            fit_func_sig.SetParameter(temp_par_number, sigma_values[n_func]);
                             break;
                         default:
                             break;
@@ -508,7 +520,7 @@ int main(int argc, char* argv[]){
                                 break;
                             case 3:
                                 //sigma
-                                fit_func_sig.SetParameter(temp_par_number, 0.006);
+                                fit_func_sig.SetParameter(temp_par_number, sigma_values[n_func]);
                                 break;
                             default:
                                 break;
