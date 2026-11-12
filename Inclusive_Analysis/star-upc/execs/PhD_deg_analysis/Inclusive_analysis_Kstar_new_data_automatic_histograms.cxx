@@ -155,8 +155,9 @@ int main(int argc, char* argv[]){
     start_values.emplace_back(0.838, 0.463);
     sigma_values.emplace_back(0.);
     //custom limits/parameter fixing
-    signal_function_vector.back().SetParLimits(1, 0.7, 0.89);
-    signal_function_vector.back().SetParLimits(2, 0.2, 0.6);
+    signal_function_vector.back().FixParameter(1, start_values.back().first);
+    signal_function_vector.back().FixParameter(2, start_values.back().second);
+    signal_function_vector.back().FixParameter(3, sigma_values.back());
 
     //K*(892)
     signal_function_vector.push_back(*static_cast<TF1*>(fit_func_sig_template.Clone("Kstar892")));
@@ -167,6 +168,7 @@ int main(int argc, char* argv[]){
     //custom limits/parameter fixing
     signal_function_vector.back().FixParameter(1, start_values.back().first);
     signal_function_vector.back().FixParameter(2, start_values.back().second);
+    signal_function_vector.back().FixParameter(3, sigma_values.back());
 
     //K*2(1430) (neutral decay)
     signal_function_vector.push_back(*static_cast<TF1*>(fit_func_sig_template.Clone("Kstar1430")));
@@ -177,6 +179,7 @@ int main(int argc, char* argv[]){
     //custom limits/parameter fixing
     signal_function_vector.back().FixParameter(1, start_values.back().first);
     signal_function_vector.back().FixParameter(2, start_values.back().second);
+    signal_function_vector.back().FixParameter(3, sigma_values.back());
 
     //setting default parameter limits
     double max_yield = 1e5;
