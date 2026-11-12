@@ -496,6 +496,8 @@ int main(int argc, char* argv[]){
 
                 //fitting one total histogram at the very end of all differential histogams
                 if(k+1==sig_pointer->GetNbinsY()){
+                    //normalising background to the signal, so that fitting can be done in [0,1) range
+                    whole_background_vector[pair]->Scale(whole_signal_vector[pair]->Integral()/whole_background_vector[pair]->Integral());
                     //creating custom background function
                     auto mixed_event_whole_background = [&](double* x, double* p){
                         return p[0]*whole_background_vector[pair]->GetBinContent(whole_background_vector[pair]->FindBin(x[0]));
@@ -869,6 +871,10 @@ TFitResult fit_and_draw_and_save(TH1D* data, TF1* signal, TF1* background, std::
         //selecting lower pad
         resultCanvas->ModifiedUpdate();
         ratio_plot.GetLowerPad()->cd();
+        //modifying lower pad y axis font
+        ratio_plot.GetLowerRefYaxis()->SetLabelSize(0.03);
+        ratio_plot.GetLowerRefYaxis()->SetLabelFont(62);//originally is 42
+        ratio_plot.GetLowerRefYaxis()->SetTitle("#frac{data-fit}{uncert.}");
 
         //drawing two lines at proper coordinates
         TLine line3(lower_limit, ratio_plot.GetLowerPad()->GetUymin(), lower_limit, ratio_plot.GetLowerPad()->GetUymax());
@@ -902,9 +908,10 @@ TFitResult fit_and_draw_and_save(TH1D* data, TF1* signal, TF1* background, std::
         double low_min = ratio_plot.GetLowerPad()->GetUymin();
         double low_max = ratio_plot.GetLowerPad()->GetUymax();
         double axis_end = ratio_plot.GetLowerPad()->GetUxmax();
-        TGaxis* axis = new TGaxis(axis_end, low_min, axis_end, low_max, 0, total_chi2_height, 510, "+L");
+        TGaxis* axis = new TGaxis(axis_end, low_min, axis_end, low_max, 0, total_chi2_height, 205, "+L");
         axis->SetLineColor(kRed);
         axis->SetLabelColor(kRed);
+        axis->SetLabelSize(0.1);
         //scaling chi2 values to the right-hand axis
         double scale = (low_max-low_min)/total_chi2_height;
         for(size_t i = 0; i<chi2_contribution->GetN(); i++){
