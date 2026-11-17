@@ -210,6 +210,7 @@ int main(int argc, char* argv[]){
         for(auto&& category:allCategories){
             gSystem->mkdir((folderWithDiagonal+pair+"/"+category).c_str(), true);
             gSystem->mkdir((folderWithDiagonal+pair+"/"+category+"/whole_background").c_str(), true);
+            gSystem->mkdir((folderWithDiagonal+pair+"/"+category+"/residuum").c_str(), true);
         }
     }
 
@@ -315,6 +316,7 @@ int main(int argc, char* argv[]){
             std::string folderToSave = folderWithDiagonal+pair+"/"+category+"/";
             writing_to_one_pdf(nullptr, folderToSave+pair+"_"+category+"_TOTAL.pdf");
             writing_to_one_pdf(nullptr, folderToSave+pair+"_"+category+"_TOTAL_whole_background.pdf");
+            writing_to_one_pdf(nullptr, folderToSave+pair+"_"+category+"_TOTAL_residuum.pdf");
             //copying total histogram for given pair and cathegory
             TH2D* sig_pointer = (TH2D*)signal_vector[pair][category]->Clone();
             TH2D* bcg_pointer = (TH2D*)background_vector[pair][category]->Clone();
@@ -616,6 +618,7 @@ int main(int argc, char* argv[]){
             //end of drawing
             writing_to_one_pdf(nullptr, folderToSave+pair+"_"+category+"_TOTAL.pdf");
             writing_to_one_pdf(nullptr, folderToSave+pair+"_"+category+"_TOTAL_whole_background.pdf");
+            writing_to_one_pdf(nullptr, folderToSave+pair+"_"+category+"_TOTAL_residuum.pdf");
         }
     }
 
@@ -787,6 +790,10 @@ TFitResult fit_and_draw_and_save(TH1D* data, TF1* signal, TF1* background, std::
     resultCanvas->SaveAs((folderWithDiagonal+name+".pdf").c_str());
     writing_to_one_pdf(resultCanvas, folderWithDiagonal+total_pdf_file_title+".pdf");
     if(only_mixed_background!=nullptr){
+        //###################################################################
+        //                    MAKING A BASE TRATIOPLOT
+        //###################################################################
+
         //new plot with function values transplanted to histogram
         //and function itself not drawn
         data->GetFunction("fitting_function_total")->SetBit(TF1::kNotDraw);
@@ -796,11 +803,15 @@ TFitResult fit_and_draw_and_save(TH1D* data, TF1* signal, TF1* background, std::
             data_fit->SetBinContent(i, fitting_function_total->Eval(data->GetBinCenter(i)));
             data_fit->SetBinError(i, 0.);
         }
-        //copying line style
+        //copying line style from "fitting_function_total" to "data_fit"
         fitting_function_total->TAttLine::Copy((*data_fit));
         //creating TRatioPlot and setting drawing options
         TRatioPlot ratio_plot(data, data_fit, "diffsig");
         ratio_plot.SetH1DrawOpt(options.c_str());
+
+        //###################################################################
+        //                    DRAWING WHOLE_BACKGROUND
+        //###################################################################
 
         //drawing TRatioPlot, selecting upper pad
         ratio_plot.SetSeparationMargin(0.01);
@@ -927,7 +938,63 @@ TFitResult fit_and_draw_and_save(TH1D* data, TF1* signal, TF1* background, std::
         gSystem->mkdir((folderWithDiagonal+"whole_background").c_str(), true);
         resultCanvas->SaveAs((folderWithDiagonal+"whole_background/"+name+".pdf").c_str());
         writing_to_one_pdf(resultCanvas, folderWithDiagonal+total_pdf_file_title+"_whole_background.pdf");
-        //cleaning
+
+        //###################################################################
+        //                        DRAWING RESIDUUM
+        //###################################################################
+
+        //removing elements and redrawing the upper pads without them
+        ratio_plot.GetUpperPad()->GetListOfPrimitives()->Remove(signal_copy);
+        ratio_plot.GetUpperPad()->GetListOfPrimitives()->Remove(&fitting_function_mixed_background);
+        ratio_plot.GetUpperPad()->GetListOfPrimitives()->Remove(&fitting_function_remaining_background);
+        resultCanvas->cd();
+        resultCanvas->ModifiedUpdate();
+        ratio_plot.GetUpperPad()->cd();
+
+        //drawing signal-background residuum and changing minimum to accomodate it
+        TH1D* residuum = (TH1D*)data->Clone("residuum");
+        residuum->Add(data_fit, -1.);
+        residuum->SetStats(false);
+        residuum->SetLineColor(kBlack);
+        residuum->SetMarkerColor(kBlack);
+        residuum->Draw((options+" same").c_str());
+        double minimum_y_axis_range = residuum->GetMinimum()>=0 ? 0. : residuum->GetMinimum()*1.5;
+        double maximum_y_axis_range = ratio_plot.GetUpperPad()->GetUymax();
+        ratio_plot.GetUpperRefYaxis()->SetRangeUser(minimum_y_axis_range, maximum_y_axis_range);
+
+        //drawing zero line
+        TLine line0(ratio_plot.GetLowerPad()->GetUxmin(), 0., ratio_plot.GetLowerPad()->GetUxmax(), 0.);
+        line0.SetLineColor(kBlack);
+        line0.SetLineStyle(kDashed);
+        line0.Draw("same");
+
+        //legend and stats handling (removing last three positions added to add the proper ones)
+        legend_for_background_fitting.GetListOfPrimitives()->RemoveLast();
+        legend_for_background_fitting.GetListOfPrimitives()->RemoveLast();
+        legend_for_background_fitting.GetListOfPrimitives()->RemoveLast();
+        legend_for_background_fitting.AddEntry(residuum, "Data - fit");
+        legend_for_background_fitting.AddEntry(&line1, "Fitting region", "l");
+        //moving legend and statbox (and resetting the text size and making it transparent)
+        loweredge += 0.05;
+        legend_for_background_fitting.SetY1NDC(loweredge-0.05);
+        stats->SetY1NDC(loweredge-stats_height-0.05);
+        stats->SetY2NDC(loweredge-0.05);
+        //redrawing the legend because it was tied to the previous function
+        legend_for_background_fitting.Draw("same");
+
+
+        //saving in subfolder
+        resultCanvas->ModifiedUpdate();
+        gSystem->mkdir((folderWithDiagonal+"residuum").c_str(), true);
+        resultCanvas->SaveAs((folderWithDiagonal+"residuum/"+name+".pdf").c_str());
+        writing_to_one_pdf(resultCanvas, folderWithDiagonal+total_pdf_file_title+"_residuum.pdf");
+
+        //to reset SetUserRange() effect (specifically kAxisRange bit)
+        ratio_plot.GetUpperRefYaxis()->UnZoom();
+
+        //###################################################################
+        //                            CLEANING
+        //###################################################################
         delete data_fit;
     }
     resultCanvas->Clear();
@@ -977,6 +1044,7 @@ void custom_draw_and_save(TH1D* data, double expected_value, std::string folderW
     resultCanvas->SaveAs((folderWithDiagonal+std::string(data->GetName())+".pdf").c_str());
     writing_to_one_pdf(resultCanvas, folderWithDiagonal+total_pdf_file_title+".pdf");
     writing_to_one_pdf(resultCanvas, folderWithDiagonal+total_pdf_file_title+"_whole_background.pdf");
+    writing_to_one_pdf(resultCanvas, folderWithDiagonal+total_pdf_file_title+"_residuum.pdf");
     resultCanvas->Clear();
     delete resultCanvas;
 }
@@ -1091,6 +1159,7 @@ void custom_draw_and_save_status(TH2Poly* data, std::string folderWithDiagonal, 
     resultCanvas->SaveAs((folderWithDiagonal+std::string(data->GetName())+".pdf").c_str());
     writing_to_one_pdf(resultCanvas, folderWithDiagonal+total_pdf_file_title+".pdf");
     writing_to_one_pdf(resultCanvas, folderWithDiagonal+total_pdf_file_title+"_whole_background.pdf");
+    writing_to_one_pdf(resultCanvas, folderWithDiagonal+total_pdf_file_title+"_residuum.pdf");
     resultCanvas->Clear();
     //restoring the default palette
     gStyle->SetPalette();
