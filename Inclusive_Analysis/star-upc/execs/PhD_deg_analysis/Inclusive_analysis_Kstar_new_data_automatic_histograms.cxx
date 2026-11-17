@@ -34,7 +34,7 @@ std::string rountToNSignificantFigures(double input, int n = 2);
 int GetFirstNonzeroBinNumber(TH1* input);
 double SignalNormalizationEstimation(TH1D* signal, double x0, double gamma);
 double BackgroundNormalizationEstimation(TH1D* signal, TH1D* background, std::vector<std::pair<double, double>> peak_positions_widths);
-TFitResult fit_and_draw_and_save(TH1D* data, TF1* signal, TF1* background, std::string folderWithDiagonal, std::string name, std::string title, std::string options, TH1D* only_mixed_background = nullptr, std::string total_pdf_file_title = "");
+TFitResult fit_and_draw_and_save(TH1D* data, TF1* signal, std::vector<TF1> signal_vector, TF1* background, std::string folderWithDiagonal, std::string name, std::string title, std::string options, TH1D* only_mixed_background = nullptr, std::string total_pdf_file_title = "");
 void custom_draw_and_save(TH1D* data, double expected_value, std::string folderWithDiagonal, std::string name, std::string title, std::string options, std::string total_pdf_file_title);
 void custom_draw_and_save_status(TH2Poly* data, std::string folderWithDiagonal, std::string name, std::string title, std::string options, std::string total_pdf_file_title);
 std::string remove_bad_characters(std::string input);
@@ -432,7 +432,7 @@ int main(int argc, char* argv[]){
                 newTitle.replace(newTitle.find(" "), 1, " pair mass, ");
                 newTitle += boundaries;
                 newName += " "+boundaries;
-                TFitResult tempResult = fit_and_draw_and_save(sig_slice, &fit_func_sig, &fit_func_bcg, folderToSave, newName, newTitle, "e1", bcg_slice, pair+"_"+category+"_TOTAL");
+                TFitResult tempResult = fit_and_draw_and_save(sig_slice, &fit_func_sig, signal_function_vector, &fit_func_bcg, folderToSave, newName, newTitle, "e1", bcg_slice, pair+"_"+category+"_TOTAL");
                 //saving fit results for further analysys
                 //Chi2
                 Chi2withbcg_vector[pair][category]->SetBinContent(k+1, tempResult.Chi2()/tempResult.Ndf());
@@ -553,7 +553,7 @@ int main(int argc, char* argv[]){
                     }
 
                     //fitting
-                    TFitResult tempResult = fit_and_draw_and_save(whole_signal_vector[pair], &fit_func_sig, &fit_func_whole_bcg, folderToSave, pair, whole_signal_vector[pair]->GetTitle(), "e1", whole_background_vector[pair], pair+"_"+category+"_TOTAL");
+                    TFitResult tempResult = fit_and_draw_and_save(whole_signal_vector[pair], &fit_func_sig, signal_function_vector, &fit_func_whole_bcg, folderToSave, pair, whole_signal_vector[pair]->GetTitle(), "e1", whole_background_vector[pair], pair+"_"+category+"_TOTAL");
                     Status_vector[pair][category]->SetBinContent(sig_pointer->GetNbinsY()+1, tempResult.Status());
                     //if nth parameter hits its bounding limit, we add it as a 2^n to the current status (by shifting 1 n times to the left)
                     //according to IEEE754 standards, double (which TH2Poly uses) has 52 bits for mantissa, 11 for exponent, and 1 for sign
@@ -700,11 +700,15 @@ double BackgroundNormalizationEstimation(TH1D* signal, TH1D* background, std::ve
     return signal_sum/background_sum;
 }
 
-TFitResult fit_and_draw_and_save(TH1D* data, TF1* signal, TF1* background, std::string folderWithDiagonal, std::string name, std::string title, std::string options, TH1D* only_mixed_background, std::string total_pdf_file_title){
+TFitResult fit_and_draw_and_save(TH1D* data, TF1* signal, std::vector<TF1> signal_vector, TF1* background, std::string folderWithDiagonal, std::string name, std::string title, std::string options, TH1D* only_mixed_background, std::string total_pdf_file_title){
     //failsave in case nullptr was passed
     if(data==nullptr){
         printf("WARNING!!! A (data) nullptr has been passed to fit_and_draw_and_save function!\n");
     }
+
+    //###################################################################
+    //                    DRAWING BASE HISTOGRAM
+    //###################################################################
 
     //creating total fitting function
     int signalparams, bcgparams, totalparams;
@@ -789,214 +793,232 @@ TFitResult fit_and_draw_and_save(TH1D* data, TF1* signal, TF1* background, std::
     //saving
     resultCanvas->SaveAs((folderWithDiagonal+name+".pdf").c_str());
     writing_to_one_pdf(resultCanvas, folderWithDiagonal+total_pdf_file_title+".pdf");
-    if(only_mixed_background!=nullptr){
-        //###################################################################
-        //                    MAKING A BASE TRATIOPLOT
-        //###################################################################
 
-        //new plot with function values transplanted to histogram
-        //and function itself not drawn
-        data->GetFunction("fitting_function_total")->SetBit(TF1::kNotDraw);
-        TH1D* data_fit = (TH1D*)data->Clone();
-        data_fit->SetStats(false);
-        for(size_t i = 1; i<=data->GetNbinsX(); i++){
-            data_fit->SetBinContent(i, fitting_function_total->Eval(data->GetBinCenter(i)));
-            data_fit->SetBinError(i, 0.);
-        }
-        //copying line style from "fitting_function_total" to "data_fit"
-        fitting_function_total->TAttLine::Copy((*data_fit));
-        //creating TRatioPlot and setting drawing options
-        TRatioPlot ratio_plot(data, data_fit, "diffsig");
-        ratio_plot.SetH1DrawOpt(options.c_str());
+    //###################################################################
+    //                    MAKING A BASE TRATIOPLOT
+    //###################################################################
 
-        //###################################################################
-        //                    DRAWING WHOLE_BACKGROUND
-        //###################################################################
-
-        //drawing TRatioPlot, selecting upper pad
-        ratio_plot.SetSeparationMargin(0.01);
-        ratio_plot.SetLowBottomMargin(0.375);
-        ratio_plot.Draw();
-        resultCanvas->ModifiedUpdate();
-        ratio_plot.GetUpperPad()->cd();
-
-        //drawing two lines at proper coordinates
-        double lower_limit, upper_limit;
-        fitting_function_total->GetRange(lower_limit, upper_limit);
-        TLine line1(lower_limit, ratio_plot.GetUpperPad()->GetUymin(), lower_limit, ratio_plot.GetUpperPad()->GetUymax());
-        TLine line2(upper_limit, ratio_plot.GetUpperPad()->GetUymin(), upper_limit, ratio_plot.GetUpperPad()->GetUymax());
-        line1.SetLineColor(kRed);
-        line1.SetLineStyle(kDashed);
-        line1.SetLineWidth(2);
-        line1.Draw("same");
-        line2.SetLineColor(kRed);
-        line2.SetLineStyle(kDashed);
-        line2.SetLineWidth(2);
-        line2.Draw("same");
-
-        //redrawing fitting functions in full range and adding drawing components
-        //signals
-        signal->SetParameters(fitting_function_total->GetParameters());
-        signal->SetLineColor(kRed);
-        signal->SetLineStyle(kDashed);
-        signal->SetNpx(1000);
-        TF1* signal_copy = signal->DrawCopy("same");//fix to draw signal in the whooooole region
-        signal_copy->SetRange(ratio_plot.GetLowerPad()->GetUxmin(), ratio_plot.GetLowerPad()->GetUxmax());
-        //mixed background
-        auto only_mixed_event_background = [&](double* x, double* p){
-            return p[0]*only_mixed_background->GetBinContent(only_mixed_background->FindBin(x[0]));
-        };
-        TF1 fitting_function_mixed_background("fitting_function_mixed_background", only_mixed_event_background, ratio_plot.GetLowerPad()->GetUxmin(), ratio_plot.GetLowerPad()->GetUxmax(), 1, 1);
-        fitting_function_mixed_background.SetParameter(0, fitting_function_total->GetParameter(signalparams));//we start from 0 here, so signalparams-1 is the last signal parameter
-        fitting_function_mixed_background.SetLineColor(kBlue);
-        fitting_function_mixed_background.SetLineStyle(kDashed);
-        fitting_function_mixed_background.SetNpx(1000);
-        fitting_function_mixed_background.Draw("same");
-        //remaining, non-mixed background
-        auto remaining_background = [&](double* x, double* p){
-            return background->EvalPar(x, fitting_function_total->GetParameters()+signalparams)-fitting_function_mixed_background.Eval(x[0]);
-        };
-        TF1 fitting_function_remaining_background("fitting_function_remaining_background", remaining_background, ratio_plot.GetLowerPad()->GetUxmin(), ratio_plot.GetLowerPad()->GetUxmax(), 0, 1);
-        fitting_function_remaining_background.SetLineColor(kGreen);
-        fitting_function_remaining_background.SetLineStyle(kDashed);
-        fitting_function_remaining_background.SetNpx(1000);
-        fitting_function_remaining_background.Draw("same");
-
-        //adding fitting region and other function markers to legend
-        legend_for_background_fitting.AddEntry(&fitting_function_mixed_background, "Mixed events background", "l");
-        legend_for_background_fitting.AddEntry(&fitting_function_remaining_background, "Other parts of the background", "l");
-        legend_for_background_fitting.AddEntry(&line1, "Fitting region", "l");
-        //moving legend and statbox (and resetting the text size and making it transparent)
-        loweredge -= 0.1;
-        legend_for_background_fitting.SetY1NDC(loweredge-0.05);
-        legend_for_background_fitting.SetFillStyle(0);
-        stats->SetY1NDC(loweredge-stats_height-0.05);
-        stats->SetY2NDC(loweredge-0.05);
-        stats->SetTextSize(0.03);
-        stats->SetFillStyle(0);
-        //redrawing the legend because it was tied to the previous function
-        legend_for_background_fitting.Draw("same");
-        //redrawing the main histogram because the fitting and other things cover it
-        data->Draw((options+" same").c_str());
-
-        //selecting lower pad
-        resultCanvas->ModifiedUpdate();
-        ratio_plot.GetLowerPad()->cd();
-        //modifying lower pad y axis font
-        ratio_plot.GetLowerRefYaxis()->SetLabelSize(0.03);
-        ratio_plot.GetLowerRefYaxis()->SetLabelFont(62);//originally is 42
-        ratio_plot.GetLowerRefYaxis()->SetTitle("#frac{data-fit}{uncert.}");
-
-        //drawing two lines at proper coordinates
-        TLine line3(lower_limit, ratio_plot.GetLowerPad()->GetUymin(), lower_limit, ratio_plot.GetLowerPad()->GetUymax());
-        TLine line4(upper_limit, ratio_plot.GetLowerPad()->GetUymin(), upper_limit, ratio_plot.GetLowerPad()->GetUymax());
-        line3.SetLineColor(kRed);
-        line3.SetLineStyle(kDashed);
-        line3.SetLineWidth(2);
-        line3.Draw("same");
-        line4.SetLineColor(kRed);
-        line4.SetLineStyle(kDashed);
-        line4.SetLineWidth(2);
-        line4.Draw("same");
-
-        //creating chi2 contribution on lower pad
-        TGraph* chi2_contribution = (TGraph*)ratio_plot.GetCalculationOutputGraph()->Clone("chi2_contribution");
-        for(size_t i = 0; i<chi2_contribution->GetN(); i++){
-            double y = chi2_contribution->GetPointY(i);
-            chi2_contribution->SetPointY(i, y*y);
-        }
-        //setting special style to fix bar widths
-        gStyle->SetBarWidth(1.05);
-        chi2_contribution->UseCurrentStyle();
-        //setting the rest of the appearance
-        chi2_contribution->SetMinimum(ratio_plot.GetLowerRefYaxis()->GetXmin());
-        chi2_contribution->SetLineColor(kRed);
-        chi2_contribution->SetFillStyle(4050);//4000+(100-transparency %) - 4000 fully transparent
-        chi2_contribution->SetFillColor(kRed);
-        //setting max chi2 for the histogram
-        double total_chi2_height = 10.;
-        //creating the scale on the right
-        double low_min = ratio_plot.GetLowerPad()->GetUymin();
-        double low_max = ratio_plot.GetLowerPad()->GetUymax();
-        double axis_end = ratio_plot.GetLowerPad()->GetUxmax();
-        TGaxis* axis = new TGaxis(axis_end, low_min, axis_end, low_max, 0, total_chi2_height, 205, "+L");
-        axis->SetLineColor(kRed);
-        axis->SetLabelColor(kRed);
-        axis->SetLabelSize(0.1);
-        //scaling chi2 values to the right-hand axis
-        double scale = (low_max-low_min)/total_chi2_height;
-        for(size_t i = 0; i<chi2_contribution->GetN(); i++){
-            double y = chi2_contribution->GetPointY(i);
-            chi2_contribution->SetPointY(i, low_min+y*scale);
-        }
-        //drawing
-        chi2_contribution->Draw("same B 1 X Y+");
-        axis->Draw();
-
-        //saving in subfolder
-        gPad->ModifiedUpdate();
-        gSystem->mkdir((folderWithDiagonal+"whole_background").c_str(), true);
-        resultCanvas->SaveAs((folderWithDiagonal+"whole_background/"+name+".pdf").c_str());
-        writing_to_one_pdf(resultCanvas, folderWithDiagonal+total_pdf_file_title+"_whole_background.pdf");
-
-        //###################################################################
-        //                        DRAWING RESIDUUM
-        //###################################################################
-
-        //removing elements and redrawing the upper pads without them
-        ratio_plot.GetUpperPad()->GetListOfPrimitives()->Remove(signal_copy);
-        ratio_plot.GetUpperPad()->GetListOfPrimitives()->Remove(&fitting_function_mixed_background);
-        ratio_plot.GetUpperPad()->GetListOfPrimitives()->Remove(&fitting_function_remaining_background);
-        resultCanvas->cd();
-        resultCanvas->ModifiedUpdate();
-        ratio_plot.GetUpperPad()->cd();
-
-        //drawing signal-background residuum and changing minimum to accomodate it
-        TH1D* residuum = (TH1D*)data->Clone("residuum");
-        residuum->Add(data_fit, -1.);
-        residuum->SetStats(false);
-        residuum->SetLineColor(kBlack);
-        residuum->SetMarkerColor(kBlack);
-        residuum->Draw((options+" same").c_str());
-        double minimum_y_axis_range = residuum->GetMinimum()>=0 ? 0. : residuum->GetMinimum()*1.5;
-        double maximum_y_axis_range = ratio_plot.GetUpperPad()->GetUymax();
-        ratio_plot.GetUpperRefYaxis()->SetRangeUser(minimum_y_axis_range, maximum_y_axis_range);
-
-        //drawing zero line
-        TLine line0(ratio_plot.GetLowerPad()->GetUxmin(), 0., ratio_plot.GetLowerPad()->GetUxmax(), 0.);
-        line0.SetLineColor(kBlack);
-        line0.SetLineStyle(kDashed);
-        line0.Draw("same");
-
-        //legend and stats handling (removing last three positions added to add the proper ones)
-        legend_for_background_fitting.GetListOfPrimitives()->RemoveLast();
-        legend_for_background_fitting.GetListOfPrimitives()->RemoveLast();
-        legend_for_background_fitting.GetListOfPrimitives()->RemoveLast();
-        legend_for_background_fitting.AddEntry(residuum, "Data - fit");
-        legend_for_background_fitting.AddEntry(&line1, "Fitting region", "l");
-        //moving legend and statbox (and resetting the text size and making it transparent)
-        loweredge += 0.05;
-        legend_for_background_fitting.SetY1NDC(loweredge-0.05);
-        stats->SetY1NDC(loweredge-stats_height-0.05);
-        stats->SetY2NDC(loweredge-0.05);
-        //redrawing the legend because it was tied to the previous function
-        legend_for_background_fitting.Draw("same");
-
-
-        //saving in subfolder
-        resultCanvas->ModifiedUpdate();
-        gSystem->mkdir((folderWithDiagonal+"residuum").c_str(), true);
-        resultCanvas->SaveAs((folderWithDiagonal+"residuum/"+name+".pdf").c_str());
-        writing_to_one_pdf(resultCanvas, folderWithDiagonal+total_pdf_file_title+"_residuum.pdf");
-
-        //to reset SetUserRange() effect (specifically kAxisRange bit)
-        ratio_plot.GetUpperRefYaxis()->UnZoom();
-
-        //###################################################################
-        //                            CLEANING
-        //###################################################################
-        delete data_fit;
+    //new plot with function values transplanted to histogram
+    //and function itself not drawn
+    data->GetFunction("fitting_function_total")->SetBit(TF1::kNotDraw);
+    TH1D* data_fit = (TH1D*)data->Clone();
+    data_fit->SetStats(false);
+    for(size_t i = 1; i<=data->GetNbinsX(); i++){
+        data_fit->SetBinContent(i, fitting_function_total->Eval(data->GetBinCenter(i)));
+        data_fit->SetBinError(i, 0.);
     }
+    //copying line style from "fitting_function_total" to "data_fit"
+    fitting_function_total->TAttLine::Copy((*data_fit));
+    //creating TRatioPlot and setting drawing options
+    TRatioPlot ratio_plot(data, data_fit, "diffsig");
+    ratio_plot.SetH1DrawOpt(options.c_str());
+
+    //###################################################################
+    //                    DRAWING WHOLE_BACKGROUND
+    //###################################################################
+
+    //drawing TRatioPlot, selecting upper pad
+    ratio_plot.SetSeparationMargin(0.01);
+    ratio_plot.SetLowBottomMargin(0.375);
+    ratio_plot.Draw();
+    resultCanvas->ModifiedUpdate();
+    ratio_plot.GetUpperPad()->cd();
+
+    //drawing two lines at proper coordinates
+    double lower_limit, upper_limit;
+    fitting_function_total->GetRange(lower_limit, upper_limit);
+    TLine line1(lower_limit, ratio_plot.GetUpperPad()->GetUymin(), lower_limit, ratio_plot.GetUpperPad()->GetUymax());
+    TLine line2(upper_limit, ratio_plot.GetUpperPad()->GetUymin(), upper_limit, ratio_plot.GetUpperPad()->GetUymax());
+    line1.SetLineColor(kRed);
+    line1.SetLineStyle(kDashed);
+    line1.SetLineWidth(2);
+    line1.Draw("same");
+    line2.SetLineColor(kRed);
+    line2.SetLineStyle(kDashed);
+    line2.SetLineWidth(2);
+    line2.Draw("same");
+
+    //redrawing fitting functions in full range and adding drawing components
+    //signals
+    int n_params = 0;
+    std::vector<TF1*> signal_function_pointers;
+    for(auto&& signal_function:signal_vector){
+        //copying
+        signal_function.SetParameters(fitting_function_total->GetParameters()+n_params);
+        auto signal_function_bin_integral = [&](double* x, double* p){
+            double lower_edge = data->GetBinLowEdge(data->FindBin(x[0]));
+            double upper_edge = data->GetBinLowEdge(data->FindBin(x[0])+1);
+            //relaxed eps from 1e-12 to 1e-6, as it is more than enough for our purposes
+            //and tight constraints cause errors because of Voigt function implementation I guess
+            return signal_function.Integral(lower_edge, upper_edge, 1e-6);
+        };
+        TF1 signal_function_bin_integral_drawing("signal_function_bin_integral_drawing", signal_function_bin_integral, ratio_plot.GetLowerPad()->GetUxmin(), ratio_plot.GetLowerPad()->GetUxmax(), 0, 1);
+
+        //drawing
+        signal_function_bin_integral_drawing.SetLineColor(kRed);
+        signal_function_bin_integral_drawing.SetLineStyle(kDashed);
+        signal_function_bin_integral_drawing.SetNpx(1000);
+        signal_function_pointers.push_back(signal_function_bin_integral_drawing.DrawCopy("same"));
+
+        //passing proper shift of arguments for the next loop
+        n_params += signal_function.GetNpar();
+    }
+    //mixed background
+    auto only_mixed_event_background = [&](double* x, double* p){
+        return p[0]*only_mixed_background->GetBinContent(only_mixed_background->FindBin(x[0]));
+    };
+    TF1 fitting_function_mixed_background("fitting_function_mixed_background", only_mixed_event_background, ratio_plot.GetLowerPad()->GetUxmin(), ratio_plot.GetLowerPad()->GetUxmax(), 1, 1);
+    fitting_function_mixed_background.SetParameter(0, fitting_function_total->GetParameter(signalparams));//we start from 0 here, so signalparams-1 is the last signal parameter
+    fitting_function_mixed_background.SetLineColor(kBlue);
+    fitting_function_mixed_background.SetLineStyle(kDashed);
+    fitting_function_mixed_background.SetNpx(1000);
+    fitting_function_mixed_background.Draw("same");
+    //remaining, non-mixed background
+    auto remaining_background = [&](double* x, double* p){
+        return background->EvalPar(x, fitting_function_total->GetParameters()+signalparams)-fitting_function_mixed_background.Eval(x[0]);
+    };
+    TF1 fitting_function_remaining_background("fitting_function_remaining_background", remaining_background, ratio_plot.GetLowerPad()->GetUxmin(), ratio_plot.GetLowerPad()->GetUxmax(), 0, 1);
+    fitting_function_remaining_background.SetLineColor(kGreen);
+    fitting_function_remaining_background.SetLineStyle(kDashed);
+    fitting_function_remaining_background.SetNpx(1000);
+    fitting_function_remaining_background.Draw("same");
+
+    //adding fitting region and other function markers to legend
+    legend_for_background_fitting.AddEntry(&fitting_function_mixed_background, "Mixed events background", "l");
+    legend_for_background_fitting.AddEntry(&fitting_function_remaining_background, "Other parts of the background", "l");
+    legend_for_background_fitting.AddEntry(&line1, "Fitting region", "l");
+    //moving legend and statbox (and resetting the text size and making it transparent)
+    loweredge -= 0.1;
+    legend_for_background_fitting.SetY1NDC(loweredge-0.05);
+    legend_for_background_fitting.SetFillStyle(0);
+    stats->SetY1NDC(loweredge-stats_height-0.05);
+    stats->SetY2NDC(loweredge-0.05);
+    stats->SetTextSize(0.03);
+    stats->SetFillStyle(0);
+    //redrawing the legend because it was tied to the previous function
+    legend_for_background_fitting.Draw("same");
+    //redrawing the main histogram because the fitting and other things cover it
+    data->Draw((options+" same").c_str());
+
+    //selecting lower pad
+    resultCanvas->ModifiedUpdate();
+    ratio_plot.GetLowerPad()->cd();
+    //modifying lower pad y axis font
+    ratio_plot.GetLowerRefYaxis()->SetLabelSize(0.03);
+    ratio_plot.GetLowerRefYaxis()->SetLabelFont(62);//originally is 42
+    ratio_plot.GetLowerRefYaxis()->SetTitle("#frac{data-fit}{uncert.}");
+
+    //drawing two lines at proper coordinates
+    TLine line3(lower_limit, ratio_plot.GetLowerPad()->GetUymin(), lower_limit, ratio_plot.GetLowerPad()->GetUymax());
+    TLine line4(upper_limit, ratio_plot.GetLowerPad()->GetUymin(), upper_limit, ratio_plot.GetLowerPad()->GetUymax());
+    line3.SetLineColor(kRed);
+    line3.SetLineStyle(kDashed);
+    line3.SetLineWidth(2);
+    line3.Draw("same");
+    line4.SetLineColor(kRed);
+    line4.SetLineStyle(kDashed);
+    line4.SetLineWidth(2);
+    line4.Draw("same");
+
+    //creating chi2 contribution on lower pad
+    TGraph* chi2_contribution = (TGraph*)ratio_plot.GetCalculationOutputGraph()->Clone("chi2_contribution");
+    for(size_t i = 0; i<chi2_contribution->GetN(); i++){
+        double y = chi2_contribution->GetPointY(i);
+        chi2_contribution->SetPointY(i, y*y);
+    }
+    //setting special style to fix bar widths
+    gStyle->SetBarWidth(1.05);
+    chi2_contribution->UseCurrentStyle();
+    //setting the rest of the appearance
+    chi2_contribution->SetMinimum(ratio_plot.GetLowerRefYaxis()->GetXmin());
+    chi2_contribution->SetLineColor(kRed);
+    chi2_contribution->SetFillStyle(4050);//4000+(100-transparency %) - 4000 fully transparent
+    chi2_contribution->SetFillColor(kRed);
+    //setting max chi2 for the histogram
+    double total_chi2_height = 10.;
+    //creating the scale on the right
+    double low_min = ratio_plot.GetLowerPad()->GetUymin();
+    double low_max = ratio_plot.GetLowerPad()->GetUymax();
+    double axis_end = ratio_plot.GetLowerPad()->GetUxmax();
+    TGaxis* axis = new TGaxis(axis_end, low_min, axis_end, low_max, 0, total_chi2_height, 205, "+L");
+    axis->SetLineColor(kRed);
+    axis->SetLabelColor(kRed);
+    axis->SetLabelSize(0.1);
+    //scaling chi2 values to the right-hand axis
+    double scale = (low_max-low_min)/total_chi2_height;
+    for(size_t i = 0; i<chi2_contribution->GetN(); i++){
+        double y = chi2_contribution->GetPointY(i);
+        chi2_contribution->SetPointY(i, low_min+y*scale);
+    }
+    //drawing
+    chi2_contribution->Draw("same B 1 X Y+");
+    axis->Draw();
+
+    //saving in subfolder
+    gPad->ModifiedUpdate();
+    gSystem->mkdir((folderWithDiagonal+"whole_background").c_str(), true);
+    resultCanvas->SaveAs((folderWithDiagonal+"whole_background/"+name+".pdf").c_str());
+    writing_to_one_pdf(resultCanvas, folderWithDiagonal+total_pdf_file_title+"_whole_background.pdf");
+
+    //###################################################################
+    //                        DRAWING RESIDUUM
+    //###################################################################
+
+    //removing elements and redrawing the upper pads without them
+    for(auto&& signal_func_pointer:signal_function_pointers){
+        ratio_plot.GetUpperPad()->GetListOfPrimitives()->Remove(signal_func_pointer);
+    }
+    ratio_plot.GetUpperPad()->GetListOfPrimitives()->Remove(&fitting_function_mixed_background);
+    ratio_plot.GetUpperPad()->GetListOfPrimitives()->Remove(&fitting_function_remaining_background);
+    resultCanvas->cd();
+    resultCanvas->ModifiedUpdate();
+    ratio_plot.GetUpperPad()->cd();
+
+    //drawing signal-background residuum and changing minimum to accomodate it
+    TH1D* residuum = (TH1D*)data->Clone("residuum");
+    residuum->Add(data_fit, -1.);
+    residuum->SetStats(false);
+    residuum->SetLineColor(kBlack);
+    residuum->SetMarkerColor(kBlack);
+    residuum->Draw((options+" same").c_str());
+    double minimum_y_axis_range = residuum->GetMinimum()>=0 ? 0. : residuum->GetMinimum()*1.5;
+    double maximum_y_axis_range = ratio_plot.GetUpperPad()->GetUymax();
+    ratio_plot.GetUpperRefYaxis()->SetRangeUser(minimum_y_axis_range, maximum_y_axis_range);
+
+    //drawing zero line
+    TLine line0(ratio_plot.GetLowerPad()->GetUxmin(), 0., ratio_plot.GetLowerPad()->GetUxmax(), 0.);
+    line0.SetLineColor(kBlack);
+    line0.SetLineStyle(kDashed);
+    line0.Draw("same");
+
+    //legend and stats handling (removing last three positions added to add the proper ones)
+    legend_for_background_fitting.GetListOfPrimitives()->RemoveLast();
+    legend_for_background_fitting.GetListOfPrimitives()->RemoveLast();
+    legend_for_background_fitting.GetListOfPrimitives()->RemoveLast();
+    legend_for_background_fitting.AddEntry(residuum, "Data - fit");
+    legend_for_background_fitting.AddEntry(&line1, "Fitting region", "l");
+    //moving legend and statbox (and resetting the text size and making it transparent)
+    loweredge += 0.05;
+    legend_for_background_fitting.SetY1NDC(loweredge-0.05);
+    stats->SetY1NDC(loweredge-stats_height-0.05);
+    stats->SetY2NDC(loweredge-0.05);
+    //redrawing the legend because it was tied to the previous function
+    legend_for_background_fitting.Draw("same");
+
+
+    //saving in subfolder
+    resultCanvas->ModifiedUpdate();
+    gSystem->mkdir((folderWithDiagonal+"residuum").c_str(), true);
+    resultCanvas->SaveAs((folderWithDiagonal+"residuum/"+name+".pdf").c_str());
+    writing_to_one_pdf(resultCanvas, folderWithDiagonal+total_pdf_file_title+"_residuum.pdf");
+
+    //to reset SetUserRange() effect (specifically kAxisRange bit)
+    ratio_plot.GetUpperRefYaxis()->UnZoom();
+
+    //###################################################################
+    //                            CLEANING
+    //###################################################################
+    delete data_fit;
     resultCanvas->Clear();
     delete resultCanvas;
     delete fitting_function_total;
