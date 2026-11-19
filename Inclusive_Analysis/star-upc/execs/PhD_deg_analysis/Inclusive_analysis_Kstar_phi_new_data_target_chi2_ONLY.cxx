@@ -308,6 +308,8 @@ int main(int argc, char** argv){
     outsideprocessing.AddHistogram(TH1D("MpiKChi2NotPions", "#chi^{2}_{K^{-}#pi^{+}}<9 && #chi^{2}_{#pi^{+}#pi^{-}}#geq9;m_{K^{-}#pi^{+}} [GeV/c^{2}];Number of pairs", 200, 0.5, 2.0));
     outsideprocessing.AddHistogram(TH1D("MKpiChi2YesPions", "#chi^{2}_{K^{+}#pi^{-}}<9 && #chi^{2}_{#pi^{+}#pi^{-}}<9;m_{K^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 200, 0.5, 2.0));
     outsideprocessing.AddHistogram(TH1D("MpiKChi2YesPions", "#chi^{2}_{K^{-}#pi^{+}}<9 && #chi^{2}_{#pi^{+}#pi^{-}}<9;m_{K^{-}#pi^{+}} [GeV/c^{2}];Number of pairs", 200, 0.5, 2.0));
+    outsideprocessing.AddHistogram(TH1D("MKpiUnderK892Test", "Checking m_{#pi^{+}#pi^{-}} if m_{K^{+}#pi^{-}}<0.8 GeV/c^{2};m_{#pi^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 200, 0.5, 2.0));
+    outsideprocessing.AddHistogram(TH1D("MpiKUnderK892Test", "Checking m_{#pi^{+}#pi^{-}} if m_{K^{-}#pi^{+}}<0.8 GeV/c^{2};m_{#pi^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 200, 0.5, 2.0));
 
     //other *other* histograms
     outsideprocessing.AddHistogram(TH2D("dEdxTPCEnergyLoss", "dE/dx TPC Energy loss distribution;pq [GeV/c];dE/dx [keV/cm]", 300, -3, 3, 100, 0, 40));
@@ -612,6 +614,12 @@ int main(int argc, char** argv){
                                 } else{
                                     insideprocessing.Fill(("M"+temp_pair+"Chi2NotPions").c_str(), mass, 1./efficiency);
                                 }
+                            }
+                            //checking the mass of Kpi pairs below K*(892) peak (m<0.8) under pion-pion mass assumption
+                            if((temp_pair=="Kpi"||temp_pair=="piK")&&mass<0.8){
+                                vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
+                                vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
+                                insideprocessing.Fill(("M"+temp_pair+"UnderK892Test").c_str(), (positive_track+negative_track).M(), 1./efficiency);
                             }
                             //checking the share of pipi pairs (and so, K0S) in KK pairs
                             if(temp_pair=="KK"){
@@ -1170,6 +1178,7 @@ int main(int argc, char** argv){
 
     //merging and tidying up
     outsideprocessing.Merge();
+    outsideprocessing.GetPointerAfterMerge<TH1D>("Flowchart")->LabelsDeflate();
 
     //setting up a tree & output file
     string path = string(argv[0]);
