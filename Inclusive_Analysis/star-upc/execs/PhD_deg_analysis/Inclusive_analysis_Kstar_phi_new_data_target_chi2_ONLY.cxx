@@ -486,6 +486,16 @@ int main(int argc, char** argv){
                 continue;
             }
             insideprocessing.Fill("Flowchart", "One vertex", 1.0);
+            //vertex position (|Vz|<100cm)(cut dictated by efficiency corrections range)
+            TVector3 PV_position(tempUPCpointer->getVertex(0)->getPosX(), tempUPCpointer->getVertex(0)->getPosY(), tempUPCpointer->getVertex(0)->getPosZ());
+            insideprocessing.Fill("PrimaryVertexPositionX", PV_position.X());
+            insideprocessing.Fill("PrimaryVertexPositionY", PV_position.Y());
+            insideprocessing.Fill("PrimaryVertexPositionZ", PV_position.Z());
+            insideprocessing.Fill("PrimaryVertexPositionTotal", PV_position.Mag());
+            if(abs(PV_position.Z())>=100.){
+                continue;
+            }
+            insideprocessing.Fill("Flowchart", "|V_{z}|<100 cm", 1.0);
 
             //cuts & histogram filling
             //selecting tracks matching criteria:
@@ -530,11 +540,6 @@ int main(int argc, char** argv){
             }
 
             //filling other one-in-an-event histograms
-            TVector3 PV_position(tempUPCpointer->getVertex(0)->getPosX(), tempUPCpointer->getVertex(0)->getPosY(), tempUPCpointer->getVertex(0)->getPosZ());
-            insideprocessing.Fill("PrimaryVertexPositionX", PV_position.X());
-            insideprocessing.Fill("PrimaryVertexPositionY", PV_position.Y());
-            insideprocessing.Fill("PrimaryVertexPositionZ", PV_position.Z());
-            insideprocessing.Fill("PrimaryVertexPositionTotal", PV_position.Mag());
             double Mx = tempRPpointer->getTrack(0)->xi(beamMomentum)*tempRPpointer->getTrack(1)->xi(beamMomentum)*510.;
             insideprocessing.Fill("MxTotal", Mx);
             double Xi_W, Xi_E;
