@@ -423,7 +423,7 @@ int main(int argc, char** argv){
         TLorentzVector negative_track;
         TLorentzVector positive_track2;
         TLorentzVector negative_track2;
-        double mass, chi2pipi, chi2Kpi, eta, pT, phi, efficiency;
+        double mass, eta, pT, phi, efficiency, temp_efficiency;
         map<string, double> chi2Map;
         bool isdEdxOk, isTOFOk;
         string tempPairName;
@@ -622,18 +622,15 @@ int main(int argc, char** argv){
                                 if(chi2Map["K_K"]<1){
                                     insideprocessing.Fill("MKKSuspiciousPeakTestedWithStrictChi2LessThan1", mass, 1./efficiency);
                                 }
-                                //!!!!!!!!!!
-                                //CORRECTION CHANGE!!!!!!!!
-                                //!!!!!!!!!!
-                                efficiency = efficiency_coefficient(0, "pi_pi", vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
+                                temp_efficiency = efficiency_coefficient(0, "pi_pi", vector_Track_positive[i], vector_Track_negative[j], PV_position.Z(), PV_position.Z());
                                 if(1.06<mass&&mass<1.08){
                                     vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
                                     vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
-                                    insideprocessing.Fill("MKKSuspiciousPeakTestedAsPionPair", (positive_track+negative_track).M(), 1./efficiency);
+                                    insideprocessing.Fill("MKKSuspiciousPeakTestedAsPionPair", (positive_track+negative_track).M(), 1./temp_efficiency);
                                 } else if(1.05<mass&&mass<1.09){
                                     vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
                                     vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
-                                    insideprocessing.Fill("MKKSuspiciousPeakTestedAsPionPairNeighbourhood", (positive_track+negative_track).M(), 1./efficiency);
+                                    insideprocessing.Fill("MKKSuspiciousPeakTestedAsPionPairNeighbourhood", (positive_track+negative_track).M(), 1./temp_efficiency);
                                 }
                             }
                             //end of chi2 test
@@ -928,11 +925,7 @@ int main(int argc, char** argv){
                         }
                     }
 
-                    //useful variables
-                    double pt, eta, phi;
-                    //chi2 tests on different pairs
-
-
+                    //copying tracks
                     for(size_t pair_number = 0; pair_number<pairTabWithUnderscores.size(); pair_number++){
                         if(chi2Map[pairTabWithUnderscores[pair_number]]<9){
                             //getting all the indentificators out
@@ -940,8 +933,8 @@ int main(int argc, char** argv){
 
                             //positive
                             map_of_queue_of_previous_vector_Tracks_positive[temp_pair].back().push_back(new StUPCTrack());
-                            vector_Track_positive[i]->getPtEtaPhi(pt, eta, phi);
-                            map_of_queue_of_previous_vector_Tracks_positive[temp_pair].back().back()->setPtEtaPhi(pt, eta, phi);
+                            vector_Track_positive[i]->getPtEtaPhi(pT, eta, phi);
+                            map_of_queue_of_previous_vector_Tracks_positive[temp_pair].back().back()->setPtEtaPhi(pT, eta, phi);
                             map_of_queue_of_previous_vector_Tracks_positive[temp_pair].back().back()->setNhitsDEdx(vector_Track_positive[i]->getNhitsDEdx());
                             map_of_queue_of_previous_vector_Tracks_positive[temp_pair].back().back()->setTofPathLength(vector_Track_positive[i]->getTofPathLength());
                             map_of_queue_of_previous_vector_Tracks_positive[temp_pair].back().back()->setTofTime(vector_Track_positive[i]->getTofTime());
@@ -950,8 +943,8 @@ int main(int argc, char** argv){
                             }
                             //negative
                             map_of_queue_of_previous_vector_Tracks_negative[temp_pair].back().push_back(new StUPCTrack());
-                            vector_Track_negative[j]->getPtEtaPhi(pt, eta, phi);
-                            map_of_queue_of_previous_vector_Tracks_negative[temp_pair].back().back()->setPtEtaPhi(pt, eta, phi);
+                            vector_Track_negative[j]->getPtEtaPhi(pT, eta, phi);
+                            map_of_queue_of_previous_vector_Tracks_negative[temp_pair].back().back()->setPtEtaPhi(pT, eta, phi);
                             map_of_queue_of_previous_vector_Tracks_negative[temp_pair].back().back()->setNhitsDEdx(vector_Track_negative[j]->getNhitsDEdx());
                             map_of_queue_of_previous_vector_Tracks_negative[temp_pair].back().back()->setTofPathLength(vector_Track_negative[j]->getTofPathLength());
                             map_of_queue_of_previous_vector_Tracks_negative[temp_pair].back().back()->setTofTime(vector_Track_negative[j]->getTofTime());
@@ -977,8 +970,6 @@ int main(int argc, char** argv){
                 queue_of_previous_Xi_E.emplace_back(tempRPpointer->getTrack(0)->xi(beamMomentum));
             }
 
-            //useful variables
-            double pt, eta, phi;
             //################################################################################
             //matching this event (on the back, "last" one, n-1) with previous ones (0 to n-2)
             //################################################################################
