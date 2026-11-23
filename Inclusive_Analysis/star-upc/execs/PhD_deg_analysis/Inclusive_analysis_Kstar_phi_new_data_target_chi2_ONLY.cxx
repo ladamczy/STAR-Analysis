@@ -308,8 +308,8 @@ int main(int argc, char** argv){
     outsideprocessing.AddHistogram(TH1D("MpiKChi2NotPions", "#chi^{2}_{K^{-}#pi^{+}}<9 && #chi^{2}_{#pi^{+}#pi^{-}}#geq9;m_{K^{-}#pi^{+}} [GeV/c^{2}];Number of pairs", 200, 0.5, 2.0));
     outsideprocessing.AddHistogram(TH1D("MKpiChi2YesPions", "#chi^{2}_{K^{+}#pi^{-}}<9 && #chi^{2}_{#pi^{+}#pi^{-}}<9;m_{K^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 200, 0.5, 2.0));
     outsideprocessing.AddHistogram(TH1D("MpiKChi2YesPions", "#chi^{2}_{K^{-}#pi^{+}}<9 && #chi^{2}_{#pi^{+}#pi^{-}}<9;m_{K^{-}#pi^{+}} [GeV/c^{2}];Number of pairs", 200, 0.5, 2.0));
-    outsideprocessing.AddHistogram(TH1D("MKpiUnderK892Test", "Checking m_{#pi^{+}#pi^{-}} if m_{K^{+}#pi^{-}}<0.8 GeV/c^{2};m_{#pi^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 200, 0.5, 2.0));
-    outsideprocessing.AddHistogram(TH1D("MpiKUnderK892Test", "Checking m_{#pi^{+}#pi^{-}} if m_{K^{-}#pi^{+}}<0.8 GeV/c^{2};m_{#pi^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 200, 0.5, 2.0));
+    outsideprocessing.AddHistogram(TH1D("MKpiUnderK892Test", "Checking m_{#pi^{+}#pi^{-}} if m_{K^{+}#pi^{-}}<0.8 GeV/c^{2};m_{#pi^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 200, 0.0, 1.0));
+    outsideprocessing.AddHistogram(TH1D("MpiKUnderK892Test", "Checking m_{#pi^{+}#pi^{-}} if m_{K^{-}#pi^{+}}<0.8 GeV/c^{2};m_{#pi^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 200, 0.0, 1.0));
 
     //other *other* histograms
     outsideprocessing.AddHistogram(TH2D("dEdxTPCEnergyLoss", "dE/dx TPC Energy loss distribution;pq [GeV/c];dE/dx [keV/cm]", 300, -3, 3, 100, 0, 40));
@@ -321,6 +321,10 @@ int main(int argc, char** argv){
     outsideprocessing.AddHistogram(TH1D("XiWTotal", ";#xi_{W};Number of events", 400, -0.05, 0.35));
     outsideprocessing.AddHistogram(TH1D("XiETotal", ";#xi_{E};Number of events", 400, -0.05, 0.35));
     outsideprocessing.AddHistogram(TH2D("XiBothTotal", ";#xi_{W};#xi_{E}", 400, -0.05, 0.35, 400, -0.05, 0.35));
+    outsideprocessing.AddHistogram(TH1D("WeightsLowK700Kpi", "Weights for K^{+}#pi^{-} pair with m_{K^{+}#pi^{-}} #in [0.7025; 0.7775] GeV/c^{2};weight;Number of events", 100, 1, 11));
+    outsideprocessing.AddHistogram(TH1D("WeightsHighK700Kpi", "Weights for K^{+}#pi^{-} pair with m_{K^{+}#pi^{-}} #in [0.7775; 0.8600] GeV/c^{2};weight;Number of events", 100, 1, 11));
+    outsideprocessing.AddHistogram(TH1D("WeightsLowK700piK", "Weights for K^{-}#pi^{+} pair with m_{K^{-}#pi^{+}} #in [0.7025; 0.7775] GeV/c^{2};weight;Number of events", 100, 1, 11));
+    outsideprocessing.AddHistogram(TH1D("WeightsHighK700piK", "Weights for K^{-}#pi^{+} pair with m_{K^{-}#pi^{+}} #in [0.7775; 0.8600] GeV/c^{2};weight;Number of events", 100, 1, 11));
     //histograms for eventual cutting of mixed events
     outsideprocessing.AddHistogram(TH1D("PrimaryVertexPositionDifferenceX", ";#Delta x [cm];Number of event pairs", 160, -0.8, 0.8));
     outsideprocessing.AddHistogram(TH1D("PrimaryVertexPositionDifferenceY", ";#Delta y [cm];Number of event pairs", 160, -0.8, 0.8));
@@ -620,6 +624,14 @@ int main(int argc, char** argv){
                                 vector_Track_positive[i]->getLorentzVector(positive_track, particleMass[Pion]);
                                 vector_Track_negative[j]->getLorentzVector(negative_track, particleMass[Pion]);
                                 insideprocessing.Fill(("M"+temp_pair+"UnderK892Test").c_str(), (positive_track+negative_track).M(), 1./efficiency);
+                            }
+                            //checking the weights in K*(700) region
+                            if((temp_pair=="Kpi"||temp_pair=="piK")&&0.7025<mass&&mass<0.8600){
+                                if(mass<0.7775){
+                                    insideprocessing.Fill(("WeightsLowK700"+temp_pair).c_str(), 1./efficiency);
+                                } else{
+                                    insideprocessing.Fill(("WeightsHighK700"+temp_pair).c_str(), 1./efficiency);
+                                }
                             }
                             //checking the share of pipi pairs (and so, K0S) in KK pairs
                             if(temp_pair=="KK"){
