@@ -170,7 +170,6 @@ int main(int argc, char** argv){
 
         //choosing correct ID for detected tracks
         std::pair<PARTICLES, PARTICLES> id_both = getPairPID(pairNameWithUnderscore);
-        StEfficiencyCorrector3D::ParticleType id_singular;
 
         //calculating correction
         double efficiency = 1.;
@@ -321,10 +320,10 @@ int main(int argc, char** argv){
     outsideprocessing.AddHistogram(TH1D("XiWTotal", ";#xi_{W};Number of events", 400, -0.05, 0.35));
     outsideprocessing.AddHistogram(TH1D("XiETotal", ";#xi_{E};Number of events", 400, -0.05, 0.35));
     outsideprocessing.AddHistogram(TH2D("XiBothTotal", ";#xi_{W};#xi_{E}", 400, -0.05, 0.35, 400, -0.05, 0.35));
-    outsideprocessing.AddHistogram(TH1D("WeightsLowK700Kpi", "Weights for K^{+}#pi^{-} pair with m_{K^{+}#pi^{-}} #in [0.7025; 0.7775] GeV/c^{2};weight;Number of events", 100, 1, 11));
-    outsideprocessing.AddHistogram(TH1D("WeightsHighK700Kpi", "Weights for K^{+}#pi^{-} pair with m_{K^{+}#pi^{-}} #in [0.7775; 0.8600] GeV/c^{2};weight;Number of events", 100, 1, 11));
-    outsideprocessing.AddHistogram(TH1D("WeightsLowK700piK", "Weights for K^{-}#pi^{+} pair with m_{K^{-}#pi^{+}} #in [0.7025; 0.7775] GeV/c^{2};weight;Number of events", 100, 1, 11));
-    outsideprocessing.AddHistogram(TH1D("WeightsHighK700piK", "Weights for K^{-}#pi^{+} pair with m_{K^{-}#pi^{+}} #in [0.7775; 0.8600] GeV/c^{2};weight;Number of events", 100, 1, 11));
+    outsideprocessing.AddHistogram(TH1D("WeightsLowK700Kpi", "Weights for K^{+}#pi^{-} pair with m_{K^{+}#pi^{-}} #in [0.7025, 0.7775] GeV/c^{2};weight;Number of events", 1000, 1, 101));
+    outsideprocessing.AddHistogram(TH1D("WeightsHighK700Kpi", "Weights for K^{+}#pi^{-} pair with m_{K^{+}#pi^{-}} #in [0.7775, 0.8600] GeV/c^{2};weight;Number of events", 1000, 1, 101));
+    outsideprocessing.AddHistogram(TH1D("WeightsLowK700piK", "Weights for K^{-}#pi^{+} pair with m_{K^{-}#pi^{+}} #in [0.7025, 0.7775] GeV/c^{2};weight;Number of events", 1000, 1, 101));
+    outsideprocessing.AddHistogram(TH1D("WeightsHighK700piK", "Weights for K^{-}#pi^{+} pair with m_{K^{-}#pi^{+}} #in [0.7775, 0.8600] GeV/c^{2};weight;Number of events", 1000, 1, 101));
     //histograms for eventual cutting of mixed events
     outsideprocessing.AddHistogram(TH1D("PrimaryVertexPositionDifferenceX", ";#Delta x [cm];Number of event pairs", 160, -0.8, 0.8));
     outsideprocessing.AddHistogram(TH1D("PrimaryVertexPositionDifferenceY", ";#Delta y [cm];Number of event pairs", 160, -0.8, 0.8));
@@ -368,9 +367,6 @@ int main(int argc, char** argv){
         auto efficiency_testing = [&](double pair_efficiency, int total_pair_charge, std::string pairNameWithUnderscore, StUPCTrack* positive_track, StUPCTrack* negative_track, double Vz_positive, double Vz_negative, std::string loop_type, bool fill_histograms = false){
             //fallback if something broke
             if(!loadedCorrectorCorrectly)
-                return 1;
-            //work only if efficiency 0
-            if(pair_efficiency!=0)
                 return 1;
             //initialsation of maps for enum->string conversion
             static std::map<PARTICLES, std::string> enum_name_map = { { PARTICLES::Pion, "Pion" },
