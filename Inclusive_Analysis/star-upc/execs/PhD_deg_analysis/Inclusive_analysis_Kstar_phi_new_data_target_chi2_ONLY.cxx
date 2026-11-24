@@ -309,6 +309,10 @@ int main(int argc, char** argv){
     outsideprocessing.AddHistogram(TH1D("MpiKChi2YesPions", "#chi^{2}_{K^{-}#pi^{+}}<9 && #chi^{2}_{#pi^{+}#pi^{-}}<9;m_{K^{-}#pi^{+}} [GeV/c^{2}];Number of pairs", 200, 0.5, 2.0));
     outsideprocessing.AddHistogram(TH1D("MKpiUnderK892Test", "Checking m_{#pi^{+}#pi^{-}} if m_{K^{+}#pi^{-}}<0.8 GeV/c^{2};m_{#pi^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 200, 0.0, 1.0));
     outsideprocessing.AddHistogram(TH1D("MpiKUnderK892Test", "Checking m_{#pi^{+}#pi^{-}} if m_{K^{-}#pi^{+}}<0.8 GeV/c^{2};m_{#pi^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 200, 0.0, 1.0));
+    outsideprocessing.AddHistogram(TH1D("MKpiHugeWeightsRaw", "m_{K^{+}#pi^{-}} if #varepsilon_{K^{+}#pi^{-}}<0.1 (raw);m_{K^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 200, 0.0, 1.0));
+    outsideprocessing.AddHistogram(TH1D("MpiKHugeWeightsRaw", "m_{K^{-}#pi^{+}} if #varepsilon_{K^{-}#pi^{+}}<0.1 (raw);m_{K^{-}#pi^{+}} [GeV/c^{2}];Number of pairs", 200, 0.0, 1.0));
+    outsideprocessing.AddHistogram(TH1D("MKpiHugeWeightsWeighted", "m_{K^{+}#pi^{-}} if #varepsilon_{K^{+}#pi^{-}}<0.1 (weighted);m_{K^{+}#pi^{-}} [GeV/c^{2}];Number of pairs", 200, 0.0, 1.0));
+    outsideprocessing.AddHistogram(TH1D("MpiKHugeWeightsWeighted", "m_{K^{-}#pi^{+}} if #varepsilon_{K^{-}#pi^{+}}<0.1 (weighted);m_{K^{-}#pi^{+}} [GeV/c^{2}];Number of pairs", 200, 0.0, 1.0));
 
     //other *other* histograms
     outsideprocessing.AddHistogram(TH2D("dEdxTPCEnergyLoss", "dE/dx TPC Energy loss distribution;pq [GeV/c];dE/dx [keV/cm]", 300, -3, 3, 100, 0, 40));
@@ -606,6 +610,11 @@ int main(int argc, char** argv){
                             //filling smaller ranges
                             if(temp_pair=="Kpi"||temp_pair=="piK"||temp_pair=="KK"){
                                 insideprocessing.Fill(("M"+temp_pair+"Chi2Close").c_str(), mass, 1./efficiency);
+                            }
+                            //checking raw and weighted mass distributions for pairs with small efficiency
+                            if((temp_pair=="Kpi"||temp_pair=="piK")&&efficiency<0.1){
+                                insideprocessing.Fill(("M"+temp_pair+"HugeWeightsRaw").c_str(), mass);
+                                insideprocessing.Fill(("M"+temp_pair+"HugeWeightsWeighted").c_str(), mass, 1./efficiency);
                             }
                             //checking the share of pipi pairs (and so, K0S) in Kpi/piK pairs
                             if((temp_pair=="Kpi"||temp_pair=="piK")){
