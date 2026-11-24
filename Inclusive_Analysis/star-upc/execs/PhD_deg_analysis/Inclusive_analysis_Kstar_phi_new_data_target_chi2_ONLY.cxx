@@ -328,6 +328,8 @@ int main(int argc, char** argv){
     outsideprocessing.AddHistogram(TH1D("WeightsHighK700Kpi", "Weights for K^{+}#pi^{-} pair with m_{K^{+}#pi^{-}} #in [0.7775, 0.8600] GeV/c^{2};weight;Number of events", 1000, 1, 101));
     outsideprocessing.AddHistogram(TH1D("WeightsLowK700piK", "Weights for K^{-}#pi^{+} pair with m_{K^{-}#pi^{+}} #in [0.7025, 0.7775] GeV/c^{2};weight;Number of events", 1000, 1, 101));
     outsideprocessing.AddHistogram(TH1D("WeightsHighK700piK", "Weights for K^{-}#pi^{+} pair with m_{K^{-}#pi^{+}} #in [0.7775, 0.8600] GeV/c^{2};weight;Number of events", 1000, 1, 101));
+    outsideprocessing.AddHistogram(TH1D("OtherChi2Kpi", "#chi^{2} hypotheses for K^{+}#pi^{-} pairs;;pairs", 1, 0, 1));
+    outsideprocessing.AddHistogram(TH1D("OtherChi2piK", "#chi^{2} hypotheses for K^{-}#pi^{+} pairs;;pairs", 1, 0, 1));
     //histograms for eventual cutting of mixed events
     outsideprocessing.AddHistogram(TH1D("PrimaryVertexPositionDifferenceX", ";#Delta x [cm];Number of event pairs", 160, -0.8, 0.8));
     outsideprocessing.AddHistogram(TH1D("PrimaryVertexPositionDifferenceY", ";#Delta y [cm];Number of event pairs", 160, -0.8, 0.8));
@@ -358,13 +360,19 @@ int main(int argc, char** argv){
         StRPEvent* tempRPpointer;
         insideprocessing.GetLocalHistograms(&outsideprocessing);
 
-        //filling pairInfo histograms in correct order of bins
+        //filling alphanumeric histograms in correct order of bins
         for(auto&& histlastname:{ "Signal", "BackgroundSameSign", "BackgroundTrackRotation", "BackgroundRandomTrackRotation" }){
             std::string histfirstname = "pairInfo";
             insideprocessing.Fill((histfirstname+histlastname).c_str(), "OK", 0.0);
             insideprocessing.Fill((histfirstname+histlastname).c_str(), "TOF wrong", 0.0);
             insideprocessing.Fill((histfirstname+histlastname).c_str(), "dEdx wrong", 0.0);
             insideprocessing.Fill((histfirstname+histlastname).c_str(), "Both wrong", 0.0);
+        }
+        for(auto&& temp_pair:pairTab){
+            if(temp_pair!="Kpi")
+                insideprocessing.Fill("OtherChi2Kpi", temp_pair.c_str(), 0.0);
+            if(temp_pair!="piK")
+                insideprocessing.Fill("OtherChi2piK", temp_pair.c_str(), 0.0);
         }
 
         //lambda for testing which tracks gave 0 efficiency (only for signal, so we can skip some checks)
@@ -615,6 +623,18 @@ int main(int argc, char** argv){
                             if((temp_pair=="Kpi"||temp_pair=="piK")&&efficiency<0.1){
                                 insideprocessing.Fill(("M"+temp_pair+"HugeWeightsRaw").c_str(), mass);
                                 insideprocessing.Fill(("M"+temp_pair+"HugeWeightsWeighted").c_str(), mass, 1./efficiency);
+                            }
+                            //checking chi2 misidentification for Kpi and piK pairs
+                            for(size_t temp_pair_number = 0; temp_pair_number<pairTabWithUnderscores.size(); temp_pair_number++){
+                                //checks if currently analising Kpi/piK pair
+                                //checks chi2 of another pair
+                                //checks if another pair is different from Kpi/piK
+                                if(pairTab[pair_number]=="Kpi"&&chi2Map[pairTabWithUnderscores[temp_pair_number]]<9&&pair_number!=temp_pair_number){
+                                    insideprocessing.Fill("OtherChi2Kpi", pairTab[temp_pair_number].c_str(), 1.0);
+                                }
+                                if(pairTab[pair_number]=="piK"&&chi2Map[pairTabWithUnderscores[temp_pair_number]]<9&&pair_number!=temp_pair_number){
+                                    insideprocessing.Fill("OtherChi2piK", pairTab[temp_pair_number].c_str(), 1.0);
+                                }
                             }
                             //checking the share of pipi pairs (and so, K0S) in Kpi/piK pairs
                             if((temp_pair=="Kpi"||temp_pair=="piK")){
@@ -1191,11 +1211,34 @@ int main(int argc, char** argv){
         return 0;
     };
 
+
     TreeProc.Process(myFunction);
+
 
     //merging and tidying up
     outsideprocessing.Merge();
     outsideprocessing.GetPointerAfterMerge<TH1D>("Flowchart")->LabelsDeflate();
+    std::map<std::string, std::string> bin_names = { { "Kpi", "K^{+}#pi^{-}" },
+                                                        { "piK", "K^{-}#pi^{+}" },
+                                                        { "ppi", "p^{+}#pi^{-}" },
+                                                        { "pip", "p^{-}#pi^{+}" },
+                                                        { "KK", "K^{+}K^{-}" },
+                                                        { "pipi", "#pi^{+}#pi^{-}" },
+                                                        { "pp" , "p^{+}p^{-}" } };
+    TAxis* OtherChi2Kpi_axis = outsideprocessing.GetPointerAfterMerge<TH1D>("OtherChi2Kpi")->GetXaxis();
+    TAxis* OtherChi2piK_axis = outsideprocessing.GetPointerAfterMerge<TH1D>("OtherChi2piK")->GetXaxis();
+    OtherChi2Kpi_axis->SetCanExtend(false);
+    OtherChi2piK_axis->SetCanExtend(false);
+    for(auto&& temp_pair:pairTab){
+        OtherChi2Kpi_axis->SetBinLabel(OtherChi2Kpi_axis->FindBin(temp_pair.c_str()), bin_names[temp_pair].c_str());
+        OtherChi2piK_axis->SetBinLabel(OtherChi2piK_axis->FindBin(temp_pair.c_str()), bin_names[temp_pair].c_str());
+    }
+    //FindBin adds the bin if it is not present - it can be countered either by:
+    // - calling LabelsDeflate() after or
+    // - setting SetCanExtend(false) before
+    outsideprocessing.GetPointerAfterMerge<TH1D>("OtherChi2Kpi")->LabelsDeflate();
+    outsideprocessing.GetPointerAfterMerge<TH1D>("OtherChi2piK")->LabelsDeflate();
+
 
     //setting up a tree & output file
     string path = string(argv[0]);
